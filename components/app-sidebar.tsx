@@ -1,7 +1,15 @@
-"use client"
-
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+"use client";
+import { ChevronUp, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Truck,
   Users,
@@ -11,7 +19,7 @@ import {
   Settings,
   LogIn,
   Headset,
-} from "lucide-react"
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,7 +31,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const navItems = [
   { title: "Trucks", href: "/trucks", icon: Truck },
@@ -33,17 +41,19 @@ const navItems = [
   { title: "Chat", href: "/chat", icon: MessageSquare },
   { title: "Documents", href: "/documents", icon: FileText },
   { title: "Settings", href: "/settings", icon: Settings },
-]
+];
 
 export function AppSidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-2">
-          <Truck className="h-6 w-6 shrink-0 text-accent" />
-          <span className="text-lg font-bold">IS Fleet</span>
+        <div className="flex items-center gap-3  py-1.5 overflow-hidden">
+          <Truck className="h-7 w-7  shrink-0 text-accent" />
+          <span className="text-lg font-bold whitespace-nowrap transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:overflow-hidden">
+            IS Fleet
+          </span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -72,15 +82,46 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname === "/login"} tooltip="Login">
-              <Link href="/login">
-                <LogIn className="h-4 w-4" />
-                <span>Login</span>
-              </Link>
-            </SidebarMenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      JD
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                    <span className="truncate font-semibold">John Doe</span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      Fleet Manager
+                    </span>
+                  </div>
+                  <ChevronUp className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-56"
+                side="top"
+                align="start"
+                sideOffset={4}
+              >
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Account Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
