@@ -3,30 +3,30 @@
 import { useState, useEffect } from "react";
 import { Search, Users, Truck, Megaphone, X } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card";
+} from "@/components/ui/card";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/src/components/ui/avatar";
-import { ScrollArea } from "@/src/components/ui/scroll-area";
+} from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/src/components/ui/dialog";
-import { Textarea } from "@/src/components/ui/textarea";
-import { Label } from "@/src/components/ui/label";
-import { useSidebar } from "@/src/components/ui/sidebar";
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useSidebar } from "@/components/ui/sidebar";
 import { groups } from "@/lib/mock-data";
 
 export default function GroupsPage() {

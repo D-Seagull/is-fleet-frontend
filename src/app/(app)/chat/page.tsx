@@ -2,22 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { Search, Send, Calendar, Truck, Users, UserCog } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
-import { Badge } from "@/src/components/ui/badge";
-import { ScrollArea } from "@/src/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/src/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/src/components/ui/calendar";
-import { useSidebar } from "@/src/components/ui/sidebar";
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useSidebar } from "@/components/ui/sidebar";
 import { chats, messages } from "@/lib/mock-data";
 
 export default function ChatPage() {

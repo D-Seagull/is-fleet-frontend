@@ -13,20 +13,20 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Badge } from "@/src/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/src/components/ui/tabs";
+} from "@/components/ui/tabs";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/src/components/ui/avatar";
+} from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -65,7 +65,7 @@ import {
   messages,
   type TruckStatus,
   type TripStatus,
-} from "@/lib/mock-data";
+} from "@/src/lib/mock-data";
 
 const statusColors: Record<TruckStatus, string> = {
   available: "bg-green-500/10 text-green-500 border-green-500/20",

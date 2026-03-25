@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Plus, Search, Star } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Badge } from "@/src/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -13,22 +13,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/src/components/ui/table";
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/src/components/ui/dialog";
-import { Label } from "@/src/components/ui/label";
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/components/ui/select";
+} from "@/components/ui/select";
 import { drivers, type DriverStatus } from "@/lib/mock-data";
 
 const statusColors: Record<DriverStatus, string> = {

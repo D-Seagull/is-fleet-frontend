@@ -1,33 +1,64 @@
 "use client";
 
 import { useState } from "react";
-import { Truck, Eye, EyeOff } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
+import { Truck, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card";
-import { Checkbox } from "@/src/components/ui/checkbox";
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt:", { email, password, rememberMe });
-  };
+    setIsLoading(true);
+    setError("");
 
+    try {
+      const res = await api.post("/auth/login", { email, password });
+      const { access_token, user } = res.data;
+      console.log(access_token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      if (user.role === "ADMIN") {
+        router.push("/admin");
+      }
+      router.push("/trucks");
+    } catch (err: any) {
+      const msg = err.response?.data?.message;
+      if (Array.isArray(msg)) {
+        setError(msg.join(", "));
+      } else if (typeof msg === "string") {
+        setError(msg);
+      } else {
+        setError("Невірний email або пароль");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
-    <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center">
+    <div className="relative min-h-screen min-w-screen flex items-center justify-center">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
@@ -88,12 +119,28 @@ export default function LoginPage() {
                   Remember me
                 </Label>
               </div>
-              <Button variant="link" className="h-auto p-0 text-sm">
+              <Button
+                type="button"
+                variant="link"
+                className="h-auto p-0 text-sm"
+              >
                 Forgot password?
               </Button>
             </div>
-            <Button type="submit" className="w-full">
-              Sign In
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                {error}
+              </div>
+            )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Вхід...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
         </CardContent>

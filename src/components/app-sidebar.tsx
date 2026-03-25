@@ -1,13 +1,13 @@
 "use client";
 import { ChevronUp, LogOut } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -31,7 +31,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
-} from "@/src/components/ui/sidebar";
+} from "@/components/ui/sidebar";
 
 const navItems = [
   { title: "Trucks", href: "/trucks", icon: Truck },

@@ -2,36 +2,27 @@
 
 import { useState } from "react";
 import { Search, Plus, Phone, Mail, Users, Truck } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Badge } from "@/src/components/ui/badge";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/src/components/ui/dialog";
-import { Label } from "@/src/components/ui/label";
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/components/ui/select";
+} from "@/components/ui/select";
 import { dispatchers, type DispatcherStatus } from "@/lib/mock-data";
 
 const statusColors: Record<DispatcherStatus, string> = {

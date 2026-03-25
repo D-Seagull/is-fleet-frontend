@@ -12,34 +12,25 @@ import {
   UserCog,
   Truck,
 } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-import { Badge } from "@/src/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/src/components/ui/dialog";
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/components/ui/select";
-import { Label } from "@/src/components/ui/label";
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { drivers, trucks, type DriverStatus } from "@/lib/mock-data";
 
 const statusColors: Record<DriverStatus, string> = {

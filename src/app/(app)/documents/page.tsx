@@ -8,8 +8,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -17,21 +17,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/src/components/ui/table";
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/components/ui/select";
+} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/src/components/ui/popover";
-import { Calendar } from "@/src/components/ui/calendar";
-import { Badge } from "@/src/components/ui/badge";
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
 import { documents, trucks, trips } from "@/lib/mock-data";
 
 export default function DocumentsPage() {

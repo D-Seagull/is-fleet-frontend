@@ -2,23 +2,23 @@
 
 import { useState } from "react";
 import { Building2, Mail, Globe } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/components/ui/card";
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/components/ui/select";
+} from "@/components/ui/select";
 
 export default function SettingsPage() {
   const [companyName, setCompanyName] = useState("IS Fleet Company");

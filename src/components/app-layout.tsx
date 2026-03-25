@@ -4,10 +4,9 @@ import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
-} from "@/src/components/ui/sidebar";
-import { AppSidebar } from "@/src/components/app-sidebar";
-import { ThemeToggle } from "@/src/components/theme-toggle";
-
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider defaultOpen={true}>

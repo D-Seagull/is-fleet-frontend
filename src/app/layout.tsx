@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { ThemeProvider } from "@/src/components/theme-provider";
-import { AppLayout } from "@/src/components/app-layout";
+import { ThemeProvider } from "@/components/theme-provider";
+
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -33,7 +33,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppLayout>{children}</AppLayout>
+          {children}
         </ThemeProvider>
       </body>
     </html>
