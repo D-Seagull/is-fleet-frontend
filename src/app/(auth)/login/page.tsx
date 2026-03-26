@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ThemeToggle } from "@/components/theme-toggle";
+
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
@@ -35,12 +35,10 @@ export default function LoginPage() {
       const res = await api.post("/auth/login", { email, password });
       const { access_token, user } = res.data;
       console.log(access_token);
+      console.log(res);
       localStorage.setItem("user", JSON.stringify(user));
-
-      if (user.role === "ADMIN") {
-        router.push("/admin");
-      }
-      router.push("/trucks");
+      localStorage.setItem("access_token", access_token);
+      router.push(user.role === "ADMIN" ? "/admin" : "/trucks");
     } catch (err: any) {
       const msg = err.response?.data?.message;
       if (Array.isArray(msg)) {
@@ -55,10 +53,8 @@ export default function LoginPage() {
     }
   };
   return (
-    <div className="relative min-h-screen min-w-screen flex items-center justify-center">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
+    <div className="relative  w-screen flex items-center justify-center">
+      <div className="absolute top-4 right-4"></div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
