@@ -1,9 +1,9 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Truck, Loader2 } from "lucide-react";
+import { Truck, Loader2, Divide } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,11 @@ import {
 import InvalidInvite from "@/components/invalid-invite";
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
+  );
 }
 const RegisterForm: FC = () => {
   const router = useRouter();
