@@ -27,6 +27,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
+    if (isLoading) return;
+
     e.preventDefault();
     setIsLoading(true);
     setError("");
@@ -34,11 +36,19 @@ export default function LoginPage() {
     try {
       const res = await api.post("/auth/login", { email, password });
       const { access_token, user } = res.data;
-      console.log(access_token);
-      console.log(res);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("access_token", access_token);
+
+      if (rememberMe) {
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("access_token", access_token);
+      } else {
+        sessionStorage.setItem("access_token", access_token);
+        sessionStorage.setItem("user", JSON.stringify(user));
+      }
       router.push(user.role === "ADMIN" ? "/admin" : "/trucks");
+      setEmail("");
+      setPassword("");
+      setRememberMe(false);
+      setShowPassword(false);
     } catch (err: any) {
       const msg = err.response?.data?.message;
       if (Array.isArray(msg)) {
@@ -81,6 +91,7 @@ export default function LoginPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  autoComplete="current-password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}

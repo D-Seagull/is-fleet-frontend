@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+// import { useRouter } from "next/navigation";
+// import Link from "next/link";
 import { Truck, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -15,16 +15,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+const initialForm = {
+  name: "",
+  email: "",
+};
 const AdminCreateCompany = () => {
-  const router = useRouter();
+  // const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-  });
+  const [form, setForm] = useState(initialForm);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isLoading) return;
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -33,16 +36,17 @@ const AdminCreateCompany = () => {
     setIsLoading(true);
     setError("");
     console.log(form);
-    // try {
-    //   await api.post("/admin/companies", form);
-    //   console.log(form);
-    //   //   router.push("/login");
-    // } catch (err: any) {
-    //   console.log(err.response?.data);
-    //   setError(err.response?.data?.message?.message ?? "хз");
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    try {
+      await api.post("/admin/companies", form);
+      console.log("created");
+      setForm(initialForm);
+      //   router.push("/login");
+    } catch (err: any) {
+      console.log(err.response?.data);
+      setError(err.response?.data?.message?.message ?? "хз");
+    } finally {
+      setIsLoading(false);
+    }
   };
   return (
     <div className="relative  min-w-screen flex items-center justify-center">
