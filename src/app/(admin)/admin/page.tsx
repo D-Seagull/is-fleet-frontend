@@ -40,7 +40,6 @@ const AdminCreateCompany = () => {
       await api.post("/admin/companies", form);
       console.log("created");
       setForm(initialForm);
-      //   router.push("/login");
     } catch (err: any) {
       console.log(err.response?.data);
       setError(err.response?.data?.message?.message ?? "хз");

@@ -1,25 +1,8 @@
 "use client";
-import { ChevronUp, LogOut } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Truck,
-  Users,
-  FolderKanban,
-  MessageSquare,
-  FileText,
-  Settings,
-  LogIn,
-  Headset,
-} from "lucide-react";
+import { LucideIcon, Truck } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -32,33 +15,46 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import { ChevronUp, LogOut, Settings } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const navItems = [
-  { title: "Trucks", href: "/trucks", icon: Truck },
-  { title: "Drivers", href: "/drivers", icon: Users },
-  { title: "Dispatchers", href: "/dispatchers", icon: Headset },
-  { title: "Groups", href: "/groups", icon: FolderKanban },
-  { title: "Chat", href: "/chat", icon: MessageSquare },
-  { title: "Documents", href: "/documents", icon: FileText },
-  { title: "Settings", href: "/settings", icon: Settings },
-];
+export interface NavItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+}
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  navItems: NavItem[];
+  groupLabel?: string;
+}
+
+export function AppSidebar({
+  navItems,
+  groupLabel = "Navigation",
+}: AppSidebarProps) {
   const pathname = usePathname();
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-3  py-1.5 overflow-hidden">
-          <Truck className="h-7 w-7  shrink-0 text-accent" />
-          <span className="text-lg font-bold whitespace-nowrap transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:overflow-hidden">
+        <div className="flex items-center gap-2 px-2 py-1.5">
+          <Truck className="h-7 w-7 shrink-0 text-accent" />
+          <span className="text-lg font-bold whitespace-nowrap transition-all duration-200 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:overflow-hidden">
             IS Fleet
           </span>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
