@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-// import { useRouter } from "next/navigation";
-// import Link from "next/link";
 import { Truck, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -15,16 +13,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useCompanies } from "@/hooks/use-companies";
 
-const initialForm = {
-  name: "",
-  email: "",
-};
+const initialForm = { name: "", email: "" };
+
 const AdminCreateCompany = () => {
-  // const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState(initialForm);
+
+  const { refetch } = useCompanies(); // ← виклик на верхньому рівні
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isLoading) return;
@@ -35,21 +33,19 @@ const AdminCreateCompany = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    console.log(form);
     try {
       await api.post("/admin/companies", form);
-      console.log("created");
       setForm(initialForm);
+      await refetch(); // ← оновлюємо список після створення
     } catch (err: any) {
-      console.log(err.response?.data);
-      setError(err.response?.data?.message?.message ?? "хз");
+      setError(err.response?.data?.message?.message ?? "Помилка створення");
     } finally {
       setIsLoading(false);
     }
   };
+
   return (
-    <div className="relative  min-w-screen flex items-center justify-center">
-      <div className="absolute top-4 right-4"></div>
+    <div className="relative min-w-screen flex items-center justify-center">
       <Card className="w-full max-w-md mx-4">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
@@ -71,7 +67,6 @@ const AdminCreateCompany = () => {
                 required
               />
             </div>
-
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -84,13 +79,11 @@ const AdminCreateCompany = () => {
                 required
               />
             </div>
-
             {error && (
               <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
                 {error}
               </div>
             )}
-
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>

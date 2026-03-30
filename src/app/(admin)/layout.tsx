@@ -8,17 +8,28 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Building2 } from "lucide-react";
-import { NavItem } from "@/components/app-sidebar";
-
-const adminNavItems: NavItem[] = [
-  { title: "Companies", href: "/admin", icon: Building2 },
-];
+import { useCompanies } from "@/hooks/use-companies";
+import type { NavItem } from "@/components/app-sidebar";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { data: companies = [] } = useCompanies();
+
+  const adminNavItems: NavItem[] = [
+    {
+      title: "Companies",
+      href: "/admin/companies",
+      icon: Building2,
+      children: companies.map((c) => ({
+        title: c.name,
+        href: `/admin/companies/${c.id}`,
+      })),
+    },
+  ];
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
