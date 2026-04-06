@@ -34,6 +34,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/store/auth";
+import { useRouter } from "next/navigation";
 
 export interface NavChild {
   title: string;
@@ -64,7 +66,6 @@ function CollapsibleNavItem({
   const filtered = item.children?.filter((c) =>
     c.title.toLowerCase().includes(search.toLowerCase()),
   );
-
   return (
     <Collapsible defaultOpen={true} className="group/collapsible">
       <SidebarMenuItem>
@@ -123,7 +124,9 @@ export function AppSidebar({
   groupLabel = "Navigation",
 }: AppSidebarProps) {
   const pathname = usePathname();
-
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const router = useRouter();
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
@@ -178,13 +181,13 @@ export function AppSidebar({
                 >
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      JD
+                      {user?.name?.slice(0, 2).toUpperCase() ?? "??"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold">John Doe</span>
+                    <span className="truncate font-semibold">{user?.name}</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      Fleet Manager
+                      {user?.role}
                     </span>
                   </div>
                   <ChevronUp className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden" />
@@ -201,7 +204,13 @@ export function AppSidebar({
                   Account Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => {
+                    logout();
+                    router.push("/login");
+                  }}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>

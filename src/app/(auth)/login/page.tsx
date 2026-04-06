@@ -13,12 +13,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const login = useAuthStore((state) => state.login);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +30,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     if (isLoading) return;
-
     e.preventDefault();
     setIsLoading(true);
     setError("");
@@ -37,18 +38,8 @@ export default function LoginPage() {
       const res = await api.post("/auth/login", { email, password });
       const { access_token, user } = res.data;
 
-      if (rememberMe) {
-        localStorage.setItem("user", JSON.stringify(user));
-        localStorage.setItem("access_token", access_token);
-      } else {
-        sessionStorage.setItem("access_token", access_token);
-        sessionStorage.setItem("user", JSON.stringify(user));
-      }
+      login(user, access_token, rememberMe);
       router.push(user.role === "ADMIN" ? "/admin" : "/trucks");
-      setEmail("");
-      setPassword("");
-      setRememberMe(false);
-      setShowPassword(false);
     } catch (err: any) {
       const msg = err.response?.data?.message;
       if (Array.isArray(msg)) {
@@ -62,9 +53,9 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
   return (
-    <div className="relative  w-screen flex items-center justify-center">
-      <div className="absolute top-4 right-4"></div>
+    <div className="relative w-screen flex items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAuthStore } from "@/store/auth";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -7,27 +8,20 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Додаємо токен до кожного запиту
 api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token =
-      localStorage.getItem("access_token") ||
-      sessionStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  const token = useAuthStore.getState().token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
-// Якщо 401 — відправляємо на логін
 api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
+      useAuthStore.getState().logout();
       if (typeof window !== "undefined") {
-        localStorage.removeItem("access_token");
         window.location.href = "/login";
       }
     }
