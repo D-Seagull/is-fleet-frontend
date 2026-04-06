@@ -56,7 +56,7 @@ const RegisterForm: FC = () => {
       .get(`/auth/invite/${inviteToken}`)
       .then((res) => {
         setCompanyName(res.data.companyName);
-        setIsFirst(res.data.isFirst);
+        setIsFirst(res.data.isFirstUser);
       })
       .catch(() => {
         setError("Невалідне або прострочене посилання");
@@ -67,7 +67,7 @@ const RegisterForm: FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
+  console.log(isFirst);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
