@@ -2,9 +2,6 @@
 
 create-next-app 
 
-****Зробдено***
-
-
 Копіюємо components/ui/ з v0
 Копіюємо globals.css, components.json, postcss.config.mjs, styles/, public/
 Копіюємо components/theme-provider.tsx
@@ -44,9 +41,14 @@ app/register/page.tsx — форма (name, email, password, companyName)
 
 🏠 Крок 6 — Dashboard Layout
 
-app/(dashboard)/layout.tsx — layout з сайдбаром
+app/(admin)/layout.tsx — layout з сайдбаром
 components/app-sidebar.tsx — копія з v0 + реальний user зі стору
 app/(dashboard)/page.tsx — проста головна сторінка
+
+
+****Зробдено***
+================================================================================
+
 
 
 🚛 Крок 7 — Вантажівки: список

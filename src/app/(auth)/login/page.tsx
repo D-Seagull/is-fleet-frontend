@@ -29,8 +29,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    if (isLoading) return;
     e.preventDefault();
+    if (isLoading) return;
+
     setIsLoading(true);
     setError("");
 
@@ -41,7 +42,8 @@ export default function LoginPage() {
       login(user, access_token, rememberMe);
       router.push(user.role === "ADMIN" ? "/admin" : "/trucks");
     } catch (err: any) {
-      const msg = err.response?.data?.message;
+      console.log(err.response?.data);
+      const msg = err.response?.data?.message.message;
       if (Array.isArray(msg)) {
         setError(msg.join(", "));
       } else if (typeof msg === "string") {

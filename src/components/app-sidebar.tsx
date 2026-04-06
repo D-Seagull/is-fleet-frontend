@@ -18,6 +18,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -127,6 +128,7 @@ export function AppSidebar({
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
+  const { setOpen, setOpenMobile, isMobile } = useSidebar();
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
@@ -207,6 +209,12 @@ export function AppSidebar({
                 <DropdownMenuItem
                   className="text-destructive"
                   onClick={() => {
+                    if (isMobile) {
+                      setOpenMobile(false);
+                    } else {
+                      setOpen(false);
+                    }
+
                     logout();
                     router.push("/login");
                   }}
