@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface AuthUser {
   id: string;
@@ -22,26 +22,29 @@ export const useAuthStore = create<AuthState>()(
       token: null,
 
       login: (user, token, remember) => {
-        // якщо remember — persist збереже в localStorage
-        // якщо ні — зберігаємо тільки в пам'яті (очиститься при закритті)
-        if (!remember) {
+        // Вибираємо сховище залежно від remember
+        if (remember) {
+          localStorage.setItem("access_token", token);
+        } else {
           sessionStorage.setItem("access_token", token);
-          sessionStorage.setItem("user", JSON.stringify(user));
         }
         set({ user, token });
       },
 
       logout: () => {
         localStorage.removeItem("access_token");
-        localStorage.removeItem("user");
         sessionStorage.removeItem("access_token");
-        sessionStorage.removeItem("user");
         set({ user: null, token: null });
       },
     }),
     {
-      name: "auth-storage", // ключ в localStorage
-      // зберігаємо тільки якщо є дані
+      name: "auth-storage",
+      // Використовуємо sessionStorage для persist якщо не remember
+      storage: createJSONStorage(() =>
+        typeof window !== "undefined" && !localStorage.getItem("access_token")
+          ? sessionStorage
+          : localStorage,
+      ),
       partialize: (state) => ({
         user: state.user,
         token: state.token,
@@ -49,3 +52,8 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 );
+
+// Селектори
+export const useUser = () => useAuthStore((s) => s.user);
+export const useIsAuth = () => useAuthStore((s) => !!s.token);
+export const useRole = () => useAuthStore((s) => s.user?.role);

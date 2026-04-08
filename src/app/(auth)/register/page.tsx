@@ -35,6 +35,7 @@ const RegisterForm: FC = () => {
   const [error, setError] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [isFirst, setIsFirst] = useState(false);
+  const [role, setRole] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -45,7 +46,6 @@ const RegisterForm: FC = () => {
     directorEmail: "",
   });
 
-  // Перевіряємо токен при завантаженні
   useEffect(() => {
     if (!inviteToken) {
       setIsCheckingToken(false);
@@ -55,19 +55,18 @@ const RegisterForm: FC = () => {
     api
       .get(`/auth/invite/${inviteToken}`)
       .then((res) => {
-        setCompanyName(res.data.companyName);
+        setRole(res.data.role);
         setIsFirst(res.data.isFirstUser);
+        setCompanyName(res.data.companyName);
       })
-      .catch(() => {
-        setError("Невалідне або прострочене посилання");
-      })
+      .catch(() => setError("Невалідний токен"))
       .finally(() => setIsCheckingToken(false));
   }, [inviteToken]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-  console.log(isFirst);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -76,10 +75,11 @@ const RegisterForm: FC = () => {
     try {
       await api.post("/auth/register", {
         name: form.name,
-        email: form.email,
         password: form.password,
         inviteToken,
-        // відправляємо тільки якщо перша реєстрація
+        // email тільки для TEAMLEAD
+        ...(role === "TEAMLEAD" && { email: form.email }),
+        // додаткові поля тільки для першого тімліда
         ...(isFirst && {
           accountingEmail: form.accountingEmail,
           hrEmail: form.hrEmail,
@@ -129,6 +129,7 @@ const RegisterForm: FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* Ім'я — для всіх */}
             <div className="flex flex-col gap-2">
               <Label htmlFor="name">Ваше ім'я</Label>
               <Input
@@ -140,18 +141,24 @@ const RegisterForm: FC = () => {
                 required
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="name@company.com"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+
+            {/* Email — тільки для TEAMLEAD, у диспетчера вже є */}
+            {role === "TEAMLEAD" && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="name@company.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            )}
+
+            {/* Пароль — для всіх */}
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Пароль</Label>
               <Input
@@ -166,53 +173,49 @@ const RegisterForm: FC = () => {
               />
             </div>
 
-            {/* Додаткові поля тільки для першого тімліда */}
-            {isFirst && (
-              <>
-                <div className="border-t pt-4">
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Ви перший в компанії — вкажіть контактні email
-                  </p>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="accountingEmail">Email бухгалтерії</Label>
-                      <Input
-                        id="accountingEmail"
-                        name="accountingEmail"
-                        type="email"
-                        placeholder="accounting@company.com"
-                        value={form.accountingEmail}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="hrEmail">Email HR</Label>
-                      <Input
-                        id="hrEmail"
-                        name="hrEmail"
-                        type="email"
-                        placeholder="hr@company.com"
-                        value={form.hrEmail}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="directorEmail">Email директора</Label>
-                      <Input
-                        id="directorEmail"
-                        name="directorEmail"
-                        type="email"
-                        placeholder="director@company.com"
-                        value={form.directorEmail}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
+            {/* Додаткові поля — тільки для першого тімліда */}
+            {role === "TEAMLEAD" && isFirst && (
+              <div className="border-t pt-4 flex flex-col gap-3">
+                <p className="text-sm text-muted-foreground">
+                  Ви перший в компанії — вкажіть контактні email
+                </p>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="accountingEmail">Email бухгалтерії</Label>
+                  <Input
+                    id="accountingEmail"
+                    name="accountingEmail"
+                    type="email"
+                    placeholder="accounting@company.com"
+                    value={form.accountingEmail}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
-              </>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="hrEmail">Email HR</Label>
+                  <Input
+                    id="hrEmail"
+                    name="hrEmail"
+                    type="email"
+                    placeholder="hr@company.com"
+                    value={form.hrEmail}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="directorEmail">Email директора</Label>
+                  <Input
+                    id="directorEmail"
+                    name="directorEmail"
+                    type="email"
+                    placeholder="director@company.com"
+                    value={form.directorEmail}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
             )}
 
             {error && (
