@@ -20,13 +20,14 @@ import {
   useCreateDispatcher,
   useDeactivateDispatcher,
 } from "@/hooks/use-dispatchers";
+import { useRouter } from "next/navigation";
 
 export default function DispatchersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [createError, setCreateError] = useState("");
-
+  const router = useRouter();
   const { data: dispatchers, isLoading } = useDispatchers();
   const createDispatcher = useCreateDispatcher();
   const deactivateDispatcher = useDeactivateDispatcher();
@@ -169,6 +170,13 @@ export default function DispatchersPage() {
                   Deactivate
                 </Button>
               </CardContent>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/chat?userId=${dispatcher.id}`)}
+              >
+                Message
+              </Button>
             </Card>
           ))}
           {filtered.length === 0 && !isLoading && (
