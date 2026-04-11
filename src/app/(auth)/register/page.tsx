@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import {
   useConversations,
   useMessages,
   useChatUser,
-  useMarkAsRead,
   DirectMessage,
 } from "@/hooks/use-direct-messages";
 import { useAuthStore } from "@/store/auth";
@@ -33,7 +32,6 @@ export default function ChatPage() {
   const selectedUserIdRef = useRef(selectedUserId);
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const markAsRead = useMarkAsRead();
 
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
@@ -45,6 +43,15 @@ export default function ChatPage() {
   const selectedUser =
     conversations?.find((c) => c.user.id === selectedUserId)?.user ?? chatUser;
 
+  // Позначаємо як прочитане через Socket.io
+  const markMessagesAsRead = useCallback(
+    (userId: string) => {
+      getSocket().emit("mark_as_read", { senderId: userId });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
+    [queryClient],
+  );
+
   // Оновлюємо ref при зміні selectedUserId
   useEffect(() => {
     selectedUserIdRef.current = selectedUserId;
@@ -53,11 +60,11 @@ export default function ChatPage() {
   // Позначаємо як прочитане при відкритті чату
   useEffect(() => {
     if (selectedUserId) {
-      markAsRead.mutate(selectedUserId);
+      markMessagesAsRead(selectedUserId);
     }
-  }, [selectedUserId, markAsRead]);
+  }, [selectedUserId, markMessagesAsRead]);
 
-  // Socket.io — нові повідомлення
+  // Socket.io — нові повідомлення + прочитано
   useEffect(() => {
     const socket = getSocket();
 
@@ -75,26 +82,32 @@ export default function ChatPage() {
         message.senderId !== user?.id &&
         selectedUserIdRef.current === message.senderId
       ) {
-        markAsRead.mutate(message.senderId);
+        markMessagesAsRead(message.senderId);
       } else {
         queryClient.invalidateQueries({ queryKey: ["conversations"] });
       }
     });
 
+    // Отримуємо подію що наші повідомлення прочитані
+    socket.on("messages_read", ({ readBy }: { readBy: string }) => {
+      queryClient.invalidateQueries({ queryKey: ["messages", readBy] });
+    });
+
     return () => {
       socket.off("new_direct_message");
+      socket.off("messages_read");
     };
-  }, [user?.id, queryClient, markAsRead]);
+  }, [user?.id, queryClient, markMessagesAsRead]);
 
   // Socket.io — індикатор вводу
   useEffect(() => {
     const socket = getSocket();
 
-    socket.on("user_typing", ({ userId }) => {
+    socket.on("user_typing", ({ userId }: { userId: string }) => {
       if (userId !== user?.id) setIsTyping(true);
     });
 
-    socket.on("user_stopped_typing", ({ userId }) => {
+    socket.on("user_stopped_typing", ({ userId }: { userId: string }) => {
       if (userId !== user?.id) setIsTyping(false);
     });
 

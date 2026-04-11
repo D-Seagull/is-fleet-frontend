@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import {
   useConversations,
   useMessages,
   useChatUser,
-  useMarkAsRead,
   DirectMessage,
 } from "@/hooks/use-direct-messages";
 import { useAuthStore } from "@/store/auth";
@@ -22,6 +21,7 @@ import { useSearchParams } from "next/navigation";
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
+
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
     userIdFromUrl ?? null,
   );
@@ -29,25 +29,42 @@ export default function ChatPage() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedUserIdRef = useRef(selectedUserId);
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
+
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
   const { data: messages, isLoading: loadingMessages } = useMessages(
     selectedUserId ?? "",
   );
   const { data: chatUser } = useChatUser(selectedUserId ?? "");
-  const markAsRead = useMarkAsRead();
 
   const selectedUser =
     conversations?.find((c) => c.user.id === selectedUserId)?.user ?? chatUser;
 
-  const selectedUserIdRef = useRef(selectedUserId);
+  // Позначаємо як прочитане через Socket.io
+  const markMessagesAsRead = useCallback(
+    (userId: string) => {
+      getSocket().emit("mark_as_read", { senderId: userId });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
+    [queryClient],
+  );
 
+  // Оновлюємо ref при зміні selectedUserId
   useEffect(() => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
+  // Позначаємо як прочитане при відкритті чату
+  useEffect(() => {
+    if (selectedUserId) {
+      markMessagesAsRead(selectedUserId);
+    }
+  }, [selectedUserId, markMessagesAsRead]);
+
+  // Socket.io — нові повідомлення + прочитано
   useEffect(() => {
     const socket = getSocket();
 
@@ -60,21 +77,47 @@ export default function ChatPage() {
         (prev = []) => [...prev, message],
       );
 
+      // Якщо чат відкритий — одразу позначаємо як прочитане
       if (
         message.senderId !== user?.id &&
         selectedUserIdRef.current === message.senderId
       ) {
-        markAsRead.mutate(message.senderId);
+        markMessagesAsRead(message.senderId);
       } else {
         queryClient.invalidateQueries({ queryKey: ["conversations"] });
       }
     });
 
+    // Отримуємо подію що наші повідомлення прочитані
+    socket.on("messages_read", ({ readBy }: { readBy: string }) => {
+      queryClient.invalidateQueries({ queryKey: ["messages", readBy] });
+    });
+
     return () => {
       socket.off("new_direct_message");
+      socket.off("messages_read");
     };
-  }, [user?.id, queryClient, markAsRead]);
+  }, [user?.id, queryClient, markMessagesAsRead]);
 
+  // Socket.io — індикатор вводу
+  useEffect(() => {
+    const socket = getSocket();
+
+    socket.on("user_typing", ({ userId }: { userId: string }) => {
+      if (userId !== user?.id) setIsTyping(true);
+    });
+
+    socket.on("user_stopped_typing", ({ userId }: { userId: string }) => {
+      if (userId !== user?.id) setIsTyping(false);
+    });
+
+    return () => {
+      socket.off("user_typing");
+      socket.off("user_stopped_typing");
+    };
+  }, [user?.id]);
+
+  // Скрол вниз
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -89,42 +132,16 @@ export default function ChatPage() {
     setNewMessage("");
   };
 
-  useEffect(() => {
-    const socket = getSocket();
-
-    socket.on("user_typing", ({ userId }) => {
-      if (userId !== user?.id) setIsTyping(true);
-    });
-
-    socket.on("user_stopped_typing", ({ userId }) => {
-      if (userId !== user?.id) setIsTyping(false);
-    });
-
-    return () => {
-      socket.off("user_typing");
-      socket.off("user_stopped_typing");
-    };
-  }, [user?.id]);
-
-  // Відправляємо індикатор при введенні
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
-
-    // Відправляємо typing_start
     getSocket().emit("typing_start", { receiverId: selectedUserId });
 
-    // Через 2 секунди без введення — typing_stop
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       getSocket().emit("typing_stop", { receiverId: selectedUserId });
     }, 2000);
   };
-  const handleSelectUser = (userId: string) => {
-    setSelectedUserId(userId);
-    markAsRead.mutate(userId);
-  };
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Список розмов */}
@@ -145,7 +162,7 @@ export default function ChatPage() {
             conversations?.map((conv) => (
               <button
                 key={conv.user.id}
-                onClick={() => handleSelectUser(conv.user.id)}
+                onClick={() => setSelectedUserId(conv.user.id)}
                 className={cn(
                   "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
                   selectedUserId === conv.user.id && "bg-muted",
@@ -161,7 +178,7 @@ export default function ChatPage() {
                     <p className="font-medium truncate">
                       {conv.user.name ?? conv.user.role}
                     </p>
-                    {conv.unreadCount > 0 && ( // ← лічильник тут
+                    {conv.unreadCount > 0 && (
                       <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center shrink-0">
                         {conv.unreadCount}
                       </span>
@@ -225,9 +242,9 @@ export default function ChatPage() {
                         <p className="text-sm">{msg.content}</p>
                         <p
                           className={cn(
-                            "text-xs mt-1",
+                            "text-xs mt-1 flex items-center gap-1",
                             msg.senderId === user?.id
-                              ? "text-primary-foreground/70"
+                              ? "text-primary-foreground/70 justify-end"
                               : "text-muted-foreground",
                           )}
                         >
@@ -235,7 +252,7 @@ export default function ChatPage() {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
-                          {msg.senderId === user?.id && ( // ← галочки тут
+                          {msg.senderId === user?.id && (
                             <span>{msg.isRead ? "✓✓" : "✓"}</span>
                           )}
                         </p>
@@ -247,7 +264,6 @@ export default function ChatPage() {
               )}
             </ScrollArea>
 
-            {/* Індикатор вводу */}
             {isTyping && (
               <div className="px-4 py-1 text-xs text-muted-foreground flex items-center gap-1">
                 <span>{selectedUser?.name ?? "Someone"} is typing</span>
