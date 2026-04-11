@@ -22,18 +22,24 @@ export const useAuthStore = create<AuthState>()(
       token: null,
 
       login: (user, token, remember) => {
-        // Вибираємо сховище залежно від remember
         if (remember) {
           localStorage.setItem("access_token", token);
         } else {
           sessionStorage.setItem("access_token", token);
         }
+
+        // Зберігаємо в cookie для middleware
+        document.cookie = `access_token=${token}; path=/; max-age=${
+          remember ? 60 * 60 * 24 * 7 : 60 * 60 * 24
+        }`;
+
         set({ user, token });
       },
-
       logout: () => {
         localStorage.removeItem("access_token");
         sessionStorage.removeItem("access_token");
+        // Видаляємо cookie
+        document.cookie = "access_token=; path=/; max-age=0";
         set({ user: null, token: null });
       },
     }),
