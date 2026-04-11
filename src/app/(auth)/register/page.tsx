@@ -1,249 +1,285 @@
 "use client";
 
-import { FC, Suspense, useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { Truck, Loader2 } from "lucide-react";
-import { api } from "@/lib/api";
+import { useState, useEffect, useRef } from "react";
+import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import InvalidInvite from "@/components/invalid-invite";
+  useConversations,
+  useMessages,
+  useChatUser,
+  useMarkAsRead,
+  DirectMessage,
+} from "@/hooks/use-direct-messages";
+import { useAuthStore } from "@/store/auth";
+import { getSocket } from "@/lib/socket";
+import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 
-export default function RegisterPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <RegisterForm />
-    </Suspense>
-  );
-}
-
-const RegisterForm: FC = () => {
-  const router = useRouter();
+export default function ChatPage() {
   const searchParams = useSearchParams();
-  const inviteToken = searchParams.get("token");
+  const userIdFromUrl = searchParams.get("userId");
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingToken, setIsCheckingToken] = useState(true);
-  const [error, setError] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [isFirst, setIsFirst] = useState(false);
-  const [role, setRole] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(
+    userIdFromUrl ?? null,
+  );
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [newMessage, setNewMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedUserIdRef = useRef(selectedUserId);
+  const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const markAsRead = useMarkAsRead();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    accountingEmail: "",
-    hrEmail: "",
-    directorEmail: "",
-  });
+  const { data: conversations, isLoading: loadingConversations } =
+    useConversations();
+  const { data: messages, isLoading: loadingMessages } = useMessages(
+    selectedUserId ?? "",
+  );
+  const { data: chatUser } = useChatUser(selectedUserId ?? "");
 
+  const selectedUser =
+    conversations?.find((c) => c.user.id === selectedUserId)?.user ?? chatUser;
+
+  // Оновлюємо ref при зміні selectedUserId
   useEffect(() => {
-    if (!inviteToken) {
-      setIsCheckingToken(false);
-      return;
+    selectedUserIdRef.current = selectedUserId;
+  }, [selectedUserId]);
+
+  // Позначаємо як прочитане при відкритті чату
+  useEffect(() => {
+    if (selectedUserId) {
+      markAsRead.mutate(selectedUserId);
     }
+  }, [selectedUserId, markAsRead]);
 
-    api
-      .get(`/auth/invite/${inviteToken}`)
-      .then((res) => {
-        setRole(res.data.role);
-        setIsFirst(res.data.isFirstUser);
-        setCompanyName(res.data.companyName);
-      })
-      .catch(() => setError("Невалідний токен"))
-      .finally(() => setIsCheckingToken(false));
-  }, [inviteToken]);
+  // Socket.io — нові повідомлення
+  useEffect(() => {
+    const socket = getSocket();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+    socket.on("new_direct_message", (message: DirectMessage) => {
+      const otherUserId =
+        message.senderId === user?.id ? message.receiverId : message.senderId;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+      queryClient.setQueryData<DirectMessage[]>(
+        ["messages", otherUserId],
+        (prev = []) => [...prev, message],
+      );
 
-    try {
-      await api.post("/auth/register", {
-        name: form.name,
-        password: form.password,
-        inviteToken,
-        // email тільки для TEAMLEAD
-        ...(role === "TEAMLEAD" && { email: form.email }),
-        // додаткові поля тільки для першого тімліда
-        ...(isFirst && {
-          accountingEmail: form.accountingEmail,
-          hrEmail: form.hrEmail,
-          directorEmail: form.directorEmail,
-        }),
-      });
-      router.push("/login");
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message?.message ?? err.response?.data?.message;
-      if (Array.isArray(msg)) {
-        setError(msg.join(", "));
-      } else if (typeof msg === "string") {
-        setError(msg);
+      // Якщо чат відкритий — одразу позначаємо як прочитане
+      if (
+        message.senderId !== user?.id &&
+        selectedUserIdRef.current === message.senderId
+      ) {
+        markAsRead.mutate(message.senderId);
       } else {
-        setError("Помилка реєстрації");
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
       }
-    } finally {
-      setIsLoading(false);
-    }
+    });
+
+    return () => {
+      socket.off("new_direct_message");
+    };
+  }, [user?.id, queryClient, markAsRead]);
+
+  // Socket.io — індикатор вводу
+  useEffect(() => {
+    const socket = getSocket();
+
+    socket.on("user_typing", ({ userId }) => {
+      if (userId !== user?.id) setIsTyping(true);
+    });
+
+    socket.on("user_stopped_typing", ({ userId }) => {
+      if (userId !== user?.id) setIsTyping(false);
+    });
+
+    return () => {
+      socket.off("user_typing");
+      socket.off("user_stopped_typing");
+    };
+  }, [user?.id]);
+
+  // Скрол вниз
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedUserId) return;
+    getSocket().emit("send_direct_message", {
+      receiverId: selectedUserId,
+      content: newMessage,
+    });
+    setNewMessage("");
   };
 
-  if (!inviteToken) return <InvalidInvite />;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    getSocket().emit("typing_start", { receiverId: selectedUserId });
 
-  if (isCheckingToken) {
-    return (
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Перевірка запрошення...
-      </div>
-    );
-  }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      getSocket().emit("typing_stop", { receiverId: selectedUserId });
+    }, 2000);
+  };
 
   return (
-    <div className="relative w-screen flex items-center justify-center">
-      <Card className="w-full max-w-md mx-4">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <Truck className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl">Реєстрація</CardTitle>
-          <CardDescription>
-            {companyName
-              ? `Приєднатись до ${companyName}`
-              : "Створіть свій акаунт"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Ім'я — для всіх */}
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Ваше ім'я</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Іван Іваненко"
-                value={form.name}
-                onChange={handleChange}
-                required
-              />
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
+      {/* Список розмов */}
+      <div className="w-80 border-r flex flex-col">
+        <div className="p-4 border-b">
+          <h2 className="font-semibold">Messages</h2>
+        </div>
+        <ScrollArea className="flex-1">
+          {loadingConversations ? (
+            <div className="flex justify-center p-4">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
-
-            {/* Email — тільки для TEAMLEAD, у диспетчера вже є */}
-            {role === "TEAMLEAD" && (
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@company.com"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            )}
-
-            {/* Пароль — для всіх */}
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Пароль</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Мінімум 6 символів"
-                value={form.password}
-                onChange={handleChange}
-                required
-                minLength={6}
-              />
-            </div>
-
-            {/* Додаткові поля — тільки для першого тімліда */}
-            {role === "TEAMLEAD" && isFirst && (
-              <div className="border-t pt-4 flex flex-col gap-3">
-                <p className="text-sm text-muted-foreground">
-                  Ви перший в компанії — вкажіть контактні email
-                </p>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="accountingEmail">Email бухгалтерії</Label>
-                  <Input
-                    id="accountingEmail"
-                    name="accountingEmail"
-                    type="email"
-                    placeholder="accounting@company.com"
-                    value={form.accountingEmail}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="hrEmail">Email HR</Label>
-                  <Input
-                    id="hrEmail"
-                    name="hrEmail"
-                    type="email"
-                    placeholder="hr@company.com"
-                    value={form.hrEmail}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="directorEmail">Email директора</Label>
-                  <Input
-                    id="directorEmail"
-                    name="directorEmail"
-                    type="email"
-                    placeholder="director@company.com"
-                    value={form.directorEmail}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
-                {error}
-              </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Реєстрація...
-                </>
-              ) : (
-                "Зареєструватись"
-              )}
-            </Button>
-
-            <p className="text-center text-sm text-muted-foreground">
-              Вже маєте акаунт?{" "}
-              <Link href="/login" className="text-primary hover:underline">
-                Увійти
-              </Link>
+          ) : conversations?.length === 0 ? (
+            <p className="text-center text-muted-foreground p-4 text-sm">
+              No conversations yet
             </p>
-          </form>
-        </CardContent>
-      </Card>
+          ) : (
+            conversations?.map((conv) => (
+              <button
+                key={conv.user.id}
+                onClick={() => setSelectedUserId(conv.user.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
+                  selectedUserId === conv.user.id && "bg-muted",
+                )}
+              >
+                <Avatar className="h-10 w-10 shrink-0">
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {conv.user.name?.slice(0, 2).toUpperCase() ?? "??"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium truncate">
+                      {conv.user.name ?? conv.user.role}
+                    </p>
+                    {conv.unreadCount > 0 && (
+                      <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center shrink-0">
+                        {conv.unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {conv.lastMessage.content}
+                  </p>
+                </div>
+              </button>
+            ))
+          )}
+        </ScrollArea>
+      </div>
+
+      {/* Вікно повідомлень */}
+      <div className="flex-1 flex flex-col">
+        {selectedUser ? (
+          <>
+            <div className="p-4 border-b flex items-center gap-3">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  {selectedUser.name?.slice(0, 2).toUpperCase() ?? "??"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold">
+                  {selectedUser.name ?? "No name"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {selectedUser.role}
+                </p>
+              </div>
+            </div>
+
+            <ScrollArea className="flex-1 p-4">
+              {loadingMessages ? (
+                <div className="flex justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {messages?.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={cn(
+                        "flex",
+                        msg.senderId === user?.id
+                          ? "justify-end"
+                          : "justify-start",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "max-w-[70%] rounded-lg px-4 py-2",
+                          msg.senderId === user?.id
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted",
+                        )}
+                      >
+                        <p className="text-sm">{msg.content}</p>
+                        <p
+                          className={cn(
+                            "text-xs mt-1 flex items-center gap-1",
+                            msg.senderId === user?.id
+                              ? "text-primary-foreground/70 justify-end"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          {new Date(msg.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                          {msg.senderId === user?.id && (
+                            <span>{msg.isRead ? "✓✓" : "✓"}</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </ScrollArea>
+
+            {isTyping && (
+              <div className="px-4 py-1 text-xs text-muted-foreground flex items-center gap-1">
+                <span>{selectedUser?.name ?? "Someone"} is typing</span>
+                <span className="flex gap-0.5">
+                  <span className="animate-bounce delay-0">.</span>
+                  <span className="animate-bounce delay-100">.</span>
+                  <span className="animate-bounce delay-200">.</span>
+                </span>
+              </div>
+            )}
+
+            <form onSubmit={handleSend} className="p-4 border-t flex gap-2">
+              <Input
+                value={newMessage}
+                onChange={handleInputChange}
+                placeholder="Type a message..."
+                className="flex-1"
+              />
+              <Button type="submit" size="icon">
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            Select a conversation to start chatting
+          </div>
+        )}
+      </div>
     </div>
   );
-};
+}

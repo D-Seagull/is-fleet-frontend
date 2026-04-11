@@ -6,6 +6,7 @@ export interface DirectMessage {
   senderId: string;
   receiverId: string;
   content: string;
+  isRead: boolean;
   createdAt: string;
   sender: {
     id: string;
@@ -20,6 +21,7 @@ export interface Conversation {
     name: string | null;
     role: string;
   };
+  unreadCount: number;
   lastMessage: DirectMessage;
 }
 
@@ -51,5 +53,20 @@ export function useChatUser(userId: string) {
       return res.data as { id: string; name: string | null; role: string };
     },
     enabled: !!userId,
+  });
+}
+export function useMarkAsRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const res = await api.post(`/direct-messages/${userId}/read`);
+      return res.data;
+    },
+    onSuccess: (_, userId) => {
+      // Просто інвалідуємо — React Query сам оновить
+      queryClient.invalidateQueries({ queryKey: ["messages", userId] });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
   });
 }

@@ -10,6 +10,7 @@ import {
   useConversations,
   useMessages,
   useChatUser,
+  useMarkAsRead,
   DirectMessage,
 } from "@/hooks/use-direct-messages";
 import { useAuthStore } from "@/store/auth";
@@ -21,43 +22,58 @@ import { useSearchParams } from "next/navigation";
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
-
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
     userIdFromUrl ?? null,
   );
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
   const { data: messages, isLoading: loadingMessages } = useMessages(
     selectedUserId ?? "",
   );
   const { data: chatUser } = useChatUser(selectedUserId ?? "");
+  const markAsRead = useMarkAsRead();
 
   const selectedUser =
     conversations?.find((c) => c.user.id === selectedUserId)?.user ?? chatUser;
+
+  const selectedUserIdRef = useRef(selectedUserId);
+
+  useEffect(() => {
+    selectedUserIdRef.current = selectedUserId;
+  }, [selectedUserId]);
 
   useEffect(() => {
     const socket = getSocket();
 
     socket.on("new_direct_message", (message: DirectMessage) => {
+      const otherUserId =
+        message.senderId === user?.id ? message.receiverId : message.senderId;
+
       queryClient.setQueryData<DirectMessage[]>(
-        [
-          "messages",
-          message.senderId === user?.id ? message.receiverId : message.senderId,
-        ],
+        ["messages", otherUserId],
         (prev = []) => [...prev, message],
       );
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+
+      if (
+        message.senderId !== user?.id &&
+        selectedUserIdRef.current === message.senderId
+      ) {
+        markAsRead.mutate(message.senderId);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      }
     });
 
     return () => {
       socket.off("new_direct_message");
     };
-  }, [user?.id, queryClient]);
+  }, [user?.id, queryClient, markAsRead]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -73,6 +89,42 @@ export default function ChatPage() {
     setNewMessage("");
   };
 
+  useEffect(() => {
+    const socket = getSocket();
+
+    socket.on("user_typing", ({ userId }) => {
+      if (userId !== user?.id) setIsTyping(true);
+    });
+
+    socket.on("user_stopped_typing", ({ userId }) => {
+      if (userId !== user?.id) setIsTyping(false);
+    });
+
+    return () => {
+      socket.off("user_typing");
+      socket.off("user_stopped_typing");
+    };
+  }, [user?.id]);
+
+  // Відправляємо індикатор при введенні
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+
+    // Відправляємо typing_start
+    getSocket().emit("typing_start", { receiverId: selectedUserId });
+
+    // Через 2 секунди без введення — typing_stop
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      getSocket().emit("typing_stop", { receiverId: selectedUserId });
+    }, 2000);
+  };
+  const handleSelectUser = (userId: string) => {
+    setSelectedUserId(userId);
+    markAsRead.mutate(userId);
+  };
   return (
     <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Список розмов */}
@@ -93,7 +145,7 @@ export default function ChatPage() {
             conversations?.map((conv) => (
               <button
                 key={conv.user.id}
-                onClick={() => setSelectedUserId(conv.user.id)}
+                onClick={() => handleSelectUser(conv.user.id)}
                 className={cn(
                   "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
                   selectedUserId === conv.user.id && "bg-muted",
@@ -105,9 +157,16 @@ export default function ChatPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
-                    {conv.user.name ?? conv.user.role}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium truncate">
+                      {conv.user.name ?? conv.user.role}
+                    </p>
+                    {conv.unreadCount > 0 && ( // ← лічильник тут
+                      <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center shrink-0">
+                        {conv.unreadCount}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground truncate">
                     {conv.lastMessage.content}
                   </p>
@@ -176,6 +235,9 @@ export default function ChatPage() {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
+                          {msg.senderId === user?.id && ( // ← галочки тут
+                            <span>{msg.isRead ? "✓✓" : "✓"}</span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -185,10 +247,22 @@ export default function ChatPage() {
               )}
             </ScrollArea>
 
+            {/* Індикатор вводу */}
+            {isTyping && (
+              <div className="px-4 py-1 text-xs text-muted-foreground flex items-center gap-1">
+                <span>{selectedUser?.name ?? "Someone"} is typing</span>
+                <span className="flex gap-0.5">
+                  <span className="animate-bounce delay-0">.</span>
+                  <span className="animate-bounce delay-100">.</span>
+                  <span className="animate-bounce delay-200">.</span>
+                </span>
+              </div>
+            )}
+
             <form onSubmit={handleSend} className="p-4 border-t flex gap-2">
               <Input
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Type a message..."
                 className="flex-1"
               />
