@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   useConversations,
   useMessages,
@@ -17,7 +16,13 @@ import { getSocket } from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
-
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import { Smile } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
@@ -25,6 +30,7 @@ export default function ChatPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
     userIdFromUrl ?? null,
   );
+  const [showConversations, setShowConversations] = useState(!userIdFromUrl);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [newMessage, setNewMessage] = useState("");
@@ -32,7 +38,7 @@ export default function ChatPage() {
   const selectedUserIdRef = useRef(selectedUserId);
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
   const { data: messages, isLoading: loadingMessages } = useMessages(
@@ -43,7 +49,6 @@ export default function ChatPage() {
   const selectedUser =
     conversations?.find((c) => c.user.id === selectedUserId)?.user ?? chatUser;
 
-  // Позначаємо як прочитане через Socket.io
   const markMessagesAsRead = useCallback(
     (userId: string) => {
       getSocket().emit("mark_as_read", { senderId: userId });
@@ -52,32 +57,26 @@ export default function ChatPage() {
     [queryClient],
   );
 
-  // Оновлюємо ref при зміні selectedUserId
   useEffect(() => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
-  // Позначаємо як прочитане при відкритті чату
   useEffect(() => {
     if (selectedUserId) {
       markMessagesAsRead(selectedUserId);
     }
   }, [selectedUserId, markMessagesAsRead]);
 
-  // Socket.io — нові повідомлення + прочитано
   useEffect(() => {
     const socket = getSocket();
 
     socket.on("new_direct_message", (message: DirectMessage) => {
       const otherUserId =
         message.senderId === user?.id ? message.receiverId : message.senderId;
-
       queryClient.setQueryData<DirectMessage[]>(
         ["messages", otherUserId],
         (prev = []) => [...prev, message],
       );
-
-      // Якщо чат відкритий — одразу позначаємо як прочитане
       if (
         message.senderId !== user?.id &&
         selectedUserIdRef.current === message.senderId
@@ -88,7 +87,6 @@ export default function ChatPage() {
       }
     });
 
-    // Отримуємо подію що наші повідомлення прочитані
     socket.on("messages_read", ({ readBy }: { readBy: string }) => {
       queryClient.invalidateQueries({ queryKey: ["messages", readBy] });
     });
@@ -99,28 +97,28 @@ export default function ChatPage() {
     };
   }, [user?.id, queryClient, markMessagesAsRead]);
 
-  // Socket.io — індикатор вводу
   useEffect(() => {
     const socket = getSocket();
-
     socket.on("user_typing", ({ userId }: { userId: string }) => {
       if (userId !== user?.id) setIsTyping(true);
     });
-
     socket.on("user_stopped_typing", ({ userId }: { userId: string }) => {
       if (userId !== user?.id) setIsTyping(false);
     });
-
     return () => {
       socket.off("user_typing");
       socket.off("user_stopped_typing");
     };
   }, [user?.id]);
 
-  // Скрол вниз
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleSelectUser = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowConversations(false);
+  };
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,21 +133,28 @@ export default function ChatPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
     getSocket().emit("typing_start", { receiverId: selectedUserId });
-
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       getSocket().emit("typing_stop", { receiverId: selectedUserId });
     }, 2000);
   };
-
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    setNewMessage((prev) => prev + emojiData.emoji);
+  };
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
+    <div className="flex h-full overflow-hidden">
       {/* Список розмов */}
-      <div className="w-80 border-r flex flex-col">
-        <div className="p-4 border-b">
+      <div
+        className={cn(
+          "border-r flex flex-col overflow-hidden",
+          "md:w-80 md:flex",
+          showConversations ? "flex w-full" : "hidden md:flex",
+        )}
+      >
+        <div className="p-4 border-b shrink-0">
           <h2 className="font-semibold">Messages</h2>
         </div>
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           {loadingConversations ? (
             <div className="flex justify-center p-4">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -162,7 +167,7 @@ export default function ChatPage() {
             conversations?.map((conv) => (
               <button
                 key={conv.user.id}
-                onClick={() => setSelectedUserId(conv.user.id)}
+                onClick={() => handleSelectUser(conv.user.id)}
                 className={cn(
                   "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
                   selectedUserId === conv.user.id && "bg-muted",
@@ -191,15 +196,29 @@ export default function ChatPage() {
               </button>
             ))
           )}
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Вікно повідомлень */}
-      <div className="flex-1 flex flex-col">
+      <div
+        className={cn(
+          "flex-1 flex flex-col overflow-hidden",
+          !showConversations ? "flex" : "hidden md:flex",
+        )}
+      >
         {selectedUser ? (
           <>
-            <div className="p-4 border-b flex items-center gap-3">
-              <Avatar className="h-9 w-9">
+            <div className="p-4 border-b shrink-0 flex items-center gap-3">
+              {/* Кнопка назад — тільки мобільний */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden shrink-0"
+                onClick={() => setShowConversations(true)}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Avatar className="h-9 w-9 shrink-0">
                 <AvatarFallback className="bg-primary/10 text-primary">
                   {selectedUser.name?.slice(0, 2).toUpperCase() ?? "??"}
                 </AvatarFallback>
@@ -214,7 +233,7 @@ export default function ChatPage() {
               </div>
             </div>
 
-            <ScrollArea className="flex-1 p-4">
+            <div className="flex-1 overflow-y-auto p-4">
               {loadingMessages ? (
                 <div className="flex justify-center">
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -262,10 +281,10 @@ export default function ChatPage() {
                   <div ref={messagesEndRef} />
                 </div>
               )}
-            </ScrollArea>
+            </div>
 
             {isTyping && (
-              <div className="px-4 py-1 text-xs text-muted-foreground flex items-center gap-1">
+              <div className="px-4 py-1 shrink-0 text-xs text-muted-foreground flex items-center gap-1">
                 <span>{selectedUser?.name ?? "Someone"} is typing</span>
                 <span className="flex gap-0.5">
                   <span className="animate-bounce delay-0">.</span>
@@ -275,7 +294,28 @@ export default function ChatPage() {
               </div>
             )}
 
-            <form onSubmit={handleSend} className="p-4 border-t flex gap-2">
+            <form
+              onSubmit={handleSend}
+              className="p-4 border-t shrink-0 flex gap-2"
+            >
+              <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                <PopoverTrigger asChild>
+                  <Button type="button" variant="ghost" size="icon">
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-auto p-0 border-none"
+                  side="top"
+                  align="start"
+                >
+                  <EmojiPicker
+                    onEmojiClick={handleEmojiClick}
+                    skinTonesDisabled
+                    searchDisabled={false}
+                  />
+                </PopoverContent>
+              </Popover>
               <Input
                 value={newMessage}
                 onChange={handleInputChange}

@@ -31,14 +31,14 @@ const appNavItems: NavItem[] = [
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex h-screen w-full">
         <AppSidebar navItems={appNavItems} />
-        <SidebarInset className="flex flex-1 flex-col min-w-0">
+        <SidebarInset className="flex flex-1 flex-col min-w-0 overflow-hidden">
           <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
             <SidebarTrigger />
             <ThemeToggle />
           </header>
-          <main className="flex-1 overflow-auto p-4">{children}</main>
+          <main className="flex-1 overflow-hidden">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
