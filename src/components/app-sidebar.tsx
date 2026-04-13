@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LucideIcon, Truck, ChevronRight, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -129,6 +129,7 @@ export function AppSidebar({
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
   const { setOpen, setOpenMobile, isMobile } = useSidebar();
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">

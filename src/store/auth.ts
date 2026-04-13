@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-
+import { api } from "@/lib/api";
 interface AuthUser {
   id: string;
   role: string;
@@ -13,6 +13,7 @@ interface AuthState {
   token: string | null;
   login: (user: AuthUser, token: string, remember: boolean) => void;
   logout: () => void;
+  fetchMe: (tokenOverride?: string) => Promise<void>; // ← додай tokenOverride
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -41,6 +42,25 @@ export const useAuthStore = create<AuthState>()(
         // Видаляємо cookie
         document.cookie = "access_token=; path=/; max-age=0";
         set({ user: null, token: null });
+      },
+      fetchMe: async (tokenOverride?: string) => {
+        try {
+          const token =
+            tokenOverride ||
+            localStorage.getItem("access_token") ||
+            sessionStorage.getItem("access_token");
+
+          if (!token) return;
+
+          const res = await api.get("/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          localStorage.setItem("access_token", token);
+          set({ user: res.data, token });
+        } catch {
+          set({ user: null, token: null });
+        }
       },
     }),
     {
