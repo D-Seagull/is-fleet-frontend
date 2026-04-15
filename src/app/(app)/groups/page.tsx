@@ -11,6 +11,7 @@ import {
   Loader2,
   Check,
   X,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,7 @@ export default function GroupsPage() {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [createError, setCreateError] = useState("");
-
+  const [search, setSearch] = useState("");
   const { data: groups, isLoading } = useDispatcherGroups();
   const createGroup = useCreateGroup();
   const updateGroup = useUpdateGroup();
@@ -67,11 +68,15 @@ export default function GroupsPage() {
     if (!confirm("Видалити групу?")) return;
     await deleteGroup.mutateAsync(id);
   };
-
+  const filtered =
+    groups?.filter((g) =>
+      g.name.toLowerCase().includes(search.toLowerCase()),
+    ) ?? [];
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-6 p-4">
+      <div className="flex items-center justify-between ">
         <h1 className="text-2xl font-bold">Dispatcher Groups</h1>
+
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -113,6 +118,15 @@ export default function GroupsPage() {
           </DialogContent>
         </Dialog>
       </div>
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search groups..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9 w-full"
+        />
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -124,7 +138,7 @@ export default function GroupsPage() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {groups?.map((group) => (
+          {filtered?.map((group) => (
             <Card
               key={group.id}
               className="hover:shadow-md transition-shadow cursor-pointer"

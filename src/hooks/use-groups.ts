@@ -148,3 +148,12 @@ export function useGroupMessages(groupId: string) {
     enabled: !!groupId,
   });
 }
+export function useGroupsForChat() {
+  return useQuery<DispatcherGroup[]>({
+    queryKey: ["dispatcher-groups"],
+    queryFn: async () => {
+      const res = await api.get("/groups/dispatchers");
+      return res.data;
+    },
+  });
+}

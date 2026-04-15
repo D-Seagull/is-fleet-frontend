@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Loader2, Send, ArrowLeft } from "lucide-react";
+import { Loader2, Send, ArrowLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -15,7 +15,7 @@ import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { Smile } from "lucide-react";
 import {
@@ -23,9 +23,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useGroupsForChat } from "@/hooks/use-groups";
+
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
+  const router = useRouter();
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
     userIdFromUrl ?? null,
@@ -39,12 +42,14 @@ export default function ChatPage() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
   const { data: messages, isLoading: loadingMessages } = useMessages(
     selectedUserId ?? "",
   );
   const { data: chatUser } = useChatUser(selectedUserId ?? "");
+  const { data: groups } = useGroupsForChat();
 
   const selectedUser =
     conversations?.find((c) => c.user.id === selectedUserId)?.user ?? chatUser;
@@ -69,7 +74,6 @@ export default function ChatPage() {
 
   useEffect(() => {
     const socket = getSocket();
-
     socket.on("new_direct_message", (message: DirectMessage) => {
       const otherUserId =
         message.senderId === user?.id ? message.receiverId : message.senderId;
@@ -86,11 +90,9 @@ export default function ChatPage() {
         queryClient.invalidateQueries({ queryKey: ["conversations"] });
       }
     });
-
     socket.on("messages_read", ({ readBy }: { readBy: string }) => {
       queryClient.invalidateQueries({ queryKey: ["messages", readBy] });
     });
-
     return () => {
       socket.off("new_direct_message");
       socket.off("messages_read");
@@ -138,9 +140,11 @@ export default function ChatPage() {
       getSocket().emit("typing_stop", { receiverId: selectedUserId });
     }, 2000);
   };
+
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setNewMessage((prev) => prev + emojiData.emoji);
   };
+
   return (
     <div className="flex h-full overflow-hidden">
       {/* Список розмов */}
@@ -155,6 +159,40 @@ export default function ChatPage() {
           <h2 className="font-semibold">Messages</h2>
         </div>
         <div className="flex-1 overflow-y-auto">
+          {/* Групи — зверху */}
+          {groups && groups.length > 0 && (
+            <>
+              <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Groups
+              </div>
+              {groups.map((group) => (
+                <button
+                  key={`group-${group.id}`}
+                  onClick={() => {
+                    router.push(`/groups/${group.id}`);
+                    setShowConversations(false);
+                  }}
+                  className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
+                >
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{group.name}</p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {group.dispatchers.length} members
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </>
+          )}
+
+          {/* Особисті розмови — знизу */}
+          <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t">
+            Direct Messages
+          </div>
+
           {loadingConversations ? (
             <div className="flex justify-center p-4">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -209,7 +247,6 @@ export default function ChatPage() {
         {selectedUser ? (
           <>
             <div className="p-4 border-b shrink-0 flex items-center gap-3">
-              {/* Кнопка назад — тільки мобільний */}
               <Button
                 variant="ghost"
                 size="icon"
