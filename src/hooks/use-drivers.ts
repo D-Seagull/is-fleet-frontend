@@ -23,6 +23,7 @@ export interface DriverRating {
   id: string;
   score: number;
   comment: string | null;
+  anonymous: boolean;
   createdAt: string;
   ratedBy: { id: string; name: string | null; role: string };
 }
@@ -41,6 +42,7 @@ export interface DriverDetail {
   currentTruck: { id: string; plate: string; status: string } | null;
   ratingsReceived: DriverRating[];
   averageRating: number | null;
+  ratingCount: number;
 }
 
 export interface CreateDriverPayload {
@@ -167,7 +169,7 @@ export function useCompanyDispatchers() {
 export function useUpsertDriverRating(driverId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { score: number; comment?: string }) => {
+    mutationFn: async (data: { score: number; comment?: string; anonymous?: boolean }) => {
       const res = await api.post(`/users/${driverId}/ratings`, data);
       return res.data;
     },

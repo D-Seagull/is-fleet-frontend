@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState, Suspense, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -25,6 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -102,14 +103,21 @@ function RatingTab({ driverId }: { driverId: string }) {
   const upsert = useUpsertDriverRating(driverId);
   const [score, setScore] = useState(0);
   const [comment, setComment] = useState("");
+  const [anonymous, setAnonymous] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
-  const myExisting = data?.ratings.find((r) => r.ratedBy.id === user?.id);
+  const ratings = data?.ratings ?? [];
+  const averageRating = data?.averageRating ?? null;
+  const ratingCount = data?.ratingCount ?? 0;
+  const myExisting = ratings.find((r) => r.ratedBy.id === user?.id);
 
   async function handleSubmit() {
     if (score === 0) return;
-    await upsert.mutateAsync({ score, comment: comment.trim() || undefined });
+    await upsert.mutateAsync({ score, comment: comment.trim() || undefined, anonymous });
     setScore(0);
     setComment("");
+    setAnonymous(false);
+    setShowAll(true);
   }
 
   if (isLoading) {
@@ -127,29 +135,68 @@ function RatingTab({ driverId }: { driverId: string }) {
           <CardTitle className="text-lg">Overall Rating</CardTitle>
         </CardHeader>
         <CardContent>
-          {data?.averageRating !== null && data?.averageRating !== undefined ? (
-            <div className="flex items-center gap-3">
-              <span className="text-4xl font-bold">
-                {data.averageRating.toFixed(1)}
-              </span>
-              <div className="flex flex-col gap-1">
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <Star
-                      key={n}
-                      className={`h-5 w-5 ${
-                        n <= Math.round(data.averageRating!)
-                          ? "fill-yellow-500 text-yellow-500"
-                          : "text-muted-foreground/20"
-                      }`}
-                    />
+          {averageRating !== null ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-4xl font-bold">
+                  {averageRating.toFixed(1)}
+                </span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        className={`h-5 w-5 ${
+                          n <= Math.round(averageRating)
+                            ? "fill-yellow-500 text-yellow-500"
+                            : "text-muted-foreground/20"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setShowAll((v) => !v)}
+                    className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors text-left"
+                  >
+                    {showAll ? "Hide" : `Show all ${ratingCount} ${ratingCount === 1 ? "rating" : "ratings"}`}
+                  </button>
+                </div>
+              </div>
+
+              {showAll && (
+                <div className="flex flex-col gap-2 border-t pt-3">
+                  {ratings.map((r) => (
+                    <div
+                      key={r.id}
+                      className="flex flex-col gap-0.5 rounded-md border bg-muted/30 px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <Star
+                              key={n}
+                              className={`h-3.5 w-3.5 ${
+                                n <= r.score
+                                  ? "fill-yellow-500 text-yellow-500"
+                                  : "text-muted-foreground/20"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm font-medium">
+                          {r.ratedBy.name ?? "Unknown"}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {new Date(r.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {r.comment && (
+                        <p className="text-sm text-muted-foreground">"{r.comment}"</p>
+                      )}
+                    </div>
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {data.ratingCount}{" "}
-                  {data.ratingCount === 1 ? "rating" : "ratings"}
-                </span>
-              </div>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">No ratings yet.</p>
@@ -184,6 +231,17 @@ function RatingTab({ driverId }: { driverId: string }) {
               rows={2}
             />
           </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="anon"
+              checked={anonymous}
+              onCheckedChange={(v) => setAnonymous(!!v)}
+            />
+            <Label htmlFor="anon" className="text-sm font-normal cursor-pointer">
+              Leave anonymously
+            </Label>
+          </div>
+
           <Button
             onClick={handleSubmit}
             disabled={score === 0 || upsert.isPending}
@@ -197,60 +255,12 @@ function RatingTab({ driverId }: { driverId: string }) {
         </CardContent>
       </Card>
 
-      {(data?.ratings.length ?? 0) > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">All Ratings</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {data!.ratings.map((r) => (
-              <div
-                key={r.id}
-                className="flex items-start justify-between gap-3 rounded-md border bg-muted/30 px-3 py-2"
-              >
-                <div className="flex flex-col gap-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <Star
-                          key={n}
-                          className={`h-3.5 w-3.5 ${
-                            n <= r.score
-                              ? "fill-yellow-500 text-yellow-500"
-                              : "text-muted-foreground/20"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-medium">
-                      {r.ratedBy.name ?? "Unknown"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {r.ratedBy.role}
-                    </span>
-                  </div>
-                  {r.comment && (
-                    <p className="text-sm text-muted-foreground">
-                      "{r.comment}"
-                    </p>
-                  )}
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(r.createdAt).toLocaleString([], {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
 
 function DriverDetailContent({ id }: { id: string }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") ?? "info";
 
@@ -261,6 +271,7 @@ function DriverDetailContent({ id }: { id: string }) {
   const updateDriver = useUpdateDriver(id);
   const { data: dispatchers } = useCompanyDispatchers();
   const { data: trucks } = useTrucks();
+  const { data: ratingsData } = useDriverRatings(id);
 
   const [phone, setPhone] = useState("");
   const [phoneDirty, setPhoneDirty] = useState(false);
@@ -345,16 +356,20 @@ function DriverDetailContent({ id }: { id: string }) {
           <TabsTrigger value="info">Info</TabsTrigger>
           <TabsTrigger value="rating">
             Rating
-            {driver.averageRating !== null && (
-              <span className="ml-1.5 flex items-center gap-0.5 text-xs">
+            {(ratingsData?.ratingCount ?? 0) > 0 && (
+              <span className="ml-1.5 flex items-center gap-1 text-xs">
                 <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                {driver.averageRating.toFixed(1)}
+                {ratingsData?.averageRating?.toFixed(1)}
+                <span className="text-muted-foreground">({ratingsData?.ratingCount})</span>
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="chat">Chat</TabsTrigger>
-          <TabsTrigger value="trips">Trips</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger
+            value="chat"
+            onClick={() => router.push(`/chat?userId=${driver.id}`)}
+          >
+            Chat
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="mt-4">
@@ -530,48 +545,45 @@ function DriverDetailContent({ id }: { id: string }) {
                     </div>
 
                     {/* Rating + Activate/Deactivate */}
-                    <div className="flex items-center gap-3 md:col-span-2">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted shrink-0">
-                        <Star className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex flex-1 items-center justify-between gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            Rating
-                          </p>
-                          {driver.averageRating !== null ? (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                              <span className="font-medium">
-                                {driver.averageRating.toFixed(1)} / 5
-                              </span>
-                            </div>
-                          ) : (
-                            <p className="font-medium text-muted-foreground">
-                              No ratings yet
-                            </p>
+                    <div className="flex flex-col gap-3 md:col-span-2">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted shrink-0">
+                          <Star className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex flex-1 items-center justify-between gap-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Rating</p>
+                            {driver.averageRating !== null ? (
+                              <div className="flex items-center gap-1">
+                                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                                <span className="font-medium">
+                                  {driver.averageRating.toFixed(1)} / 5
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="font-medium text-muted-foreground">No ratings yet</p>
+                            )}
+                          </div>
+                          {canToggle && (
+                            <Button
+                              variant={driver.isActive ? "destructive" : "default"}
+                              size="sm"
+                              onClick={() =>
+                                driver.isActive
+                                  ? deactivate.mutate(driver.id)
+                                  : activate.mutate(driver.id)
+                              }
+                              disabled={deactivate.isPending || activate.isPending}
+                            >
+                              {(deactivate.isPending || activate.isPending) && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              )}
+                              {driver.isActive ? "Deactivate" : "Activate"}
+                            </Button>
                           )}
                         </div>
-                        {canToggle && (
-                          <Button
-                            variant={driver.isActive ? "destructive" : "default"}
-                            size="sm"
-                            onClick={() =>
-                              driver.isActive
-                                ? deactivate.mutate(driver.id)
-                                : activate.mutate(driver.id)
-                            }
-                            disabled={
-                              deactivate.isPending || activate.isPending
-                            }
-                          >
-                            {(deactivate.isPending || activate.isPending) && (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            )}
-                            {driver.isActive ? "Deactivate" : "Activate"}
-                          </Button>
-                        )}
                       </div>
+
                     </div>
                   </div>
                 </div>
@@ -584,29 +596,7 @@ function DriverDetailContent({ id }: { id: string }) {
           <RatingTab driverId={id} />
         </TabsContent>
 
-        <TabsContent value="chat" className="mt-4">
-          <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
-              Coming soon
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="trips" className="mt-4">
-          <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
-              Coming soon
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="documents" className="mt-4">
-          <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
-              Coming soon
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
