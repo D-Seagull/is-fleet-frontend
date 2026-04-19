@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { Loader2, Send, ArrowLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/popover";
 import { useGroupsForChat } from "@/hooks/use-groups";
 
-export default function ChatPage() {
+function ChatPageContent() {
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
   const router = useRouter();
@@ -371,5 +371,13 @@ export default function ChatPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense>
+      <ChatPageContent />
+    </Suspense>
   );
 }
