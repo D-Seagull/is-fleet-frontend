@@ -1,13 +1,9 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  Loader2,
-  Trash2,
-  User,
-} from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,13 +41,11 @@ const statusLabels: Record<TruckStatus, string> = {
   REPAIR: "Repair",
 };
 
-export default function TruckDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+function TruckDetailContent({ id }: { id: string }) {
   const user = useAuthStore((s) => s.user);
+  // read ?tab= from URL: plate link passes "info", row click uses default "chat"
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get("tab") ?? "chat";
 
   const { data: truck, isLoading } = useTruck(id);
   const { data: notes, isLoading: notesLoading } = useTruckNotes(id);
@@ -97,7 +91,7 @@ export default function TruckDetailPage({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col p-4 gap-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/trucks">
@@ -117,7 +111,7 @@ export default function TruckDetailPage({
         </div>
       </div>
 
-      <Tabs defaultValue="info" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList>
           <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="trips">Trips</TabsTrigger>
@@ -160,8 +154,8 @@ export default function TruckDetailPage({
 
         <TabsContent value="info" className="mt-4">
           <div className="flex flex-col gap-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Status</CardTitle>
                 </CardHeader>
@@ -194,8 +188,12 @@ export default function TruckDetailPage({
                         <User className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex flex-col gap-0.5">
-                        <p className="font-medium text-sm">{truck.currentDriver.name}</p>
-                        <p className="text-xs text-muted-foreground">{truck.currentDriver.phone}</p>
+                        <p className="font-medium text-sm">
+                          {truck.currentDriver.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {truck.currentDriver.phone}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -255,7 +253,9 @@ export default function TruckDetailPage({
                   {notesLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   ) : !notes || notes.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No notes yet.</p>
+                    <p className="text-sm text-muted-foreground">
+                      No notes yet.
+                    </p>
                   ) : (
                     notes.map((note) => (
                       <div
@@ -296,5 +296,19 @@ export default function TruckDetailPage({
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+// Suspense is required because TruckDetailContent uses useSearchParams()
+export default function TruckDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  return (
+    <Suspense>
+      <TruckDetailContent id={id} />
+    </Suspense>
   );
 }

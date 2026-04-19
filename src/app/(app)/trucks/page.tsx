@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Search, EyeOff, Eye, Loader2 } from "lucide-react";
+import { Plus, Search, EyeOff, Eye, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -101,7 +101,7 @@ export default function TrucksPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col p-4 gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Trucks</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -127,7 +127,10 @@ export default function TrucksPage() {
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="driver">Driver (optional)</Label>
-                <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                <Select
+                  value={selectedDriverId}
+                  onValueChange={setSelectedDriverId}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select driver" />
                   </SelectTrigger>
@@ -195,10 +198,10 @@ export default function TrucksPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[130px]">Plate</TableHead>
-                  <TableHead className="w-[110px]">Status</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Last note</TableHead>
-                  <TableHead className="w-[48px]" />
+                  <TableHead className="w-[130px]">Status</TableHead>
+                  <TableHead className="w-[200px]">Driver</TableHead>
+                  <TableHead className="hidden md:table-cell">Last note</TableHead>
+                  <TableHead className="hidden md:table-cell w-[56px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -210,7 +213,10 @@ export default function TrucksPage() {
                   </TableRow>
                 ) : filteredTrucks.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">
+                    <TableCell
+                      colSpan={4}
+                      className="text-center py-10 text-muted-foreground"
+                    >
                       No trucks found.
                     </TableCell>
                   </TableRow>
@@ -219,15 +225,12 @@ export default function TrucksPage() {
                     <TableRow
                       key={truck.id}
                       className="cursor-pointer"
-                      onClick={() =>
-                        truck.currentDriver
-                          ? router.push(`/chat?userId=${truck.currentDriver.id}`)
-                          : router.push(`/trucks/${truck.id}`)
-                      }
+                      // row click → truck detail page (opens on Chat tab by default)
+                      onClick={() => router.push(`/trucks/${truck.id}`)}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Link
-                          href={`/trucks/${truck.id}`}
+                          href={`/trucks/${truck.id}?tab=info`}
                           className="font-medium hover:underline"
                         >
                           {truck.plate}
@@ -237,11 +240,17 @@ export default function TrucksPage() {
                         <Select
                           value={truck.status}
                           onValueChange={(v) =>
-                            updateTruck.mutate({ id: truck.id, data: { status: v as TruckStatus } })
+                            updateTruck.mutate({
+                              id: truck.id,
+                              data: { status: v as TruckStatus },
+                            })
                           }
                         >
                           <SelectTrigger className="h-7 w-[110px] text-xs border-0 px-2 shadow-none focus:ring-0">
-                            <Badge variant="outline" className={statusColors[truck.status]}>
+                            <Badge
+                              variant="outline"
+                              className={statusColors[truck.status]}
+                            >
                               {statusLabels[truck.status]}
                             </Badge>
                           </SelectTrigger>
@@ -252,17 +261,46 @@ export default function TrucksPage() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell>{truck.currentDriver?.name ?? "—"}</TableCell>
-                      <TableCell className="max-w-[220px]">
+                      {/* driver name → driver profile; chat button → truck chat */}
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-3">
+                          {truck.currentDriver ? (
+                            <Link
+                              href={`/drivers/${truck.currentDriver.id}`}
+                              className="hover:underline"
+                            >
+                              {truck.currentDriver.name}
+                            </Link>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 shrink-0"
+                            onClick={() => router.push(`/trucks/${truck.id}`)}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      {/* last note — hidden on mobile */}
+                      <TableCell className="hidden md:table-cell max-w-[220px]">
                         {truck.truckNotes[0] ? (
                           <span className="text-xs text-muted-foreground truncate block">
                             {truck.truckNotes[0].content}
                           </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground/40">—</span>
+                          <span className="text-xs text-muted-foreground/40">
+                            —
+                          </span>
                         )}
                       </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
+                      {/* actions (chat + deactivate) — hidden on mobile */}
+                      <TableCell
+                        className="hidden md:table-cell"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Button
                           variant="ghost"
                           size="icon"
@@ -294,7 +332,10 @@ export default function TrucksPage() {
                 <TableBody>
                   {!deactivatedTrucks || deactivatedTrucks.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
+                      <TableCell
+                        colSpan={3}
+                        className="text-center py-10 text-muted-foreground"
+                      >
                         No deactivated trucks.
                       </TableCell>
                     </TableRow>
