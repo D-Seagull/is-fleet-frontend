@@ -38,6 +38,19 @@ export function useCreateDispatcher() {
   });
 }
 
+// Всі хто може бути призначений диспетчером (DISPATCHER + TEAMLEAD)
+export function useAssignableDispatchers() {
+  return useQuery<Dispatcher[]>({
+    queryKey: ["assignable-dispatchers"],
+    queryFn: async () => {
+      const res = await api.get("/users");
+      return (res.data as Dispatcher[]).filter(
+        (u) => u.role === "DISPATCHER" || u.role === "TEAMLEAD",
+      );
+    },
+  });
+}
+
 // Деактивувати диспетчера
 export function useDeactivateDispatcher() {
   const queryClient = useQueryClient();

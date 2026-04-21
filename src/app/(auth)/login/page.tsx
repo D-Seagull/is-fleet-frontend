@@ -40,7 +40,7 @@ export default function LoginPage() {
       const { access_token, user } = res.data;
 
       login(user, access_token, rememberMe);
-      router.push(user.role === "ADMIN" ? "/admin" : "/trucks");
+      router.push(user.role === "ADMIN" ? "/admin" : user.role === "DISPATCHER" ? "/my-trucks" : "/trucks");
     } catch (err: any) {
       console.log(err.response?.data);
       const msg = err.response?.data?.message.message;

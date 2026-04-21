@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Search, EyeOff, Eye, Loader2, MessageSquare } from "lucide-react";
+import { Plus, Search, EyeOff, Eye, Loader2, MessageSquare, UserPlus, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +64,7 @@ export default function TrucksPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === "TEAMLEAD" || user?.role === "ADMIN";
+  const isTeamlead = user?.role === "TEAMLEAD";
 
   const { data: trucks, isLoading } = useTrucks();
   const { data: deactivatedTrucks } = useDeactivatedTrucks();
@@ -199,9 +200,10 @@ export default function TrucksPage() {
                 <TableRow>
                   <TableHead className="w-[130px]">Plate</TableHead>
                   <TableHead className="w-[130px]">Status</TableHead>
-                  <TableHead className="w-[200px]">Driver</TableHead>
+                  <TableHead className="w-[180px]">Driver</TableHead>
+                  <TableHead className="w-[44px]" />
                   <TableHead className="hidden md:table-cell">Last note</TableHead>
-                  <TableHead className="hidden md:table-cell w-[56px]" />
+                  <TableHead className="hidden md:table-cell w-[80px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -261,28 +263,29 @@ export default function TrucksPage() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      {/* driver name → driver profile; chat button → truck chat */}
+                      {/* driver name → driver profile */}
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-3">
-                          {truck.currentDriver ? (
-                            <Link
-                              href={`/drivers/${truck.currentDriver.id}`}
-                              className="hover:underline"
-                            >
-                              {truck.currentDriver.name}
-                            </Link>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 shrink-0"
-                            onClick={() => router.push(`/trucks/${truck.id}`)}
+                        {truck.currentDriver ? (
+                          <Link
+                            href={`/drivers/${truck.currentDriver.id}`}
+                            className="hover:underline"
                           >
-                            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                        </div>
+                            {truck.currentDriver.name}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      {/* chat button */}
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => router.push(`/trucks/${truck.id}`)}
+                        >
+                          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
                       </TableCell>
                       {/* last note — hidden on mobile */}
                       <TableCell className="hidden md:table-cell max-w-[220px]">
@@ -296,19 +299,43 @@ export default function TrucksPage() {
                           </span>
                         )}
                       </TableCell>
-                      {/* actions (chat + deactivate) — hidden on mobile */}
+                      {/* actions — hidden on mobile */}
                       <TableCell
                         className="hidden md:table-cell"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(truck.id)}
-                          disabled={deleteTruck.isPending}
-                        >
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          {isTeamlead && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title={truck.dispatcherId === user?.id ? "Release truck" : "Take truck"}
+                              onClick={() =>
+                                updateTruck.mutate({
+                                  id: truck.id,
+                                  data: {
+                                    dispatcherId: truck.dispatcherId === user?.id ? null : user?.id,
+                                  },
+                                })
+                              }
+                              disabled={updateTruck.isPending}
+                            >
+                              {truck.dispatcherId === user?.id ? (
+                                <UserMinus className="h-4 w-4 text-primary" />
+                              ) : (
+                                <UserPlus className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(truck.id)}
+                            disabled={deleteTruck.isPending}
+                          >
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

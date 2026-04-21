@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Truck,
+  BookMarked,
   Users,
   FolderKanban,
   MessageSquare,
@@ -17,8 +18,10 @@ import {
   Headset,
 } from "lucide-react";
 import { NavItem } from "@/components/app-sidebar";
+import { useAuthStore } from "@/store/auth";
+import { useMyTrucks } from "@/hooks/use-trucks";
 
-const appNavItems: NavItem[] = [
+const BASE_NAV: NavItem[] = [
   { title: "Trucks", href: "/trucks", icon: Truck },
   { title: "Drivers", href: "/drivers", icon: Users },
   { title: "Dispatchers", href: "/dispatchers", icon: Headset },
@@ -28,11 +31,24 @@ const appNavItems: NavItem[] = [
   { title: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+function AppLayoutInner({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  const isDispatcher = user?.role === "DISPATCHER";
+  const isTeamlead = user?.role === "TEAMLEAD";
+
+  const { data: myTrucks } = useMyTrucks();
+  const hasMyTrucks = (myTrucks?.length ?? 0) > 0;
+
+  const showMyTrucks = isDispatcher || (isTeamlead && hasMyTrucks);
+
+  const navItems: NavItem[] = showMyTrucks
+    ? [{ title: "My Trucks", href: "/my-trucks", icon: BookMarked }, ...BASE_NAV]
+    : BASE_NAV;
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-full">
-        <AppSidebar navItems={appNavItems} />
+        <AppSidebar navItems={navItems} />
         <SidebarInset className="flex flex-1 flex-col min-w-0 overflow-hidden">
           <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
             <SidebarTrigger />
@@ -43,4 +59,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
     </SidebarProvider>
   );
+}
+
+export function AppLayout({ children }: { children: React.ReactNode }) {
+  return <AppLayoutInner>{children}</AppLayoutInner>;
 }

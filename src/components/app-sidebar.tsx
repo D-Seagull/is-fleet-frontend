@@ -58,9 +58,11 @@ interface AppSidebarProps {
 function CollapsibleNavItem({
   item,
   pathname,
+  onNavClick,
 }: {
   item: NavItem;
   pathname: string;
+  onNavClick: () => void;
 }) {
   const [search, setSearch] = useState("");
 
@@ -107,7 +109,7 @@ function CollapsibleNavItem({
                   asChild
                   isActive={pathname === child.href}
                 >
-                  <Link href={child.href}>
+                  <Link href={child.href} onClick={onNavClick}>
                     <span>{child.title}</span>
                   </Link>
                 </SidebarMenuSubButton>
@@ -129,6 +131,10 @@ export function AppSidebar({
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
   const { setOpen, setOpenMobile, isMobile } = useSidebar();
+
+  const handleNavClick = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -152,6 +158,7 @@ export function AppSidebar({
                     key={item.title}
                     item={item}
                     pathname={pathname}
+                    onNavClick={handleNavClick}
                   />
                 ) : (
                   <SidebarMenuItem key={item.title}>
@@ -160,7 +167,7 @@ export function AppSidebar({
                       isActive={pathname.startsWith(item.href)}
                       tooltip={item.title}
                     >
-                      <Link href={item.href}>
+                      <Link href={item.href} onClick={handleNavClick}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </Link>

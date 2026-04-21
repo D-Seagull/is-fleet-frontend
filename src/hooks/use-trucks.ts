@@ -10,6 +10,8 @@ export interface Truck {
   companyId: string;
   currentDriverId: string | null;
   currentDriver: { id: string; name: string; phone: string } | null;
+  dispatcherId: string | null;
+  dispatcher: { id: string; name: string | null } | null;
   truckNotes: { content: string; createdAt: string }[];
 }
 
@@ -78,6 +80,7 @@ export function useUpdateTruck() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["trucks"] });
       queryClient.invalidateQueries({ queryKey: ["trucks", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["trucks-my"] });
     },
   });
 }
@@ -143,6 +146,16 @@ export function useDeleteTruckNote() {
       queryClient.invalidateQueries({
         queryKey: ["truck-notes", variables.truckId],
       });
+    },
+  });
+}
+
+export function useMyTrucks() {
+  return useQuery<Truck[]>({
+    queryKey: ["trucks-my"],
+    queryFn: async () => {
+      const res = await api.get("/trucks/my");
+      return res.data;
     },
   });
 }

@@ -10,7 +10,6 @@ import {
   User,
   Phone,
   Globe,
-  UserCog,
   Truck,
   Loader2,
   MessageSquare,
@@ -40,7 +39,6 @@ import {
   useDriverRatings,
   useUpsertDriverRating,
   useUpdateDriver,
-  useCompanyDispatchers,
   type Language,
 } from "@/hooks/use-drivers";
 import { useTrucks } from "@/hooks/use-trucks";
@@ -269,7 +267,6 @@ function DriverDetailContent({ id }: { id: string }) {
   const deactivate = useDeactivateDriver();
   const activate = useActivateDriver();
   const updateDriver = useUpdateDriver(id);
-  const { data: dispatchers } = useCompanyDispatchers();
   const { data: trucks } = useTrucks();
   const { data: ratingsData } = useDriverRatings(id);
 
@@ -468,41 +465,6 @@ function DriverDetailContent({ id }: { id: string }) {
                         <p className="font-medium">
                           {languageLabels[driver.language]}
                         </p>
-                      </div>
-                    </div>
-
-                    {/* Dispatcher — select */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted shrink-0 mt-0.5">
-                        <UserCog className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex flex-col gap-1 flex-1">
-                        <p className="text-sm text-muted-foreground">
-                          Dispatcher
-                        </p>
-                        <Select
-                          value={driver.dispatcher?.id ?? "none"}
-                          onValueChange={(v) =>
-                            updateDriver.mutate({
-                              dispatcherId: v === "none" ? null : v,
-                            })
-                          }
-                          disabled={updateDriver.isPending}
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue placeholder="Select dispatcher" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">
-                              No dispatcher
-                            </SelectItem>
-                            {(dispatchers ?? []).map((d) => (
-                              <SelectItem key={d.id} value={d.id}>
-                                {d.name ?? d.id}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
                       </div>
                     </div>
 

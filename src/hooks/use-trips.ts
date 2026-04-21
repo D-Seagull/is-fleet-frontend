@@ -151,6 +151,15 @@ export interface UpdateStopData {
   coords?: string;
 }
 
+export function useBroadcastToMyTrucks() {
+  return useMutation({
+    mutationFn: async (content: string) => {
+      const res = await api.post("/trips/broadcast", { content });
+      return res.data as { sent: number };
+    },
+  });
+}
+
 export function useUpdateTripInfo(truckId: string) {
   const queryClient = useQueryClient();
   return useMutation({
