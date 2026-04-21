@@ -72,7 +72,7 @@ export function useUpdateTruck() {
       data,
     }: {
       id: string;
-      data: { plate?: string; status?: TruckStatus; currentDriverId?: string | null };
+      data: { plate?: string; status?: TruckStatus; currentDriverId?: string | null; dispatcherId?: string | null };
     }) => {
       const res = await api.patch(`/trucks/${id}`, data);
       return res.data;
