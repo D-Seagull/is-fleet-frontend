@@ -507,7 +507,17 @@ function TripInfoCard({ trip, truckId }: { trip: Trip; truckId: string }) {
 
 // ─── Trip Chat ────────────────────────────────────────────────────────────────
 
-function TripChat({ trip, truckId, currentUserId }: { trip: Trip; truckId: string; currentUserId: string }) {
+function TripChat({
+  trip,
+  truckId,
+  currentUserId,
+  truckDispatcherId,
+}: {
+  trip: Trip;
+  truckId: string;
+  currentUserId: string;
+  truckDispatcherId?: string | null;
+}) {
   const { data: initialMessages, isLoading } = useTripMessages(trip.id);
   const [messages, setMessages] = useState<TripMessage[]>([]);
   const [text, setText] = useState("");
@@ -554,7 +564,13 @@ function TripChat({ trip, truckId, currentUserId }: { trip: Trip; truckId: strin
         ) : messages.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-10">No messages yet. Start the conversation.</p>
         ) : (
-          messages.map((msg) => {
+          messages
+          .filter((msg) =>
+            msg.sender.role === "DRIVER" ||
+            msg.senderId === currentUserId ||
+            msg.senderId === truckDispatcherId
+          )
+          .map((msg) => {
             const isMine = msg.senderId === currentUserId;
             return (
               <div key={msg.id} className={cn("flex flex-col gap-0.5 max-w-[75%]", isMine && "self-end items-end")}>
@@ -593,10 +609,12 @@ export function ChatTab({
   truckId,
   defaultDriverId,
   initialTripId,
+  truckDispatcherId,
 }: {
   truckId: string;
   defaultDriverId?: string | null;
   initialTripId?: string | null;
+  truckDispatcherId?: string | null;
 }) {
   const user = useAuthStore((s) => s.user);
   const { data: trips, isLoading } = useTripsByTruck(truckId);
@@ -640,7 +658,12 @@ export function ChatTab({
         <NewTripDialog truckId={truckId} defaultDriverId={defaultDriverId} onCreated={(trip) => setSelectedTripId(trip.id)} />
       </div>
       {selectedTrip ? (
-        <TripChat trip={selectedTrip} truckId={truckId} currentUserId={user?.id ?? ""} />
+        <TripChat
+          trip={selectedTrip}
+          truckId={truckId}
+          currentUserId={user?.id ?? ""}
+          truckDispatcherId={truckDispatcherId}
+        />
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
           <p className="text-sm">Select or create a trip to start chatting</p>
@@ -757,13 +780,13 @@ interface TruckDetailPanelProps {
 
 export function TruckDetailPanel({
   truckId,
-  defaultTab = "chat",
+  defaultTab,
   showBackButton = false,
   backHref = "/trucks",
 }: TruckDetailPanelProps) {
   const user = useAuthStore((s) => s.user);
-  const [activeTab, setActiveTab] = useState(defaultTab);
   const [chatTripId, setChatTripId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("chat");
 
   const { data: truck, isLoading } = useTruck(truckId);
   const { data: notes, isLoading: notesLoading } = useTruckNotes(truckId);
@@ -774,6 +797,19 @@ export function TruckDetailPanel({
   const deleteNote = useDeleteTruckNote();
 
   const [noteText, setNoteText] = useState("");
+
+  // Resolve chat access once truck data is available
+  useEffect(() => {
+    if (!truck || !user) return;
+    const isCurrentDispatcher = truck.dispatcherId === user.id;
+    const isChatEnabled = user.role === "ADMIN" || isCurrentDispatcher;
+    if (defaultTab) {
+      setActiveTab(defaultTab);
+    } else {
+      setActiveTab(isChatEnabled ? "chat" : "trips");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [truck?.id, user?.id]);
 
   if (isLoading) {
     return (
@@ -786,6 +822,9 @@ export function TruckDetailPanel({
   if (!truck) {
     notFound();
   }
+
+  const isCurrentDispatcher = truck.dispatcherId === user?.id;
+  const isChatEnabled = user?.role === "ADMIN" || isCurrentDispatcher;
 
   function handleOpenTrip(tripId: string) {
     setChatTripId(tripId);
@@ -834,7 +873,7 @@ export function TruckDetailPanel({
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0 w-full">
         <TabsList className="shrink-0">
-          <TabsTrigger value="chat">Chat</TabsTrigger>
+          <TabsTrigger value="chat" disabled={!isChatEnabled}>Chat</TabsTrigger>
           <TabsTrigger value="trips">Trips</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="alarm">Alarm</TabsTrigger>
@@ -846,6 +885,7 @@ export function TruckDetailPanel({
             truckId={truckId}
             defaultDriverId={truck.currentDriverId}
             initialTripId={chatTripId}
+            truckDispatcherId={truck.dispatcherId}
             key={chatTripId ?? "chat"}
           />
         </TabsContent>

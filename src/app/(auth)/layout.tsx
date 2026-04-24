@@ -13,7 +13,7 @@ export default function AuthPageLayout({
         <Truck className="text-orange-400" />
         <ThemeToggle />
       </header>
-      <div>{children}</div>
+      <div className="w-full">{children}</div>
     </main>
   );
 }
