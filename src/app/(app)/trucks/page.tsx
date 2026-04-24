@@ -203,7 +203,7 @@ export default function TrucksPage() {
         </div>
 
         <TabsContent value="active" className="mt-4">
-          <div className="rounded-lg border">
+          <div className="rounded-lg border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -365,7 +365,7 @@ export default function TrucksPage() {
 
         {isManager && (
           <TabsContent value="deactivated" className="mt-4">
-            <div className="rounded-lg border opacity-75">
+            <div className="rounded-lg border opacity-75 overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

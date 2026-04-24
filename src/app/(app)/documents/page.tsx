@@ -73,7 +73,7 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Documents</h1>
       </div>
@@ -203,7 +203,7 @@ export default function DocumentsPage() {
         )}
       </div>
 
-      <div className="rounded-lg border">
+      <div className="rounded-lg border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

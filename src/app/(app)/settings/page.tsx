@@ -36,7 +36,7 @@ export default function SettingsPage() {
   const [language, setLanguage] = useState("english");
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 p-4">
       <h1 className="text-2xl font-bold">Settings</h1>
 
       <div className="grid gap-6">
