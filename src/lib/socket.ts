@@ -8,10 +8,8 @@ export function getSocket(): Socket {
   if (!socket) {
     const token =
       typeof window !== "undefined"
-        ? localStorage.getItem("access_token") ||
-          sessionStorage.getItem("access_token")
+        ? localStorage.getItem("access_token")
         : null;
-    console.log("Socket token:", token); // ← додай
     socket = io(SOCKET_URL, {
       auth: { token },
       transports: ["websocket"],

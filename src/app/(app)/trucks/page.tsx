@@ -3,7 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Search, EyeOff, Eye, Loader2, MessageSquare, UserPlus, UserMinus } from "lucide-react";
+import {
+  Plus,
+  Search,
+  EyeOff,
+  Eye,
+  Loader2,
+  MessageSquare,
+  UserPlus,
+  UserMinus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -202,7 +211,9 @@ export default function TrucksPage() {
                   <TableHead className="w-[130px]">Status</TableHead>
                   <TableHead className="w-[180px]">Driver</TableHead>
                   <TableHead className="w-[44px]" />
-                  <TableHead className="hidden md:table-cell">Last note</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Last note
+                  </TableHead>
                   <TableHead className="hidden md:table-cell w-[80px]" />
                 </TableRow>
               </TableHeader>
@@ -309,12 +320,19 @@ export default function TrucksPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              title={truck.dispatcherId === user?.id ? "Release truck" : "Take truck"}
+                              title={
+                                truck.dispatcherId === user?.id
+                                  ? "Release truck"
+                                  : "Take truck"
+                              }
                               onClick={() =>
                                 updateTruck.mutate({
                                   id: truck.id,
                                   data: {
-                                    dispatcherId: truck.dispatcherId === user?.id ? null : user?.id,
+                                    dispatcherId:
+                                      truck.dispatcherId === user?.id
+                                        ? null
+                                        : user?.id,
                                   },
                                 })
                               }

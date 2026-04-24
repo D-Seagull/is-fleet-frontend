@@ -8,6 +8,7 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Підставляємо токен із store в кожен запит
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
@@ -16,11 +17,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// При 401 — логаут (AuthProvider автоматично зробить редірект на /login)
 api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
+      const { token } = useAuthStore.getState();
+      // Логаутимо тільки якщо були авторизовані (не під час fetchMe на login)
+      if (token) {
+        useAuthStore.getState().logout();
+      }
     }
     return Promise.reject(error);
   },

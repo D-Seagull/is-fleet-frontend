@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { api } from "@/lib/api";
+
 interface AuthUser {
   id: string;
   role: string;
@@ -11,9 +12,26 @@ interface AuthUser {
 interface AuthState {
   user: AuthUser | null;
   token: string | null;
+  isLoading: boolean;
   login: (user: AuthUser, token: string, remember: boolean) => void;
   logout: () => void;
-  fetchMe: (tokenOverride?: string) => Promise<void>; // ← додай tokenOverride
+  fetchMe: (tokenOverride?: string) => Promise<void>;
+  setLoading: (v: boolean) => void;
+}
+
+const TOKEN_KEY = "access_token";
+
+function setCookie(token: string, remember: boolean) {
+  if (remember) {
+    document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=${7 * 24 * 60 * 60}`;
+  } else {
+    // Session cookie — видаляється при закритті браузера
+    document.cookie = `${TOKEN_KEY}=${token}; path=/`;
+  }
+}
+
+function clearCookie() {
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -21,56 +39,49 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      isLoading: true, // true поки не перевірено токен
+
+      setLoading: (v) => set({ isLoading: v }),
 
       login: (user, token, remember) => {
-        if (remember) {
-          localStorage.setItem("access_token", token);
-        } else {
-          sessionStorage.setItem("access_token", token);
+        localStorage.setItem(TOKEN_KEY, token);
+        setCookie(token, remember);
+        set({ user, token, isLoading: false });
+      },
+
+      logout: () => {
+        localStorage.removeItem(TOKEN_KEY);
+        clearCookie();
+        set({ user: null, token: null, isLoading: false });
+      },
+
+      fetchMe: async (tokenOverride?: string) => {
+        const token = tokenOverride || localStorage.getItem(TOKEN_KEY);
+
+        if (!token) {
+          set({ isLoading: false });
+          return;
         }
 
-        // Зберігаємо в cookie для middleware
-        document.cookie = `access_token=${token}; path=/; max-age=${
-          remember ? 60 * 60 * 24 * 7 : 60 * 60 * 24
-        }`;
-
-        set({ user, token });
-      },
-      logout: () => {
-        localStorage.removeItem("access_token");
-        sessionStorage.removeItem("access_token");
-        // Видаляємо cookie
-        document.cookie = "access_token=; path=/; max-age=0";
-        set({ user: null, token: null });
-      },
-      fetchMe: async (tokenOverride?: string) => {
         try {
-          const token =
-            tokenOverride ||
-            localStorage.getItem("access_token") ||
-            sessionStorage.getItem("access_token");
-
-          if (!token) return;
-
           const res = await api.get("/auth/me", {
             headers: { Authorization: `Bearer ${token}` },
           });
-
-          localStorage.setItem("access_token", token);
-          set({ user: res.data, token });
+          localStorage.setItem(TOKEN_KEY, token);
+          set({ user: res.data, token, isLoading: false });
         } catch {
-          set({ user: null, token: null });
+          // Токен не валідний — чистимо все
+          localStorage.removeItem(TOKEN_KEY);
+          clearCookie();
+          set({ user: null, token: null, isLoading: false });
         }
       },
     }),
     {
       name: "auth-storage",
-      // Використовуємо sessionStorage для persist якщо не remember
-      storage: createJSONStorage(() =>
-        typeof window !== "undefined" && !localStorage.getItem("access_token")
-          ? sessionStorage
-          : localStorage,
-      ),
+      // Завжди localStorage — стабільно і передбачувано
+      storage: createJSONStorage(() => localStorage),
+      // isLoading НЕ зберігаємо — завжди починає з true (потрібна перевірка)
       partialize: (state) => ({
         user: state.user,
         token: state.token,
