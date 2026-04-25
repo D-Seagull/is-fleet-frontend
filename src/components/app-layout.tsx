@@ -16,6 +16,7 @@ import {
   FileText,
   Settings,
   Headset,
+  Route,
 } from "lucide-react";
 import { NavItem } from "@/components/app-sidebar";
 import { useAuthStore } from "@/store/auth";
@@ -23,6 +24,7 @@ import { useMyTrucks } from "@/hooks/use-trucks";
 
 const BASE_NAV: NavItem[] = [
   { title: "Trucks", href: "/trucks", icon: Truck },
+  { title: "Trips", href: "/trips", icon: Route },
   { title: "Drivers", href: "/drivers", icon: Users },
   { title: "Dispatchers", href: "/dispatchers", icon: Headset },
   { title: "Groups", href: "/groups", icon: FolderKanban },

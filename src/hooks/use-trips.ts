@@ -57,10 +57,12 @@ export interface Trip {
   dispatcherId: string;
   companyId: string;
   notes: string | null;
+  orderNumber: string | null;
   createdAt: string;
   updatedAt: string;
   driver: { id: string; name: string | null; phone: string | null };
   dispatcher: { id: string; name: string | null };
+  truck: { id: string; plate: string };
   stops: TripStop[];
   documents: TripDocument[];
 }
@@ -88,7 +90,19 @@ export interface CreateTripData {
   driverId: string;
   truckId: string;
   notes?: string;
+  orderNumber?: string;
   stops?: StopFormData[];
+}
+
+// all trips for the company
+export function useTrips() {
+  return useQuery<Trip[]>({
+    queryKey: ["trips"],
+    queryFn: async () => {
+      const res = await api.get("/trips");
+      return res.data;
+    },
+  });
 }
 
 // trips for a specific truck (Chat + Trips tabs in truck detail)
@@ -166,13 +180,15 @@ export function useUpdateTripInfo(truckId: string) {
     mutationFn: async ({
       id,
       notes,
+      orderNumber,
       stops,
     }: {
       id: string;
       notes?: string;
+      orderNumber?: string;
       stops?: UpdateStopData[];
     }) => {
-      const res = await api.patch(`/trips/${id}/info`, { notes, stops });
+      const res = await api.patch(`/trips/${id}/info`, { notes, orderNumber, stops });
       return res.data as Trip;
     },
     onSuccess: () => {
