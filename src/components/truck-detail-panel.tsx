@@ -20,6 +20,13 @@ import {
   ChevronDown,
   ChevronUp,
   Paperclip,
+  ChevronsUpDown,
+  Check,
+  Search,
+  FolderOpen,
+  ImageIcon,
+  Download,
+  Smile,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +49,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   useTruck,
   useUpdateTruck,
@@ -69,6 +95,16 @@ import {
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
 import { cn } from "@/lib/utils";
+import {
+  useDocumentsByTruck,
+  useDocumentsByTrip,
+  useUploadDocuments,
+  useDeleteDocument,
+  getJpegDownloadUrl,
+  getImagePdfDownloadUrl,
+  type TripDocumentFull,
+} from "@/hooks/use-documents";
+import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { notFound } from "next/navigation";
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -882,6 +918,51 @@ function TripInfoCard({ trip, truckId }: { trip: Trip; truckId: string }) {
   );
 }
 
+// ─── File helpers ─────────────────────────────────────────────────────────────
+
+// ─── File helpers ─────────────────────────────────────────────────────────────
+
+async function getToken(): Promise<string | null> {
+  const { useAuthStore } = await import("@/store/auth");
+  return useAuthStore.getState().token;
+}
+
+// Відкрити у новій вкладці.
+// window.open — СИНХРОННО до першого await, щоб браузер не заблокував як popup.
+async function openDoc(docId: string) {
+  const win = window.open("", "_blank");
+  if (!win) return;
+  const token = await getToken();
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const res = await fetch(`${base}/documents/${docId}/view`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) { win.close(); return; }
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  win.location.href = blobUrl;
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 5 * 60 * 1000);
+}
+
+// Скачати з правильним іменем файлу.
+async function downloadWithAuth(docId: string, fileName: string) {
+  const token = await getToken();
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const res = await fetch(`${base}/documents/${docId}/download`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) return;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
 // ─── Trip Chat ────────────────────────────────────────────────────────────────
 
 function TripChat({
@@ -896,9 +977,34 @@ function TripChat({
   truckDispatcherId?: string | null;
 }) {
   const { data: initialMessages, isLoading } = useTripMessages(trip.id);
+  const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
   const [messages, setMessages] = useState<TripMessage[]>(() => initialMessages ?? []);
   const [text, setText] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const upload = useUploadDocuments(truckId);
+
+  // unified timeline: messages + files sorted by createdAt
+  type TimelineItem =
+    | { kind: "msg"; data: TripMessage }
+    | { kind: "file"; data: TripDocumentFull };
+
+  const timeline: TimelineItem[] = [
+    ...messages
+      .filter(
+        (msg) =>
+          msg.sender.role === "DRIVER" ||
+          msg.senderId === currentUserId ||
+          msg.senderId === truckDispatcherId,
+      )
+      .map((m) => ({ kind: "msg" as const, data: m })),
+    ...tripDocs.map((d) => ({ kind: "file" as const, data: d })),
+  ].sort((a, b) =>
+    new Date(a.data.createdAt).getTime() - new Date(b.data.createdAt).getTime(),
+  );
 
   useEffect(() => {
     if (initialMessages) setMessages(initialMessages);
@@ -937,76 +1043,332 @@ function TripChat({
     setText("");
   }
 
+  function onEmojiClick(data: EmojiClickData) {
+    setText((prev) => prev + data.emoji);
+    setShowEmoji(false);
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      await upload.mutateAsync({ tripId: trip.id, files });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="shrink-0">
         <TripInfoCard trip={trip} truckId={truckId} />
       </div>
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white/70 hover:text-white"
+            onClick={() => setLightbox(null)}
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <img
+            src={lightbox}
+            alt="preview"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div className="absolute bottom-4 flex gap-2">
+            <a
+              href={getJpegDownloadUrl(lightbox)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-white text-sm transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Download className="h-4 w-4" /> JPEG
+            </a>
+            <a
+              href={getImagePdfDownloadUrl(lightbox)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-white text-sm transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Download className="h-4 w-4" /> PDF
+            </a>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 py-2 pr-1">
         {isLoading ? (
           <div className="flex items-center justify-center py-10">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
-        ) : messages.length === 0 ? (
+        ) : timeline.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-10">
             No messages yet. Start the conversation.
           </p>
         ) : (
-          messages
-            .filter(
-              (msg) =>
-                msg.sender.role === "DRIVER" ||
-                msg.senderId === currentUserId ||
-                msg.senderId === truckDispatcherId,
-            )
-            .map((msg) => {
+          timeline.map((item) => {
+            if (item.kind === "msg") {
+              const msg = item.data;
               const isMine = msg.senderId === currentUserId;
               return (
                 <div
-                  key={msg.id}
-                  className={cn(
-                    "flex flex-col gap-0.5 max-w-[75%]",
-                    isMine && "self-end items-end",
-                  )}
+                  key={`msg-${msg.id}`}
+                  className={cn("flex flex-col gap-0.5 max-w-[75%]", isMine && "self-end items-end")}
                 >
                   <span className="text-xs text-muted-foreground px-1">
                     {msg.sender.name ?? "Unknown"}
                   </span>
-                  <div
-                    className={cn(
-                      "rounded-2xl px-3 py-2 text-sm",
-                      isMine
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted",
-                    )}
-                  >
+                  <div className={cn("rounded-2xl px-3 py-2 text-sm", isMine ? "bg-primary text-primary-foreground" : "bg-muted")}>
                     {msg.content}
                   </div>
                   <span className="text-[10px] text-muted-foreground/60 px-1">
-                    {new Date(msg.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
               );
-            })
+            }
+
+            // file item
+            const doc = item.data;
+            const isMine = doc.uploadedBy === currentUserId;
+            const isPhoto = doc.fileType === "PHOTO" ||
+              /\.(jpe?g|png|gif|webp|heic|avif)$/i.test(doc.fileName);
+            const ext = doc.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
+            return (
+              <div
+                key={`doc-${doc.id}`}
+                className={cn("flex flex-col gap-0.5 max-w-[80%]", isMine && "self-end items-end")}
+              >
+                <span className="text-xs text-muted-foreground px-1">
+                  {doc.uploader?.name ?? "Unknown"}
+                </span>
+                {isPhoto ? (
+                  <div
+                    className="rounded-2xl overflow-hidden cursor-pointer border hover:opacity-90 transition-opacity"
+                    onClick={() => setLightbox(doc.fileUrl)}
+                  >
+                    <img
+                      src={doc.fileUrl}
+                      alt={doc.fileName}
+                      className="max-w-[180px] max-h-[200px] w-full object-cover block"
+                    />
+                  </div>
+                ) : (
+                  /* Клік на картку = відкрити у новій вкладці */
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openDoc(doc.id)}
+                    onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id)}
+                    className={cn(
+                      "flex items-center gap-2 rounded-2xl px-3 py-2.5 border min-w-[160px] cursor-pointer hover:opacity-80 transition-opacity",
+                      isMine ? "bg-primary text-primary-foreground" : "bg-muted",
+                    )}
+                  >
+                    <FileText className="h-5 w-5 shrink-0" />
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-sm truncate max-w-[180px] leading-tight">
+                        {doc.fileName}
+                      </span>
+                      <span className={cn(
+                        "text-[10px] leading-tight",
+                        isMine ? "text-primary-foreground/70" : "text-muted-foreground"
+                      )}>
+                        {ext}
+                      </span>
+                    </div>
+                    {/* Скачати */}
+                    <button
+                      title="Download"
+                      onClick={(e) => { e.stopPropagation(); downloadWithAuth(doc.id, doc.fileName); }}
+                      className="shrink-0 opacity-70 hover:opacity-100"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+                <span className="text-[10px] text-muted-foreground/60 px-1">
+                  {new Date(doc.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </div>
+            );
+          })
         )}
         <div ref={bottomRef} />
       </div>
-      <div className="shrink-0 flex items-center gap-2 border-t pt-3">
-        <Input
-          placeholder="Type a message..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-          className="flex-1"
-        />
-        <Button size="icon" onClick={handleSend} disabled={!text.trim()}>
-          <Send className="h-4 w-4" />
-        </Button>
+      <div className="shrink-0 border-t pt-3 relative">
+        {/* Emoji picker */}
+        {showEmoji && (
+          <div className="absolute bottom-full right-0 mb-2 z-50">
+            <EmojiPicker
+              onEmojiClick={onEmojiClick}
+              theme={Theme.AUTO}
+              width={300}
+              height={380}
+            />
+          </div>
+        )}
+
+        <div className="flex items-center gap-1.5">
+          {/* Файл */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-9 w-9 shrink-0"
+            title="Attach file"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <Paperclip className="h-4 w-4 text-muted-foreground" />
+            }
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
+
+          {/* Смайли */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-9 w-9 shrink-0"
+            title="Emoji"
+            onClick={() => setShowEmoji((v) => !v)}
+          >
+            <Smile className="h-4 w-4 text-muted-foreground" />
+          </Button>
+
+          {/* Інпут */}
+          <Input
+            placeholder="Type a message..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) handleSend();
+              if (e.key === "Escape") setShowEmoji(false);
+            }}
+            className="flex-1"
+          />
+
+          {/* Відправити */}
+          <Button size="icon" onClick={handleSend} disabled={!text.trim()} className="h-9 w-9 shrink-0">
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
+  );
+}
+
+// ─── Trip Combobox ────────────────────────────────────────────────────────────
+
+function TripCombobox({
+  trips,
+  value,
+  onChange,
+  className,
+}: {
+  trips: Trip[];
+  value: string | null;
+  onChange: (id: string) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = trips.find((t) => t.id === value);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn("justify-between font-normal overflow-hidden", className)}
+        >
+          {selected ? (
+            <span className="flex items-center gap-2 truncate">
+              <span
+                className={cn(
+                  "h-2 w-2 rounded-full shrink-0",
+                  ACTIVE_STATUSES.includes(selected.status)
+                    ? "bg-emerald-500"
+                    : "bg-muted-foreground/40",
+                )}
+              />
+              <span className="truncate text-sm">
+                {shortenTripTitle(selected.title)}
+                {selected.orderNumber && (
+                  <span className="text-muted-foreground"> · #{selected.orderNumber}</span>
+                )}
+              </span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground text-sm">Select trip...</span>
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
+        <Command>
+          <CommandInput placeholder="Search trip..." className="h-9" />
+          <CommandList>
+            <CommandEmpty>No trips found.</CommandEmpty>
+            <CommandGroup>
+              {trips.map((t) => (
+                <CommandItem
+                  key={t.id}
+                  value={`${t.title} ${t.orderNumber ?? ""} ${t.driver.name ?? ""}`}
+                  onSelect={() => {
+                    onChange(t.id);
+                    setOpen(false);
+                  }}
+                >
+                  <span
+                    className={cn(
+                      "h-2 w-2 rounded-full shrink-0 mr-2",
+                      ACTIVE_STATUSES.includes(t.status)
+                        ? "bg-emerald-500"
+                        : "bg-muted-foreground/40",
+                    )}
+                  />
+                  <span className="flex-1 truncate">
+                    {shortenTripTitle(t.title)}
+                    {t.orderNumber && (
+                      <span className="text-muted-foreground"> · #{t.orderNumber}</span>
+                    )}
+                  </span>
+                  <span className="text-xs text-muted-foreground ml-2 shrink-0">
+                    {TRIP_STATUS_LABELS[t.status]}
+                  </span>
+                  <Check
+                    className={cn(
+                      "ml-2 h-4 w-4 shrink-0",
+                      value === t.id ? "opacity-100" : "opacity-0",
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -1044,38 +1406,12 @@ export function ChatTab({
   return (
     <div className="flex flex-col flex-1 min-h-0 gap-4">
       <div className="flex shrink-0 items-center gap-3">
-        {trips && trips.length > 0 ? (
-          <Select
-            value={selectedTripId ?? ""}
-            onValueChange={setSelectedTripId}
-          >
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Select trip" />
-            </SelectTrigger>
-            <SelectContent>
-              {trips.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        "h-2 w-2 rounded-full",
-                        ACTIVE_STATUSES.includes(t.status)
-                          ? "bg-emerald-500"
-                          : "bg-muted-foreground/40",
-                      )}
-                    />
-                    {shortenTripTitle(t.title)}
-                    <span className="text-xs text-muted-foreground">
-                      · {TRIP_STATUS_LABELS[t.status]}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : (
-          <p className="flex-1 text-sm text-muted-foreground">No trips yet</p>
-        )}
+        <TripCombobox
+          trips={trips ?? []}
+          value={resolvedTripId}
+          onChange={setSelectedTripId}
+          className="flex-1"
+        />
         <NewTripDialog
           truckId={truckId}
           defaultDriverId={defaultDriverId}
@@ -1249,6 +1585,456 @@ function TripCard({
   );
 }
 
+// ─── Documents Tab ────────────────────────────────────────────────────────────
+
+function DocumentsTab({ truckId }: { truckId: string }) {
+  const { data: trips = [] } = useTripsByTruck(truckId);
+  const [tripFilter, setTripFilter] = useState<string>("all");
+  const [uploadTripId, setUploadTripId] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: docs = [], isLoading } = useDocumentsByTruck(truckId);
+  const upload = useUploadDocuments(truckId);
+  const deleteDoc = useDeleteDocument(truckId);
+
+  const filtered = tripFilter === "all" ? docs : docs.filter((d) => d.tripId === tripFilter);
+  const photos = filtered.filter((d) => d.fileType === "PHOTO");
+  const documents = filtered.filter((d) => d.fileType === "DOCUMENT");
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length || !uploadTripId) return;
+    setUploading(true);
+    try {
+      await upload.mutateAsync({ tripId: uploadTripId, files });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Filters + Upload */}
+      <div className="flex flex-col gap-2">
+        {/* Trip filter */}
+        <Select value={tripFilter} onValueChange={setTripFilter}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All trips ({docs.length})</SelectItem>
+            {trips.map((t) => {
+              const count = docs.filter((d) => d.tripId === t.id).length;
+              return (
+                <SelectItem key={t.id} value={t.id}>
+                  {shortenTripTitle(t.title)}
+                  {t.orderNumber && ` · #${t.orderNumber}`}
+                  {count > 0 && ` (${count})`}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+
+        {/* Upload row */}
+        <div className="flex items-center gap-2">
+          <Select value={uploadTripId} onValueChange={setUploadTripId}>
+            <SelectTrigger className="h-8 text-xs flex-1">
+              <SelectValue placeholder="Select trip to upload..." />
+            </SelectTrigger>
+            <SelectContent>
+              {trips.map((t) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {shortenTripTitle(t.title)}
+                  {t.orderNumber && ` · #${t.orderNumber}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            className="h-8 shrink-0"
+            disabled={!uploadTripId || uploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Plus className="h-3.5 w-3.5" />
+            )}
+            Upload
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+            className="hidden"
+            onChange={handleUpload}
+          />
+        </div>
+      </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+          <FolderOpen className="h-8 w-8 opacity-30" />
+          <p className="text-sm">No attachments yet</p>
+        </div>
+      ) : (
+        <Tabs defaultValue="all">
+          <TabsList className="w-full mb-3">
+            <TabsTrigger value="all" className="flex-1 text-xs">
+              All ({filtered.length})
+            </TabsTrigger>
+            <TabsTrigger value="photos" className="flex-1 text-xs">
+              Photos ({photos.length})
+            </TabsTrigger>
+            <TabsTrigger value="docs" className="flex-1 text-xs">
+              Docs ({documents.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all" className="mt-0 flex flex-col gap-2">
+            {photos.length > 0 && (
+              <>
+                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Photos</p>
+                <PhotoGrid docs={photos} onDelete={(id) => deleteDoc.mutate(id)} />
+              </>
+            )}
+            {documents.length > 0 && (
+              <>
+                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide mt-2">Documents</p>
+                <DocList docs={documents} onDelete={(id) => deleteDoc.mutate(id)} />
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="photos" className="mt-0">
+            {photos.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No photos</p>
+            ) : (
+              <PhotoGrid docs={photos} onDelete={(id) => deleteDoc.mutate(id)} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="docs" className="mt-0">
+            {documents.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No documents</p>
+            ) : (
+              <DocList docs={documents} onDelete={(id) => deleteDoc.mutate(id)} />
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
+    </div>
+  );
+}
+
+// ─── Attachments Drawer ───────────────────────────────────────────────────────
+
+function AttachmentsDrawer({
+  truckId,
+  trips,
+}: {
+  truckId: string;
+  trips: Trip[];
+}) {
+  const [open, setOpen] = useState(false);
+  const [tripFilter, setTripFilter] = useState<string>("all");
+  const [uploading, setUploading] = useState(false);
+  const [uploadTripId, setUploadTripId] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: docs = [], isLoading } = useDocumentsByTruck(truckId);
+  const upload = useUploadDocuments(truckId);
+  const deleteDoc = useDeleteDocument(truckId);
+
+  const filtered = tripFilter === "all"
+    ? docs
+    : docs.filter((d) => d.tripId === tripFilter);
+
+  const photos = filtered.filter((d) => d.fileType === "PHOTO");
+  const documents = filtered.filter((d) => d.fileType === "DOCUMENT");
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length || !uploadTripId) return;
+    setUploading(true);
+    try {
+      await upload.mutateAsync({ tripId: uploadTripId, files });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  function shortenTitle(title: string) {
+    const [from, to] = title.split(" → ");
+    const f = from?.split(",")[0]?.trim() ?? "";
+    const t = to?.split(",")[0]?.trim() ?? "";
+    return to ? `${f} → ${t}` : f;
+  }
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-8 px-2.5 gap-1.5"
+        onClick={() => setOpen(true)}
+        title="Attachments"
+      >
+        <FolderOpen className="h-4 w-4" />
+        {docs.length > 0 && (
+          <span className="text-xs text-muted-foreground">{docs.length}</span>
+        )}
+      </Button>
+
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col p-0">
+          <SheetHeader className="px-4 pt-4 pb-2 border-b">
+            <SheetTitle className="flex items-center gap-2">
+              <FolderOpen className="h-4 w-4" />
+              Attachments
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="flex flex-col gap-3 px-4 pt-3">
+            {/* фільтр по тріпу */}
+            <Select value={tripFilter} onValueChange={setTripFilter}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All trips ({docs.length})</SelectItem>
+                {trips.map((t) => {
+                  const count = docs.filter((d) => d.tripId === t.id).length;
+                  return (
+                    <SelectItem key={t.id} value={t.id}>
+                      {shortenTitle(t.title)}
+                      {t.orderNumber && ` · #${t.orderNumber}`}
+                      {count > 0 && ` (${count})`}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
+            {/* Upload */}
+            <div className="flex items-center gap-2">
+              <Select value={uploadTripId} onValueChange={setUploadTripId}>
+                <SelectTrigger className="h-8 text-xs flex-1">
+                  <SelectValue placeholder="Select trip to upload..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {trips.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {shortenTitle(t.title)}
+                      {t.orderNumber && ` · #${t.orderNumber}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                className="h-8 shrink-0"
+                disabled={!uploadTripId || uploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Plus className="h-3.5 w-3.5" />
+                )}
+                Upload
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                className="hidden"
+                onChange={handleUpload}
+              />
+            </div>
+          </div>
+
+          {/* Контент */}
+          <div className="flex-1 overflow-y-auto px-4 pb-4 mt-2">
+            {isLoading ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+                <FolderOpen className="h-8 w-8 opacity-30" />
+                <p className="text-sm">No attachments yet</p>
+              </div>
+            ) : (
+              <Tabs defaultValue="all">
+                <TabsList className="w-full mb-3">
+                  <TabsTrigger value="all" className="flex-1 text-xs">
+                    All ({filtered.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="photos" className="flex-1 text-xs">
+                    Photos ({photos.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="documents" className="flex-1 text-xs">
+                    Docs ({documents.length})
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* All */}
+                <TabsContent value="all" className="mt-0 flex flex-col gap-2">
+                  {photos.length > 0 && (
+                    <>
+                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Photos</p>
+                      <PhotoGrid docs={photos} onDelete={(id) => deleteDoc.mutate(id)} />
+                    </>
+                  )}
+                  {documents.length > 0 && (
+                    <>
+                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide mt-2">Documents</p>
+                      <DocList docs={documents} onDelete={(id) => deleteDoc.mutate(id)} />
+                    </>
+                  )}
+                </TabsContent>
+
+                {/* Photos */}
+                <TabsContent value="photos" className="mt-0">
+                  {photos.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-8">No photos</p>
+                  ) : (
+                    <PhotoGrid docs={photos} onDelete={(id) => deleteDoc.mutate(id)} />
+                  )}
+                </TabsContent>
+
+                {/* Documents */}
+                <TabsContent value="documents" className="mt-0">
+                  {documents.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-8">No documents</p>
+                  ) : (
+                    <DocList docs={documents} onDelete={(id) => deleteDoc.mutate(id)} />
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}
+
+function PhotoGrid({
+  docs,
+  onDelete,
+}: {
+  docs: TripDocumentFull[];
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {docs.map((doc) => (
+        <div key={doc.id} className="relative group rounded-lg overflow-hidden border bg-muted aspect-square">
+          <img
+            src={doc.fileUrl}
+            alt={doc.fileName}
+            className="w-full h-full object-cover"
+          />
+          {/* overlay з кнопками */}
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
+            <p className="text-[10px] text-white truncate">{doc.fileName}</p>
+            <div className="flex items-center gap-1 justify-end">
+              <a
+                href={getJpegDownloadUrl(doc.fileUrl)}
+                target="_blank"
+                rel="noreferrer"
+                title="Download JPEG"
+                className="flex items-center gap-1 rounded bg-white/20 hover:bg-white/30 px-1.5 py-0.5 text-white text-[10px] transition-colors"
+              >
+                <Download className="h-3 w-3" /> JPEG
+              </a>
+              <a
+                href={getImagePdfDownloadUrl(doc.fileUrl)}
+                target="_blank"
+                rel="noreferrer"
+                title="Download PDF"
+                className="flex items-center gap-1 rounded bg-white/20 hover:bg-white/30 px-1.5 py-0.5 text-white text-[10px] transition-colors"
+              >
+                <Download className="h-3 w-3" /> PDF
+              </a>
+              <button
+                onClick={() => onDelete(doc.id)}
+                title="Delete"
+                className="rounded bg-red-500/70 hover:bg-red-500 px-1.5 py-0.5 text-white text-[10px] transition-colors"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DocList({
+  docs,
+  onDelete,
+}: {
+  docs: TripDocumentFull[];
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      {docs.map((doc) => (
+        <div
+          key={doc.id}
+          role="button"
+          tabIndex={0}
+          onClick={() => openDoc(doc.id)}
+          onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id)}
+          className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 cursor-pointer hover:bg-muted/70 transition-colors"
+        >
+          <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium truncate">{doc.fileName}</p>
+            <p className="text-[10px] text-muted-foreground">
+              {doc.trip ? `${doc.trip.orderNumber ? `#${doc.trip.orderNumber} · ` : ""}` : ""}
+              {new Date(doc.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Скачати */}
+            <button
+              onClick={(e) => { e.stopPropagation(); downloadWithAuth(doc.id, doc.fileName); }}
+              title="Download"
+              className="p-1 rounded hover:bg-muted transition-colors"
+            >
+              <Download className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(doc.id); }}
+              title="Delete"
+              className="p-1 rounded hover:bg-red-50 transition-colors"
+            >
+              <Trash2 className="h-3.5 w-3.5 text-red-500" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Trips Tab ────────────────────────────────────────────────────────────────
 
 function TripsTab({
@@ -1261,15 +2047,37 @@ function TripsTab({
   onOpenTrip: (tripId: string) => void;
 }) {
   const { data: trips, isLoading } = useTripsByTruck(truckId);
+  const [search, setSearch] = useState("");
+
+  const filtered = trips?.filter((t) => {
+    const q = search.toLowerCase();
+    return (
+      t.title.toLowerCase().includes(q) ||
+      (t.orderNumber ?? "").toLowerCase().includes(q) ||
+      (t.driver.name ?? "").toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Search by route, order #, driver..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8 h-8 text-xs"
+          />
+        </div>
+        <AttachmentsDrawer truckId={truckId} trips={trips ?? []} />
         <NewTripDialog
           truckId={truckId}
           defaultDriverId={defaultDriverId}
           onCreated={(trip) => onOpenTrip(trip.id)}
         />
       </div>
+
       {isLoading ? (
         <div className="flex justify-center py-10">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -1278,9 +2086,13 @@ function TripsTab({
         <p className="text-center text-sm text-muted-foreground py-10">
           No trips yet.
         </p>
+      ) : filtered?.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground py-10">
+          Nothing found.
+        </p>
       ) : (
         <div className="flex flex-col gap-3">
-          {trips.map((trip) => (
+          {filtered?.map((trip) => (
             <TripCard
               key={trip.id}
               trip={trip}
@@ -1447,11 +2259,7 @@ export function TruckDetailPanel({
           value="documents"
           className="mt-4 flex-1 min-h-0 overflow-y-auto"
         >
-          <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
-              Coming soon
-            </CardContent>
-          </Card>
+          <DocumentsTab truckId={truckId} />
         </TabsContent>
 
         <TabsContent
