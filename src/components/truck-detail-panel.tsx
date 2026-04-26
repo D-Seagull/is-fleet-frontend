@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -655,12 +656,12 @@ function TripInfoCard({
   if (!editing) {
     return (
       <div
-        className="rounded-lg border bg-muted/40 px-4 py-3 flex flex-col gap-3 cursor-pointer select-none"
+        className="rounded-lg border bg-muted/40 px-3 py-1.5 md:px-4 md:py-3 flex flex-col gap-2 md:gap-3 cursor-pointer select-none"
         onClick={() => setCollapsed((c) => !c)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-medium text-sm truncate">
+            <span className="font-normal text-xs md:font-medium md:text-sm truncate">
               {shortenTripTitle(trip.title)}
               {trip.orderNumber && (
                 <span className="text-muted-foreground font-normal"> · #{trip.orderNumber}</span>
@@ -1053,9 +1054,9 @@ function TripChat({
   currentUserId: string;
   truckDispatcherId?: string | null;
 }) {
-  const { data: initialMessages, isLoading } = useTripMessages(trip.id);
+  const queryClient = useQueryClient();
+  const { data: messages = [], isLoading } = useTripMessages(trip.id);
   const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
-  const [messages, setMessages] = useState<TripMessage[]>(() => initialMessages ?? []);
   const [text, setText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -1085,19 +1086,15 @@ function TripChat({
   );
 
   useEffect(() => {
-    if (initialMessages) setMessages(initialMessages);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trip.id]);
-
-  useEffect(() => {
     const socket = getSocket();
     const joinRoom = () => socket.emit("joinTrip", trip.id);
     joinRoom();
     socket.on("connect", joinRoom);
     const handleNew = (msg: TripMessage) => {
       if (msg.tripId !== trip.id) return;
-      setMessages((prev) =>
-        prev.some((m) => m.id === msg.id) ? prev : [...prev, msg],
+      queryClient.setQueryData<TripMessage[]>(
+        ["trip-messages", trip.id],
+        (old = []) => old.some((m) => m.id === msg.id) ? old : [...old, msg],
       );
     };
     socket.on("newMessage", handleNew);
@@ -1105,7 +1102,7 @@ function TripChat({
       socket.off("connect", joinRoom);
       socket.off("newMessage", handleNew);
     };
-  }, [trip.id]);
+  }, [trip.id, queryClient]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1224,7 +1221,15 @@ function TripChat({
                     {msg.sender.name ?? "Unknown"}
                   </span>
                   <div className={cn("rounded-2xl px-3 py-2 text-sm", isMine ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                    {msg.content}
+                    {(() => {
+                      const [subject, ...rest] = msg.content.split("\n");
+                      return rest.length > 0 ? (
+                        <>
+                          <span className="font-semibold block">{subject}</span>
+                          <span className="whitespace-pre-wrap">{rest.join("\n")}</span>
+                        </>
+                      ) : msg.content;
+                    })()}
                   </div>
                   <span className="text-[10px] text-muted-foreground/60 px-1">
                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -1472,17 +1477,20 @@ export function ChatTab({
   defaultDriverId,
   initialTripId,
   truckDispatcherId,
+  navOpen = true,
 }: {
   truckId: string;
   defaultDriverId?: string | null;
   initialTripId?: string | null;
   truckDispatcherId?: string | null;
+  navOpen?: boolean;
 }) {
   const user = useAuthStore((s) => s.user);
   const { data: trips, isLoading } = useTripsByTruck(truckId);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(
     initialTripId ?? null,
   );
+  const [selectorOpen, setSelectorOpen] = useState(false);
 
   const activeTrip = trips?.find((t) => ACTIVE_STATUSES.includes(t.status));
   const resolvedTripId = selectedTripId ?? activeTrip?.id ?? null;
@@ -1498,7 +1506,36 @@ export function ChatTab({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 gap-4">
-      <div className="flex shrink-0 items-center gap-3">
+      {/* Mobile: compact bar with toggle + New Trip */}
+      <div className={cn("flex shrink-0 items-center gap-2 md:hidden", !navOpen && "hidden")}>
+        <button
+          className="flex-1 flex items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 h-8 text-xs text-left truncate"
+          onClick={() => setSelectorOpen((v) => !v)}
+        >
+          <span className="truncate flex-1 text-muted-foreground">
+            {selectedTrip ? shortenTripTitle(selectedTrip.title) : "Select trip..."}
+          </span>
+          {selectorOpen ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+        </button>
+        <NewTripDialog
+          truckId={truckId}
+          defaultDriverId={defaultDriverId}
+          onCreated={(trip) => { setSelectedTripId(trip.id); setSelectorOpen(false); }}
+        />
+      </div>
+      {/* Mobile: expanded selector */}
+      {selectorOpen && navOpen && (
+        <div className="md:hidden shrink-0">
+          <TripCombobox
+            trips={trips ?? []}
+            value={resolvedTripId}
+            onChange={(id) => { setSelectedTripId(id); setSelectorOpen(false); }}
+            className="w-full"
+          />
+        </div>
+      )}
+      {/* Desktop: always visible */}
+      <div className="hidden md:flex shrink-0 items-center gap-3">
         <TripCombobox
           trips={trips ?? []}
           value={resolvedTripId}
@@ -1932,6 +1969,7 @@ export function TruckDetailPanel({
   const user = useAuthStore((s) => s.user);
   const [chatTripId, setChatTripId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("chat");
+  const [navOpen, setNavOpen] = useState(false);
 
   const { data: truck, isLoading } = useTruck(truckId);
   const { data: notes, isLoading: notesLoading } = useTruckNotes(truckId);
@@ -1946,12 +1984,11 @@ export function TruckDetailPanel({
   // Resolve chat access once truck data is available
   useEffect(() => {
     if (!truck || !user) return;
-    const isCurrentDispatcher = truck.dispatcherId === user.id;
-    const isChatEnabled = user.role === "ADMIN" || isCurrentDispatcher;
+    const isDispatcher = user.role === "DISPATCHER" || user.role === "ADMIN";
     if (defaultTab) {
       setActiveTab(defaultTab);
     } else {
-      setActiveTab(isChatEnabled ? "chat" : "trips");
+      setActiveTab(isDispatcher ? "chat" : "trips");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [truck?.id, user?.id]);
@@ -2011,19 +2048,28 @@ export function TruckDetailPanel({
             </Link>
           </Button>
         )}
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">{truck.plate}</h1>
+        <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+          <h1 className="text-base md:text-2xl font-bold shrink-0">{truck.plate}</h1>
           <Badge
             variant="outline"
-            className={TRUCK_STATUS_COLORS[truck.status]}
+            className={cn("text-xs md:text-sm shrink-0", TRUCK_STATUS_COLORS[truck.status])}
           >
             {TRUCK_STATUS_LABELS[truck.status]}
           </Badge>
           {truck.currentDriver && (
-            <span className="text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-xs md:text-sm truncate">
               Driver: {truck.currentDriver.name}
             </span>
           )}
+          <button
+            className="md:hidden ml-auto shrink-0 flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-primary hover:bg-primary/20 transition-colors"
+            onClick={() => setNavOpen((v) => !v)}
+            aria-label="Toggle navigation"
+          >
+            {navOpen
+              ? <ChevronUp className="h-3.5 w-3.5" />
+              : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
         </div>
       </div>
 
@@ -2032,7 +2078,7 @@ export function TruckDetailPanel({
         onValueChange={setActiveTab}
         className="flex flex-col flex-1 min-h-0 w-full"
       >
-        <TabsList className="shrink-0">
+        <TabsList className={cn("shrink-0", !navOpen && "hidden md:flex")}>
           <TabsTrigger value="chat" disabled={!isChatEnabled}>
             Chat
           </TabsTrigger>
@@ -2048,6 +2094,7 @@ export function TruckDetailPanel({
             defaultDriverId={truck.currentDriverId}
             initialTripId={chatTripId}
             truckDispatcherId={truck.dispatcherId}
+            navOpen={navOpen}
             key={chatTripId ?? "chat"}
           />
         </TabsContent>

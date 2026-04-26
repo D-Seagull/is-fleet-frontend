@@ -1,8 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import Link from "next/link";
-import { Search, Paperclip, MapPin, Loader2, FileText, ImageIcon, Eye, Download, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Search,
+  Paperclip,
+  MapPin,
+  Loader2,
+  FileText,
+  ImageIcon,
+  Eye,
+  Download,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,10 +40,14 @@ function StopsCell({ stops }: { stops: Trip["stops"] }) {
     <div className="flex flex-col gap-0.5 max-w-[260px]">
       {stops.map((stop, i) => (
         <div key={stop.id} className="flex items-start gap-1.5 text-xs">
-          <span className={`shrink-0 mt-0.5 font-medium ${stop.type === "LOADING" ? "text-blue-500" : "text-orange-500"}`}>
+          <span
+            className={`shrink-0 mt-0.5 font-medium ${stop.type === "LOADING" ? "text-blue-500" : "text-orange-500"}`}
+          >
             {i + 1}.
           </span>
-          <span className="text-muted-foreground truncate">{stop.address ?? "—"}</span>
+          <span className="text-muted-foreground truncate">
+            {stop.address ?? "—"}
+          </span>
         </div>
       ))}
     </div>
@@ -44,7 +59,10 @@ function DocsDropdown({ trip }: { trip: Trip }) {
   return (
     <div className="flex flex-col gap-0.5 py-1">
       {trip.documents.map((doc) => (
-        <div key={doc.id} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/60 transition-colors">
+        <div
+          key={doc.id}
+          className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/60 transition-colors"
+        >
           {doc.fileType === "PHOTO" ? (
             <ImageIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           ) : (
@@ -52,21 +70,30 @@ function DocsDropdown({ trip }: { trip: Trip }) {
           )}
           <span
             className="flex-1 text-xs truncate cursor-pointer hover:underline"
-            onClick={(e) => { e.stopPropagation(); openDoc(doc.id); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              openDoc(doc.id);
+            }}
             title={doc.fileName}
           >
             {doc.fileName}
           </span>
           <div className="flex items-center gap-0.5 shrink-0">
             <button
-              onClick={(e) => { e.stopPropagation(); openDoc(doc.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                openDoc(doc.id);
+              }}
               title="View"
               className="p-1 rounded hover:bg-muted"
             >
               <Eye className="h-3 w-3 text-muted-foreground" />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); downloadDoc(doc.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                downloadDoc(doc.id);
+              }}
               title="Download"
               className="p-1 rounded hover:bg-muted"
             >
@@ -96,7 +123,8 @@ export default function TripsPage() {
       if ((t.truck.plate ?? "").toLowerCase().includes(q)) return true;
       if ((t.driver.name ?? "").toLowerCase().includes(q)) return true;
       if ((t.dispatcher.name ?? "").toLowerCase().includes(q)) return true;
-      if (t.stops.some((s) => (s.address ?? "").toLowerCase().includes(q))) return true;
+      if (t.stops.some((s) => (s.address ?? "").toLowerCase().includes(q)))
+        return true;
       return false;
     });
   }, [trips, searchQuery]);
@@ -125,10 +153,16 @@ export default function TripsPage() {
             <TableRow>
               <TableHead className="w-[100px]">Order #</TableHead>
               <TableHead className="w-[160px]">Trip</TableHead>
-              <TableHead className="hidden md:table-cell w-[110px]">Status</TableHead>
+              <TableHead className="hidden md:table-cell w-[110px]">
+                Status
+              </TableHead>
               <TableHead className="w-[90px]">Truck</TableHead>
-              <TableHead className="hidden md:table-cell w-[130px]">Driver</TableHead>
-              <TableHead className="hidden lg:table-cell w-[130px]">Dispatcher</TableHead>
+              <TableHead className="hidden md:table-cell w-[130px]">
+                Driver
+              </TableHead>
+              <TableHead className="hidden lg:table-cell w-[130px]">
+                Dispatcher
+              </TableHead>
               <TableHead className="hidden lg:table-cell">
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
@@ -149,8 +183,13 @@ export default function TripsPage() {
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={COLS} className="text-center py-12 text-muted-foreground">
-                  {searchQuery ? "No trips match your search." : "No trips yet."}
+                <TableCell
+                  colSpan={COLS}
+                  className="text-center py-12 text-muted-foreground"
+                >
+                  {searchQuery
+                    ? "No trips match your search."
+                    : "No trips yet."}
                 </TableCell>
               </TableRow>
             ) : (
@@ -158,25 +197,31 @@ export default function TripsPage() {
                 const isExpanded = expandedId === trip.id;
                 const hasDocs = trip.documents.length > 0;
                 return (
-                  <>
+                  <Fragment key={trip.id}>
                     <TableRow
-                      key={trip.id}
+                      className="align-middle cursor-pointer hover:bg-muted/40 transition-colors"
                       className="align-middle cursor-pointer hover:bg-muted/40 transition-colors"
                       onClick={() => toggle(trip.id)}
                     >
                       {/* Order # */}
                       <TableCell className="py-2 md:py-3">
                         {trip.orderNumber ? (
-                          <span className="font-mono text-xs md:text-sm">{trip.orderNumber}</span>
+                          <span className="font-mono text-xs md:text-sm">
+                            {trip.orderNumber}
+                          </span>
                         ) : (
-                          <span className="text-muted-foreground text-xs md:text-sm">—</span>
+                          <span className="text-muted-foreground text-xs md:text-sm">
+                            —
+                          </span>
                         )}
                       </TableCell>
 
                       {/* Trip title + date */}
                       <TableCell className="py-2 md:py-3">
                         <div className="flex flex-col gap-0.5">
-                          <span className="font-medium text-xs md:text-sm leading-tight">{trip.title}</span>
+                          <span className="font-medium text-xs md:text-sm leading-tight">
+                            {trip.title}
+                          </span>
                           <span className="text-[11px] md:text-xs text-muted-foreground">
                             {new Date(trip.createdAt).toLocaleDateString()}
                           </span>
@@ -185,13 +230,19 @@ export default function TripsPage() {
 
                       {/* Status */}
                       <TableCell className="hidden md:table-cell py-3">
-                        <Badge variant="outline" className={TRIP_STATUS_COLORS[trip.status]}>
+                        <Badge
+                          variant="outline"
+                          className={TRIP_STATUS_COLORS[trip.status]}
+                        >
                           {TRIP_STATUS_LABELS[trip.status]}
                         </Badge>
                       </TableCell>
 
                       {/* Truck */}
-                      <TableCell className="py-2 md:py-3" onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        className="py-2 md:py-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Link
                           href={`/trucks/${trip.truck.id}?tab=info`}
                           className="text-xs md:text-sm hover:underline"
@@ -202,12 +253,16 @@ export default function TripsPage() {
 
                       {/* Driver */}
                       <TableCell className="hidden md:table-cell py-3">
-                        <span className="text-sm">{trip.driver.name ?? "—"}</span>
+                        <span className="text-sm">
+                          {trip.driver.name ?? "—"}
+                        </span>
                       </TableCell>
 
                       {/* Dispatcher */}
                       <TableCell className="hidden lg:table-cell py-3">
-                        <span className="text-sm">{trip.dispatcher.name ?? "—"}</span>
+                        <span className="text-sm">
+                          {trip.dispatcher.name ?? "—"}
+                        </span>
                       </TableCell>
 
                       {/* Addresses */}
@@ -220,26 +275,35 @@ export default function TripsPage() {
                         {hasDocs ? (
                           <div className="flex items-center justify-center gap-1 text-muted-foreground">
                             <Paperclip className="h-3.5 w-3.5" />
-                            <span className="text-xs">{trip.documents.length}</span>
-                            {isExpanded
-                              ? <ChevronUp className="h-3 w-3" />
-                              : <ChevronDown className="h-3 w-3" />}
+                            <span className="text-xs">
+                              {trip.documents.length}
+                            </span>
+                            {isExpanded ? (
+                              <ChevronUp className="h-3 w-3" />
+                            ) : (
+                              <ChevronDown className="h-3 w-3" />
+                            )}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
+                          <span className="text-muted-foreground text-xs">
+                            —
+                          </span>
                         )}
                       </TableCell>
                     </TableRow>
 
                     {/* Expanded docs row */}
                     {isExpanded && hasDocs && (
-                      <TableRow key={`${trip.id}-docs`} className="bg-blue-50/60 dark:bg-blue-950/20 border-l-2 border-l-blue-400/60">
+                      <TableRow
+                        key={`${trip.id}-docs`}
+                        className="bg-blue-50/60 dark:bg-blue-950/20 border-l-2 border-l-blue-400/60"
+                      >
                         <TableCell colSpan={COLS} className="py-0 px-4">
                           <DocsDropdown trip={trip} />
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </Fragment>
                 );
               })
             )}
