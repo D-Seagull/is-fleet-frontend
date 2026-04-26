@@ -27,7 +27,17 @@ import {
   ImageIcon,
   Download,
   Smile,
+  Eye,
 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { openDoc, downloadDoc, fetchSignedUrl } from "@/lib/doc-helpers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -567,7 +577,17 @@ function CoordsCell({ coords }: { coords: string }) {
 
 // ─── Trip Info Card ───────────────────────────────────────────────────────────
 
-function TripInfoCard({ trip, truckId }: { trip: Trip; truckId: string }) {
+function TripInfoCard({
+  trip,
+  truckId,
+  docsCount,
+  onDocsClick,
+}: {
+  trip: Trip;
+  truckId: string;
+  docsCount?: number;
+  onDocsClick?: () => void;
+}) {
   const updateInfo = useUpdateTripInfo(truckId);
   const updateStatus = useUpdateTripStatus(truckId);
   const [editing, setEditing] = useState(false);
@@ -650,6 +670,16 @@ function TripInfoCard({ trip, truckId }: { trip: Trip; truckId: string }) {
               <span className="shrink-0 text-[10px] text-muted-foreground border rounded px-1.5 py-0.5">
                 edited
               </span>
+            )}
+            {onDocsClick !== undefined && (
+              <button
+                className="shrink-0 flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={(e) => { e.stopPropagation(); onDocsClick(); }}
+                title="Trip documents"
+              >
+                <FolderOpen className="h-3.5 w-3.5" />
+                {!!docsCount && <span className="text-[10px]">{docsCount}</span>}
+              </button>
             )}
           </div>
           <div className="flex items-center gap-1">
@@ -916,39 +946,98 @@ function TripInfoCard({ trip, truckId }: { trip: Trip; truckId: string }) {
   );
 }
 
-// ─── File helpers ─────────────────────────────────────────────────────────────
+// ─── Trip Attachments Content ─────────────────────────────────────────────────
 
-async function getToken(): Promise<string | null> {
-  const { useAuthStore } = await import("@/store/auth");
-  return useAuthStore.getState().token;
-}
+function TripAttachmentsContent({
+  tripId,
+  truckId,
+  canDelete = false,
+  canUpload = false,
+}: {
+  tripId: string;
+  truckId: string;
+  canDelete?: boolean;
+  canUpload?: boolean;
+}) {
+  const { data: docs = [], isLoading } = useDocumentsByTrip(tripId);
+  const deleteDoc = useDeleteDocument(truckId);
+  const upload = useUploadDocuments(truckId);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
-async function fetchSignedUrl(endpoint: string): Promise<string | null> {
-  const token = await getToken();
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-  const res = await fetch(`${base}${endpoint}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) return null;
-  const data = await res.json() as { url: string };
-  return data.url;
-}
+  const photos = docs.filter((d) => d.fileType === "PHOTO");
+  const documents = docs.filter((d) => d.fileType === "DOCUMENT");
 
-// Opens file in new tab — window.open called synchronously to avoid popup block.
-async function openDoc(docId: string) {
-  const win = window.open("", "_blank");
-  if (!win) return;
-  const url = await fetchSignedUrl(`/documents/${docId}/view`);
-  if (!url) { win.close(); return; }
-  win.location.href = url;
-}
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploading(true);
+    try { await upload.mutateAsync({ tripId, files }); }
+    finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
-// Downloads file — Supabase signed URL includes Content-Disposition: attachment,
-// so the browser downloads without navigating away from the current page.
-async function downloadDoc(docId: string) {
-  const url = await fetchSignedUrl(`/documents/${docId}/download`);
-  if (!url) return;
-  window.location.href = url;
+  if (isLoading) return (
+    <div className="py-6 flex justify-center">
+      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      {canUpload && (
+        <div className="flex justify-end">
+          <Button size="sm" className="h-7 text-xs gap-1" disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}>
+            {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+            Upload
+          </Button>
+          <input ref={fileInputRef} type="file" multiple
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" className="hidden"
+            onChange={handleUpload} />
+        </div>
+      )}
+      {docs.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-6">No attachments yet.</p>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          {photos.map((doc) => (
+            <div key={doc.id} className="flex items-center gap-2 p-1 rounded hover:bg-muted/50">
+              <img src={doc.signedUrl} alt={doc.fileName}
+                className="h-10 w-10 object-cover rounded shrink-0 cursor-pointer"
+                onClick={() => openDoc(doc.id)} />
+              <span className="text-xs truncate flex-1">{doc.fileName}</span>
+              <div className="flex items-center gap-0.5 shrink-0">
+                <button onClick={() => openDoc(doc.id)} title="View"
+                  className="p-1 rounded hover:bg-muted"><Eye className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                <button onClick={() => downloadDoc(doc.id)} title="Download"
+                  className="p-1 rounded hover:bg-muted"><Download className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                {canDelete && <button onClick={() => deleteDoc.mutate(doc.id)} title="Delete"
+                  className="p-1 rounded hover:bg-muted"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>}
+              </div>
+            </div>
+          ))}
+          {documents.map((doc) => (
+            <div key={doc.id} className="flex items-center gap-2 p-1 rounded hover:bg-muted/50">
+              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <button onClick={() => openDoc(doc.id)}
+                className="text-xs truncate flex-1 text-left hover:underline">{doc.fileName}</button>
+              <div className="flex items-center gap-0.5 shrink-0">
+                <button onClick={() => openDoc(doc.id)} title="View"
+                  className="p-1 rounded hover:bg-muted"><Eye className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                <button onClick={() => downloadDoc(doc.id)} title="Download"
+                  className="p-1 rounded hover:bg-muted"><Download className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                {canDelete && <button onClick={() => deleteDoc.mutate(doc.id)} title="Delete"
+                  className="p-1 rounded hover:bg-muted"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── Trip Chat ────────────────────────────────────────────────────────────────
@@ -971,6 +1060,7 @@ function TripChat({
   const [showEmoji, setShowEmoji] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState<{ id: string; signedUrl: string } | null>(null);
+  const [showTripDocs, setShowTripDocs] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadDocuments(truckId);
@@ -1051,8 +1141,37 @@ function TripChat({
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="shrink-0">
-        <TripInfoCard trip={trip} truckId={truckId} />
+        <TripInfoCard
+          trip={trip}
+          truckId={truckId}
+          docsCount={tripDocs.length}
+          onDocsClick={() => setShowTripDocs(true)}
+        />
       </div>
+
+      {/* Trip docs sheet */}
+      <Sheet open={showTripDocs} onOpenChange={setShowTripDocs}>
+        <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0">
+          <SheetHeader className="px-4 pt-4 pb-3 border-b">
+            <SheetTitle className="flex items-center gap-2">
+              <FolderOpen className="h-4 w-4" />
+              Trip Documents
+            </SheetTitle>
+            {trip.orderNumber && (
+              <p className="text-xs text-muted-foreground">Order #{trip.orderNumber}</p>
+            )}
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto px-4 py-3">
+            <TripAttachmentsContent
+              tripId={trip.id}
+              truckId={truckId}
+              canDelete
+              canUpload
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
       {/* Lightbox */}
       {lightbox && (
         <div
@@ -1535,24 +1654,12 @@ function TripCard({
       )}
       {section === "attachments" && (
         <div className="border-t px-4 py-3">
-          {allDocs.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No attachments yet.</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {allDocs.map((doc) => (
-                <a
-                  key={doc.id}
-                  href={doc.signedUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 rounded-md border bg-muted px-2.5 py-1.5 text-xs hover:bg-muted/80 transition-colors"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  {doc.fileName}
-                </a>
-              ))}
-            </div>
-          )}
+          <TripAttachmentsContent
+            tripId={trip.id}
+            truckId={truckId}
+            canDelete
+            canUpload
+          />
         </div>
       )}
     </div>
@@ -1567,14 +1674,13 @@ function DocumentsTab({ truckId }: { truckId: string }) {
   const [uploadTripId, setUploadTripId] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [lightbox, setLightbox] = useState<{ id: string; signedUrl: string } | null>(null);
 
   const { data: docs = [], isLoading } = useDocumentsByTruck(truckId);
   const upload = useUploadDocuments(truckId);
   const deleteDoc = useDeleteDocument(truckId);
 
   const filtered = tripFilter === "all" ? docs : docs.filter((d) => d.tripId === tripFilter);
-  const photos = filtered.filter((d) => d.fileType === "PHOTO");
-  const documents = filtered.filter((d) => d.fileType === "DOCUMENT");
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -1589,12 +1695,31 @@ function DocumentsTab({ truckId }: { truckId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Filters + Upload */}
-      <div className="flex flex-col gap-2">
-        {/* Trip filter */}
+    <div className="flex flex-col gap-3">
+      {/* Lightbox */}
+      {lightbox && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={() => setLightbox(null)}>
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white"
+            onClick={() => setLightbox(null)}>
+            <X className="h-6 w-6" />
+          </button>
+          <img src={lightbox.signedUrl} alt="preview"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()} />
+          <div className="absolute bottom-4">
+            <button className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-white text-sm transition-colors"
+              onClick={(e) => { e.stopPropagation(); downloadDoc(lightbox.id); }}>
+              <Download className="h-4 w-4" /> Download
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Upload row */}
+      <div className="flex items-center gap-2">
         <Select value={tripFilter} onValueChange={setTripFilter}>
-          <SelectTrigger className="h-8 text-xs">
+          <SelectTrigger className="h-8 text-xs flex-1">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -1611,47 +1736,27 @@ function DocumentsTab({ truckId }: { truckId: string }) {
             })}
           </SelectContent>
         </Select>
-
-        {/* Upload row */}
-        <div className="flex items-center gap-2">
-          <Select value={uploadTripId} onValueChange={setUploadTripId}>
-            <SelectTrigger className="h-8 text-xs flex-1">
-              <SelectValue placeholder="Select trip to upload..." />
-            </SelectTrigger>
-            <SelectContent>
-              {trips.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {shortenTripTitle(t.title)}
-                  {t.orderNumber && ` · #${t.orderNumber}`}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            className="h-8 shrink-0"
-            disabled={!uploadTripId || uploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {uploading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Plus className="h-3.5 w-3.5" />
-            )}
-            Upload
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-            className="hidden"
-            onChange={handleUpload}
-          />
-        </div>
+        <Select value={uploadTripId} onValueChange={setUploadTripId}>
+          <SelectTrigger className="h-8 text-xs w-[130px] shrink-0">
+            <SelectValue placeholder="Trip…" />
+          </SelectTrigger>
+          <SelectContent>
+            {trips.map((t) => (
+              <SelectItem key={t.id} value={t.id}>
+                {t.orderNumber ? `#${t.orderNumber}` : shortenTripTitle(t.title)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button size="sm" className="h-8 shrink-0 px-3" disabled={!uploadTripId || uploading}
+          onClick={() => fileInputRef.current?.click()}>
+          {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+        </Button>
+        <input ref={fileInputRef} type="file" multiple
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" className="hidden" onChange={handleUpload} />
       </div>
 
-      {/* Content */}
+      {/* Table */}
       {isLoading ? (
         <div className="flex justify-center py-10">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -1662,339 +1767,82 @@ function DocumentsTab({ truckId }: { truckId: string }) {
           <p className="text-sm">No attachments yet</p>
         </div>
       ) : (
-        <Tabs defaultValue="all">
-          <TabsList className="w-full mb-3">
-            <TabsTrigger value="all" className="flex-1 text-xs">
-              All ({filtered.length})
-            </TabsTrigger>
-            <TabsTrigger value="photos" className="flex-1 text-xs">
-              Photos ({photos.length})
-            </TabsTrigger>
-            <TabsTrigger value="docs" className="flex-1 text-xs">
-              Docs ({documents.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="mt-0 flex flex-col gap-2">
-            {photos.length > 0 && (
-              <>
-                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Photos</p>
-                <PhotoGrid docs={photos} onDelete={(id) => deleteDoc.mutate(id)} />
-              </>
-            )}
-            {documents.length > 0 && (
-              <>
-                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide mt-2">Documents</p>
-                <DocList docs={documents} onDelete={(id) => deleteDoc.mutate(id)} />
-              </>
-            )}
-          </TabsContent>
-
-          <TabsContent value="photos" className="mt-0">
-            {photos.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No photos</p>
-            ) : (
-              <PhotoGrid docs={photos} onDelete={(id) => deleteDoc.mutate(id)} />
-            )}
-          </TabsContent>
-
-          <TabsContent value="docs" className="mt-0">
-            {documents.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No documents</p>
-            ) : (
-              <DocList docs={documents} onDelete={(id) => deleteDoc.mutate(id)} />
-            )}
-          </TabsContent>
-        </Tabs>
+        <div className="rounded-md border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="text-[11px]">
+                <TableHead className="w-12 px-2 py-2" />
+                <TableHead className="px-2 py-2">File</TableHead>
+                <TableHead className="px-2 py-2 hidden sm:table-cell w-24">Date</TableHead>
+                <TableHead className="px-2 py-2 hidden sm:table-cell w-24">Order #</TableHead>
+                <TableHead className="px-2 py-2 hidden md:table-cell">Driver</TableHead>
+                <TableHead className="px-2 py-2 w-20 text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((doc) => {
+                const isPhoto = doc.fileType === "PHOTO";
+                return (
+                  <TableRow key={doc.id} className="text-xs">
+                    <TableCell className="px-2 py-1.5 w-12">
+                      {isPhoto ? (
+                        <img
+                          src={doc.signedUrl}
+                          alt={doc.fileName}
+                          className="h-9 w-9 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => setLightbox({ id: doc.id, signedUrl: doc.signedUrl })}
+                        />
+                      ) : (
+                        <div className="h-9 w-9 flex items-center justify-center rounded bg-muted">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="px-2 py-1.5 max-w-[120px]">
+                      <button
+                        onClick={() => openDoc(doc.id)}
+                        className="truncate block w-full text-left hover:underline font-medium"
+                        title={doc.fileName}
+                      >
+                        {doc.fileName}
+                      </button>
+                    </TableCell>
+                    <TableCell className="px-2 py-1.5 text-muted-foreground hidden sm:table-cell whitespace-nowrap">
+                      {new Date(doc.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="px-2 py-1.5 text-muted-foreground hidden sm:table-cell font-mono">
+                      {doc.trip?.orderNumber ? `#${doc.trip.orderNumber}` : "—"}
+                    </TableCell>
+                    <TableCell className="px-2 py-1.5 text-muted-foreground hidden md:table-cell">
+                      {doc.uploader?.name ?? "—"}
+                    </TableCell>
+                    <TableCell className="px-2 py-1.5">
+                      <div className="flex items-center gap-0.5 justify-end">
+                        <button onClick={() => openDoc(doc.id)} title="View"
+                          className="p-1 rounded hover:bg-muted">
+                          <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                        </button>
+                        <button onClick={() => downloadDoc(doc.id)} title="Download"
+                          className="p-1 rounded hover:bg-muted">
+                          <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                        </button>
+                        <button onClick={() => deleteDoc.mutate(doc.id)} title="Delete"
+                          className="p-1 rounded hover:bg-muted">
+                          <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );
 }
 
-// ─── Attachments Drawer ───────────────────────────────────────────────────────
-
-function AttachmentsDrawer({
-  truckId,
-  trips,
-}: {
-  truckId: string;
-  trips: Trip[];
-}) {
-  const [open, setOpen] = useState(false);
-  const [tripFilter, setTripFilter] = useState<string>("all");
-  const [uploading, setUploading] = useState(false);
-  const [uploadTripId, setUploadTripId] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { data: docs = [], isLoading } = useDocumentsByTruck(truckId);
-  const upload = useUploadDocuments(truckId);
-  const deleteDoc = useDeleteDocument(truckId);
-
-  const filtered = tripFilter === "all"
-    ? docs
-    : docs.filter((d) => d.tripId === tripFilter);
-
-  const photos = filtered.filter((d) => d.fileType === "PHOTO");
-  const documents = filtered.filter((d) => d.fileType === "DOCUMENT");
-
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    if (!files.length || !uploadTripId) return;
-    setUploading(true);
-    try {
-      await upload.mutateAsync({ tripId: uploadTripId, files });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
-
-  function shortenTitle(title: string) {
-    const [from, to] = title.split(" → ");
-    const f = from?.split(",")[0]?.trim() ?? "";
-    const t = to?.split(",")[0]?.trim() ?? "";
-    return to ? `${f} → ${t}` : f;
-  }
-
-  return (
-    <>
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-8 px-2.5 gap-1.5"
-        onClick={() => setOpen(true)}
-        title="Attachments"
-      >
-        <FolderOpen className="h-4 w-4" />
-        {docs.length > 0 && (
-          <span className="text-xs text-muted-foreground">{docs.length}</span>
-        )}
-      </Button>
-
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col p-0">
-          <SheetHeader className="px-4 pt-4 pb-2 border-b">
-            <SheetTitle className="flex items-center gap-2">
-              <FolderOpen className="h-4 w-4" />
-              Attachments
-            </SheetTitle>
-          </SheetHeader>
-
-          <div className="flex flex-col gap-3 px-4 pt-3">
-            {/* фільтр по тріпу */}
-            <Select value={tripFilter} onValueChange={setTripFilter}>
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All trips ({docs.length})</SelectItem>
-                {trips.map((t) => {
-                  const count = docs.filter((d) => d.tripId === t.id).length;
-                  return (
-                    <SelectItem key={t.id} value={t.id}>
-                      {shortenTitle(t.title)}
-                      {t.orderNumber && ` · #${t.orderNumber}`}
-                      {count > 0 && ` (${count})`}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-
-            {/* Upload */}
-            <div className="flex items-center gap-2">
-              <Select value={uploadTripId} onValueChange={setUploadTripId}>
-                <SelectTrigger className="h-8 text-xs flex-1">
-                  <SelectValue placeholder="Select trip to upload..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {trips.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {shortenTitle(t.title)}
-                      {t.orderNumber && ` · #${t.orderNumber}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                size="sm"
-                className="h-8 shrink-0"
-                disabled={!uploadTripId || uploading}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {uploading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Plus className="h-3.5 w-3.5" />
-                )}
-                Upload
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                className="hidden"
-                onChange={handleUpload}
-              />
-            </div>
-          </div>
-
-          {/* Контент */}
-          <div className="flex-1 overflow-y-auto px-4 pb-4 mt-2">
-            {isLoading ? (
-              <div className="flex justify-center py-10">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
-                <FolderOpen className="h-8 w-8 opacity-30" />
-                <p className="text-sm">No attachments yet</p>
-              </div>
-            ) : (
-              <Tabs defaultValue="all">
-                <TabsList className="w-full mb-3">
-                  <TabsTrigger value="all" className="flex-1 text-xs">
-                    All ({filtered.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="photos" className="flex-1 text-xs">
-                    Photos ({photos.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="documents" className="flex-1 text-xs">
-                    Docs ({documents.length})
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* All */}
-                <TabsContent value="all" className="mt-0 flex flex-col gap-2">
-                  {photos.length > 0 && (
-                    <>
-                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Photos</p>
-                      <PhotoGrid docs={photos} onDelete={(id) => deleteDoc.mutate(id)} />
-                    </>
-                  )}
-                  {documents.length > 0 && (
-                    <>
-                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide mt-2">Documents</p>
-                      <DocList docs={documents} onDelete={(id) => deleteDoc.mutate(id)} />
-                    </>
-                  )}
-                </TabsContent>
-
-                {/* Photos */}
-                <TabsContent value="photos" className="mt-0">
-                  {photos.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">No photos</p>
-                  ) : (
-                    <PhotoGrid docs={photos} onDelete={(id) => deleteDoc.mutate(id)} />
-                  )}
-                </TabsContent>
-
-                {/* Documents */}
-                <TabsContent value="documents" className="mt-0">
-                  {documents.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">No documents</p>
-                  ) : (
-                    <DocList docs={documents} onDelete={(id) => deleteDoc.mutate(id)} />
-                  )}
-                </TabsContent>
-              </Tabs>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-    </>
-  );
-}
-
-function PhotoGrid({
-  docs,
-  onDelete,
-}: {
-  docs: TripDocumentFull[];
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      {docs.map((doc) => (
-        <div key={doc.id} className="relative group rounded-lg overflow-hidden border bg-muted aspect-square">
-          <img
-            src={doc.signedUrl}
-            alt={doc.fileName}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
-            <p className="text-[10px] text-white truncate">{doc.fileName}</p>
-            <div className="flex items-center gap-1 justify-end">
-              <button
-                onClick={() => downloadDoc(doc.id)}
-                title="Download"
-                className="flex items-center gap-1 rounded bg-white/20 hover:bg-white/30 px-1.5 py-0.5 text-white text-[10px] transition-colors"
-              >
-                <Download className="h-3 w-3" /> Download
-              </button>
-              <button
-                onClick={() => onDelete(doc.id)}
-                title="Delete"
-                className="rounded bg-red-500/70 hover:bg-red-500 px-1.5 py-0.5 text-white text-[10px] transition-colors"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function DocList({
-  docs,
-  onDelete,
-}: {
-  docs: TripDocumentFull[];
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      {docs.map((doc) => (
-        <div
-          key={doc.id}
-          role="button"
-          tabIndex={0}
-          onClick={() => openDoc(doc.id)}
-          onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id)}
-          className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 cursor-pointer hover:bg-muted/70 transition-colors"
-        >
-          <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate">{doc.fileName}</p>
-            <p className="text-[10px] text-muted-foreground">
-              {doc.trip ? `${doc.trip.orderNumber ? `#${doc.trip.orderNumber} · ` : ""}` : ""}
-              {new Date(doc.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={(e) => { e.stopPropagation(); downloadDoc(doc.id); }}
-              title="Download"
-              className="p-1 rounded hover:bg-muted transition-colors"
-            >
-              <Download className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete(doc.id); }}
-              title="Delete"
-              className="p-1 rounded hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-red-500" />
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ─── Trips Tab ────────────────────────────────────────────────────────────────
 
@@ -2031,7 +1879,6 @@ function TripsTab({
             className="pl-8 h-8 text-xs"
           />
         </div>
-        <AttachmentsDrawer truckId={truckId} trips={trips ?? []} />
         <NewTripDialog
           truckId={truckId}
           defaultDriverId={defaultDriverId}
