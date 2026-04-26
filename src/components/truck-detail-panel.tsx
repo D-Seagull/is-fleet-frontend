@@ -100,8 +100,6 @@ import {
   useDocumentsByTrip,
   useUploadDocuments,
   useDeleteDocument,
-  getJpegDownloadUrl,
-  getImagePdfDownloadUrl,
   type TripDocumentFull,
 } from "@/hooks/use-documents";
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
@@ -920,47 +918,37 @@ function TripInfoCard({ trip, truckId }: { trip: Trip; truckId: string }) {
 
 // ─── File helpers ─────────────────────────────────────────────────────────────
 
-// ─── File helpers ─────────────────────────────────────────────────────────────
-
 async function getToken(): Promise<string | null> {
   const { useAuthStore } = await import("@/store/auth");
   return useAuthStore.getState().token;
 }
 
-// Відкрити у новій вкладці.
-// window.open — СИНХРОННО до першого await, щоб браузер не заблокував як popup.
+async function fetchSignedUrl(endpoint: string): Promise<string | null> {
+  const token = await getToken();
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const res = await fetch(`${base}${endpoint}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) return null;
+  const data = await res.json() as { url: string };
+  return data.url;
+}
+
+// Opens file in new tab — window.open called synchronously to avoid popup block.
 async function openDoc(docId: string) {
   const win = window.open("", "_blank");
   if (!win) return;
-  const token = await getToken();
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-  const res = await fetch(`${base}/documents/${docId}/view`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) { win.close(); return; }
-  const blob = await res.blob();
-  const blobUrl = URL.createObjectURL(blob);
-  win.location.href = blobUrl;
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 5 * 60 * 1000);
+  const url = await fetchSignedUrl(`/documents/${docId}/view`);
+  if (!url) { win.close(); return; }
+  win.location.href = url;
 }
 
-// Скачати з правильним іменем файлу.
-async function downloadWithAuth(docId: string, fileName: string) {
-  const token = await getToken();
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-  const res = await fetch(`${base}/documents/${docId}/download`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) return;
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+// Downloads file — Supabase signed URL includes Content-Disposition: attachment,
+// so the browser downloads without navigating away from the current page.
+async function downloadDoc(docId: string) {
+  const url = await fetchSignedUrl(`/documents/${docId}/download`);
+  if (!url) return;
+  window.location.href = url;
 }
 
 // ─── Trip Chat ────────────────────────────────────────────────────────────────
@@ -982,7 +970,7 @@ function TripChat({
   const [text, setText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ id: string; signedUrl: string } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadDocuments(truckId);
@@ -1078,30 +1066,18 @@ function TripChat({
             <X className="h-6 w-6" />
           </button>
           <img
-            src={lightbox}
+            src={lightbox.signedUrl}
             alt="preview"
             className="max-w-full max-h-full object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />
           <div className="absolute bottom-4 flex gap-2">
-            <a
-              href={getJpegDownloadUrl(lightbox)}
-              target="_blank"
-              rel="noreferrer"
+            <button
               className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-white text-sm transition-colors"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); downloadDoc(lightbox.id); }}
             >
-              <Download className="h-4 w-4" /> JPEG
-            </a>
-            <a
-              href={getImagePdfDownloadUrl(lightbox)}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-white text-sm transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Download className="h-4 w-4" /> PDF
-            </a>
+              <Download className="h-4 w-4" /> Download
+            </button>
           </div>
         </div>
       )}
@@ -1155,16 +1131,15 @@ function TripChat({
                 {isPhoto ? (
                   <div
                     className="rounded-2xl overflow-hidden cursor-pointer border hover:opacity-90 transition-opacity"
-                    onClick={() => setLightbox(doc.fileUrl)}
+                    onClick={() => setLightbox({ id: doc.id, signedUrl: doc.signedUrl })}
                   >
                     <img
-                      src={doc.fileUrl}
+                      src={doc.signedUrl}
                       alt={doc.fileName}
                       className="max-w-[180px] max-h-[200px] w-full object-cover block"
                     />
                   </div>
                 ) : (
-                  /* Клік на картку = відкрити у новій вкладці */
                   <div
                     role="button"
                     tabIndex={0}
@@ -1187,10 +1162,9 @@ function TripChat({
                         {ext}
                       </span>
                     </div>
-                    {/* Скачати */}
                     <button
                       title="Download"
-                      onClick={(e) => { e.stopPropagation(); downloadWithAuth(doc.id, doc.fileName); }}
+                      onClick={(e) => { e.stopPropagation(); downloadDoc(doc.id); }}
                       className="shrink-0 opacity-70 hover:opacity-100"
                     >
                       <Download className="h-3.5 w-3.5" />
@@ -1568,7 +1542,7 @@ function TripCard({
               {allDocs.map((doc) => (
                 <a
                   key={doc.id}
-                  href={doc.fileUrl}
+                  href={doc.signedUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1.5 rounded-md border bg-muted px-2.5 py-1.5 text-xs hover:bg-muted/80 transition-colors"
@@ -1945,32 +1919,20 @@ function PhotoGrid({
       {docs.map((doc) => (
         <div key={doc.id} className="relative group rounded-lg overflow-hidden border bg-muted aspect-square">
           <img
-            src={doc.fileUrl}
+            src={doc.signedUrl}
             alt={doc.fileName}
             className="w-full h-full object-cover"
           />
-          {/* overlay з кнопками */}
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
             <p className="text-[10px] text-white truncate">{doc.fileName}</p>
             <div className="flex items-center gap-1 justify-end">
-              <a
-                href={getJpegDownloadUrl(doc.fileUrl)}
-                target="_blank"
-                rel="noreferrer"
-                title="Download JPEG"
+              <button
+                onClick={() => downloadDoc(doc.id)}
+                title="Download"
                 className="flex items-center gap-1 rounded bg-white/20 hover:bg-white/30 px-1.5 py-0.5 text-white text-[10px] transition-colors"
               >
-                <Download className="h-3 w-3" /> JPEG
-              </a>
-              <a
-                href={getImagePdfDownloadUrl(doc.fileUrl)}
-                target="_blank"
-                rel="noreferrer"
-                title="Download PDF"
-                className="flex items-center gap-1 rounded bg-white/20 hover:bg-white/30 px-1.5 py-0.5 text-white text-[10px] transition-colors"
-              >
-                <Download className="h-3 w-3" /> PDF
-              </a>
+                <Download className="h-3 w-3" /> Download
+              </button>
               <button
                 onClick={() => onDelete(doc.id)}
                 title="Delete"
@@ -2013,9 +1975,8 @@ function DocList({
             </p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            {/* Скачати */}
             <button
-              onClick={(e) => { e.stopPropagation(); downloadWithAuth(doc.id, doc.fileName); }}
+              onClick={(e) => { e.stopPropagation(); downloadDoc(doc.id); }}
               title="Download"
               className="p-1 rounded hover:bg-muted transition-colors"
             >

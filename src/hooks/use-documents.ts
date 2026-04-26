@@ -7,6 +7,7 @@ export interface TripDocumentFull {
   id: string;
   tripId: string;
   fileUrl: string;
+  signedUrl: string;
   fileName: string;
   fileType: FileDocType;
   publicId: string | null;
@@ -73,31 +74,3 @@ export function useDeleteDocument(truckId: string) {
   });
 }
 
-// Відкрити документ у браузері через Google Docs Viewer
-export function getDocViewerUrl(fileUrl: string): string {
-  return `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=false`;
-}
-
-// Скачати фото як JPEG (image-ресурс Cloudinary)
-export function getJpegDownloadUrl(fileUrl: string): string {
-  return fileUrl.replace("/image/upload/", "/image/upload/fl_attachment,f_jpg/");
-}
-
-// Скачати фото як PDF (image-ресурс Cloudinary)
-export function getImagePdfDownloadUrl(fileUrl: string): string {
-  return fileUrl.replace("/image/upload/", "/image/upload/fl_attachment,f_pdf/");
-}
-
-// Відкрити документ напряму в браузері.
-// Нормалізуємо URL: /image/upload/ → /raw/upload/ для PDF/DOCX.
-export function getPdfViewUrl(fileUrl: string): string {
-  return fileUrl.replace("/image/upload/", "/raw/upload/");
-}
-
-// Скачати документ через наш backend-проксі.
-// Backend отримує файл з Cloudinary і повертає з правильними заголовками
-// (Content-Disposition з оригінальним ім'ям файлу + розширенням).
-export function getDocDownloadUrl(docId: string): string {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-  return `${base}/documents/${docId}/download`;
-}
