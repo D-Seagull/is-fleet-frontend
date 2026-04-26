@@ -200,7 +200,6 @@ export default function TripsPage() {
                   <Fragment key={trip.id}>
                     <TableRow
                       className="align-middle cursor-pointer hover:bg-muted/40 transition-colors"
-                      className="align-middle cursor-pointer hover:bg-muted/40 transition-colors"
                       onClick={() => toggle(trip.id)}
                     >
                       {/* Order # */}
