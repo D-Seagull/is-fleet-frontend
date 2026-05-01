@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { isAxiosError } from "axios";
 import { Plus, Search, Star, Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,13 +54,20 @@ const languageLabels: Record<Language, string> = {
   RU: "Russian",
 };
 
+// E.164-ish: optional `+`, 8–16 digits after stripping spaces/dashes/parens.
+const PHONE_REGEX = /^\+?\d{8,16}$/;
+
+function normalizePhoneForCheck(raw: string): string {
+  return raw.replace(/[^\d+]/g, "");
+}
+
 export default function DriversPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
   const [language, setLanguage] = useState<Language>("EN");
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -78,18 +86,56 @@ export default function DriversPage() {
       d.email?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const cleanedPhone = normalizePhoneForCheck(phone);
+  const phoneValid = PHONE_REGEX.test(cleanedPhone);
+  const phoneError =
+    phone.length > 0 && !phoneValid
+      ? "Enter international format, e.g. +380501234567"
+      : null;
+  const canSubmit =
+    name.trim().length >= 2 && phoneValid && !createDriver.isPending;
+
+  function resetForm() {
+    setName("");
+    setPhone("");
+    setLanguage("EN");
+    setSubmitError(null);
+  }
+
+  function handleDialogChange(open: boolean) {
+    setDialogOpen(open);
+    if (!open) resetForm();
+  }
+
   async function handleCreate() {
-    if (!name.trim() || !phone.trim()) return;
-    await createDriver.mutateAsync({ name, phone, password: password || undefined, language });
-    setName(""); setPhone(""); setPassword(""); setLanguage("EN");
-    setDialogOpen(false);
+    if (!canSubmit) return;
+    setSubmitError(null);
+    try {
+      await createDriver.mutateAsync({
+        name: name.trim(),
+        phone: cleanedPhone,
+        language,
+      });
+      resetForm();
+      setDialogOpen(false);
+    } catch (e) {
+      if (isAxiosError(e)) {
+        const data = e.response?.data as { message?: string | string[] } | undefined;
+        const msg = Array.isArray(data?.message)
+          ? data?.message?.[0]
+          : data?.message;
+        setSubmitError(msg ?? "Failed to add driver. Please try again.");
+      } else {
+        setSubmitError("Failed to add driver. Please try again.");
+      }
+    }
   }
 
   return (
     <div className="flex flex-col p-4 gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Drivers</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -103,32 +149,65 @@ export default function DriversPage() {
             <div className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="d-name">Name</Label>
-                <Input id="d-name" placeholder="John Smith" value={name} onChange={(e) => setName(e.target.value)} />
+                <Input
+                  id="d-name"
+                  placeholder="John Smith"
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
                 <Label htmlFor="d-phone">Phone</Label>
-                <Input id="d-phone" placeholder="+1 555-0100" value={phone} onChange={(e) => setPhone(e.target.value)} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="d-password">Password (optional)</Label>
-                <Input id="d-password" type="password" placeholder="Leave empty to set later" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input
+                  id="d-phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="+380501234567"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  aria-invalid={!!phoneError}
+                  className={phoneError ? "border-destructive" : undefined}
+                />
+                {phoneError ? (
+                  <p className="text-xs text-destructive">{phoneError}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Driver will receive an SMS code on this number to log into the
+                    mobile app.
+                  </p>
+                )}
               </div>
               <div className="flex flex-col gap-2">
                 <Label>Language</Label>
-                <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={language}
+                  onValueChange={(v) => setLanguage(v as Language)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {(Object.entries(languageLabels) as [Language, string][]).map(([val, label]) => (
-                      <SelectItem key={val} value={val}>{label}</SelectItem>
-                    ))}
+                    {(Object.entries(languageLabels) as [Language, string][]).map(
+                      ([val, label]) => (
+                        <SelectItem key={val} value={val}>
+                          {label}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
               </div>
-              <Button
-                onClick={handleCreate}
-                disabled={!name.trim() || !phone.trim() || createDriver.isPending}
-              >
-                {createDriver.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {submitError && (
+                <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {submitError}
+                </p>
+              )}
+              <Button onClick={handleCreate} disabled={!canSubmit}>
+                {createDriver.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Add Driver
               </Button>
             </div>

@@ -95,6 +95,7 @@ import {
   useCreateTrip,
   useUpdateTripStatus,
   useUpdateTripInfo,
+  useReassignTrip,
   TRIP_STATUS_LABELS,
   TRIP_STATUS_COLORS,
   type Trip,
@@ -667,6 +668,12 @@ function TripInfoCard({
                 <span className="text-muted-foreground font-normal"> · #{trip.orderNumber}</span>
               )}
             </span>
+            {trip.driver?.name && (
+              <span className="shrink-0 flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <User className="h-3 w-3" />
+                {trip.driver.name}
+              </span>
+            )}
             {isEdited && (
               <span className="shrink-0 text-[10px] text-muted-foreground border rounded px-1.5 py-0.5">
                 edited
@@ -721,6 +728,7 @@ function TripInfoCard({
               >
                 <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
+
             </div>
             {collapsed ? (
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -1975,9 +1983,14 @@ export function TruckDetailPanel({
   const { data: notes, isLoading: notesLoading } = useTruckNotes(truckId);
   const { data: drivers } = useDrivers();
   const { data: assignableDispatchers } = useAssignableDispatchers();
+  const { data: truckTrips = [] } = useTripsByTruck(truckId);
   const updateTruck = useUpdateTruck();
+  const reassignTrip = useReassignTrip(truckId);
   const createNote = useCreateTruckNote();
   const deleteNote = useDeleteTruckNote();
+
+  const ACTIVE_STATUSES = ["ASSIGNED", "ACCEPTED", "ON_WAY", "ON_SITE", "LOADED"];
+  const activeTrip = truckTrips.find((t) => ACTIVE_STATUSES.includes(t.status)) ?? null;
 
   const [noteText, setNoteText] = useState("");
 
@@ -2168,13 +2181,19 @@ export function TruckDetailPanel({
                 </span>
                 <Select
                   value={truck.currentDriverId ?? "none"}
-                  onValueChange={(v) =>
+                  onValueChange={(v) => {
+                    const newDriverId = v === "none" ? null : v;
+                    // 1. Update the truck's assigned driver
                     updateTruck.mutate({
                       id: truckId,
-                      data: { currentDriverId: v === "none" ? null : v },
-                    })
-                  }
-                  disabled={updateTruck.isPending}
+                      data: { currentDriverId: newDriverId },
+                    });
+                    // 2. If there's an active trip — reassign it to the new driver
+                    if (activeTrip && newDriverId) {
+                      reassignTrip.mutate({ id: activeTrip.id, driverId: newDriverId });
+                    }
+                  }}
+                  disabled={updateTruck.isPending || reassignTrip.isPending}
                 >
                   <SelectTrigger className="h-7 flex-1 text-xs">
                     <SelectValue placeholder="No driver" />
@@ -2191,6 +2210,11 @@ export function TruckDetailPanel({
                 {truck.currentDriver?.phone && (
                   <span className="text-xs text-muted-foreground shrink-0">
                     {truck.currentDriver.phone}
+                  </span>
+                )}
+                {activeTrip && (
+                  <span className="text-[10px] text-muted-foreground shrink-0 border rounded px-1.5 py-0.5">
+                    active trip
                   </span>
                 )}
               </div>

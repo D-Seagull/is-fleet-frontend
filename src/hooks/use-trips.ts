@@ -176,6 +176,19 @@ export function useBroadcastToMyTrucks() {
   });
 }
 
+export function useReassignTrip(truckId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, driverId }: { id: string; driverId: string }) => {
+      const res = await api.patch(`/trips/${id}/assign`, { driverId });
+      return res.data as Trip;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
+    },
+  });
+}
+
 export function useUpdateTripInfo(truckId: string) {
   const queryClient = useQueryClient();
   return useMutation({

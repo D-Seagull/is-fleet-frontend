@@ -48,7 +48,6 @@ export interface DriverDetail {
 export interface CreateDriverPayload {
   name: string;
   phone: string;
-  password?: string;
   language?: Language;
 }
 
