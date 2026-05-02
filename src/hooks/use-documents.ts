@@ -14,10 +14,26 @@ export interface TripDocumentFull {
   uploadedBy: string;
   createdAt: string;
   uploader: { id: string; name: string | null; role: string };
-  trip?: { id: string; title: string; orderNumber: string | null };
+  trip?: {
+    id: string;
+    title: string;
+    orderNumber: string | null;
+    truck?: { id: string; plate: string };
+  };
 }
 
 const QUERY_KEY = (truckId: string) => ["documents-truck", truckId];
+
+// All documents the current user can access (company-scoped on backend).
+export function useAllDocuments() {
+  return useQuery<TripDocumentFull[]>({
+    queryKey: ["documents-all"],
+    queryFn: async () => {
+      const res = await api.get("/documents");
+      return res.data;
+    },
+  });
+}
 
 export function useDocumentsByTrip(tripId: string) {
   return useQuery<TripDocumentFull[]>({
@@ -56,6 +72,7 @@ export function useUploadDocuments(truckId: string) {
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY(truckId) });
       queryClient.invalidateQueries({ queryKey: ["documents-trip", vars.tripId] });
+      queryClient.invalidateQueries({ queryKey: ["documents-all"] });
       queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
     },
   });
@@ -69,6 +86,7 @@ export function useDeleteDocument(truckId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY(truckId) });
+      queryClient.invalidateQueries({ queryKey: ["documents-all"] });
       queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
     },
   });

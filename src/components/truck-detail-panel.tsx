@@ -994,6 +994,41 @@ function TripAttachmentsContent({
     </div>
   );
 
+  const renderRow = (doc: TripDocumentFull) => {
+    const isPhoto = doc.fileType === "PHOTO";
+    return (
+      <div key={doc.id} className="flex items-center gap-2 p-1 rounded hover:bg-muted/50">
+        {isPhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={doc.signedUrl}
+            alt={doc.fileName}
+            className="h-10 w-10 object-cover rounded shrink-0 cursor-pointer"
+            onClick={() => openDoc(doc.id)}
+          />
+        ) : (
+          <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+        )}
+        <button
+          onClick={() => openDoc(doc.id)}
+          className="text-xs truncate flex-1 text-left hover:underline"
+        >
+          {doc.fileName}
+        </button>
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button onClick={() => openDoc(doc.id)} title="View"
+            className="p-1 rounded hover:bg-muted"><Eye className="h-3.5 w-3.5 text-muted-foreground" /></button>
+          <button onClick={() => downloadDoc(doc.id)} title="Download"
+            className="p-1 rounded hover:bg-muted"><Download className="h-3.5 w-3.5 text-muted-foreground" /></button>
+          {canDelete && (
+            <button onClick={() => deleteDoc.mutate(doc.id)} title="Delete"
+              className="p-1 rounded hover:bg-muted"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col gap-3">
       {canUpload && (
@@ -1011,39 +1046,30 @@ function TripAttachmentsContent({
       {docs.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-6">No attachments yet.</p>
       ) : (
-        <div className="flex flex-col gap-1.5">
-          {photos.map((doc) => (
-            <div key={doc.id} className="flex items-center gap-2 p-1 rounded hover:bg-muted/50">
-              <img src={doc.signedUrl} alt={doc.fileName}
-                className="h-10 w-10 object-cover rounded shrink-0 cursor-pointer"
-                onClick={() => openDoc(doc.id)} />
-              <span className="text-xs truncate flex-1">{doc.fileName}</span>
-              <div className="flex items-center gap-0.5 shrink-0">
-                <button onClick={() => openDoc(doc.id)} title="View"
-                  className="p-1 rounded hover:bg-muted"><Eye className="h-3.5 w-3.5 text-muted-foreground" /></button>
-                <button onClick={() => downloadDoc(doc.id)} title="Download"
-                  className="p-1 rounded hover:bg-muted"><Download className="h-3.5 w-3.5 text-muted-foreground" /></button>
-                {canDelete && <button onClick={() => deleteDoc.mutate(doc.id)} title="Delete"
-                  className="p-1 rounded hover:bg-muted"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>}
-              </div>
-            </div>
-          ))}
-          {documents.map((doc) => (
-            <div key={doc.id} className="flex items-center gap-2 p-1 rounded hover:bg-muted/50">
-              <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <button onClick={() => openDoc(doc.id)}
-                className="text-xs truncate flex-1 text-left hover:underline">{doc.fileName}</button>
-              <div className="flex items-center gap-0.5 shrink-0">
-                <button onClick={() => openDoc(doc.id)} title="View"
-                  className="p-1 rounded hover:bg-muted"><Eye className="h-3.5 w-3.5 text-muted-foreground" /></button>
-                <button onClick={() => downloadDoc(doc.id)} title="Download"
-                  className="p-1 rounded hover:bg-muted"><Download className="h-3.5 w-3.5 text-muted-foreground" /></button>
-                {canDelete && <button onClick={() => deleteDoc.mutate(doc.id)} title="Delete"
-                  className="p-1 rounded hover:bg-muted"><Trash2 className="h-3.5 w-3.5 text-red-500" /></button>}
-              </div>
-            </div>
-          ))}
-        </div>
+        <Tabs defaultValue="ALL">
+          <TabsList className="grid grid-cols-3 mb-2">
+            <TabsTrigger value="ALL" className="text-xs">All ({docs.length})</TabsTrigger>
+            <TabsTrigger value="PHOTO" className="text-xs">Photos ({photos.length})</TabsTrigger>
+            <TabsTrigger value="DOCUMENT" className="text-xs">Documents ({documents.length})</TabsTrigger>
+          </TabsList>
+          <TabsContent value="ALL" className="flex flex-col gap-1.5 mt-0">
+            {docs.map(renderRow)}
+          </TabsContent>
+          <TabsContent value="PHOTO" className="flex flex-col gap-1.5 mt-0">
+            {photos.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-6">No photos.</p>
+            ) : (
+              photos.map(renderRow)
+            )}
+          </TabsContent>
+          <TabsContent value="DOCUMENT" className="flex flex-col gap-1.5 mt-0">
+            {documents.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-6">No documents.</p>
+            ) : (
+              documents.map(renderRow)
+            )}
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
@@ -1093,22 +1119,72 @@ function TripChat({
     new Date(a.data.createdAt).getTime() - new Date(b.data.createdAt).getTime(),
   );
 
+  // Keep currentUserId out of the socket effect's deps — it changes after auth
+  // hydrates and would otherwise re-register listeners (the old `connect`
+  // listener leaked because off() got the wrong reference).
+  const currentUserIdRef = useRef(currentUserId);
+  useEffect(() => {
+    currentUserIdRef.current = currentUserId;
+  }, [currentUserId]);
+
+  // Only acknowledge reads when the browser tab is visible. Without this,
+  // the sender sees ✓✓ even though the dispatcher had the tab in the
+  // background and never actually saw the message.
+  const tabVisibleRef = useRef(
+    typeof document !== "undefined" ? document.visibilityState === "visible" : true,
+  );
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const onVis = () => {
+      tabVisibleRef.current = document.visibilityState === "visible";
+      // On returning to the tab, catch up — mark any unread as read.
+      if (tabVisibleRef.current) {
+        getSocket().emit("markTripRead", { tripId: trip.id });
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [trip.id]);
+
   useEffect(() => {
     const socket = getSocket();
     const joinRoom = () => socket.emit("joinTrip", { tripId: trip.id });
+    const markRead = () => {
+      if (!tabVisibleRef.current) return;
+      socket.emit("markTripRead", { tripId: trip.id });
+    };
+    const onConnect = () => {
+      joinRoom();
+      markRead();
+    };
+
     joinRoom();
-    socket.on("connect", joinRoom);
+    markRead();
+    socket.on("connect", onConnect);
+
     const handleNew = (msg: TripMessage) => {
       if (msg.tripId !== trip.id) return;
       queryClient.setQueryData<TripMessage[]>(
         ["trip-messages", trip.id],
         (old = []) => old.some((m) => m.id === msg.id) ? old : [...old, msg],
       );
+      if (msg.senderId !== currentUserIdRef.current) markRead();
+    };
+    const handleRead = (payload: { tripId: string; messageIds: string[] }) => {
+      if (payload.tripId !== trip.id) return;
+      const ids = new Set(payload.messageIds);
+      queryClient.setQueryData<TripMessage[]>(
+        ["trip-messages", trip.id],
+        (old = []) =>
+          old.map((m) => (ids.has(m.id) ? { ...m, isRead: true } : m)),
+      );
     };
     socket.on("newMessage", handleNew);
+    socket.on("tripMessagesRead", handleRead);
     return () => {
-      socket.off("connect", joinRoom);
+      socket.off("connect", onConnect);
       socket.off("newMessage", handleNew);
+      socket.off("tripMessagesRead", handleRead);
     };
   }, [trip.id, queryClient]);
 
@@ -1118,8 +1194,17 @@ function TripChat({
 
   function handleSend() {
     if (!text.trim()) return;
+    const sock = getSocket();
+    // TEMP DEBUG — remove after we confirm send is working
+    console.log("[chat] send", {
+      tripId: trip.id,
+      connected: sock.connected,
+      transport: sock.io.engine?.transport?.name,
+      socketId: sock.id,
+      content: text.trim().slice(0, 30),
+    });
     // senderId is no longer sent — backend uses client.data.userId from JWT
-    getSocket().emit("sendMessage", {
+    sock.emit("sendMessage", {
       tripId: trip.id,
       content: text.trim(),
     });
@@ -1239,8 +1324,13 @@ function TripChat({
                       ) : msg.content;
                     })()}
                   </div>
-                  <span className="text-[10px] text-muted-foreground/60 px-1">
+                  <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {isMine && (
+                      <span className={cn(msg.isRead && "text-primary")}>
+                        {msg.isRead ? "✓✓" : "✓"}
+                      </span>
+                    )}
                   </span>
                 </div>
               );

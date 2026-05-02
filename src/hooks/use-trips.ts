@@ -75,6 +75,7 @@ export interface TripMessage {
   senderId: string;
   content: string;
   translatedContent: string | null;
+  isRead: boolean;
   createdAt: string;
   sender: { id: string; name: string | null; role: string };
 }
