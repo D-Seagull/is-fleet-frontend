@@ -10,26 +10,28 @@ export function getSocket(): Socket {
       typeof window !== "undefined"
         ? localStorage.getItem("access_token")
         : null;
+
     socket = io(SOCKET_URL, {
+      // Send token both ways so the gateway can pick whichever it reads.
       auth: { token },
-      transports: ["websocket"],
+      query: { userId: token ?? "" },
+      // Allow polling fallback so WebSocket errors don't kill the connection.
+      transports: ["websocket", "polling"],
       autoConnect: true,
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
       reconnectionDelay: 2000,
     });
 
-    socket.on("connect", () => {
-      console.log("✅ Socket connected:", socket?.id);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log("❌ Socket disconnected:", reason);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("Socket error:", err.message);
-    });
+    socket.on("connect", () =>
+      console.log("✅ Socket connected:", socket?.id),
+    );
+    socket.on("disconnect", (reason) =>
+      console.log("❌ Socket disconnected:", reason),
+    );
+    socket.on("connect_error", (err) =>
+      console.warn("⚠️ Socket error:", err.message),
+    );
   }
 
   return socket;

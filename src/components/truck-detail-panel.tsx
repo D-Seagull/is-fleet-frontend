@@ -1095,7 +1095,7 @@ function TripChat({
 
   useEffect(() => {
     const socket = getSocket();
-    const joinRoom = () => socket.emit("joinTrip", trip.id);
+    const joinRoom = () => socket.emit("joinTrip", { tripId: trip.id });
     joinRoom();
     socket.on("connect", joinRoom);
     const handleNew = (msg: TripMessage) => {
@@ -1118,10 +1118,10 @@ function TripChat({
 
   function handleSend() {
     if (!text.trim()) return;
+    // senderId is no longer sent — backend uses client.data.userId from JWT
     getSocket().emit("sendMessage", {
       tripId: trip.id,
       content: text.trim(),
-      senderId: currentUserId,
     });
     setText("");
   }
