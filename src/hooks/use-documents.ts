@@ -12,6 +12,7 @@ export interface TripDocumentFull {
   fileType: FileDocType;
   publicId: string | null;
   uploadedBy: string;
+  isRead: boolean;
   createdAt: string;
   uploader: { id: string; name: string | null; role: string };
   trip?: {

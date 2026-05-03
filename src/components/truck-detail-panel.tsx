@@ -1170,27 +1170,56 @@ function TripChat({
       );
       if (msg.senderId !== currentUserIdRef.current) markRead();
     };
-    const handleRead = (payload: { tripId: string; messageIds: string[] }) => {
-      if (payload.tripId !== trip.id) return;
-      const ids = new Set(payload.messageIds);
-      queryClient.setQueryData<TripMessage[]>(
-        ["trip-messages", trip.id],
-        (old = []) =>
-          old.map((m) => (ids.has(m.id) ? { ...m, isRead: true } : m)),
+    const handleNewDoc = (doc: TripDocumentFull) => {
+      if (doc.tripId !== trip.id) return;
+      queryClient.setQueryData<TripDocumentFull[]>(
+        ["documents-trip", trip.id],
+        (old = []) => (old.some((d) => d.id === doc.id) ? old : [...old, doc]),
       );
+      // Also patch the truck-scoped cache so the docs sheet stays fresh.
+      queryClient.invalidateQueries({ queryKey: ["documents-truck", truckId] });
+      queryClient.invalidateQueries({ queryKey: ["documents-all"] });
+      if (doc.uploadedBy !== currentUserIdRef.current) markRead();
+    };
+    const handleRead = (payload: {
+      tripId: string;
+      messageIds: string[];
+      documentIds: string[];
+    }) => {
+      if (payload.tripId !== trip.id) return;
+      const msgIds = new Set(payload.messageIds ?? []);
+      const docIds = new Set(payload.documentIds ?? []);
+      if (msgIds.size > 0) {
+        queryClient.setQueryData<TripMessage[]>(
+          ["trip-messages", trip.id],
+          (old = []) =>
+            old.map((m) => (msgIds.has(m.id) ? { ...m, isRead: true } : m)),
+        );
+      }
+      if (docIds.size > 0) {
+        queryClient.setQueryData<TripDocumentFull[]>(
+          ["documents-trip", trip.id],
+          (old = []) =>
+            old.map((d) => (docIds.has(d.id) ? { ...d, isRead: true } : d)),
+        );
+      }
     };
     socket.on("newMessage", handleNew);
+    socket.on("newDocument", handleNewDoc);
     socket.on("tripMessagesRead", handleRead);
     return () => {
       socket.off("connect", onConnect);
       socket.off("newMessage", handleNew);
+      socket.off("newDocument", handleNewDoc);
       socket.off("tripMessagesRead", handleRead);
     };
   }, [trip.id, queryClient]);
 
+  // Scroll on every timeline item count change — text or doc. Watching only
+  // `messages` left docs at the bottom, hidden under the input.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages.length, tripDocs.length]);
 
   function handleSend() {
     if (!text.trim()) return;
@@ -1345,7 +1374,12 @@ function TripChat({
             return (
               <div
                 key={`doc-${doc.id}`}
-                className={cn("flex flex-col gap-0.5 max-w-[80%]", isMine && "self-end items-end")}
+                className={cn(
+                  // w-fit so the bubble shrinks to its content (e.g. a 180px
+                  // photo) instead of stretching to the 80% max-w container.
+                  "flex flex-col gap-0.5 max-w-[80%] w-fit",
+                  isMine && "self-end items-end",
+                )}
               >
                 <span className="text-xs text-muted-foreground px-1">
                   {doc.uploader?.name ?? "Unknown"}
@@ -1355,9 +1389,16 @@ function TripChat({
                     className="rounded-2xl overflow-hidden cursor-pointer border hover:opacity-90 transition-opacity"
                     onClick={() => setLightbox({ id: doc.id, signedUrl: doc.signedUrl })}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={doc.signedUrl}
                       alt={doc.fileName}
+                      // Re-scroll once the image dimensions are known —
+                      // otherwise the bubble grows after our scroll fired
+                      // and the new content sits below the viewport.
+                      onLoad={() =>
+                        bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+                      }
                       className="max-w-[180px] max-h-[200px] w-full object-cover block"
                     />
                   </div>
@@ -1368,7 +1409,7 @@ function TripChat({
                     onClick={() => openDoc(doc.id)}
                     onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id)}
                     className={cn(
-                      "flex items-center gap-2 rounded-2xl px-3 py-2.5 border min-w-[160px] cursor-pointer hover:opacity-80 transition-opacity",
+                      "flex items-center gap-2 rounded-2xl px-3 py-2 border cursor-pointer hover:opacity-80 transition-opacity",
                       isMine ? "bg-primary text-primary-foreground" : "bg-muted",
                     )}
                   >
@@ -1393,8 +1434,13 @@ function TripChat({
                     </button>
                   </div>
                 )}
-                <span className="text-[10px] text-muted-foreground/60 px-1">
+                <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
                   {new Date(doc.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {isMine && (
+                    <span className={cn(doc.isRead && "text-primary")}>
+                      {doc.isRead ? "✓✓" : "✓"}
+                    </span>
+                  )}
                 </span>
               </div>
             );
