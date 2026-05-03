@@ -25,6 +25,7 @@ import { useMyTrucks, type Truck as TruckType } from "@/hooks/use-trucks";
 import { TruckDetailPanel, TRUCK_STATUS_COLORS, TRUCK_STATUS_LABELS } from "@/components/truck-detail-panel";
 import { useBroadcastToMyTrucks } from "@/hooks/use-trips";
 import { useSidebar } from "@/components/ui/sidebar";
+import { useUnreadSummary, type UnreadSummaryItem } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
 
 // ─── Truck List Item ──────────────────────────────────────────────────────────
@@ -33,14 +34,17 @@ function TruckListItem({
   truck,
   isSelected,
   isMobile,
+  unread,
   onClick,
 }: {
   truck: TruckType;
   isSelected: boolean;
   isMobile: boolean;
+  unread?: UnreadSummaryItem;
   onClick: () => void;
 }) {
   const lastNote = truck.truckNotes?.[0];
+  const hasUnread = (unread?.totalUnread ?? 0) > 0;
 
   return (
     <button
@@ -48,11 +52,22 @@ function TruckListItem({
       className={cn(
         "w-full text-left px-3 py-3 border-b transition-colors hover:bg-muted/50 flex items-center gap-2",
         isSelected && !isMobile && "bg-muted",
+        hasUnread && !isSelected && "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
       )}
     >
       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-semibold text-sm">{truck.plate}</span>
+        <div className="flex items-center gap-2">
+          {hasUnread && (
+            <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
+          )}
+          <span className={cn("text-sm flex-1 min-w-0 truncate", hasUnread ? "font-bold" : "font-semibold")}>
+            {truck.plate}
+          </span>
+          {hasUnread && (
+            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+              {unread!.totalUnread}
+            </span>
+          )}
           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-5 shrink-0", TRUCK_STATUS_COLORS[truck.status])}>
             {TRUCK_STATUS_LABELS[truck.status]}
           </Badge>
@@ -60,9 +75,14 @@ function TruckListItem({
         {truck.currentDriver && (
           <span className="text-xs text-muted-foreground truncate">{truck.currentDriver.name}</span>
         )}
-        {lastNote && (
+        {hasUnread && unread?.latestMessage ? (
+          <span className="text-[11px] text-muted-foreground truncate">
+            <span className="font-medium">{unread.latestMessage.senderName}:</span>{" "}
+            {unread.latestMessage.content}
+          </span>
+        ) : lastNote ? (
           <span className="text-xs text-muted-foreground/70 truncate italic">{lastNote.content}</span>
-        )}
+        ) : null}
       </div>
       {isMobile && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
     </button>
@@ -245,6 +265,10 @@ export default function MyTrucksPage() {
   const router = useRouter();
   const { setOpen, isMobile } = useSidebar();
   const { data: trucks, isLoading } = useMyTrucks();
+  const { data: unreadSummary } = useUnreadSummary();
+  const unreadByTruck = Object.fromEntries(
+    (unreadSummary?.items ?? []).map((i) => [i.truckId, i])
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -286,6 +310,7 @@ export default function MyTrucksPage() {
             truck={truck}
             isSelected={truck.id === selectedId}
             isMobile={isMobile}
+            unread={unreadByTruck[truck.id]}
             onClick={() => handleTruckClick(truck)}
           />
         ))

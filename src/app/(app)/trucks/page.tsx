@@ -51,7 +51,6 @@ import {
   type TruckStatus,
 } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
-import { useUnreadSummary } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
 
 const statusColors: Record<TruckStatus, string> = {
@@ -80,10 +79,6 @@ export default function TrucksPage() {
   const { data: trucks, isLoading } = useTrucks();
   const { data: deactivatedTrucks } = useDeactivatedTrucks();
   const { data: drivers } = useDrivers();
-  const { data: unreadSummary } = useUnreadSummary();
-  const unreadByTruck = Object.fromEntries(
-    (unreadSummary?.items ?? []).map((i) => [i.truckId, i])
-  );
   const createTruck = useCreateTruck();
   const updateTruck = useUpdateTruck();
   const deleteTruck = useDeleteTruck();
@@ -240,40 +235,19 @@ export default function TrucksPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredTrucks.map((truck) => {
-                    const unread = unreadByTruck[truck.id];
-                    const hasUnread = (unread?.totalUnread ?? 0) > 0;
-                    return (
+                  filteredTrucks.map((truck) => (
                     <TableRow
                       key={truck.id}
-                      className={cn(
-                        "cursor-pointer",
-                        hasUnread && "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60"
-                      )}
-                      onClick={() => router.push(`/trucks/${truck.id}${unread?.activeTripUnread ? "" : "?tab=trips"}`)}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/trucks/${truck.id}`)}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-2">
-                            <Link
-                              href={`/trucks/${truck.id}?tab=info`}
-                              className="font-medium hover:underline"
-                            >
-                              {truck.plate}
-                            </Link>
-                            {hasUnread && (
-                              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none">
-                                {unread.totalUnread}
-                              </span>
-                            )}
-                          </div>
-                          {unread?.latestMessage && (
-                            <p className="text-[11px] text-muted-foreground truncate max-w-[180px]">
-                              <span className="font-medium">{unread.latestMessage.senderName}:</span>{" "}
-                              {unread.latestMessage.content}
-                            </p>
-                          )}
-                        </div>
+                        <Link
+                          href={`/trucks/${truck.id}?tab=info`}
+                          className="font-medium hover:underline"
+                        >
+                          {truck.plate}
+                        </Link>
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Select
@@ -382,8 +356,7 @@ export default function TrucksPage() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  );
-                })
+                  ))
               )}
               </TableBody>
             </Table>
