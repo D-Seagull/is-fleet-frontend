@@ -1110,7 +1110,12 @@ function TripChat({
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState<{ id: string; signedUrl: string } | null>(null);
   const [showTripDocs, setShowTripDocs] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // true  → user is within ~80px of the bottom (messages are visible)
+  // false → user scrolled up to read history
+  const nearBottomRef = useRef(true);
+  const initialScrollDone = useRef(false);
+  const [newMsgCount, setNewMsgCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadDocuments(truckId);
 
@@ -1178,7 +1183,9 @@ function TripChat({
       );
       // Оновлюємо лічильники непрочитаних у шапці та картках
       void queryClient.invalidateQueries({ queryKey: UNREAD_QUERY_KEY });
-      if (msg.senderId !== currentUserIdRef.current) markRead();
+      // Only mark as read if the user is actually looking at the bottom.
+      // If they scrolled up, the pill will appear and markRead fires on scroll-down.
+      if (msg.senderId !== currentUserIdRef.current && nearBottomRef.current) markRead();
     };
     const handleNewDoc = (doc: TripDocumentFull) => {
       if (doc.tripId !== trip.id) return;
@@ -1189,7 +1196,7 @@ function TripChat({
       // Also patch the truck-scoped cache so the docs sheet stays fresh.
       queryClient.invalidateQueries({ queryKey: ["documents-truck", truckId] });
       queryClient.invalidateQueries({ queryKey: ["documents-all"] });
-      if (doc.uploadedBy !== currentUserIdRef.current) markRead();
+      if (doc.uploadedBy !== currentUserIdRef.current && nearBottomRef.current) markRead();
     };
     const handleMsgDeleted = (payload: { tripId: string; messageId: string }) => {
       if (payload.tripId !== trip.id) return;
@@ -1245,25 +1252,31 @@ function TripChat({
     };
   }, [trip.id, queryClient]);
 
-  // Scroll on every timeline item count change — text or doc. Watching only
-  // `messages` left docs at the bottom, hidden under the input.
+  // Smart scroll: jump to bottom when near bottom; show "↓ N new" pill when
+  // user is scrolled up (Viber/Telegram pattern).
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollContainerRef.current;
+    if (!el || (messages.length === 0 && tripDocs.length === 0)) return;
+    if (nearBottomRef.current) {
+      if (!initialScrollDone.current) {
+        // First load — instant jump, no animation
+        el.scrollTop = el.scrollHeight;
+        initialScrollDone.current = true;
+      } else {
+        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      }
+    } else if (initialScrollDone.current) {
+      // User scrolled up — show pill, don't force-scroll
+      setNewMsgCount((n) => n + 1);
+    }
   }, [messages.length, tripDocs.length]);
 
   function handleSend() {
     if (!text.trim()) return;
-    const sock = getSocket();
-    // TEMP DEBUG — remove after we confirm send is working
-    console.log("[chat] send", {
-      tripId: trip.id,
-      connected: sock.connected,
-      transport: sock.io.engine?.transport?.name,
-      socketId: sock.id,
-      content: text.trim().slice(0, 30),
-    });
-    // senderId is no longer sent — backend uses client.data.userId from JWT
-    sock.emit("sendMessage", {
+    // User is sending — they want to see their own message, snap back to bottom
+    nearBottomRef.current = true;
+    setNewMsgCount(0);
+    getSocket().emit("sendMessage", {
       tripId: trip.id,
       content: text.trim(),
     });
@@ -1350,7 +1363,22 @@ function TripChat({
         </div>
       )}
 
-      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-2 py-2 pr-1">
+      <div className="relative flex-1 min-h-0">
+      <div
+        ref={scrollContainerRef}
+        className="absolute inset-0 overflow-y-auto flex flex-col gap-2 py-2 pr-1"
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+          const wasNear = nearBottomRef.current;
+          nearBottomRef.current = dist < 80;
+          if (!wasNear && nearBottomRef.current) {
+            // User scrolled back to bottom — dismiss pill and mark visible msgs read
+            setNewMsgCount(0);
+            if (tabVisibleRef.current) getSocket().emit("markTripRead", { tripId: trip.id });
+          }
+        }}
+      >
         {isLoading ? (
           <div className="flex items-center justify-center py-10">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -1447,9 +1475,12 @@ function TripChat({
                       // Re-scroll once the image dimensions are known —
                       // otherwise the bubble grows after our scroll fired
                       // and the new content sits below the viewport.
-                      onLoad={() =>
-                        bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-                      }
+                      onLoad={() => {
+                        if (nearBottomRef.current) {
+                          const el = scrollContainerRef.current;
+                          if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+                        }
+                      }}
                       className="max-w-[180px] max-h-[200px] w-full object-cover block"
                     />
                   </div>
@@ -1513,7 +1544,23 @@ function TripChat({
             );
           })
         )}
-        <div ref={bottomRef} />
+      </div>
+      {/* "↓ N new" pill — visible when user scrolled up and new messages arrived */}
+      {newMsgCount > 0 && (
+        <button
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 shadow-lg hover:bg-primary/90 transition-colors z-10"
+          onClick={() => {
+            nearBottomRef.current = true;
+            setNewMsgCount(0);
+            const el = scrollContainerRef.current;
+            if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+            if (tabVisibleRef.current) getSocket().emit("markTripRead", { tripId: trip.id });
+          }}
+        >
+          <ChevronDown className="h-3.5 w-3.5" />
+          {newMsgCount} new
+        </button>
+      )}
       </div>
       <div className="shrink-0 border-t pt-3 relative">
         {/* Emoji picker */}
