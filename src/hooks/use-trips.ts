@@ -132,6 +132,25 @@ export function useTripMessages(tripId: string) {
   });
 }
 
+// Delete a single message. Server broadcasts `messageDeleted` so the cache
+// patch is also taken care of in the gateway listener — but we invalidate
+// here too for the rare case the socket missed the event.
+export function useDeleteMessage(tripId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/messages/${id}`);
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.setQueryData<TripMessage[]>(
+        ["trip-messages", tripId],
+        (old = []) => old.filter((m) => m.id !== id),
+      );
+    },
+  });
+}
+
 export function useCreateTrip() {
   const queryClient = useQueryClient();
   return useMutation({

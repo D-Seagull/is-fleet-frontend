@@ -91,6 +91,7 @@ import {
 import { useAssignableDispatchers } from "@/hooks/use-dispatchers";
 import {
   useTripsByTruck,
+  useDeleteMessage,
   useTripMessages,
   useCreateTrip,
   useUpdateTripStatus,
@@ -1091,6 +1092,8 @@ function TripChat({
   const queryClient = useQueryClient();
   const { data: messages = [], isLoading } = useTripMessages(trip.id);
   const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
+  const deleteMessage = useDeleteMessage(trip.id);
+  const deleteDocument = useDeleteDocument(truckId);
   const [text, setText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -1181,6 +1184,22 @@ function TripChat({
       queryClient.invalidateQueries({ queryKey: ["documents-all"] });
       if (doc.uploadedBy !== currentUserIdRef.current) markRead();
     };
+    const handleMsgDeleted = (payload: { tripId: string; messageId: string }) => {
+      if (payload.tripId !== trip.id) return;
+      queryClient.setQueryData<TripMessage[]>(
+        ["trip-messages", trip.id],
+        (old = []) => old.filter((m) => m.id !== payload.messageId),
+      );
+    };
+    const handleDocDeleted = (payload: { tripId: string; documentId: string }) => {
+      if (payload.tripId !== trip.id) return;
+      queryClient.setQueryData<TripDocumentFull[]>(
+        ["documents-trip", trip.id],
+        (old = []) => old.filter((d) => d.id !== payload.documentId),
+      );
+      queryClient.invalidateQueries({ queryKey: ["documents-truck", truckId] });
+      queryClient.invalidateQueries({ queryKey: ["documents-all"] });
+    };
     const handleRead = (payload: {
       tripId: string;
       messageIds: string[];
@@ -1207,11 +1226,15 @@ function TripChat({
     socket.on("newMessage", handleNew);
     socket.on("newDocument", handleNewDoc);
     socket.on("tripMessagesRead", handleRead);
+    socket.on("messageDeleted", handleMsgDeleted);
+    socket.on("documentDeleted", handleDocDeleted);
     return () => {
       socket.off("connect", onConnect);
       socket.off("newMessage", handleNew);
       socket.off("newDocument", handleNewDoc);
       socket.off("tripMessagesRead", handleRead);
+      socket.off("messageDeleted", handleMsgDeleted);
+      socket.off("documentDeleted", handleDocDeleted);
     };
   }, [trip.id, queryClient]);
 
@@ -1334,14 +1357,19 @@ function TripChat({
             if (item.kind === "msg") {
               const msg = item.data;
               const isMine = msg.senderId === currentUserId;
+              const canDelete = isMine; // dispatcher always sees own; could extend to all later
               return (
                 <div
                   key={`msg-${msg.id}`}
-                  className={cn("flex flex-col gap-0.5 max-w-[75%]", isMine && "self-end items-end")}
+                  className={cn(
+                    "group flex flex-col gap-0.5 max-w-[75%]",
+                    isMine && "self-end items-end",
+                  )}
                 >
                   <span className="text-xs text-muted-foreground px-1">
                     {msg.sender.name ?? "Unknown"}
                   </span>
+                  <div className="relative">
                   <div className={cn("rounded-2xl px-3 py-2 text-sm", isMine ? "bg-primary text-primary-foreground" : "bg-muted")}>
                     {(() => {
                       const [subject, ...rest] = msg.content.split("\n");
@@ -1352,6 +1380,21 @@ function TripChat({
                         </>
                       ) : msg.content;
                     })()}
+                  </div>
+                  {canDelete && (
+                    <button
+                      title="Delete"
+                      onClick={() => {
+                        if (confirm("Delete this message?")) deleteMessage.mutate(msg.id);
+                      }}
+                      className={cn(
+                        "absolute -top-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background border shadow-sm p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                        isMine ? "-left-1.5" : "-right-1.5",
+                      )}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
                   </div>
                   <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -1377,13 +1420,14 @@ function TripChat({
                 className={cn(
                   // w-fit so the bubble shrinks to its content (e.g. a 180px
                   // photo) instead of stretching to the 80% max-w container.
-                  "flex flex-col gap-0.5 max-w-[80%] w-fit",
+                  "group flex flex-col gap-0.5 max-w-[80%] w-fit",
                   isMine && "self-end items-end",
                 )}
               >
                 <span className="text-xs text-muted-foreground px-1">
                   {doc.uploader?.name ?? "Unknown"}
                 </span>
+                <div className="relative">
                 {isPhoto ? (
                   <div
                     className="rounded-2xl overflow-hidden cursor-pointer border hover:opacity-90 transition-opacity"
@@ -1434,6 +1478,22 @@ function TripChat({
                     </button>
                   </div>
                 )}
+                {isMine && (
+                  <button
+                    title="Delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Delete ${doc.fileName}?`)) deleteDocument.mutate(doc.id);
+                    }}
+                    className={cn(
+                      "absolute -top-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background border shadow-sm p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                      isMine ? "-left-1.5" : "-right-1.5",
+                    )}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                )}
+                </div>
                 <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
                   {new Date(doc.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   {isMine && (
