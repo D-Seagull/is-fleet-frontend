@@ -62,6 +62,7 @@ export interface Trip {
   orderNumber: string | null;
   createdAt: string;
   updatedAt: string;
+  chatResetAt: string | null;
   driver: { id: string; name: string | null; phone: string | null };
   dispatcher: { id: string; name: string | null };
   truck: { id: string; plate: string };
@@ -203,7 +204,17 @@ export function useReassignTrip(truckId: string) {
       const res = await api.patch(`/trips/${id}/assign`, { driverId });
       return res.data as Trip;
     },
-    onSuccess: () => {
+    onSuccess: (updatedTrip) => {
+      // Одразу патчимо кеш щоб не було race condition при ререндері.
+      queryClient.setQueryData<Trip[]>(
+        ["trips-by-truck", truckId],
+        (old = []) =>
+          old.map((t) => (t.id === updatedTrip.id ? updatedTrip : t)),
+      );
+      // Інвалідуємо повідомлення — бекенд поверне лише ті що після chatResetAt.
+      queryClient.invalidateQueries({
+        queryKey: ["trip-messages", updatedTrip.id],
+      });
       queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
     },
   });

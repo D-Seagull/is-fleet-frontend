@@ -54,6 +54,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -107,6 +117,7 @@ import {
 } from "@/hooks/use-trips";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
+import { useUnreadSummary, UNREAD_QUERY_KEY } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
 import {
   useDocumentsByTruck,
@@ -1110,12 +1121,6 @@ function TripChat({
 
   const timeline: TimelineItem[] = [
     ...messages
-      .filter(
-        (msg) =>
-          msg.sender.role === "DRIVER" ||
-          msg.senderId === currentUserId ||
-          msg.senderId === truckDispatcherId,
-      )
       .map((m) => ({ kind: "msg" as const, data: m })),
     ...tripDocs.map((d) => ({ kind: "file" as const, data: d })),
   ].sort((a, b) =>
@@ -1171,6 +1176,8 @@ function TripChat({
         ["trip-messages", trip.id],
         (old = []) => old.some((m) => m.id === msg.id) ? old : [...old, msg],
       );
+      // Оновлюємо лічильники непрочитаних у шапці та картках
+      void queryClient.invalidateQueries({ queryKey: UNREAD_QUERY_KEY });
       if (msg.senderId !== currentUserIdRef.current) markRead();
     };
     const handleNewDoc = (doc: TripDocumentFull) => {
@@ -1774,17 +1781,22 @@ function TripCard({
   trip,
   truckId,
   onOpenTrip,
+  unreadCount = 0,
 }: {
   trip: Trip;
   truckId: string;
   onOpenTrip: (id: string) => void;
+  unreadCount?: number;
 }) {
   const updateStatus = useUpdateTripStatus(truckId);
   const [section, setSection] = useState<"stops" | "attachments" | null>(null);
   const allDocs = trip.documents;
 
   return (
-    <div className="rounded-lg border bg-card flex flex-col overflow-hidden">
+    <div className={cn(
+      "rounded-lg border bg-card flex flex-col overflow-hidden",
+      unreadCount > 0 && "border-blue-500/30 bg-blue-500/5"
+    )}>
       <div
         className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
         onClick={() => onOpenTrip(trip.id)}
@@ -1805,6 +1817,11 @@ function TripCard({
                 <span className="text-muted-foreground font-normal"> · #{trip.orderNumber}</span>
               )}
             </p>
+            {unreadCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+                {unreadCount}
+              </span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             {trip.driver.name} · {new Date(trip.createdAt).toLocaleDateString()}
@@ -2091,10 +2108,12 @@ function TripsTab({
   truckId,
   defaultDriverId,
   onOpenTrip,
+  tripUnread = {},
 }: {
   truckId: string;
   defaultDriverId?: string | null;
   onOpenTrip: (tripId: string) => void;
+  tripUnread?: Record<string, number>;
 }) {
   const { data: trips, isLoading } = useTripsByTruck(truckId);
   const [search, setSearch] = useState("");
@@ -2147,6 +2166,7 @@ function TripsTab({
               trip={trip}
               truckId={truckId}
               onOpenTrip={onOpenTrip}
+              unreadCount={tripUnread[trip.id] ?? 0}
             />
           ))}
         </div>
@@ -2179,11 +2199,20 @@ export function TruckDetailPanel({
   const { data: notes, isLoading: notesLoading } = useTruckNotes(truckId);
   const { data: drivers } = useDrivers();
   const { data: assignableDispatchers } = useAssignableDispatchers();
+  const { data: unreadSummary } = useUnreadSummary();
+  const truckUnread = unreadSummary?.items.find((i) => i.truckId === truckId);
   const { data: truckTrips = [] } = useTripsByTruck(truckId);
   const updateTruck = useUpdateTruck();
   const reassignTrip = useReassignTrip(truckId);
   const createNote = useCreateTruckNote();
   const deleteNote = useDeleteTruckNote();
+
+  // Підтвердження переводу водія з іншого трака
+  const [pendingDriver, setPendingDriver] = useState<{
+    driverId: string;
+    driverName: string;
+    fromTruck: { id: string; plate: string };
+  } | null>(null);
 
   const ACTIVE_STATUSES = ["ASSIGNED", "ACCEPTED", "ON_WAY", "ON_SITE", "LOADED"];
   const activeTrip = truckTrips.find((t) => ACTIVE_STATUSES.includes(t.status)) ?? null;
@@ -2237,6 +2266,41 @@ export function TruckDetailPanel({
     await deleteNote.mutateAsync({ noteId, truckId });
   }
 
+  // Виконуємо призначення водія — з опційним звільненням з попереднього трака
+  function applyDriverChange(newDriverId: string | null, fromTruckId?: string) {
+    // Знімаємо водія з попереднього трака (якщо він там був)
+    if (fromTruckId) {
+      updateTruck.mutate({ id: fromTruckId, data: { currentDriverId: null } });
+    }
+    // Призначаємо на поточний трак
+    updateTruck.mutate({ id: truckId, data: { currentDriverId: newDriverId } });
+    // Якщо є активний тріп і новий водій — переносимо тріп
+    if (activeTrip && newDriverId) {
+      reassignTrip.mutate({ id: activeTrip.id, driverId: newDriverId });
+    }
+  }
+
+  // Обробник вибору водія з перевіркою "зайнятий на іншому траку"
+  function handleDriverSelect(value: string) {
+    const newDriverId = value === "none" ? null : value;
+    if (!newDriverId) {
+      applyDriverChange(null);
+      return;
+    }
+    const selectedDriver = (drivers ?? []).find((d) => d.id === newDriverId);
+    const occupiedTruck = selectedDriver?.currentTruck;
+    // Якщо водій зараз на ІНШОМУ траку — питаємо підтвердження
+    if (occupiedTruck && occupiedTruck.id !== truckId) {
+      setPendingDriver({
+        driverId: newDriverId,
+        driverName: selectedDriver?.name ?? selectedDriver?.email ?? "Driver",
+        fromTruck: { id: occupiedTruck.id, plate: occupiedTruck.plate },
+      });
+      return;
+    }
+    applyDriverChange(newDriverId);
+  }
+
   function canDeleteNote(noteUserId: string) {
     if (!user) return false;
     return (
@@ -2266,9 +2330,12 @@ export function TruckDetailPanel({
             {TRUCK_STATUS_LABELS[truck.status]}
           </Badge>
           {truck.currentDriver && (
-            <span className="text-muted-foreground text-xs md:text-sm truncate">
+            <Link
+              href={`/drivers/${truck.currentDriver.id}`}
+              className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors"
+            >
               Driver: {truck.currentDriver.name}
-            </span>
+            </Link>
           )}
           <button
             className="md:hidden ml-auto shrink-0 flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-primary hover:bg-primary/20 transition-colors"
@@ -2288,10 +2355,22 @@ export function TruckDetailPanel({
         className="flex flex-col flex-1 min-h-0 w-full"
       >
         <TabsList className={cn("shrink-0", !navOpen && "hidden md:flex")}>
-          <TabsTrigger value="chat" disabled={!isChatEnabled}>
+          <TabsTrigger value="chat" disabled={!isChatEnabled} className="gap-1.5">
             Chat
+            {(truckUnread?.activeTripUnread ?? 0) > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none">
+                {truckUnread!.activeTripUnread}
+              </span>
+            )}
           </TabsTrigger>
-          <TabsTrigger value="trips">Trips</TabsTrigger>
+          <TabsTrigger value="trips" className="gap-1.5">
+            Trips
+            {(truckUnread?.pastTripsUnread ?? 0) > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-muted text-muted-foreground text-[10px] font-bold px-1 leading-none">
+                {truckUnread!.pastTripsUnread}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="alarm">Alarm</TabsTrigger>
           <TabsTrigger value="info">Info</TabsTrigger>
@@ -2316,6 +2395,7 @@ export function TruckDetailPanel({
             truckId={truckId}
             defaultDriverId={truck.currentDriverId}
             onOpenTrip={handleOpenTrip}
+            tripUnread={truckUnread?.tripUnread ?? {}}
           />
         </TabsContent>
 
@@ -2377,18 +2457,7 @@ export function TruckDetailPanel({
                 </span>
                 <Select
                   value={truck.currentDriverId ?? "none"}
-                  onValueChange={(v) => {
-                    const newDriverId = v === "none" ? null : v;
-                    // 1. Update the truck's assigned driver
-                    updateTruck.mutate({
-                      id: truckId,
-                      data: { currentDriverId: newDriverId },
-                    });
-                    // 2. If there's an active trip — reassign it to the new driver
-                    if (activeTrip && newDriverId) {
-                      reassignTrip.mutate({ id: activeTrip.id, driverId: newDriverId });
-                    }
-                  }}
+                  onValueChange={handleDriverSelect}
                   disabled={updateTruck.isPending || reassignTrip.isPending}
                 >
                   <SelectTrigger className="h-7 flex-1 text-xs">
@@ -2399,6 +2468,11 @@ export function TruckDetailPanel({
                     {(drivers ?? []).map((d) => (
                       <SelectItem key={d.id} value={d.id}>
                         {d.name ?? d.email}
+                        {d.currentTruck && d.currentTruck.id !== truckId && (
+                          <span className="ml-1.5 text-muted-foreground">
+                            · {d.currentTruck.plate}
+                          </span>
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -2414,6 +2488,38 @@ export function TruckDetailPanel({
                   </span>
                 )}
               </div>
+
+              {/* Підтвердження переводу водія з іншого трака */}
+              <AlertDialog
+                open={!!pendingDriver}
+                onOpenChange={(open) => { if (!open) setPendingDriver(null); }}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reassign driver?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <strong>{pendingDriver?.driverName}</strong> is currently assigned to truck{" "}
+                      <strong>{pendingDriver?.fromTruck.plate}</strong>.
+                      <br />
+                      Do you want to move them to this truck?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setPendingDriver(null)}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        if (!pendingDriver) return;
+                        applyDriverChange(pendingDriver.driverId, pendingDriver.fromTruck.id);
+                        setPendingDriver(null);
+                      }}
+                    >
+                      Move driver
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
               {/* Dispatcher */}
               <div className="flex items-center gap-3 px-3 py-2">

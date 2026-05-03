@@ -28,6 +28,7 @@ export interface Driver {
   name: string | null;
   email: string;
   role: string;
+  currentTruck: { id: string; plate: string } | null;
 }
 
 export function useTrucks() {
