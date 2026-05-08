@@ -133,6 +133,51 @@ export function useTripMessages(tripId: string) {
   });
 }
 
+export type SessionEndReason =
+  | "DRIVER_CHANGED"
+  | "DISPATCHER_CHANGED"
+  | "TRIP_COMPLETED"
+  | "LEGACY_RESET";
+
+export interface ChatArchiveSession {
+  id: string;
+  tripId: string;
+  driverId: string | null;
+  dispatcherId: string | null;
+  startedAt: string;
+  endedAt: string | null;
+  endReason: SessionEndReason | null;
+  driver: { id: string; name: string | null; role: string } | null;
+  dispatcher: { id: string; name: string | null; role: string } | null;
+}
+
+// Closed chat sessions for a trip — visible to managers (all) and to
+// participants (only sessions they were part of).
+export function useTripChatArchive(tripId: string) {
+  return useQuery<ChatArchiveSession[]>({
+    queryKey: ["trip-chat-archive", tripId],
+    queryFn: async () => {
+      const res = await api.get(`/trips/${tripId}/chat/archive`);
+      return res.data;
+    },
+    enabled: !!tripId,
+  });
+}
+
+// Messages of a specific archived session — read-only.
+export function useArchivedSessionMessages(tripId: string, sessionId: string | null) {
+  return useQuery<TripMessage[]>({
+    queryKey: ["trip-chat-archive-messages", tripId, sessionId],
+    queryFn: async () => {
+      const res = await api.get(
+        `/trips/${tripId}/chat/sessions/${sessionId}/messages`,
+      );
+      return res.data;
+    },
+    enabled: !!tripId && !!sessionId,
+  });
+}
+
 // Delete a single message. Server broadcasts `messageDeleted` so the cache
 // patch is also taken care of in the gateway listener — but we invalidate
 // here too for the rare case the socket missed the event.

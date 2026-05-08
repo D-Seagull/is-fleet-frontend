@@ -29,6 +29,7 @@ import {
   Download,
   Smile,
   Eye,
+  History,
 } from "lucide-react";
 import {
   Table,
@@ -103,6 +104,7 @@ import {
   useTripsByTruck,
   useDeleteMessage,
   useTripMessages,
+  useTripChatArchive,
   useCreateTrip,
   useUpdateTripStatus,
   useUpdateTripInfo,
@@ -115,6 +117,7 @@ import {
   type StopType,
   type StopFormData,
 } from "@/hooks/use-trips";
+import { ChatArchiveDialog } from "@/components/chat-archive-dialog";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
 import { useUnreadSummary, UNREAD_QUERY_KEY } from "@/hooks/use-unread";
@@ -1103,6 +1106,7 @@ function TripChat({
   const queryClient = useQueryClient();
   const { data: messages = [], isLoading } = useTripMessages(trip.id);
   const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
+  const { data: archiveSessions = [] } = useTripChatArchive(trip.id);
   const deleteMessage = useDeleteMessage(trip.id);
   const deleteDocument = useDeleteDocument(truckId);
   const [text, setText] = useState("");
@@ -1110,6 +1114,7 @@ function TripChat({
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState<{ id: string; signedUrl: string } | null>(null);
   const [showTripDocs, setShowTripDocs] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   // true  → user is within ~80px of the bottom (messages are visible)
   // false → user scrolled up to read history
@@ -1362,6 +1367,33 @@ function TripChat({
           </div>
         </div>
       )}
+
+      {archiveSessions.length > 0 && (
+        <div className="shrink-0 border-y bg-muted/30 px-3 py-2 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+            <History className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
+              {archiveSessions.length} previous chat
+              {archiveSessions.length === 1 ? "" : "s"} on this trip
+            </span>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs shrink-0"
+            onClick={() => setShowArchive(true)}
+          >
+            View archive
+          </Button>
+        </div>
+      )}
+
+      <ChatArchiveDialog
+        open={showArchive}
+        onOpenChange={setShowArchive}
+        tripId={trip.id}
+        currentUserId={currentUserId}
+      />
 
       <div className="relative flex-1 min-h-0">
       <div
