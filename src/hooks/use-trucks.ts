@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { api } from "@/lib/api";
+import { getSocket } from "@/lib/socket";
+import { UNREAD_QUERY_KEY } from "@/hooks/use-unread";
 
 export type TruckStatus = "AVAILABLE" | "ON_TRIP" | "REPAIR";
 
@@ -84,6 +87,34 @@ export function useUpdateTruck() {
       queryClient.invalidateQueries({ queryKey: ["trucks-my"] });
     },
   });
+}
+
+/**
+ * Listen for `truckChanged` socket events emitted when a dispatcher reassigns
+ * a driver between trucks (or detaches/attaches one). Invalidates every cache
+ * touched by that change so all dispatchers — including the one who didn't
+ * trigger the action — see the move immediately.
+ */
+export function useTruckChangedSync() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const socket = getSocket();
+    const onTruckChanged = () => {
+      queryClient.invalidateQueries({ queryKey: ["trucks"] });
+      queryClient.invalidateQueries({ queryKey: ["trucks-my"] });
+      queryClient.invalidateQueries({ queryKey: ["trucks-deactivated"] });
+      queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["drivers-deactivated"] });
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck"] });
+      queryClient.invalidateQueries({ queryKey: UNREAD_QUERY_KEY });
+    };
+    socket.on("truckChanged", onTruckChanged);
+    return () => {
+      socket.off("truckChanged", onTruckChanged);
+    };
+  }, [queryClient]);
 }
 
 export function useDeleteTruck() {

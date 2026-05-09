@@ -1104,6 +1104,12 @@ function TripChat({
   truckDispatcherId?: string | null;
 }) {
   const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const isManager = user?.role === "ADMIN" || user?.role === "TEAMLEAD";
+  // Only the trip's current driver / dispatcher may send messages in the
+  // active session — backend enforces this too. Other roles see a notice.
+  const isActiveParticipant =
+    trip.driverId === currentUserId || trip.dispatcherId === currentUserId;
   const { data: messages = [], isLoading } = useTripMessages(trip.id);
   const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
   const { data: archiveSessions = [] } = useTripChatArchive(trip.id);
@@ -1141,6 +1147,10 @@ function TripChat({
   // hydrates and would otherwise re-register listeners (the old `connect`
   // listener leaked because off() got the wrong reference).
   const currentUserIdRef = useRef(currentUserId);
+  const isManagerRef = useRef(isManager);
+  useEffect(() => {
+    isManagerRef.current = isManager;
+  }, [isManager]);
   useEffect(() => {
     currentUserIdRef.current = currentUserId;
   }, [currentUserId]);
@@ -1182,6 +1192,15 @@ function TripChat({
 
     const handleNew = (msg: TripMessage) => {
       if (msg.tripId !== trip.id) return;
+
+      // Privacy: ignore messages from a session the current user wasn't in.
+      // Without this, an old dispatcher who happens to still have the trip
+      // open would receive the new dispatcher's chat over the wire.
+      const meId = currentUserIdRef.current;
+      const inSession =
+        msg.session?.driverId === meId || msg.session?.dispatcherId === meId;
+      if (!isManagerRef.current && !inSession) return;
+
       queryClient.setQueryData<TripMessage[]>(
         ["trip-messages", trip.id],
         (old = []) => old.some((m) => m.id === msg.id) ? old : [...old, msg],
@@ -1190,7 +1209,7 @@ function TripChat({
       void queryClient.invalidateQueries({ queryKey: UNREAD_QUERY_KEY });
       // Only mark as read if the user is actually looking at the bottom.
       // If they scrolled up, the pill will appear and markRead fires on scroll-down.
-      if (msg.senderId !== currentUserIdRef.current && nearBottomRef.current) markRead();
+      if (msg.senderId !== meId && nearBottomRef.current) markRead();
     };
     const handleNewDoc = (doc: TripDocumentFull) => {
       if (doc.tripId !== trip.id) return;
@@ -1242,11 +1261,21 @@ function TripChat({
         );
       }
     };
+    // Driver / dispatcher changed — refetch trip + messages + archive so the
+    // current pair sees the new system message and old chat is hidden.
+    const handleTripUpdated = (payload: { tripId: string }) => {
+      if (payload.tripId !== trip.id) return;
+      queryClient.invalidateQueries({ queryKey: ["trip-messages", trip.id] });
+      queryClient.invalidateQueries({ queryKey: ["trip-chat-archive", trip.id] });
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
+    };
+
     socket.on("newMessage", handleNew);
     socket.on("newDocument", handleNewDoc);
     socket.on("tripMessagesRead", handleRead);
     socket.on("messageDeleted", handleMsgDeleted);
     socket.on("documentDeleted", handleDocDeleted);
+    socket.on("tripUpdated", handleTripUpdated);
     return () => {
       socket.off("connect", onConnect);
       socket.off("newMessage", handleNew);
@@ -1254,6 +1283,7 @@ function TripChat({
       socket.off("tripMessagesRead", handleRead);
       socket.off("messageDeleted", handleMsgDeleted);
       socket.off("documentDeleted", handleDocDeleted);
+      socket.off("tripUpdated", handleTripUpdated);
     };
   }, [trip.id, queryClient]);
 
@@ -1368,7 +1398,9 @@ function TripChat({
         </div>
       )}
 
-      {archiveSessions.length > 0 && (
+      {/* Archive banner — only managers see it. Drivers/dispatchers see
+          system messages inline in the chat instead. */}
+      {isManager && archiveSessions.length > 0 && (
         <div className="shrink-0 border-y bg-muted/30 px-3 py-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
             <History className="h-3.5 w-3.5 shrink-0" />
@@ -1388,12 +1420,14 @@ function TripChat({
         </div>
       )}
 
-      <ChatArchiveDialog
-        open={showArchive}
-        onOpenChange={setShowArchive}
-        tripId={trip.id}
-        currentUserId={currentUserId}
-      />
+      {isManager && (
+        <ChatArchiveDialog
+          open={showArchive}
+          onOpenChange={setShowArchive}
+          tripId={trip.id}
+          currentUserId={currentUserId}
+        />
+      )}
 
       <div className="relative flex-1 min-h-0">
       <div
@@ -1423,6 +1457,20 @@ function TripChat({
           timeline.map((item) => {
             if (item.kind === "msg") {
               const msg = item.data;
+
+              // System messages (e.g. "New driver assigned: ...") render as a
+              // centered grey label, like Telegram's group event notices.
+              if (msg.isSystem) {
+                return (
+                  <div
+                    key={`msg-${msg.id}`}
+                    className="self-center text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full"
+                  >
+                    {msg.content}
+                  </div>
+                );
+              }
+
               const isMine = msg.senderId === currentUserId;
               const canDelete = isMine; // dispatcher always sees own; could extend to all later
               return (
@@ -1595,70 +1643,78 @@ function TripChat({
       )}
       </div>
       <div className="shrink-0 border-t pt-3 relative">
-        {/* Emoji picker */}
-        {showEmoji && (
-          <div className="absolute bottom-full right-0 mb-2 z-50">
-            <EmojiPicker
-              onEmojiClick={onEmojiClick}
-              theme={Theme.AUTO}
-              width={300}
-              height={380}
-            />
+        {!isActiveParticipant ? (
+          <div className="px-3 py-3 text-center text-xs text-muted-foreground">
+            Ви більше не учасник цього чату — перегляд тільки для читання.
           </div>
+        ) : (
+          <>
+            {/* Emoji picker */}
+            {showEmoji && (
+              <div className="absolute bottom-full right-0 mb-2 z-50">
+                <EmojiPicker
+                  onEmojiClick={onEmojiClick}
+                  theme={Theme.AUTO}
+                  width={300}
+                  height={380}
+                />
+              </div>
+            )}
+
+            <div className="flex items-center gap-1.5">
+              {/* Файл */}
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-9 w-9 shrink-0"
+                title="Attach file"
+                disabled={uploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <Paperclip className="h-4 w-4 text-muted-foreground" />
+                }
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+
+              {/* Смайли */}
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-9 w-9 shrink-0"
+                title="Emoji"
+                onClick={() => setShowEmoji((v) => !v)}
+              >
+                <Smile className="h-4 w-4 text-muted-foreground" />
+              </Button>
+
+              {/* Інпут */}
+              <Input
+                placeholder="Type a message..."
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) handleSend();
+                  if (e.key === "Escape") setShowEmoji(false);
+                }}
+                className="flex-1"
+              />
+
+              {/* Відправити */}
+              <Button size="icon" onClick={handleSend} disabled={!text.trim()} className="h-9 w-9 shrink-0">
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
         )}
-
-        <div className="flex items-center gap-1.5">
-          {/* Файл */}
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-9 w-9 shrink-0"
-            title="Attach file"
-            disabled={uploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {uploading
-              ? <Loader2 className="h-4 w-4 animate-spin" />
-              : <Paperclip className="h-4 w-4 text-muted-foreground" />
-            }
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-            className="hidden"
-            onChange={handleFileUpload}
-          />
-
-          {/* Смайли */}
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-9 w-9 shrink-0"
-            title="Emoji"
-            onClick={() => setShowEmoji((v) => !v)}
-          >
-            <Smile className="h-4 w-4 text-muted-foreground" />
-          </Button>
-
-          {/* Інпут */}
-          <Input
-            placeholder="Type a message..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) handleSend();
-              if (e.key === "Escape") setShowEmoji(false);
-            }}
-            className="flex-1"
-          />
-
-          {/* Відправити */}
-          <Button size="icon" onClick={handleSend} disabled={!text.trim()} className="h-9 w-9 shrink-0">
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
       </div>
     </div>
   );
@@ -2345,13 +2401,10 @@ export function TruckDetailPanel({
     await deleteNote.mutateAsync({ noteId, truckId });
   }
 
-  // Виконуємо призначення водія — з опційним звільненням з попереднього трака
-  function applyDriverChange(newDriverId: string | null, fromTruckId?: string) {
-    // Знімаємо водія з попереднього трака (якщо він там був)
-    if (fromTruckId) {
-      updateTruck.mutate({ id: fromTruckId, data: { currentDriverId: null } });
-    }
-    // Призначаємо на поточний трак
+  // Виконуємо призначення водія. Якщо водій вже на іншій машині — бекенд
+  // у тій самій транзакції звільнить попередню (currentDriverId @unique
+  // забороняє race-condition з двома послідовними mutate).
+  function applyDriverChange(newDriverId: string | null) {
     updateTruck.mutate({ id: truckId, data: { currentDriverId: newDriverId } });
     // Якщо є активний тріп і новий водій — переносимо тріп
     if (activeTrip && newDriverId) {
@@ -2590,7 +2643,7 @@ export function TruckDetailPanel({
                     <AlertDialogAction
                       onClick={() => {
                         if (!pendingDriver) return;
-                        applyDriverChange(pendingDriver.driverId, pendingDriver.fromTruck.id);
+                        applyDriverChange(pendingDriver.driverId);
                         setPendingDriver(null);
                       }}
                     >

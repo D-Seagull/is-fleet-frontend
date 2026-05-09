@@ -77,8 +77,12 @@ export interface TripMessage {
   content: string;
   translatedContent: string | null;
   isRead: boolean;
+  isSystem?: boolean;
   createdAt: string;
   sender: { id: string; name: string | null; role: string };
+  // Session participants — used by the realtime layer to drop messages
+  // belonging to a session the current user wasn't part of.
+  session?: { driverId: string | null; dispatcherId: string | null };
 }
 
 export interface StopFormData {

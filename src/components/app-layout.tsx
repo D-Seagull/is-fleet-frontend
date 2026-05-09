@@ -23,6 +23,7 @@ import { NavItem } from "@/components/app-sidebar";
 import { useAuthStore } from "@/store/auth";
 import { useMyTrucks } from "@/hooks/use-trucks";
 import { useUnreadSummary, useUnreadSocketSync } from "@/hooks/use-unread";
+import { useTruckChangedSync } from "@/hooks/use-trucks";
 import {
   Popover,
   PopoverContent,
@@ -47,6 +48,7 @@ function UnreadBell() {
   const router = useRouter();
   const { data } = useUnreadSummary();
   useUnreadSocketSync();
+  useTruckChangedSync();
 
   const total = data?.total ?? 0;
   const items = data?.items ?? [];
