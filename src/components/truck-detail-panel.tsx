@@ -1287,6 +1287,93 @@ function TripChat({
     };
   }, [trip.id, queryClient]);
 
+  // ── Typing indicator ────────────────────────────────────────────────────
+  // Track who's currently typing in this trip. We only ever expect the
+  // counterparty (one driver ↔ one dispatcher), but use a Map<userId, name>
+  // to handle race conditions and future N-party chats cleanly.
+  const [typers, setTypers] = useState<Map<string, string>>(new Map());
+  // Per-typer auto-clear: if we never receive `userStopTyping` (e.g. socket
+  // drop), the indicator vanishes after 4s on its own.
+  const typerTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  useEffect(() => {
+    const socket = getSocket();
+    const onTyping = (payload: { tripId: string; user: { id: string; name: string | null } }) => {
+      if (payload.tripId !== trip.id) return;
+      if (payload.user.id === currentUserIdRef.current) return;
+      setTypers((prev) => {
+        const next = new Map(prev);
+        next.set(payload.user.id, payload.user.name ?? "Someone");
+        return next;
+      });
+      // Reset auto-clear timeout
+      const prev = typerTimeoutsRef.current.get(payload.user.id);
+      if (prev) clearTimeout(prev);
+      const t = setTimeout(() => {
+        setTypers((p) => {
+          const n = new Map(p);
+          n.delete(payload.user.id);
+          return n;
+        });
+        typerTimeoutsRef.current.delete(payload.user.id);
+      }, 4000);
+      typerTimeoutsRef.current.set(payload.user.id, t);
+    };
+    const onStopTyping = (payload: { tripId: string; userId: string }) => {
+      if (payload.tripId !== trip.id) return;
+      const t = typerTimeoutsRef.current.get(payload.userId);
+      if (t) clearTimeout(t);
+      typerTimeoutsRef.current.delete(payload.userId);
+      setTypers((prev) => {
+        const next = new Map(prev);
+        next.delete(payload.userId);
+        return next;
+      });
+    };
+    socket.on("userTyping", onTyping);
+    socket.on("userStopTyping", onStopTyping);
+    return () => {
+      socket.off("userTyping", onTyping);
+      socket.off("userStopTyping", onStopTyping);
+      typerTimeoutsRef.current.forEach((t) => clearTimeout(t));
+      typerTimeoutsRef.current.clear();
+    };
+  }, [trip.id]);
+
+  // Outbound: throttle "typing" emit to once per debounce window; emit
+  // "stopTyping" 2s after last keystroke.
+  const isTypingRef = useRef(false);
+  const stopTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function notifyTyping() {
+    if (!isActiveParticipant) return;
+    const socket = getSocket();
+    if (!isTypingRef.current) {
+      socket.emit("typing", { tripId: trip.id });
+      isTypingRef.current = true;
+    }
+    if (stopTypingTimeoutRef.current) clearTimeout(stopTypingTimeoutRef.current);
+    stopTypingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stopTyping", { tripId: trip.id });
+      isTypingRef.current = false;
+    }, 2000);
+  }
+  function notifyStopTyping() {
+    if (stopTypingTimeoutRef.current) clearTimeout(stopTypingTimeoutRef.current);
+    if (isTypingRef.current) {
+      getSocket().emit("stopTyping", { tripId: trip.id });
+      isTypingRef.current = false;
+    }
+  }
+  // Cleanup on unmount / trip switch
+  useEffect(() => {
+    return () => {
+      if (stopTypingTimeoutRef.current) clearTimeout(stopTypingTimeoutRef.current);
+      if (isTypingRef.current) {
+        getSocket().emit("stopTyping", { tripId: trip.id });
+        isTypingRef.current = false;
+      }
+    };
+  }, [trip.id]);
+
   // Smart scroll: jump to bottom when near bottom; show "↓ N new" pill when
   // user is scrolled up (Viber/Telegram pattern).
   useEffect(() => {
@@ -1315,6 +1402,7 @@ function TripChat({
       tripId: trip.id,
       content: text.trim(),
     });
+    notifyStopTyping();
     setText("");
   }
 
@@ -1642,6 +1730,21 @@ function TripChat({
         </button>
       )}
       </div>
+      {/* Typing indicator — animated dots matching the direct-chat style. */}
+      {typers.size > 0 && (
+        <div className="shrink-0 px-4 py-1 text-xs text-muted-foreground flex items-center gap-1">
+          <span>
+            {Array.from(typers.values()).join(", ")}{" "}
+            {typers.size === 1 ? "набирає" : "набирають"}
+          </span>
+          <span className="flex gap-0.5">
+            <span className="animate-bounce delay-0">.</span>
+            <span className="animate-bounce delay-100">.</span>
+            <span className="animate-bounce delay-200">.</span>
+          </span>
+        </div>
+      )}
+
       <div className="shrink-0 border-t pt-3 relative">
         {!isActiveParticipant ? (
           <div className="px-3 py-3 text-center text-xs text-muted-foreground">
@@ -1700,7 +1803,12 @@ function TripChat({
               <Input
                 placeholder="Type a message..."
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  if (e.target.value.length > 0) notifyTyping();
+                  else notifyStopTyping();
+                }}
+                onBlur={notifyStopTyping}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) handleSend();
                   if (e.key === "Escape") setShowEmoji(false);
