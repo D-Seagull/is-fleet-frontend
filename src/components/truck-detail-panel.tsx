@@ -118,6 +118,7 @@ import {
   type StopFormData,
 } from "@/hooks/use-trips";
 import { ChatArchiveDialog } from "@/components/chat-archive-dialog";
+import { AlarmTab } from "@/components/alarm-tab";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
 import { useUnreadSummary, UNREAD_QUERY_KEY } from "@/hooks/use-unread";
@@ -2650,11 +2651,7 @@ export function TruckDetailPanel({
           value="alarm"
           className="mt-4 flex-1 min-h-0 overflow-y-auto"
         >
-          <Card>
-            <CardContent className="py-10 text-center text-muted-foreground">
-              Coming soon
-            </CardContent>
-          </Card>
+          <AlarmTab truck={truck} activeTripId={activeTrip?.id ?? null} />
         </TabsContent>
 
         <TabsContent

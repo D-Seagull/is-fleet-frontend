@@ -24,6 +24,7 @@ import { useAuthStore } from "@/store/auth";
 import { useMyTrucks } from "@/hooks/use-trucks";
 import { useUnreadSummary, useUnreadSocketSync } from "@/hooks/use-unread";
 import { useTruckChangedSync } from "@/hooks/use-trucks";
+import { AlarmNoticeOverlay } from "@/components/alarm-notice-overlay";
 import {
   Popover,
   PopoverContent,
@@ -148,6 +149,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <main className="flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
         </SidebarInset>
       </div>
+      {/* Fires when one of the user's alarms is due (cron → socket). */}
+      <AlarmNoticeOverlay />
     </SidebarProvider>
   );
 }
