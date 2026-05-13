@@ -7,6 +7,7 @@ interface AuthUser {
   role: string;
   companyId: string | null;
   name: string;
+  timezone?: string | null;
 }
 
 interface AuthState {

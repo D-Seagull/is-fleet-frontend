@@ -41,6 +41,15 @@ export function AlarmNoticeOverlay() {
       // (isSent / next time for recurring) when they navigate to alarms.
       queryClient.invalidateQueries({ queryKey: alarmKeys.all });
       setFired(alarm);
+      // Chime — autoplay may be blocked until the user has interacted with
+      // the page; the modal still shows visually in that case.
+      try {
+        const a = new Audio("/sounds/is_alarm.mp3");
+        a.volume = 0.8;
+        void a.play();
+      } catch {
+        /* silent — sound is a nice-to-have */
+      }
     };
     socket.on("alarmFired", onFired);
     return () => {

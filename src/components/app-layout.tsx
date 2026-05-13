@@ -25,6 +25,7 @@ import { useMyTrucks } from "@/hooks/use-trucks";
 import { useUnreadSummary, useUnreadSocketSync } from "@/hooks/use-unread";
 import { useTruckChangedSync } from "@/hooks/use-trucks";
 import { useTabVisibilityPresence } from "@/hooks/use-tab-visibility-presence";
+import { useBrowserTimezoneSync } from "@/hooks/use-timezone-sync";
 import { AlarmNoticeOverlay } from "@/components/alarm-notice-overlay";
 import {
   Popover,
@@ -130,6 +131,9 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   // chat-message push should fall through when the user isn't actually
   // looking at the tab.
   useTabVisibilityPresence();
+  // Push the browser's IANA timezone so backend can interpret alarm
+  // wall-clock times on the target user's clock.
+  useBrowserTimezoneSync();
 
   const { data: myTrucks } = useMyTrucks();
   const hasMyTrucks = (myTrucks?.length ?? 0) > 0;

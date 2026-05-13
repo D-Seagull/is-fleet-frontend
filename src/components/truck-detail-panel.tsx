@@ -1211,6 +1211,17 @@ function TripChat({
       // Only mark as read if the user is actually looking at the bottom.
       // If they scrolled up, the pill will appear and markRead fires on scroll-down.
       if (msg.senderId !== meId && nearBottomRef.current) markRead();
+
+      // Sound: ping for incoming non-system messages from someone else.
+      if (!msg.isSystem && msg.senderId !== meId) {
+        try {
+          const a = new Audio("/sounds/is_message.mp3");
+          a.volume = 0.6;
+          void a.play();
+        } catch {
+          /* autoplay can be blocked until first user interaction — silent */
+        }
+      }
     };
     const handleNewDoc = (doc: TripDocumentFull) => {
       if (doc.tripId !== trip.id) return;
