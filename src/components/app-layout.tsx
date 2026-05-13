@@ -24,6 +24,7 @@ import { useAuthStore } from "@/store/auth";
 import { useMyTrucks } from "@/hooks/use-trucks";
 import { useUnreadSummary, useUnreadSocketSync } from "@/hooks/use-unread";
 import { useTruckChangedSync } from "@/hooks/use-trucks";
+import { useTabVisibilityPresence } from "@/hooks/use-tab-visibility-presence";
 import { AlarmNoticeOverlay } from "@/components/alarm-notice-overlay";
 import {
   Popover,
@@ -124,6 +125,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const isDispatcher = user?.role === "DISPATCHER";
   const isTeamlead = user?.role === "TEAMLEAD";
   const isManager = isDispatcher || isTeamlead || user?.role === "ADMIN";
+
+  // Foreground/background tracking — backend uses this to decide whether
+  // chat-message push should fall through when the user isn't actually
+  // looking at the tab.
+  useTabVisibilityPresence();
 
   const { data: myTrucks } = useMyTrucks();
   const hasMyTrucks = (myTrucks?.length ?? 0) > 0;

@@ -125,7 +125,10 @@ export function AlarmTab({
       targetUserId,
       title: title.trim(),
       note: note.trim() || undefined,
-      time: new Date(time).toISOString(),
+      // Send wall-clock (no Z / offset). Backend converts it using the
+      // target user's stored timezone, so "08:00" really means "08:00 on
+      // the driver's clock", not on the dispatcher's.
+      time: `${time}:00`,
       recurrence,
       tripId: linkToTrip && activeTripId ? activeTripId : undefined,
     });
@@ -225,6 +228,15 @@ export function AlarmTab({
               </button>
             ))}
           </div>
+
+          {target === "driver" && truck.currentDriver && (
+            <div className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-300/40 rounded px-2 py-1">
+              ⏱ Час буде по часовій зоні водія{" "}
+              <strong>{truck.currentDriver.name ?? "—"}</strong>. Тобто &laquo;
+              {time.slice(11)}&raquo; означає {time.slice(11)} на його
+              годиннику.
+            </div>
+          )}
 
           {activeTripId && (
             <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer">
