@@ -7,8 +7,8 @@ import { useAuthStore } from "@/store/auth";
 /**
  * Pushes the browser's IANA timezone to the backend after login. Used by
  * AlarmsService to interpret a wall-clock alarm time on the *target* user's
- * clock — without this, dispatchers' alarms fall back to UTC and appear
- * shifted by the disp's offset.
+ * clock — without this, managers' alarms fall back to UTC and appear
+ * shifted by the manager's offset.
  */
 export function useBrowserTimezoneSync() {
   const user = useAuthStore((s) => s.user);

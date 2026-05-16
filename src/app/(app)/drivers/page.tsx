@@ -257,7 +257,7 @@ export default function DriversPage() {
                   <TableHead>Driver</TableHead>
                   <TableHead className="hidden sm:table-cell">Phone</TableHead>
                   <TableHead className="hidden md:table-cell">Language</TableHead>
-                  <TableHead className="hidden md:table-cell">Dispatcher</TableHead>
+                  <TableHead className="hidden md:table-cell">Manager</TableHead>
                   <TableHead>Truck</TableHead>
                   <TableHead className="hidden sm:table-cell">Rating</TableHead>
                   <TableHead className="hidden sm:table-cell w-[48px]" />
@@ -306,7 +306,7 @@ export default function DriversPage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{driver.phone ?? "—"}</TableCell>
                       <TableCell className="hidden md:table-cell text-sm">{languageLabels[driver.language]}</TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{driver.dispatcher?.name ?? "—"}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{driver.manager?.name ?? "—"}</TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()} className="text-sm">
                         {driver.currentTruck ? (
                           <Link href={`/trucks/${driver.currentTruck.id}`} className="hover:underline">

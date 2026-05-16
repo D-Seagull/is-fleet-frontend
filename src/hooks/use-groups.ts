@@ -1,21 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-export interface GroupDispatcher {
+export interface GroupManager {
   id: string;
-  dispatcher: {
+  manager: {
     id: string;
     name: string | null;
     email: string;
   };
 }
 
-export interface DispatcherGroup {
+export interface ManagerGroup {
   id: string;
   name: string;
   type: string;
   createdBy: string;
-  dispatchers: GroupDispatcher[];
+  managers: GroupManager[];
 }
 
 export interface GroupMessage {
@@ -33,22 +33,22 @@ export interface GroupMessage {
 
 // ─── Groups ───────────────────────────────────────────────────────────────────
 
-export function useDispatcherGroups() {
-  return useQuery<DispatcherGroup[]>({
-    queryKey: ["dispatcher-groups"],
+export function useManagerGroups() {
+  return useQuery<ManagerGroup[]>({
+    queryKey: ["manager-groups"],
     queryFn: async () => {
-      const res = await api.get("/groups/dispatchers");
+      const res = await api.get("/groups/managers");
       return res.data;
     },
   });
 }
 
 export function useGroup(id: string) {
-  return useQuery<DispatcherGroup>({
-    queryKey: ["dispatcher-groups", id],
+  return useQuery<ManagerGroup>({
+    queryKey: ["manager-groups", id],
     queryFn: async () => {
-      const res = await api.get("/groups/dispatchers");
-      const groups: DispatcherGroup[] = res.data;
+      const res = await api.get("/groups/managers");
+      const groups: ManagerGroup[] = res.data;
       return groups.find((g) => g.id === id)!;
     },
     enabled: !!id,
@@ -59,11 +59,11 @@ export function useCreateGroup() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (name: string) => {
-      const res = await api.post("/groups", { name, type: "DISPATCHERS" });
+      const res = await api.post("/groups", { name, type: "MANAGERS" });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatcher-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["manager-groups"] });
     },
   });
 }
@@ -76,7 +76,7 @@ export function useUpdateGroup() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatcher-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["manager-groups"] });
     },
   });
 }
@@ -89,49 +89,49 @@ export function useDeleteGroup() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatcher-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["manager-groups"] });
     },
   });
 }
 
-export function useAddDispatcherToGroup() {
+export function useAddManagerToGroup() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       groupId,
-      dispatcherId,
+      managerId,
     }: {
       groupId: string;
-      dispatcherId: string;
+      managerId: string;
     }) => {
       const res = await api.post(
-        `/groups/${groupId}/dispatchers/${dispatcherId}`,
+        `/groups/${groupId}/managers/${managerId}`,
       );
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatcher-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["manager-groups"] });
     },
   });
 }
 
-export function useRemoveDispatcherFromGroup() {
+export function useRemoveManagerFromGroup() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       groupId,
-      dispatcherId,
+      managerId,
     }: {
       groupId: string;
-      dispatcherId: string;
+      managerId: string;
     }) => {
       const res = await api.delete(
-        `/groups/${groupId}/dispatchers/${dispatcherId}`,
+        `/groups/${groupId}/managers/${managerId}`,
       );
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispatcher-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["manager-groups"] });
     },
   });
 }
@@ -149,10 +149,10 @@ export function useGroupMessages(groupId: string) {
   });
 }
 export function useGroupsForChat() {
-  return useQuery<DispatcherGroup[]>({
-    queryKey: ["dispatcher-groups"],
+  return useQuery<ManagerGroup[]>({
+    queryKey: ["manager-groups"],
     queryFn: async () => {
-      const res = await api.get("/groups/dispatchers");
+      const res = await api.get("/groups/managers");
       return res.data;
     },
   });

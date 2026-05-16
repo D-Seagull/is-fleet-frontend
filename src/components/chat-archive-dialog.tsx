@@ -21,7 +21,7 @@ import {
 
 const REASON_LABEL: Record<SessionEndReason, string> = {
   DRIVER_CHANGED: "Driver changed",
-  DISPATCHER_CHANGED: "Dispatcher changed",
+  MANAGER_CHANGED: "Manager changed",
   TRIP_COMPLETED: "Trip completed",
   LEGACY_RESET: "Chat reset (legacy)",
 };
@@ -70,7 +70,7 @@ export function ChatArchiveDialog({
           </DialogTitle>
           <DialogDescription>
             {selected
-              ? `${selected.driver?.name ?? "Unknown driver"} ↔ ${selected.dispatcher?.name ?? "Unknown dispatcher"} · ${fmtDate(selected.startedAt)} – ${selected.endedAt ? fmtDate(selected.endedAt) : "?"}`
+              ? `${selected.driver?.name ?? "Unknown driver"} ↔ ${selected.manager?.name ?? "Unknown manager"} · ${fmtDate(selected.startedAt)} – ${selected.endedAt ? fmtDate(selected.endedAt) : "?"}`
               : "Previous chat sessions for this trip. Read-only."}
           </DialogDescription>
         </DialogHeader>
@@ -103,7 +103,7 @@ export function ChatArchiveDialog({
                       <div className="font-medium text-sm">
                         {s.driver?.name ?? "—"}
                         <span className="text-muted-foreground"> ↔ </span>
-                        {s.dispatcher?.name ?? "—"}
+                        {s.manager?.name ?? "—"}
                       </div>
                       {s.endReason && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">

@@ -56,7 +56,7 @@ export interface Trip {
   status: TripStatus;
   truckId: string;
   driverId: string;
-  dispatcherId: string;
+  managerId: string;
   companyId: string;
   notes: string | null;
   orderNumber: string | null;
@@ -64,7 +64,7 @@ export interface Trip {
   updatedAt: string;
   chatResetAt: string | null;
   driver: { id: string; name: string | null; phone: string | null };
-  dispatcher: { id: string; name: string | null };
+  manager: { id: string; name: string | null };
   truck: { id: string; plate: string };
   stops: TripStop[];
   documents: TripDocument[];
@@ -82,7 +82,7 @@ export interface TripMessage {
   sender: { id: string; name: string | null; role: string };
   // Session participants — used by the realtime layer to drop messages
   // belonging to a session the current user wasn't part of.
-  session?: { driverId: string | null; dispatcherId: string | null };
+  session?: { driverId: string | null; managerId: string | null };
 }
 
 export interface StopFormData {
@@ -139,7 +139,7 @@ export function useTripMessages(tripId: string) {
 
 export type SessionEndReason =
   | "DRIVER_CHANGED"
-  | "DISPATCHER_CHANGED"
+  | "MANAGER_CHANGED"
   | "TRIP_COMPLETED"
   | "LEGACY_RESET";
 
@@ -147,12 +147,12 @@ export interface ChatArchiveSession {
   id: string;
   tripId: string;
   driverId: string | null;
-  dispatcherId: string | null;
+  managerId: string | null;
   startedAt: string;
   endedAt: string | null;
   endReason: SessionEndReason | null;
   driver: { id: string; name: string | null; role: string } | null;
-  dispatcher: { id: string; name: string | null; role: string } | null;
+  manager: { id: string; name: string | null; role: string } | null;
 }
 
 // Closed chat sessions for a trip — visible to managers (all) and to

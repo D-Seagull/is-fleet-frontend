@@ -25,7 +25,7 @@ interface FiredAlarm {
 
 /**
  * Listens for `alarmFired` socket events emitted by the backend cron when
- * one of the current user's alarms is due. Shows a modal so the dispatcher
+ * one of the current user's alarms is due. Shows a modal so the manager
  * notices it even with the browser tab in the background.
  *
  * Mounted globally in app-layout so it works on every page.

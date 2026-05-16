@@ -122,7 +122,7 @@ export default function TripsPage() {
       if (t.title.toLowerCase().includes(q)) return true;
       if ((t.truck.plate ?? "").toLowerCase().includes(q)) return true;
       if ((t.driver.name ?? "").toLowerCase().includes(q)) return true;
-      if ((t.dispatcher.name ?? "").toLowerCase().includes(q)) return true;
+      if ((t.manager.name ?? "").toLowerCase().includes(q)) return true;
       if (t.stops.some((s) => (s.address ?? "").toLowerCase().includes(q)))
         return true;
       return false;
@@ -140,7 +140,7 @@ export default function TripsPage() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search by order #, trip, truck, driver, dispatcher..."
+          placeholder="Search by order #, trip, truck, driver, manager..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
@@ -161,7 +161,7 @@ export default function TripsPage() {
                 Driver
               </TableHead>
               <TableHead className="hidden lg:table-cell w-[130px]">
-                Dispatcher
+                Manager
               </TableHead>
               <TableHead className="hidden lg:table-cell">
                 <div className="flex items-center gap-1">
@@ -257,10 +257,10 @@ export default function TripsPage() {
                         </span>
                       </TableCell>
 
-                      {/* Dispatcher */}
+                      {/* Manager */}
                       <TableCell className="hidden lg:table-cell py-3">
                         <span className="text-sm">
-                          {trip.dispatcher.name ?? "—"}
+                          {trip.manager.name ?? "—"}
                         </span>
                       </TableCell>
 

@@ -99,7 +99,7 @@ import {
   useDrivers,
   type TruckStatus,
 } from "@/hooks/use-trucks";
-import { useAssignableDispatchers } from "@/hooks/use-dispatchers";
+import { useAssignableManagers } from "@/hooks/use-managers";
 import {
   useTripsByTruck,
   useDeleteMessage,
@@ -1097,20 +1097,20 @@ function TripChat({
   trip,
   truckId,
   currentUserId,
-  truckDispatcherId,
+  truckManagerId,
 }: {
   trip: Trip;
   truckId: string;
   currentUserId: string;
-  truckDispatcherId?: string | null;
+  truckManagerId?: string | null;
 }) {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === "ADMIN" || user?.role === "TEAMLEAD";
-  // Only the trip's current driver / dispatcher may send messages in the
+  // Only the trip's current driver / manager may send messages in the
   // active session — backend enforces this too. Other roles see a notice.
   const isActiveParticipant =
-    trip.driverId === currentUserId || trip.dispatcherId === currentUserId;
+    trip.driverId === currentUserId || trip.managerId === currentUserId;
   const { data: messages = [], isLoading } = useTripMessages(trip.id);
   const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
   const { data: archiveSessions = [] } = useTripChatArchive(trip.id);
@@ -1157,7 +1157,7 @@ function TripChat({
   }, [currentUserId]);
 
   // Only acknowledge reads when the browser tab is visible. Without this,
-  // the sender sees ✓✓ even though the dispatcher had the tab in the
+  // the sender sees ✓✓ even though the manager had the tab in the
   // background and never actually saw the message.
   const tabVisibleRef = useRef(
     typeof document !== "undefined" ? document.visibilityState === "visible" : true,
@@ -1195,11 +1195,11 @@ function TripChat({
       if (msg.tripId !== trip.id) return;
 
       // Privacy: ignore messages from a session the current user wasn't in.
-      // Without this, an old dispatcher who happens to still have the trip
-      // open would receive the new dispatcher's chat over the wire.
+      // Without this, an old manager who happens to still have the trip
+      // open would receive the new manager's chat over the wire.
       const meId = currentUserIdRef.current;
       const inSession =
-        msg.session?.driverId === meId || msg.session?.dispatcherId === meId;
+        msg.session?.driverId === meId || msg.session?.managerId === meId;
       if (!isManagerRef.current && !inSession) return;
 
       queryClient.setQueryData<TripMessage[]>(
@@ -1273,7 +1273,7 @@ function TripChat({
         );
       }
     };
-    // Driver / dispatcher changed — refetch trip + messages + archive so the
+    // Driver / manager changed — refetch trip + messages + archive so the
     // current pair sees the new system message and old chat is hidden.
     const handleTripUpdated = (payload: { tripId: string }) => {
       if (payload.tripId !== trip.id) return;
@@ -1301,7 +1301,7 @@ function TripChat({
 
   // ── Typing indicator ────────────────────────────────────────────────────
   // Track who's currently typing in this trip. We only ever expect the
-  // counterparty (one driver ↔ one dispatcher), but use a Map<userId, name>
+  // counterparty (one driver ↔ one manager), but use a Map<userId, name>
   // to handle race conditions and future N-party chats cleanly.
   const [typers, setTypers] = useState<Map<string, string>>(new Map());
   // Per-typer auto-clear: if we never receive `userStopTyping` (e.g. socket
@@ -1498,7 +1498,7 @@ function TripChat({
         </div>
       )}
 
-      {/* Archive banner — only managers see it. Drivers/dispatchers see
+      {/* Archive banner — only admins/teamleads see it. Drivers/managers see
           system messages inline in the chat instead. */}
       {isManager && archiveSessions.length > 0 && (
         <div className="shrink-0 border-y bg-muted/30 px-3 py-2 flex items-center justify-between gap-3">
@@ -1572,7 +1572,7 @@ function TripChat({
               }
 
               const isMine = msg.senderId === currentUserId;
-              const canDelete = isMine; // dispatcher always sees own; could extend to all later
+              const canDelete = isMine; // user always sees own; could extend to all later
               return (
                 <div
                   key={`msg-${msg.id}`}
@@ -1942,13 +1942,13 @@ export function ChatTab({
   truckId,
   defaultDriverId,
   initialTripId,
-  truckDispatcherId,
+  truckManagerId,
   navOpen = true,
 }: {
   truckId: string;
   defaultDriverId?: string | null;
   initialTripId?: string | null;
-  truckDispatcherId?: string | null;
+  truckManagerId?: string | null;
   navOpen?: boolean;
 }) {
   const user = useAuthStore((s) => s.user);
@@ -2019,7 +2019,7 @@ export function ChatTab({
           trip={selectedTrip}
           truckId={truckId}
           currentUserId={user?.id ?? ""}
-          truckDispatcherId={truckDispatcherId}
+          truckManagerId={truckManagerId}
         />
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
@@ -2453,7 +2453,7 @@ export function TruckDetailPanel({
   const { data: truck, isLoading } = useTruck(truckId);
   const { data: notes, isLoading: notesLoading } = useTruckNotes(truckId);
   const { data: drivers } = useDrivers();
-  const { data: assignableDispatchers } = useAssignableDispatchers();
+  const { data: assignableManagers } = useAssignableManagers();
   const { data: unreadSummary } = useUnreadSummary();
   const truckUnread = unreadSummary?.items.find((i) => i.truckId === truckId);
   const { data: truckTrips = [] } = useTripsByTruck(truckId);
@@ -2477,11 +2477,11 @@ export function TruckDetailPanel({
   // Resolve chat access once truck data is available
   useEffect(() => {
     if (!truck || !user) return;
-    const isDispatcher = user.role === "DISPATCHER" || user.role === "ADMIN";
+    const isManagerRole = user.role === "MANAGER" || user.role === "ADMIN";
     if (defaultTab) {
       setActiveTab(defaultTab);
     } else {
-      setActiveTab(isDispatcher ? "chat" : "trips");
+      setActiveTab(isManagerRole ? "chat" : "trips");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [truck?.id, user?.id]);
@@ -2498,8 +2498,8 @@ export function TruckDetailPanel({
     notFound();
   }
 
-  const isCurrentDispatcher = truck.dispatcherId === user?.id;
-  const isChatEnabled = user?.role === "ADMIN" || isCurrentDispatcher;
+  const isCurrentManager = truck.managerId === user?.id;
+  const isChatEnabled = user?.role === "ADMIN" || isCurrentManager;
 
   function handleOpenTrip(tripId: string) {
     setChatTripId(tripId);
@@ -2633,7 +2633,7 @@ export function TruckDetailPanel({
             truckId={truckId}
             defaultDriverId={truck.currentDriverId}
             initialTripId={chatTripId}
-            truckDispatcherId={truck.dispatcherId}
+            truckManagerId={truck.managerId}
             navOpen={navOpen}
             key={chatTripId ?? "chat"}
           />
@@ -2769,27 +2769,27 @@ export function TruckDetailPanel({
                 </AlertDialogContent>
               </AlertDialog>
 
-              {/* Dispatcher */}
+              {/* Manager */}
               <div className="flex items-center gap-3 px-3 py-2">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  Dispatcher
+                  Manager
                 </span>
                 <Select
-                  value={truck.dispatcherId ?? "none"}
+                  value={truck.managerId ?? "none"}
                   onValueChange={(v) =>
                     updateTruck.mutate({
                       id: truckId,
-                      data: { dispatcherId: v === "none" ? null : v },
+                      data: { managerId: v === "none" ? null : v },
                     })
                   }
                   disabled={updateTruck.isPending}
                 >
                   <SelectTrigger className="h-7 flex-1 text-xs">
-                    <SelectValue placeholder="No dispatcher" />
+                    <SelectValue placeholder="No manager" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No dispatcher</SelectItem>
-                    {(assignableDispatchers ?? []).map((d) => (
+                    <SelectItem value="none">No manager</SelectItem>
+                    {(assignableManagers ?? []).map((d) => (
                       <SelectItem key={d.id} value={d.id}>
                         {d.name ?? d.email}
                       </SelectItem>

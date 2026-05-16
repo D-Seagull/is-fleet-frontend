@@ -40,7 +40,7 @@ const BASE_NAV: NavItem[] = [
   { title: "Trucks", href: "/trucks", icon: Truck },
   { title: "Trips", href: "/trips", icon: Route },
   { title: "Drivers", href: "/drivers", icon: Users },
-  { title: "Dispatchers", href: "/dispatchers", icon: Headset },
+  { title: "Managers", href: "/managers", icon: Headset },
   { title: "Groups", href: "/groups", icon: FolderKanban },
   { title: "Chat", href: "/chat", icon: MessageSquare },
   { title: "Documents", href: "/documents", icon: FileText },
@@ -123,9 +123,9 @@ function UnreadBell() {
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
-  const isDispatcher = user?.role === "DISPATCHER";
+  const isManagerRole = user?.role === "MANAGER";
   const isTeamlead = user?.role === "TEAMLEAD";
-  const isManager = isDispatcher || isTeamlead || user?.role === "ADMIN";
+  const isManager = isManagerRole || isTeamlead || user?.role === "ADMIN";
 
   // Foreground/background tracking — backend uses this to decide whether
   // chat-message push should fall through when the user isn't actually
@@ -138,7 +138,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const { data: myTrucks } = useMyTrucks();
   const hasMyTrucks = (myTrucks?.length ?? 0) > 0;
 
-  const showMyTrucks = isDispatcher || (isTeamlead && hasMyTrucks);
+  const showMyTrucks = isManagerRole || (isTeamlead && hasMyTrucks);
 
   const navItems: NavItem[] = showMyTrucks
     ? [{ title: "My Trucks", href: "/my-trucks", icon: BookMarked }, ...BASE_NAV]

@@ -38,11 +38,11 @@ import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import {
   useGroup,
   useGroupMessages,
-  useAddDispatcherToGroup,
-  useRemoveDispatcherFromGroup,
+  useAddManagerToGroup,
+  useRemoveManagerFromGroup,
   GroupMessage,
 } from "@/hooks/use-groups";
-import { useDispatchers } from "@/hooks/use-dispatchers";
+import { useManagers } from "@/hooks/use-managers";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
@@ -59,18 +59,18 @@ export default function GroupPage() {
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [showAddDispatcher, setShowAddDispatcher] = useState(false);
+  const [showAddManager, setShowAddManager] = useState(false);
 
   const { data: group, isLoading: loadingGroup } = useGroup(id);
   const { data: messages, isLoading: loadingMessages } = useGroupMessages(id);
-  const { data: dispatchers } = useDispatchers();
-  const addDispatcher = useAddDispatcherToGroup();
-  const removeDispatcher = useRemoveDispatcherFromGroup();
+  const { data: managers } = useManagers();
+  const addManager = useAddManagerToGroup();
+  const removeManager = useRemoveManagerFromGroup();
 
-  const groupDispatcherIds =
-    group?.dispatchers.map((d) => d.dispatcher.id) ?? [];
-  const availableDispatchers =
-    dispatchers?.filter((d) => !groupDispatcherIds.includes(d.id)) ?? [];
+  const groupManagerIds =
+    group?.managers.map((d) => d.manager.id) ?? [];
+  const availableManagers =
+    managers?.filter((d) => !groupManagerIds.includes(d.id)) ?? [];
 
   useEffect(() => {
     const socket = getSocket();
@@ -171,7 +171,7 @@ export default function GroupPage() {
           <div>
             <p className="font-semibold">{group.name}</p>
             <p className="text-xs text-muted-foreground">
-              {group.dispatchers.length} dispatchers
+              {group.managers.length} managers
             </p>
           </div>
         </div>
@@ -189,21 +189,21 @@ export default function GroupPage() {
               <SheetTitle>Members — {group.name}</SheetTitle>
             </SheetHeader>
             <div className="flex flex-col gap-3 mt-4">
-              {group.dispatchers.map((d) => (
+              {group.managers.map((d) => (
                 <div key={d.id} className="flex items-center justify-between">
                   <button
                     className="flex items-center gap-2 hover:opacity-75 transition-opacity"
                     onClick={() =>
-                      router.push(`/chat?userId=${d.dispatcher.id}`)
+                      router.push(`/chat?userId=${d.manager.id}`)
                     }
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {d.dispatcher.name?.slice(0, 2).toUpperCase() ?? "??"}
+                        {d.manager.name?.slice(0, 2).toUpperCase() ?? "??"}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm">
-                      {d.dispatcher.name ?? "No name"}
+                      {d.manager.name ?? "No name"}
                     </span>
                   </button>
                   <div className="flex items-center gap-1">
@@ -212,7 +212,7 @@ export default function GroupPage() {
                       variant="ghost"
                       className="h-7 w-7 text-muted-foreground"
                       onClick={() =>
-                        router.push(`/chat?userId=${d.dispatcher.id}`)
+                        router.push(`/chat?userId=${d.manager.id}`)
                       }
                     >
                       <MessageSquare className="h-3.5 w-3.5" />
@@ -228,9 +228,9 @@ export default function GroupPage() {
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() =>
-                              removeDispatcher.mutate({
+                              removeManager.mutate({
                                 groupId: id,
-                                dispatcherId: d.dispatcher.id,
+                                managerId: d.manager.id,
                               })
                             }
                           >
@@ -244,26 +244,26 @@ export default function GroupPage() {
                 </div>
               ))}
 
-              {/* Додати диспетчера — тільки для творця групи */}
+              {/* Додати менеджера — тільки для творця групи */}
               {user?.id === group.createdBy && <div className="border-t pt-3">
-                {showAddDispatcher ? (
+                {showAddManager ? (
                   <div className="flex flex-col gap-2">
                     <p className="text-xs text-muted-foreground">
-                      Add dispatcher:
+                      Add manager:
                     </p>
                     <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
-                      {availableDispatchers.length === 0 ? (
+                      {availableManagers.length === 0 ? (
                         <p className="text-xs text-muted-foreground">
-                          No available dispatchers
+                          No available managers
                         </p>
                       ) : (
-                        availableDispatchers.map((d) => (
+                        availableManagers.map((d) => (
                           <button
                             key={d.id}
                             onClick={() => {
-                              addDispatcher.mutate({
+                              addManager.mutate({
                                 groupId: id,
-                                dispatcherId: d.id,
+                                managerId: d.id,
                               });
                             }}
                             className="flex items-center gap-2 p-2 rounded-md hover:bg-muted text-left text-sm"
@@ -281,7 +281,7 @@ export default function GroupPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setShowAddDispatcher(false)}
+                      onClick={() => setShowAddManager(false)}
                     >
                       Cancel
                     </Button>
@@ -291,10 +291,10 @@ export default function GroupPage() {
                     variant="outline"
                     size="sm"
                     className="w-full"
-                    onClick={() => setShowAddDispatcher(true)}
+                    onClick={() => setShowAddManager(true)}
                   >
                     <UserPlus className="mr-2 h-3 w-3" />
-                    Add Dispatcher
+                    Add Manager
                   </Button>
                 )}
               </div>}

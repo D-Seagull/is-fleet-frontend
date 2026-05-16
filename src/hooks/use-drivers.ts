@@ -13,7 +13,7 @@ export interface Driver {
   language: Language;
   isActive: boolean;
   createdAt: string;
-  dispatcher: { id: string; name: string | null } | null;
+  manager: { id: string; name: string | null } | null;
   currentTruck: { id: string; plate: string; status: string } | null;
   ratingCount: number;
   averageRating: number | null;
@@ -38,7 +38,7 @@ export interface DriverDetail {
   language: Language;
   isActive: boolean;
   createdAt: string;
-  dispatcher: { id: string; name: string | null; email: string | null } | null;
+  manager: { id: string; name: string | null; email: string | null } | null;
   currentTruck: { id: string; plate: string; status: string } | null;
   ratingsReceived: DriverRating[];
   averageRating: number | null;
@@ -141,7 +141,7 @@ export function useDriverRatings(driverId: string) {
 export function useUpdateDriver(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { phone?: string; dispatcherId?: string | null; truckId?: string | null }) => {
+    mutationFn: async (data: { phone?: string; managerId?: string | null; truckId?: string | null }) => {
       const res = await api.patch(`/users/${id}`, data);
       return res.data;
     },
@@ -153,13 +153,13 @@ export function useUpdateDriver(id: string) {
   });
 }
 
-export function useCompanyDispatchers() {
+export function useCompanyManagers() {
   return useQuery<{ id: string; name: string | null }[]>({
-    queryKey: ["dispatchers"],
+    queryKey: ["managers"],
     queryFn: async () => {
       const res = await api.get("/users");
       return (res.data as { id: string; name: string | null; role: string }[]).filter(
-        (u) => u.role === "DISPATCHER" || u.role === "TEAMLEAD",
+        (u) => u.role === "MANAGER" || u.role === "TEAMLEAD",
       );
     },
   });

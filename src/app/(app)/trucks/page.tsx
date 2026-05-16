@@ -321,7 +321,7 @@ export default function TrucksPage() {
                               variant="ghost"
                               size="icon"
                               title={
-                                truck.dispatcherId === user?.id
+                                truck.managerId === user?.id
                                   ? "Release truck"
                                   : "Take truck"
                               }
@@ -329,8 +329,8 @@ export default function TrucksPage() {
                                 updateTruck.mutate({
                                   id: truck.id,
                                   data: {
-                                    dispatcherId:
-                                      truck.dispatcherId === user?.id
+                                    managerId:
+                                      truck.managerId === user?.id
                                         ? null
                                         : user?.id,
                                   },
@@ -338,7 +338,7 @@ export default function TrucksPage() {
                               }
                               disabled={updateTruck.isPending}
                             >
-                              {truck.dispatcherId === user?.id ? (
+                              {truck.managerId === user?.id ? (
                                 <UserMinus className="h-4 w-4 text-primary" />
                               ) : (
                                 <UserPlus className="h-4 w-4 text-muted-foreground" />

@@ -288,7 +288,7 @@ function DriverDetailContent({ id }: { id: string }) {
   if (!driver) notFound();
 
   const isManager = user?.role === "TEAMLEAD" || user?.role === "ADMIN";
-  const canToggle = isManager || user?.role === "DISPATCHER";
+  const canToggle = isManager || user?.role === "MANAGER";
   const phoneValid = PHONE_REGEX.test(phone);
 
   const availableTrucks = (trucks ?? []).filter(

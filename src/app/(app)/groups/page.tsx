@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
-  useDispatcherGroups,
+  useManagerGroups,
   useCreateGroup,
   useUpdateGroup,
   useDeleteGroup,
@@ -40,7 +40,7 @@ export default function GroupsPage() {
   const [editingName, setEditingName] = useState("");
   const [createError, setCreateError] = useState("");
   const [search, setSearch] = useState("");
-  const { data: groups, isLoading } = useDispatcherGroups();
+  const { data: groups, isLoading } = useManagerGroups();
   const createGroup = useCreateGroup();
   const updateGroup = useUpdateGroup();
   const deleteGroup = useDeleteGroup();
@@ -75,7 +75,7 @@ export default function GroupsPage() {
   return (
     <div className="flex flex-col gap-6 p-4">
       <div className="flex items-center justify-between ">
-        <h1 className="text-2xl font-bold">Dispatcher Groups</h1>
+        <h1 className="text-2xl font-bold">Manager Groups</h1>
 
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
@@ -86,7 +86,7 @@ export default function GroupsPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Dispatcher Group</DialogTitle>
+              <DialogTitle>Create Manager Group</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
@@ -205,7 +205,7 @@ export default function GroupsPage() {
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Users className="h-4 w-4" />
-                  <span>{group.dispatchers.length} dispatchers</span>
+                  <span>{group.managers.length} managers</span>
                 </div>
               </CardHeader>
               <CardContent className="flex gap-2">

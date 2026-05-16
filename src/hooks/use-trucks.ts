@@ -13,8 +13,8 @@ export interface Truck {
   companyId: string;
   currentDriverId: string | null;
   currentDriver: { id: string; name: string; phone: string } | null;
-  dispatcherId: string | null;
-  dispatcher: { id: string; name: string | null } | null;
+  managerId: string | null;
+  manager: { id: string; name: string | null } | null;
   truckNotes: { content: string; createdAt: string }[];
 }
 
@@ -76,7 +76,7 @@ export function useUpdateTruck() {
       data,
     }: {
       id: string;
-      data: { plate?: string; status?: TruckStatus; currentDriverId?: string | null; dispatcherId?: string | null };
+      data: { plate?: string; status?: TruckStatus; currentDriverId?: string | null; managerId?: string | null };
     }) => {
       const res = await api.patch(`/trucks/${id}`, data);
       return res.data;
@@ -90,9 +90,9 @@ export function useUpdateTruck() {
 }
 
 /**
- * Listen for `truckChanged` socket events emitted when a dispatcher reassigns
+ * Listen for `truckChanged` socket events emitted when a manager reassigns
  * a driver between trucks (or detaches/attaches one). Invalidates every cache
- * touched by that change so all dispatchers — including the one who didn't
+ * touched by that change so all managers — including the one who didn't
  * trigger the action — see the move immediately.
  */
 export function useTruckChangedSync() {

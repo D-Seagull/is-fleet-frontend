@@ -180,7 +180,7 @@ function ChatPageContent() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{group.name}</p>
                     <p className="text-sm text-muted-foreground truncate">
-                      {group.dispatchers.length} members
+                      {group.managers.length} members
                     </p>
                   </div>
                 </button>

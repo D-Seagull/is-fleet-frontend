@@ -127,7 +127,7 @@ export function AlarmTab({
       note: note.trim() || undefined,
       // Send wall-clock (no Z / offset). Backend converts it using the
       // target user's stored timezone, so "08:00" really means "08:00 on
-      // the driver's clock", not on the dispatcher's.
+      // the driver's clock", not on the manager's.
       time: `${time}:00`,
       recurrence,
       tripId: linkToTrip && activeTripId ? activeTripId : undefined,
