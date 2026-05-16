@@ -15,7 +15,14 @@ import {
   MessageSquare,
   Check,
   X,
+  MoreHorizontal,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -346,6 +353,33 @@ function DriverDetailContent({ id }: { id: string }) {
             Chat
           </Link>
         </Button>
+        {canToggle && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {driver.isActive ? (
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => deactivate.mutate(driver.id)}
+                  disabled={deactivate.isPending}
+                >
+                  Deactivate
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => activate.mutate(driver.id)}
+                  disabled={activate.isPending}
+                >
+                  Activate
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <Tabs defaultValue={defaultTab} className="w-full">
@@ -506,46 +540,27 @@ function DriverDetailContent({ id }: { id: string }) {
                       </div>
                     </div>
 
-                    {/* Rating + Activate/Deactivate */}
-                    <div className="flex flex-col gap-3 md:col-span-2">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted shrink-0">
-                          <Star className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <div className="flex flex-1 items-center justify-between gap-4">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Rating</p>
-                            {driver.averageRating !== null ? (
-                              <div className="flex items-center gap-1">
-                                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                                <span className="font-medium">
-                                  {driver.averageRating.toFixed(1)} / 5
-                                </span>
-                              </div>
-                            ) : (
-                              <p className="font-medium text-muted-foreground">No ratings yet</p>
-                            )}
-                          </div>
-                          {canToggle && (
-                            <Button
-                              variant={driver.isActive ? "destructive" : "default"}
-                              size="sm"
-                              onClick={() =>
-                                driver.isActive
-                                  ? deactivate.mutate(driver.id)
-                                  : activate.mutate(driver.id)
-                              }
-                              disabled={deactivate.isPending || activate.isPending}
-                            >
-                              {(deactivate.isPending || activate.isPending) && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              )}
-                              {driver.isActive ? "Deactivate" : "Activate"}
-                            </Button>
-                          )}
-                        </div>
+                    {/* Rating — read-only inline summary; Activate/Deactivate
+                        moved to the header 3-dots menu so this row stays clean. */}
+                    <div className="flex items-center gap-3 md:col-span-2">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted shrink-0">
+                        <Star className="h-5 w-5 text-muted-foreground" />
                       </div>
-
+                      <div>
+                        <p className="text-sm text-muted-foreground">Rating</p>
+                        {driver.averageRating !== null ? (
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                            <span className="font-medium">
+                              {driver.averageRating.toFixed(1)} / 5
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="font-medium text-muted-foreground">
+                            No ratings yet
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

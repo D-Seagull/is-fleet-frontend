@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
+// Re-export the generic user-update hook from drivers — same endpoint
+// (PATCH /users/:id), same payload shape (name/phone/language/managerId/
+// teamleadId/truckId). Re-exporting keeps manager pages from importing
+// driver-flavoured names.
+export { useUpdateDriver as useUpdateUser } from "./use-drivers";
+
 export interface Manager {
   id: string;
   name: string | null;
@@ -10,10 +16,25 @@ export interface Manager {
   role: string;
   isActive: boolean;
   createdAt: string;
-  teamlead?: { id: string; name: string | null } | null;
-  manager?: { id: string; name: string | null } | null;
+  teamleadId: string | null;
+  managerId: string | null;
+  teamlead?: {
+    id: string;
+    name: string | null;
+    email?: string | null;
+    phone?: string | null;
+    avatar?: string | null;
+  } | null;
+  manager?: {
+    id: string;
+    name: string | null;
+    email?: string | null;
+    phone?: string | null;
+    avatar?: string | null;
+  } | null;
   managerAverageRating?: number | null;
   managerRatingCount?: number;
+  truckCount?: number;
 }
 
 export interface ManagerRating {
@@ -23,6 +44,38 @@ export interface ManagerRating {
   anonymous: boolean;
   createdAt: string;
   ratedBy: { id: string; name: string | null; role: string };
+}
+
+export interface ManagerDetail extends Manager {
+  language: string;
+  companyId: string;
+  assignedTrucks?: {
+    id: string;
+    plate: string;
+    status: string;
+    currentDriver: { id: string; name: string | null } | null;
+  }[];
+  drivers?: {
+    id: string;
+    name: string | null;
+    phone: string | null;
+    avatar: string | null;
+    currentTruck: { id: string; plate: string } | null;
+  }[];
+  managerRatingsReceived?: ManagerRating[];
+}
+
+// Одного менеджера (або взагалі будь-якого юзера) по id — backend повертає
+// все потрібне; ми просто звужуємо тип під сторінку менеджера.
+export function useManager(id: string | null | undefined) {
+  return useQuery<ManagerDetail>({
+    queryKey: ["managers", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const res = await api.get(`/users/${id}`);
+      return res.data;
+    },
+  });
 }
 
 // Усі менеджери компанії
@@ -64,6 +117,17 @@ export function useAssignableManagers() {
       return (res.data as Manager[]).filter(
         (u) => u.role === "MANAGER" || u.role === "TEAMLEAD",
       );
+    },
+  });
+}
+
+// Доступні тімліди для призначення менеджеру
+export function useTeamleads() {
+  return useQuery<Manager[]>({
+    queryKey: ["teamleads"],
+    queryFn: async () => {
+      const res = await api.get("/users");
+      return (res.data as Manager[]).filter((u) => u.role === "TEAMLEAD");
     },
   });
 }

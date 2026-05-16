@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Plus, Mail, Loader2, Phone, Star, UserCircle2, MessageSquare } from "lucide-react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Search,
+  Plus,
+  Loader2,
+  Truck as TruckIcon,
+  MessageSquare,
+  UserCircle2,
+  Star,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -16,38 +25,85 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   useManagers,
   useCreateManager,
-  useDeactivateManager,
-  useActivateManager,
+  type Manager,
 } from "@/hooks/use-managers";
-import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
 
 export default function ManagersPage() {
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const [tab, setTab] = useState<"team" | "all">("team");
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newName, setNewName] = useState("");
   const [createError, setCreateError] = useState("");
-  const router = useRouter();
+
   const { data: managers, isLoading } = useManagers();
   const createManager = useCreateManager();
-  const deactivateManager = useDeactivateManager();
-  const activateManager = useActivateManager();
 
-  const filtered =
-    managers?.filter(
-      (m) =>
-        m.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.phone?.toLowerCase().includes(searchQuery.toLowerCase()),
-    ) ?? [];
+  // "Team" tab — managers reporting to the same teamlead as the current user.
+  //   - TEAMLEAD: their direct reports (teamleadId === my id)
+  //   - MANAGER : peers (teamleadId === my teamleadId, looked up in the list)
+  //   - ADMIN  : no team → show empty state (Admin uses All tab)
+  const myTeamleadId = useMemo<string | null>(() => {
+    if (!user) return null;
+    if (user.role === "TEAMLEAD") return user.id;
+    if (user.role === "MANAGER") {
+      const me = managers?.find((m) => m.id === user.id);
+      return me?.teamleadId ?? null;
+    }
+    return null;
+  }, [user, managers]);
+
+  const filterBySearch = (rows: Manager[]) =>
+    rows.filter((m) => {
+      const q = searchQuery.toLowerCase();
+      if (!q) return true;
+      return (
+        m.email.toLowerCase().includes(q) ||
+        (m.name ?? "").toLowerCase().includes(q) ||
+        (m.phone ?? "").toLowerCase().includes(q)
+      );
+    });
+
+  const teamManagers = useMemo(
+    () =>
+      filterBySearch(
+        (managers ?? []).filter(
+          (m) => myTeamleadId && m.teamleadId === myTeamleadId,
+        ),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [managers, myTeamleadId, searchQuery],
+  );
+
+  const allManagers = useMemo(
+    () => filterBySearch(managers ?? []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [managers, searchQuery],
+  );
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError("");
-
     try {
       await createManager.mutateAsync({
         email: newEmail,
@@ -61,19 +117,15 @@ export default function ManagersPage() {
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string | string[] } } };
       const msg = e.response?.data?.message;
-      if (Array.isArray(msg)) {
-        setCreateError(msg.join(", "));
-      } else if (typeof msg === "string") {
-        setCreateError(msg);
-      } else {
-        setCreateError("Помилка створення менеджера");
-      }
+      if (Array.isArray(msg)) setCreateError(msg.join(", "));
+      else if (typeof msg === "string") setCreateError(msg);
+      else setCreateError("Помилка створення менеджера");
     }
   };
 
   return (
     <div className="flex flex-col gap-6 p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold">Managers</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -149,121 +201,239 @@ export default function ManagersPage() {
         />
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((m) => {
-            const avg = m.managerAverageRating ?? null;
-            const ratingCount = m.managerRatingCount ?? 0;
-            return (
-              <Card
-                key={m.id}
-                className="hover:shadow-md transition-shadow"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-14 w-14">
-                      {m.avatar ? (
-                        <AvatarImage src={m.avatar} alt={m.name ?? m.email} />
-                      ) : null}
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {m.name
-                          ? m.name.slice(0, 2).toUpperCase()
-                          : m.email.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base truncate">
-                        {m.name ?? "Не зареєстрований"}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge
-                          variant="outline"
-                          className={
-                            m.isActive
-                              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                              : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
-                          }
-                        >
-                          {m.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                        {avg !== null && (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                            <span className="font-medium">{avg.toFixed(1)}</span>
-                            <span className="text-muted-foreground">
-                              ({ratingCount})
-                            </span>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as "team" | "all")}>
+        <TabsList>
+          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="all">All managers</TabsTrigger>
+        </TabsList>
+
+        {/* ── Team ─────────────────────────────────────────────────────────── */}
+        <TabsContent value="team" className="mt-4">
+          {isLoading ? (
+            <LoadingRow />
+          ) : !myTeamleadId ? (
+            <EmptyState text="Only managers and team leads have a team view. Switch to “All managers”." />
+          ) : (
+            <div className="rounded-lg border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Manager</TableHead>
+                    <TableHead className="hidden sm:table-cell">
+                      Email
+                    </TableHead>
+                    <TableHead className="hidden sm:table-cell">
+                      Phone
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Trucks
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Rating
+                    </TableHead>
+                    <TableHead className="w-[60px] text-center">Chat</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teamManagers.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="text-center py-10 text-muted-foreground"
+                      >
+                        No team members yet.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    teamManagers.map((m) => (
+                      <TableRow
+                        key={m.id}
+                        className="cursor-pointer"
+                        onClick={() => router.push(`/managers/${m.id}`)}
+                      >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={m.avatar ?? undefined} />
+                              <AvatarFallback className="text-xs">
+                                {(m.name ?? m.email)
+                                  .slice(0, 2)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <Link
+                              href={`/managers/${m.id}`}
+                              className="font-medium hover:underline"
+                            >
+                              {m.name ?? m.email}
+                            </Link>
+                            {!m.isActive && (
+                              <Badge variant="outline" className="text-xs">
+                                Inactive
+                              </Badge>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Mail className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{m.email}</span>
-                  </div>
-                  {m.phone && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="h-4 w-4 shrink-0" />
-                      <span>{m.phone}</span>
-                    </div>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                          {m.email}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                          {m.phone ?? "—"}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">
+                          <div className="flex items-center gap-1.5">
+                            <TruckIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>{m.truckCount ?? 0}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">
+                          {typeof m.managerAverageRating === "number" ? (
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                              <span className="font-medium">
+                                {m.managerAverageRating.toFixed(1)}
+                              </span>
+                              <span className="text-muted-foreground">
+                                ({m.managerRatingCount ?? 0})
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground/40">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell
+                          className="text-center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() =>
+                              router.push(`/chat?userId=${m.id}`)
+                            }
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
                   )}
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <UserCircle2 className="h-4 w-4 shrink-0" />
-                    <span>
-                      Teamlead:{" "}
-                      {m.teamlead?.name ?? (
-                        <span className="italic">не призначений</span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex gap-2 pt-2 flex-wrap">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => router.push(`/chat?userId=${m.id}`)}
-                    >
-                      <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
-                      Message
-                    </Button>
-                    {m.isActive ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        disabled={deactivateManager.isPending}
-                        onClick={() => deactivateManager.mutate(m.id)}
-                      >
-                        Deactivate
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={activateManager.isPending}
-                        onClick={() => activateManager.mutate(m.id)}
-                      >
-                        Activate
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-          {filtered.length === 0 && !isLoading && (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
-              No managers found.
+                </TableBody>
+              </Table>
             </div>
           )}
-        </div>
-      )}
+        </TabsContent>
+
+        {/* ── All managers ─────────────────────────────────────────────────── */}
+        <TabsContent value="all" className="mt-4">
+          {isLoading ? (
+            <LoadingRow />
+          ) : (
+            <div className="rounded-lg border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Manager</TableHead>
+                    <TableHead className="hidden sm:table-cell">
+                      Email
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Teamlead
+                    </TableHead>
+                    <TableHead className="w-[60px] text-center">Chat</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allManagers.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className="text-center py-10 text-muted-foreground"
+                      >
+                        No managers found.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    allManagers.map((m) => (
+                      <TableRow
+                        key={m.id}
+                        className="cursor-pointer"
+                        onClick={() => router.push(`/managers/${m.id}`)}
+                      >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={m.avatar ?? undefined} />
+                              <AvatarFallback className="text-xs">
+                                {(m.name ?? m.email)
+                                  .slice(0, 2)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <Link
+                              href={`/managers/${m.id}`}
+                              className="font-medium hover:underline"
+                            >
+                              {m.name ?? m.email}
+                            </Link>
+                            {!m.isActive && (
+                              <Badge variant="outline" className="text-xs">
+                                Inactive
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                          {m.email}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <UserCircle2 className="h-3.5 w-3.5" />
+                            <span>{m.teamlead?.name ?? "—"}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell
+                          className="text-center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() =>
+                              router.push(`/chat?userId=${m.id}`)
+                            }
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
+
+function LoadingRow() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <div className="text-center py-10 text-sm text-muted-foreground">
+      {text}
+    </div>
+  );
+}
+

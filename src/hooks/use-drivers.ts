@@ -141,13 +141,22 @@ export function useDriverRatings(driverId: string) {
 export function useUpdateDriver(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { phone?: string; managerId?: string | null; truckId?: string | null }) => {
+    mutationFn: async (data: {
+      name?: string;
+      phone?: string;
+      language?: Language;
+      managerId?: string | null;
+      teamleadId?: string | null;
+      truckId?: string | null;
+    }) => {
       const res = await api.patch(`/users/${id}`, data);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drivers", id] });
       queryClient.invalidateQueries({ queryKey: ["drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["managers", id] });
+      queryClient.invalidateQueries({ queryKey: ["managers"] });
       queryClient.invalidateQueries({ queryKey: ["trucks"] });
     },
   });
