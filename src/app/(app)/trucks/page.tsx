@@ -84,14 +84,15 @@ export default function TrucksPage() {
   const deleteTruck = useDeleteTruck();
   const activateTruck = useActivateTruck();
 
-  const filteredTrucks = (trucks ?? []).filter(
-    (truck) =>
-      truck.plate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (truck.currentDriver?.name
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ??
-        false),
-  );
+  const filteredTrucks = (trucks ?? []).filter((truck) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      truck.plate.toLowerCase().includes(q) ||
+      (truck.currentDriver?.name?.toLowerCase().includes(q) ?? false) ||
+      (truck.currentDriver?.phone?.includes(searchQuery) ?? false)
+    );
+  });
 
   async function handleCreate() {
     if (!plate.trim()) return;
@@ -195,7 +196,7 @@ export default function TrucksPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search trucks..."
+              placeholder="Search by plate, driver, phone…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"

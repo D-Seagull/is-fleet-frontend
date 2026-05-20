@@ -79,12 +79,16 @@ export default function DriversPage() {
   const deactivateDriver = useDeactivateDriver();
   const activateDriver = useActivateDriver();
 
-  const filteredDrivers = (drivers ?? []).filter(
-    (d) =>
-      d.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      d.phone?.includes(searchQuery) ||
-      d.email?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredDrivers = (drivers ?? []).filter((d) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      (d.name?.toLowerCase().includes(q) ?? false) ||
+      (d.phone?.includes(searchQuery) ?? false) ||
+      (d.manager?.name?.toLowerCase().includes(q) ?? false) ||
+      (d.currentTruck?.plate.toLowerCase().includes(q) ?? false)
+    );
+  });
 
   const cleanedPhone = normalizePhoneForCheck(phone);
   const phoneValid = PHONE_REGEX.test(cleanedPhone);
@@ -241,7 +245,7 @@ export default function DriversPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search drivers..."
+              placeholder="Search by name, phone, manager, plate…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -284,7 +288,7 @@ export default function DriversPage() {
                       onClick={() => router.push(`/drivers/${driver.id}`)}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 max-w-[200px]">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={driver.avatar ?? undefined} />
                             <AvatarFallback className="text-xs">
@@ -297,7 +301,7 @@ export default function DriversPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="ml-auto h-7 w-7"
                             onClick={() => router.push(`/chat?userId=${driver.id}`)}
                           >
                             <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />

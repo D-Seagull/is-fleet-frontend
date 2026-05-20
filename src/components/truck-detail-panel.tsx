@@ -131,7 +131,8 @@ import {
   type TripDocumentFull,
 } from "@/hooks/use-documents";
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -1105,6 +1106,7 @@ function TripChat({
   truckManagerId?: string | null;
 }) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === "ADMIN" || user?.role === "TEAMLEAD";
   // Only the trip's current driver / manager may send messages in the
@@ -1573,52 +1575,90 @@ function TripChat({
 
               const isMine = msg.senderId === currentUserId;
               const canDelete = isMine; // user always sees own; could extend to all later
+              const senderInitials = (msg.sender.name ?? "??")
+                .slice(0, 2)
+                .toUpperCase();
               return (
                 <div
                   key={`msg-${msg.id}`}
                   className={cn(
-                    "group flex flex-col gap-0.5 max-w-[75%]",
-                    isMine && "self-end items-end",
+                    "group flex items-end gap-2",
+                    isMine && "self-end",
                   )}
                 >
-                  <span className="text-xs text-muted-foreground px-1">
-                    {msg.sender.name ?? "Unknown"}
-                  </span>
-                  <div className="relative">
-                  <div className={cn("rounded-2xl px-3 py-2 text-sm", isMine ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                    {(() => {
-                      const [subject, ...rest] = msg.content.split("\n");
-                      return rest.length > 0 ? (
-                        <>
-                          <span className="font-semibold block">{subject}</span>
-                          <span className="whitespace-pre-wrap">{rest.join("\n")}</span>
-                        </>
-                      ) : msg.content;
-                    })()}
-                  </div>
-                  {canDelete && (
+                  {!isMine && (
                     <button
-                      title="Delete"
-                      onClick={() => {
-                        if (confirm("Delete this message?")) deleteMessage.mutate(msg.id);
-                      }}
-                      className={cn(
-                        "absolute -top-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background border shadow-sm p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                        isMine ? "-left-1.5" : "-right-1.5",
-                      )}
+                      type="button"
+                      onClick={() =>
+                        router.push(`/chat?userId=${msg.senderId}`)
+                      }
+                      className="shrink-0"
+                      title={`Message ${msg.sender.name ?? "user"}`}
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {senderInitials}
+                        </AvatarFallback>
+                      </Avatar>
                     </button>
                   )}
-                  </div>
-                  <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
-                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    {isMine && (
-                      <span className={cn(msg.isRead && "text-primary")}>
-                        {msg.isRead ? "✓✓" : "✓"}
+                  <div
+                    className={cn(
+                      "flex flex-col gap-0.5 max-w-[75%]",
+                      isMine && "items-end",
+                    )}
+                  >
+                    {!isMine ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          router.push(`/chat?userId=${msg.senderId}`)
+                        }
+                        className="text-xs text-muted-foreground px-1 hover:underline cursor-pointer text-left"
+                      >
+                        {msg.sender.name ?? "Unknown"}
+                      </button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground px-1">
+                        {msg.sender.name ?? "Unknown"}
                       </span>
                     )}
-                  </span>
+                    <div className="relative">
+                    <div className={cn("rounded-2xl px-3 py-2 text-sm", isMine ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                      {(() => {
+                        const [subject, ...rest] = msg.content.split("\n");
+                        return rest.length > 0 ? (
+                          <>
+                            <span className="font-semibold block">{subject}</span>
+                            <span className="whitespace-pre-wrap">{rest.join("\n")}</span>
+                          </>
+                        ) : msg.content;
+                      })()}
+                    </div>
+                    {canDelete && (
+                      <button
+                        title="Delete"
+                        onClick={() => {
+                          if (confirm("Delete this message?")) deleteMessage.mutate(msg.id);
+                        }}
+                        className={cn(
+                          "absolute -top-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background border shadow-sm p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                          isMine ? "-left-1.5" : "-right-1.5",
+                        )}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
+                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {isMine && (
+                        <span className={cn(msg.isRead && "text-primary")}>
+                          {msg.isRead ? "✓✓" : "✓"}
+                        </span>
+                      )}
+                    </span>
+                  </div>
                 </div>
               );
             }
@@ -2477,11 +2517,16 @@ export function TruckDetailPanel({
   // Resolve chat access once truck data is available
   useEffect(() => {
     if (!truck || !user) return;
-    const isManagerRole = user.role === "MANAGER" || user.role === "ADMIN";
-    if (defaultTab) {
+    const isCurrentMgr = truck.managerId === user.id;
+    const canAccessChat = user.role === "ADMIN" || isCurrentMgr;
+
+    // URL says chat але user не має доступу → fallback на trips
+    if (defaultTab === "chat" && !canAccessChat) {
+      setActiveTab("trips");
+    } else if (defaultTab) {
       setActiveTab(defaultTab);
     } else {
-      setActiveTab(isManagerRole ? "chat" : "trips");
+      setActiveTab(canAccessChat ? "chat" : "trips");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [truck?.id, user?.id]);
