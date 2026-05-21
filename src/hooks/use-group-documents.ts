@@ -1,0 +1,97 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { useEffect } from "react";
+import { getSocket } from "@/lib/socket";
+
+export type FileDocType = "PHOTO" | "DOCUMENT";
+
+export interface GroupDocumentFull {
+  id: string;
+  groupId: string;
+  uploadedBy: string;
+  fileUrl: string;
+  signedUrl: string;
+  fileName: string;
+  fileType: FileDocType;
+  publicId: string | null;
+  isRead: boolean;
+  createdAt: string;
+  uploader: { id: string; name: string | null; role: string };
+}
+
+const QUERY_KEY = (groupId: string) => ["group-documents", groupId];
+
+export function useGroupDocuments(groupId: string) {
+  return useQuery<GroupDocumentFull[]>({
+    queryKey: QUERY_KEY(groupId),
+    queryFn: async () => {
+      const res = await api.get(`/group-messages/documents/group/${groupId}`);
+      return res.data;
+    },
+    enabled: !!groupId,
+  });
+}
+
+export function useUploadGroupDocs(groupId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (files: File[]) => {
+      const form = new FormData();
+      form.append("groupId", groupId);
+      files.forEach((f) => form.append("files", f));
+      const res = await api.post(
+        "/group-messages/documents/upload-many",
+        form,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+      return res.data as GroupDocumentFull[];
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY(groupId) });
+    },
+  });
+}
+
+export function useDeleteGroupDoc(groupId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/group-messages/documents/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY(groupId) });
+    },
+  });
+}
+
+export function useGroupDocsSocketSync(groupId: string | null) {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!groupId) return;
+    const socket = getSocket();
+    const onNew = (doc: GroupDocumentFull) => {
+      if (doc.groupId !== groupId) return;
+      queryClient.setQueryData<GroupDocumentFull[]>(
+        QUERY_KEY(groupId),
+        (prev = []) => {
+          if (prev.some((d) => d.id === doc.id)) return prev;
+          return [doc, ...prev];
+        },
+      );
+    };
+    const onDeleted = ({ id }: { id: string }) => {
+      queryClient.setQueryData<GroupDocumentFull[]>(
+        QUERY_KEY(groupId),
+        (prev = []) => prev.filter((d) => d.id !== id),
+      );
+    };
+    socket.on("new_group_document", onNew);
+    socket.on("group_document_deleted", onDeleted);
+    return () => {
+      socket.off("new_group_document", onNew);
+      socket.off("group_document_deleted", onDeleted);
+    };
+  }, [groupId, queryClient]);
+}

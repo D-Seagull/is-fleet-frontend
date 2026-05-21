@@ -11,6 +11,8 @@ import {
   MoreVertical,
   Trash2,
   Search,
+  Folder,
+  Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,10 +57,25 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { MessageAttachmentsSheet } from "@/components/message-attachments-sheet";
+import {
+  useConversationDocuments,
+  useUploadConversationDocs,
+  useConversationDocsSocketSync,
+  type ConversationDocumentFull,
+} from "@/hooks/use-conversation-documents";
+import {
+  useGroupDocuments,
+  useUploadGroupDocs,
+  useGroupDocsSocketSync,
+  type GroupDocumentFull,
+} from "@/hooks/use-group-documents";
+import { FileText, Download } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -100,6 +117,9 @@ function ChatPageContent() {
   const [membersSheetOpen, setMembersSheetOpen] = useState(false);
   const [newMemberId, setNewMemberId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [attachmentsOpen, setAttachmentsOpen] = useState(false);
+  const attachInputRef = useRef<HTMLInputElement>(null);
+  const [attachUploading, setAttachUploading] = useState(false);
 
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
@@ -112,6 +132,12 @@ function ChatPageContent() {
   const createGroup = useCreateGroup();
   const addMember = useAddManagerToGroup();
   const removeMember = useRemoveManagerFromGroup();
+  const dmDocUpload = useUploadConversationDocs(selectedUserId ?? "");
+  const groupDocUpload = useUploadGroupDocs(selectedGroupId ?? "");
+  const { data: dmDocs = [] } = useConversationDocuments(selectedUserId ?? "");
+  const { data: groupDocs = [] } = useGroupDocuments(selectedGroupId ?? "");
+  useConversationDocsSocketSync(selectedUserId);
+  useGroupDocsSocketSync(selectedGroupId);
   const { data: selectedGroup } = useGroup(selectedGroupId ?? "");
   const { data: groupMessages } = useGroupMessages(selectedGroupId ?? "");
 
@@ -123,6 +149,39 @@ function ChatPageContent() {
   );
   const driverConvs = (conversations ?? []).filter(
     (c) => c.user.role === "DRIVER",
+  );
+
+  // Merge messages + documents into a single chronological timeline so
+  // attachments appear inline in the chat (same UX as trip chat).
+  const currentMessages = selectedGroupId
+    ? (groupMessages ?? [])
+    : (messages ?? []);
+  const currentDocs = selectedGroupId ? groupDocs : dmDocs;
+  type ChatItem =
+    | {
+        kind: "msg";
+        data: DirectMessage | GroupMessage;
+        createdAt: string;
+      }
+    | {
+        kind: "doc";
+        data: ConversationDocumentFull | GroupDocumentFull;
+        createdAt: string;
+      };
+  const timeline: ChatItem[] = [
+    ...currentMessages.map((m) => ({
+      kind: "msg" as const,
+      data: m,
+      createdAt: m.createdAt,
+    })),
+    ...currentDocs.map((d) => ({
+      kind: "doc" as const,
+      data: d,
+      createdAt: d.createdAt,
+    })),
+  ].sort(
+    (a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
 
   const searchQ = searchQuery.toLowerCase().trim();
@@ -211,6 +270,9 @@ function ChatPageContent() {
     });
     socket.on("messages_read", ({ readBy }: { readBy: string }) => {
       queryClient.invalidateQueries({ queryKey: ["messages", readBy] });
+      queryClient.invalidateQueries({
+        queryKey: ["conversation-documents", readBy],
+      });
     });
     return () => {
       socket.off("new_direct_message");
@@ -284,7 +346,7 @@ function ChatPageContent() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, groupMessages]);
+  }, [messages, groupMessages, dmDocs, groupDocs]);
 
   const handleSelectUser = (userId: string) => {
     setSelectedUserId(userId);
@@ -341,6 +403,19 @@ function ChatPageContent() {
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setNewMessage((prev) => prev + emojiData.emoji);
   };
+
+  async function handleAttach(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setAttachUploading(true);
+    try {
+      if (selectedGroupId) await groupDocUpload.mutateAsync(files);
+      else if (selectedUserId) await dmDocUpload.mutateAsync(files);
+    } finally {
+      setAttachUploading(false);
+      if (attachInputRef.current) attachInputRef.current.value = "";
+    }
+  }
 
   async function handleCreateGroup() {
     const name = newGroupName.trim();
@@ -504,6 +579,14 @@ function ChatPageContent() {
                       {selectedGroup.managers.length} members
                     </p>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Attachments"
+                    onClick={() => setAttachmentsOpen(true)}
+                  >
+                    <Folder className="h-4 w-4" />
+                  </Button>
                   <Sheet
                     open={membersSheetOpen}
                     onOpenChange={setMembersSheetOpen}
@@ -645,14 +728,22 @@ function ChatPageContent() {
                       {selectedUser.name?.slice(0, 2).toUpperCase() ?? "??"}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-semibold">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold truncate">
                       {selectedUser.name ?? "No name"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {selectedUser.role}
                     </p>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Attachments"
+                    onClick={() => setAttachmentsOpen(true)}
+                  >
+                    <Folder className="h-4 w-4" />
+                  </Button>
                 </>
               ) : null}
             </div>
@@ -664,41 +755,136 @@ function ChatPageContent() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
-                  {(selectedGroupId
-                    ? (groupMessages ?? [])
-                    : (messages ?? [])
-                  ).map((msg) => {
-                    const isOwn = msg.senderId === user?.id;
+                  {timeline.map((item) => {
+                    if (item.kind === "msg") {
+                      const msg = item.data;
+                      const isOwn = msg.senderId === user?.id;
+                      const senderName =
+                        !isOwn && selectedGroupId
+                          ? (msg as GroupMessage).sender?.name
+                          : null;
+                      const isRead = !selectedGroupId
+                        ? (msg as DirectMessage).isRead
+                        : null;
+                      const showSenderAvatar = !isOwn;
+                      const avatarName = !isOwn
+                        ? selectedGroupId
+                          ? (msg as GroupMessage).sender?.name
+                          : selectedUser?.name
+                        : null;
+                      const senderInitials = (avatarName ?? "??")
+                        .slice(0, 2)
+                        .toUpperCase();
+                      return (
+                        <div
+                          key={`msg-${msg.id}`}
+                          className={cn(
+                            "flex items-end gap-2",
+                            isOwn ? "justify-end" : "justify-start",
+                          )}
+                        >
+                          {showSenderAvatar &&
+                            (selectedGroupId ? (
+                              <button
+                                type="button"
+                                onClick={() => handleSelectUser(msg.senderId)}
+                                className="shrink-0"
+                                title={`Message ${senderName ?? "user"}`}
+                              >
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                    {senderInitials}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </button>
+                            ) : (
+                              <Avatar className="h-8 w-8 shrink-0">
+                                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                  {senderInitials}
+                                </AvatarFallback>
+                              </Avatar>
+                            ))}
+                          <div
+                            className={cn(
+                              "flex flex-col gap-0.5 max-w-[70%]",
+                              isOwn && "items-end",
+                            )}
+                          >
+                            {senderName && (
+                              <button
+                                type="button"
+                                onClick={() => handleSelectUser(msg.senderId)}
+                                className="text-xs font-semibold opacity-80 hover:underline cursor-pointer text-left px-1"
+                              >
+                                {senderName}
+                              </button>
+                            )}
+                            <div
+                              className={cn(
+                                "rounded-lg px-4 py-2",
+                                isOwn
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted",
+                              )}
+                            >
+                              <p className="text-sm">{msg.content}</p>
+                            </div>
+                            <span
+                              className={cn(
+                                "text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1",
+                                isOwn && "justify-end",
+                              )}
+                            >
+                              {new Date(msg.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                              {isOwn && isRead != null && (
+                                <span
+                                  className={cn(isRead && "text-primary")}
+                                >
+                                  {isRead ? "✓✓" : "✓"}
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    // kind === "doc"
+                    const doc = item.data;
+                    const isOwn = doc.uploadedBy === user?.id;
+                    const isPhoto = doc.fileType === "PHOTO";
                     const senderName =
                       !isOwn && selectedGroupId
-                        ? (msg as GroupMessage).sender?.name
+                        ? doc.uploader?.name
                         : null;
-                    const isRead = !selectedGroupId
-                      ? (msg as DirectMessage).isRead
-                      : null;
-                    const showSenderAvatar = !isOwn;
                     const avatarName = !isOwn
                       ? selectedGroupId
-                        ? (msg as GroupMessage).sender?.name
+                        ? doc.uploader?.name
                         : selectedUser?.name
                       : null;
-                    const senderInitials =
-                      (avatarName ?? "??").slice(0, 2).toUpperCase();
+                    const senderInitials = (avatarName ?? "??")
+                      .slice(0, 2)
+                      .toUpperCase();
+                    const ext =
+                      doc.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
                     return (
                       <div
-                        key={msg.id}
+                        key={`doc-${doc.id}`}
                         className={cn(
                           "flex items-end gap-2",
                           isOwn ? "justify-end" : "justify-start",
                         )}
                       >
-                        {showSenderAvatar &&
+                        {!isOwn &&
                           (selectedGroupId ? (
                             <button
                               type="button"
-                              onClick={() => handleSelectUser(msg.senderId)}
+                              onClick={() =>
+                                handleSelectUser(doc.uploadedBy)
+                              }
                               className="shrink-0"
-                              title={`Message ${senderName ?? "user"}`}
                             >
                               <Avatar className="h-8 w-8">
                                 <AvatarFallback className="text-xs bg-primary/10 text-primary">
@@ -715,38 +901,100 @@ function ChatPageContent() {
                           ))}
                         <div
                           className={cn(
-                            "max-w-[70%] rounded-lg px-4 py-2",
-                            isOwn
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted",
+                            "flex flex-col gap-0.5 max-w-[70%]",
+                            isOwn && "items-end",
                           )}
                         >
                           {senderName && (
                             <button
                               type="button"
-                              onClick={() => handleSelectUser(msg.senderId)}
-                              className="block text-xs font-semibold mb-0.5 opacity-80 hover:underline cursor-pointer"
+                              onClick={() =>
+                                handleSelectUser(doc.uploadedBy)
+                              }
+                              className="text-xs font-semibold opacity-80 hover:underline cursor-pointer text-left px-1"
                             >
                               {senderName}
                             </button>
                           )}
-                          <p className="text-sm">{msg.content}</p>
-                          <p
+                          {isPhoto ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={doc.signedUrl}
+                              alt={doc.fileName}
+                              onClick={() =>
+                                window.open(doc.signedUrl, "_blank")
+                              }
+                              className="max-w-[200px] max-h-[200px] w-full object-cover rounded-2xl cursor-pointer border"
+                            />
+                          ) : (
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={() =>
+                                window.open(doc.signedUrl, "_blank")
+                              }
+                              onKeyDown={(e) =>
+                                e.key === "Enter" &&
+                                window.open(doc.signedUrl, "_blank")
+                              }
+                              className={cn(
+                                "flex items-center gap-2 rounded-2xl px-3 py-2 border cursor-pointer hover:opacity-80 transition-opacity",
+                                isOwn
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted",
+                              )}
+                            >
+                              <FileText className="h-5 w-5 shrink-0" />
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-sm truncate max-w-[180px] leading-tight">
+                                  {doc.fileName}
+                                </span>
+                                <span
+                                  className={cn(
+                                    "text-[10px] leading-tight",
+                                    isOwn
+                                      ? "text-primary-foreground/70"
+                                      : "text-muted-foreground",
+                                  )}
+                                >
+                                  {ext}
+                                </span>
+                              </div>
+                              <button
+                                title="Download"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(doc.signedUrl, "_blank");
+                                }}
+                                className="shrink-0 opacity-70 hover:opacity-100"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                          <span
                             className={cn(
-                              "text-xs mt-1 flex items-center gap-1",
-                              isOwn
-                                ? "text-primary-foreground/70 justify-end"
-                                : "text-muted-foreground",
+                              "text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1",
+                              isOwn && "justify-end",
                             )}
                           >
-                            {new Date(msg.createdAt).toLocaleTimeString([], {
+                            {new Date(doc.createdAt).toLocaleTimeString([], {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
-                            {isOwn && isRead != null && (
-                              <span>{isRead ? "✓✓" : "✓"}</span>
+                            {isOwn && !selectedGroupId && (
+                              <span
+                                className={cn(
+                                  (doc as ConversationDocumentFull).isRead &&
+                                    "text-primary",
+                                )}
+                              >
+                                {(doc as ConversationDocumentFull).isRead
+                                  ? "✓✓"
+                                  : "✓"}
+                              </span>
                             )}
-                          </p>
+                          </span>
                         </div>
                       </div>
                     );
@@ -781,6 +1029,28 @@ function ChatPageContent() {
               onSubmit={handleSend}
               className="p-4 border-t shrink-0 flex gap-2"
             >
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => attachInputRef.current?.click()}
+                disabled={attachUploading}
+                title="Attach file"
+              >
+                {attachUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Paperclip className="h-4 w-4" />
+                )}
+              </Button>
+              <input
+                ref={attachInputRef}
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                className="hidden"
+                onChange={handleAttach}
+              />
               <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                 <PopoverTrigger asChild>
                   <Button type="button" variant="ghost" size="icon">
@@ -821,6 +1091,9 @@ function ChatPageContent() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create group</DialogTitle>
+            <DialogDescription>
+              Enter a name and pick managers to add to the group.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -884,6 +1157,18 @@ function ChatPageContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <MessageAttachmentsSheet
+        open={attachmentsOpen}
+        onOpenChange={setAttachmentsOpen}
+        source={selectedGroupId ? "group" : "dm"}
+        targetId={selectedGroupId ?? selectedUserId ?? ""}
+        title={
+          selectedGroupId
+            ? (selectedGroup?.name ?? "Group")
+            : (selectedUser?.name ?? "Conversation")
+        }
+      />
     </div>
   );
 }
