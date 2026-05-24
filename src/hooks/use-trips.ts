@@ -83,6 +83,7 @@ export interface TripMessage {
   // Session participants — used by the realtime layer to drop messages
   // belonging to a session the current user wasn't part of.
   session?: { driverId: string | null; managerId: string | null };
+  reactions?: { id: string; userId: string; emoji: string }[];
 }
 
 export interface StopFormData {

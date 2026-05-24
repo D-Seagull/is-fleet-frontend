@@ -133,6 +133,8 @@ import {
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { notFound, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { MessageReactionsTrigger } from "@/components/message-reactions";
+import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -1109,6 +1111,7 @@ function TripChat({
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === "ADMIN" || user?.role === "TEAMLEAD";
+  useReactionsSocketSync({ tripId: trip.id });
   // Only the trip's current driver / manager may send messages in the
   // active session — backend enforces this too. Other roles see a notice.
   const isActiveParticipant =
@@ -1582,10 +1585,18 @@ function TripChat({
                 <div
                   key={`msg-${msg.id}`}
                   className={cn(
-                    "group flex items-end gap-2",
+                    "group flex items-start gap-2",
                     isMine && "self-end",
                   )}
                 >
+                  {isMine && (
+                    <MessageReactionsTrigger
+                      messageId={msg.id}
+                      type="TRIP"
+                      reactions={msg.reactions ?? []}
+                      currentUserId={currentUserId}
+                    />
+                  )}
                   {!isMine && (
                     <button
                       type="button"
@@ -1608,7 +1619,7 @@ function TripChat({
                       isMine && "items-end",
                     )}
                   >
-                    {!isMine ? (
+                    {!isMine && (
                       <button
                         type="button"
                         onClick={() =>
@@ -1618,10 +1629,6 @@ function TripChat({
                       >
                         {msg.sender.name ?? "Unknown"}
                       </button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground px-1">
-                        {msg.sender.name ?? "Unknown"}
-                      </span>
                     )}
                     <div className="relative">
                     <div className={cn("rounded-2xl px-3 py-2 text-sm", isMine ? "bg-primary text-primary-foreground" : "bg-muted")}>
@@ -1659,6 +1666,14 @@ function TripChat({
                       )}
                     </span>
                   </div>
+                  {!isMine && (
+                    <MessageReactionsTrigger
+                      messageId={msg.id}
+                      type="TRIP"
+                      reactions={msg.reactions ?? []}
+                      currentUserId={currentUserId}
+                    />
+                  )}
                 </div>
               );
             }

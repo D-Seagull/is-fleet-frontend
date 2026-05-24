@@ -30,6 +30,7 @@ export interface GroupMessage {
     name: string | null;
     role: string;
   };
+  reactions?: { id: string; userId: string; emoji: string }[];
 }
 
 // ─── Groups ───────────────────────────────────────────────────────────────────

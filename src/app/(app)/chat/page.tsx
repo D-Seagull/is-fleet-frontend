@@ -14,6 +14,7 @@ import {
   Folder,
   Paperclip,
   Shield,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ import {
   GroupMessage,
 } from "@/hooks/use-groups";
 import { useTeamMembers } from "@/hooks/use-managers";
+import { useDrivers } from "@/hooks/use-drivers";
 import {
   Tabs,
   TabsContent,
@@ -64,6 +66,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageAttachmentsSheet } from "@/components/message-attachments-sheet";
+import {
+  MessageReactionsBar,
+  MessageReactionsTrigger,
+} from "@/components/message-reactions";
+import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
 import {
   useConversationDocuments,
   useUploadConversationDocs,
@@ -141,6 +148,7 @@ function ChatPageContent() {
   const { data: chatUser } = useChatUser(selectedUserId ?? "");
   const { data: groups } = useGroupsForChat();
   const { data: teamMembers } = useTeamMembers();
+  const { data: allDrivers } = useDrivers();
   const createGroup = useCreateGroup();
   const addMember = useAddManagerToGroup();
   const removeMember = useRemoveManagerFromGroup();
@@ -150,6 +158,10 @@ function ChatPageContent() {
   const { data: groupDocs = [] } = useGroupDocuments(selectedGroupId ?? "");
   useConversationDocsSocketSync(selectedUserId);
   useGroupDocsSocketSync(selectedGroupId);
+  useReactionsSocketSync({
+    dmOtherUserId: selectedUserId,
+    groupId: selectedGroupId,
+  });
   const markGroupRead = useMarkGroupRead();
   const { data: groupUnreadData } = useGroupUnreadSummary();
   const groupUnreadMap = new Map(
@@ -215,6 +227,66 @@ function ChatPageContent() {
     : driverConvs.filter((c) =>
         (c.user.name ?? "").toLowerCase().includes(searchQ),
       );
+
+  // Teams-style search: when the user types a query, also surface company
+  // members they haven't started a chat with yet — clicking opens a blank DM
+  // ready for the first message.
+  const matchesQuery = (
+    name: string | null | undefined,
+    phone: string | null | undefined,
+    email: string | null | undefined,
+  ) => {
+    if (!searchQ) return false;
+    return (
+      (name ?? "").toLowerCase().includes(searchQ) ||
+      (phone ?? "").includes(searchQuery) ||
+      (email ?? "").toLowerCase().includes(searchQ)
+    );
+  };
+  const managerConvIds = new Set(managerConvs.map((c) => c.user.id));
+  const driverConvIds = new Set(driverConvs.map((c) => c.user.id));
+  const extraTeamMembers = !searchQ
+    ? []
+    : (teamMembers ?? []).filter(
+        (m) =>
+          m.id !== user?.id &&
+          !managerConvIds.has(m.id) &&
+          matchesQuery(m.name, m.phone, m.email),
+      );
+  const extraDrivers = !searchQ
+    ? []
+    : (allDrivers ?? []).filter(
+        (d) =>
+          d.id !== user?.id &&
+          !driverConvIds.has(d.id) &&
+          matchesQuery(d.name, d.phone, d.email),
+      );
+
+  type SearchableUser = {
+    id: string;
+    name: string | null;
+    role: string;
+    avatar?: string | null;
+  };
+  const renderUserButton = (u: SearchableUser) => (
+    <button
+      key={`find-${u.id}`}
+      onClick={() => handleSelectUser(u.id)}
+      className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
+    >
+      <Avatar className="h-10 w-10 shrink-0">
+        <AvatarFallback className="bg-primary/10 text-primary">
+          {u.name?.slice(0, 2).toUpperCase() ?? "??"}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium truncate">{u.name ?? u.role}</p>
+        <p className="text-xs text-muted-foreground truncate capitalize">
+          {u.role.toLowerCase()}
+        </p>
+      </div>
+    </button>
+  );
 
   type Conv = NonNullable<typeof conversations>[number];
   const renderConvButton = (conv: Conv) => {
@@ -397,12 +469,14 @@ function ChatPageContent() {
     setSelectedUserId(userId);
     setSelectedGroupId(null);
     setShowConversations(false);
+    setSearchQuery("");
   };
 
   const handleSelectGroup = (groupId: string) => {
     setSelectedGroupId(groupId);
     setSelectedUserId(null);
     setShowConversations(false);
+    setSearchQuery("");
   };
 
   const handleSend = (e: React.FormEvent) => {
@@ -494,10 +568,126 @@ function ChatPageContent() {
               placeholder="Search…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9"
+              className="pl-8 pr-8 h-9"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted text-muted-foreground"
+                aria-label="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
+        {searchQ ? (
+          <div className="flex-1 overflow-y-auto">
+            {/* ── Groups ───────────────────────────────────────────── */}
+            <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Groups
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setGroupDialogOpen(true)}
+                title="Create group"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+            {filteredGroups.length > 0 ? (
+              filteredGroups.map((group) => {
+                const unread = groupUnreadMap.get(group.id) ?? 0;
+                const hasUnread = unread > 0;
+                return (
+                  <button
+                    key={`group-${group.id}`}
+                    onClick={() => handleSelectGroup(group.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
+                      selectedGroupId === group.id && "bg-muted",
+                      hasUnread &&
+                        selectedGroupId !== group.id &&
+                        "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+                    )}
+                  >
+                    <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        {hasUnread && (
+                          <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
+                        )}
+                        <p
+                          className={cn(
+                            "truncate flex-1",
+                            hasUnread ? "font-bold" : "font-medium",
+                          )}
+                        >
+                          {group.name}
+                        </p>
+                        {hasUnread && (
+                          <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+                            {unread > 99 ? "99+" : unread}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {group.managers.length} members
+                      </p>
+                    </div>
+                  </button>
+                );
+              })
+            ) : (
+              <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
+                No matching groups
+              </p>
+            )}
+
+            {/* ── Direct messages (managers + drivers combined) ───── */}
+            {(() => {
+              const combinedConvs = [
+                ...filteredManagerConvs,
+                ...filteredDriverConvs,
+              ].sort(
+                (a, b) =>
+                  new Date(b.lastMessage.createdAt).getTime() -
+                  new Date(a.lastMessage.createdAt).getTime(),
+              );
+              return (
+                <>
+                  <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
+                    Direct Messages
+                  </div>
+                  {combinedConvs.length === 0 ? (
+                    <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
+                      No matching conversations
+                    </p>
+                  ) : (
+                    combinedConvs.map((conv) => renderConvButton(conv))
+                  )}
+                </>
+              );
+            })()}
+
+            {/* ── Find people (extras from company) ────────────────── */}
+            {(extraTeamMembers.length > 0 || extraDrivers.length > 0) && (
+              <>
+                <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
+                  Find people
+                </div>
+                {extraTeamMembers.map((m) => renderUserButton(m))}
+                {extraDrivers.map((d) => renderUserButton(d))}
+              </>
+            )}
+          </div>
+        ) : (
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as "managers" | "drivers")}
@@ -589,12 +779,23 @@ function ChatPageContent() {
               <div className="flex justify-center p-4">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ) : filteredManagerConvs.length === 0 ? (
+            ) : filteredManagerConvs.length === 0 &&
+              extraTeamMembers.length === 0 ? (
               <p className="text-center text-muted-foreground p-4 text-sm">
                 {searchQ ? "No matches" : "No conversations yet"}
               </p>
             ) : (
-              filteredManagerConvs.map((conv) => renderConvButton(conv))
+              <>
+                {filteredManagerConvs.map((conv) => renderConvButton(conv))}
+                {extraTeamMembers.length > 0 && (
+                  <>
+                    <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
+                      Find people
+                    </div>
+                    {extraTeamMembers.map((m) => renderUserButton(m))}
+                  </>
+                )}
+              </>
             )}
           </TabsContent>
 
@@ -606,15 +807,27 @@ function ChatPageContent() {
               <div className="flex justify-center p-4">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ) : filteredDriverConvs.length === 0 ? (
+            ) : filteredDriverConvs.length === 0 &&
+              extraDrivers.length === 0 ? (
               <p className="text-center text-muted-foreground p-4 text-sm">
                 {searchQ ? "No matches" : "No conversations yet"}
               </p>
             ) : (
-              filteredDriverConvs.map((conv) => renderConvButton(conv))
+              <>
+                {filteredDriverConvs.map((conv) => renderConvButton(conv))}
+                {extraDrivers.length > 0 && (
+                  <>
+                    <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
+                      Find people
+                    </div>
+                    {extraDrivers.map((d) => renderUserButton(d))}
+                  </>
+                )}
+              </>
             )}
           </TabsContent>
         </Tabs>
+        )}
       </div>
 
       {/* Вікно повідомлень */}
@@ -856,10 +1069,20 @@ function ChatPageContent() {
                         <div
                           key={`msg-${msg.id}`}
                           className={cn(
-                            "flex items-end gap-2",
+                            "group flex items-start gap-2",
                             isOwn ? "justify-end" : "justify-start",
                           )}
                         >
+                          {/* Own → trigger on the LEFT (no avatar) */}
+                          {isOwn && (
+                            <MessageReactionsTrigger
+                              messageId={msg.id}
+                              type={selectedGroupId ? "GROUP" : "DM"}
+                              reactions={msg.reactions ?? []}
+                              currentUserId={user?.id}
+                              hideWhenReacted={!!selectedGroupId}
+                            />
+                          )}
                           {showSenderAvatar &&
                             (selectedGroupId ? (
                               <button
@@ -906,25 +1129,46 @@ function ChatPageContent() {
                             >
                               <p className="text-sm">{msg.content}</p>
                             </div>
-                            <span
+                            <div
                               className={cn(
-                                "text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1",
-                                isOwn && "justify-end",
+                                "flex items-center gap-2 px-1 min-h-[20px]",
+                                isOwn ? "flex-row-reverse" : "flex-row",
                               )}
                             >
-                              {new Date(msg.createdAt).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                              {isOwn && isRead != null && (
-                                <span
-                                  className={cn(isRead && "text-primary")}
-                                >
-                                  {isRead ? "✓✓" : "✓"}
-                                </span>
+                              <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1 shrink-0">
+                                {new Date(msg.createdAt).toLocaleTimeString(
+                                  [],
+                                  { hour: "2-digit", minute: "2-digit" },
+                                )}
+                                {isOwn && isRead != null && (
+                                  <span
+                                    className={cn(isRead && "text-primary")}
+                                  >
+                                    {isRead ? "✓✓" : "✓"}
+                                  </span>
+                                )}
+                              </span>
+                              {selectedGroupId && (
+                                <MessageReactionsBar
+                                  messageId={msg.id}
+                                  type="GROUP"
+                                  reactions={msg.reactions ?? []}
+                                  isOwn={isOwn}
+                                  currentUserId={user?.id}
+                                />
                               )}
-                            </span>
+                            </div>
                           </div>
+                          {/* Other party → trigger on the RIGHT */}
+                          {!isOwn && (
+                            <MessageReactionsTrigger
+                              messageId={msg.id}
+                              type={selectedGroupId ? "GROUP" : "DM"}
+                              reactions={msg.reactions ?? []}
+                              currentUserId={user?.id}
+                              hideWhenReacted={!!selectedGroupId}
+                            />
+                          )}
                         </div>
                       );
                     }

@@ -13,6 +13,7 @@ export interface DirectMessage {
     name: string | null;
     role: string;
   };
+  reactions?: { id: string; userId: string; emoji: string }[];
 }
 
 export interface Conversation {
