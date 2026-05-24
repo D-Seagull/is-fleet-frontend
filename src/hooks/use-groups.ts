@@ -7,6 +7,7 @@ export interface GroupManager {
     id: string;
     name: string | null;
     email: string;
+    role: string;
   };
 }
 

@@ -13,6 +13,7 @@ import {
   Search,
   Folder,
   Paperclip,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +45,7 @@ import {
   useRemoveManagerFromGroup,
   GroupMessage,
 } from "@/hooks/use-groups";
-import { useManagers } from "@/hooks/use-managers";
+import { useTeamMembers } from "@/hooks/use-managers";
 import {
   Tabs,
   TabsContent,
@@ -139,7 +140,7 @@ function ChatPageContent() {
   );
   const { data: chatUser } = useChatUser(selectedUserId ?? "");
   const { data: groups } = useGroupsForChat();
-  const { data: managers } = useManagers();
+  const { data: teamMembers } = useTeamMembers();
   const createGroup = useCreateGroup();
   const addMember = useAddManagerToGroup();
   const removeMember = useRemoveManagerFromGroup();
@@ -698,10 +699,18 @@ function ChatPageContent() {
                                           .toUpperCase() ?? "??"}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span className="flex-1 text-sm truncate">
-                                      {gm.manager.name ?? gm.manager.email}
+                                    <span className="flex-1 text-sm truncate flex items-center gap-1.5">
+                                      {gm.manager.role === "TEAMLEAD" && (
+                                        <Shield
+                                          className="h-3.5 w-3.5 text-amber-500 shrink-0"
+                                          aria-label="Team lead"
+                                        />
+                                      )}
+                                      <span className="truncate">
+                                        {gm.manager.name ?? gm.manager.email}
+                                      </span>
                                       {isSelf && (
-                                        <span className="ml-1 text-xs text-muted-foreground">
+                                        <span className="text-xs text-muted-foreground shrink-0">
                                           (you)
                                         </span>
                                       )}
@@ -754,8 +763,8 @@ function ChatPageContent() {
                                 }
                                 className="flex-1 h-9 rounded-md border bg-background px-2 text-sm"
                               >
-                                <option value="">Select manager…</option>
-                                {(managers ?? [])
+                                <option value="">Select member…</option>
+                                {(teamMembers ?? [])
                                   .filter(
                                     (m) =>
                                       !selectedGroup.managers.some(
@@ -1177,7 +1186,7 @@ function ChatPageContent() {
               <Label>Members ({selectedMemberIds.size} selected)</Label>
               <ScrollArea className="h-60 rounded border">
                 <div className="p-2">
-                  {(managers ?? [])
+                  {(teamMembers ?? [])
                     .filter((m) => m.id !== user?.id)
                     .map((m) => (
                       <label

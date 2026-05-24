@@ -89,6 +89,26 @@ export function useManagers() {
   });
 }
 
+/**
+ * Team-level users (MANAGER + TEAMLEAD + ADMIN) — used for things like the
+ * "create group" picker where the current user may need to add their team
+ * lead and other managers (not just other MANAGERs).
+ */
+export function useTeamMembers() {
+  return useQuery<Manager[]>({
+    queryKey: ["team-members"],
+    queryFn: async () => {
+      const res = await api.get("/users");
+      return res.data.filter(
+        (u: Manager) =>
+          u.role === "MANAGER" ||
+          u.role === "TEAMLEAD" ||
+          u.role === "ADMIN",
+      );
+    },
+  });
+}
+
 // Створити менеджера
 export function useCreateManager() {
   const queryClient = useQueryClient();
