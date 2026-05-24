@@ -15,11 +15,9 @@ export function getSocket(): Socket {
       // Send token both ways so the gateway can pick whichever it reads.
       auth: { token },
       query: { userId: token ?? "" },
-      // Polling first → upgrade to websocket if it works. Avoids the
-      // "websocket error" loop in environments where WS is blocked or flaky
-      // (firewall, dev proxy, etc.) — polling keeps the connection alive
-      // regardless and the upgrade happens silently when possible.
-      transports: ["polling", "websocket"],
+      // Websocket first → fallback to long-polling if WS is blocked.
+      // WS gives near-instant delivery; polling adds ~1-2s per cycle.
+      transports: ["websocket", "polling"],
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 10,

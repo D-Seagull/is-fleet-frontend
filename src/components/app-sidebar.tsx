@@ -48,6 +48,8 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   children?: NavChild[];
+  /** Unread counter badge shown on the right of the menu item. */
+  badge?: number;
 }
 
 interface AppSidebarProps {
@@ -170,6 +172,11 @@ export function AppSidebar({
                       <Link href={item.href} onClick={handleNavClick}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <span className="ml-auto inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+                            {item.badge > 99 ? "99+" : item.badge}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -86,36 +86,43 @@ export default function GroupPage() {
       joinGroup();
     }
 
-    socket.on("new_group_message", (message: GroupMessage) => {
+    const onNewGroupMessage = (message: GroupMessage) => {
       queryClient.setQueryData<GroupMessage[]>(
         ["group-messages", id],
         (prev = []) => [...prev, message],
       );
-    });
-
-    socket.on(
-      "group_typing",
-      ({ userId, name }: { userId: string; name: string }) => {
-        if (userId !== user?.id) {
-          setIsTyping(true);
-          setTypingUser(name);
-        }
-      },
-    );
-
-    socket.on("group_stopped_typing", ({ userId }: { userId: string }) => {
+    };
+    const onGroupTyping = ({
+      userId,
+      name,
+    }: {
+      userId: string;
+      name: string;
+    }) => {
+      if (userId !== user?.id) {
+        setIsTyping(true);
+        setTypingUser(name);
+      }
+    };
+    const onGroupStoppedTyping = ({ userId }: { userId: string }) => {
       if (userId !== user?.id) {
         setIsTyping(false);
         setTypingUser(null);
       }
-    });
+    };
+
+    socket.on("new_group_message", onNewGroupMessage);
+    socket.on("group_typing", onGroupTyping);
+    socket.on("group_stopped_typing", onGroupStoppedTyping);
 
     return () => {
       socket.emit("leave_group", { groupId: id });
       socket.off("connect", joinGroup);
-      socket.off("new_group_message");
-      socket.off("group_typing");
-      socket.off("group_stopped_typing");
+      // Pass specific callbacks — otherwise socket.off(event) wipes ALL
+      // listeners, including the global ones in AppLayoutInner.
+      socket.off("new_group_message", onNewGroupMessage);
+      socket.off("group_typing", onGroupTyping);
+      socket.off("group_stopped_typing", onGroupStoppedTyping);
     };
   }, [id, user?.id, queryClient]);
 

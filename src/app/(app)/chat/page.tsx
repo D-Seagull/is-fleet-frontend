@@ -75,6 +75,10 @@ import {
   useGroupDocsSocketSync,
   type GroupDocumentFull,
 } from "@/hooks/use-group-documents";
+import {
+  useMarkGroupRead,
+  useGroupUnreadSummary,
+} from "@/hooks/use-group-unread";
 import { FileText, Download } from "lucide-react";
 import {
   Sheet,
@@ -93,10 +97,13 @@ import {
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
+  const groupIdFromUrl = searchParams.get("groupId");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
     userIdFromUrl ?? null,
   );
-  const [showConversations, setShowConversations] = useState(!userIdFromUrl);
+  const [showConversations, setShowConversations] = useState(
+    !userIdFromUrl && !groupIdFromUrl,
+  );
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [newMessage, setNewMessage] = useState("");
@@ -105,13 +112,17 @@ function ChatPageContent() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [activeTab, setActiveTab] = useState<"managers" | "drivers">("managers");
+  const [activeTab, setActiveTab] = useState<"managers" | "drivers">(
+    groupIdFromUrl ? "managers" : "managers",
+  );
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(
     new Set(),
   );
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(
+    groupIdFromUrl ?? null,
+  );
   const [isGroupTyping, setIsGroupTyping] = useState(false);
   const [groupTypingName, setGroupTypingName] = useState<string | null>(null);
   const [membersSheetOpen, setMembersSheetOpen] = useState(false);
@@ -138,6 +149,11 @@ function ChatPageContent() {
   const { data: groupDocs = [] } = useGroupDocuments(selectedGroupId ?? "");
   useConversationDocsSocketSync(selectedUserId);
   useGroupDocsSocketSync(selectedGroupId);
+  const markGroupRead = useMarkGroupRead();
+  const { data: groupUnreadData } = useGroupUnreadSummary();
+  const groupUnreadMap = new Map(
+    (groupUnreadData?.items ?? []).map((g) => [g.groupId, g.unreadCount]),
+  );
   const { data: selectedGroup } = useGroup(selectedGroupId ?? "");
   const { data: groupMessages } = useGroupMessages(selectedGroupId ?? "");
 
@@ -200,42 +216,57 @@ function ChatPageContent() {
       );
 
   type Conv = NonNullable<typeof conversations>[number];
-  const renderConvButton = (conv: Conv) => (
-    <button
-      key={conv.user.id}
-      onClick={() => handleSelectUser(conv.user.id)}
-      className={cn(
-        "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
-        selectedUserId === conv.user.id && "bg-muted",
-      )}
-    >
-      <Avatar className="h-10 w-10 shrink-0">
-        <AvatarFallback className="bg-primary/10 text-primary">
-          {conv.user.name?.slice(0, 2).toUpperCase() ?? "??"}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between">
-          <p className="font-medium truncate">
-            {conv.user.name ?? conv.user.role}
+  const renderConvButton = (conv: Conv) => {
+    const hasUnread = conv.unreadCount > 0;
+    return (
+      <button
+        key={conv.user.id}
+        onClick={() => handleSelectUser(conv.user.id)}
+        className={cn(
+          "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
+          selectedUserId === conv.user.id && "bg-muted",
+          hasUnread &&
+            selectedUserId !== conv.user.id &&
+            "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+        )}
+      >
+        <Avatar className="h-10 w-10 shrink-0">
+          <AvatarFallback className="bg-primary/10 text-primary">
+            {conv.user.name?.slice(0, 2).toUpperCase() ?? "??"}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            {hasUnread && (
+              <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
+            )}
+            <p
+              className={cn(
+                "truncate flex-1",
+                hasUnread ? "font-bold" : "font-medium",
+              )}
+            >
+              {conv.user.name ?? conv.user.role}
+            </p>
+            {hasUnread && (
+              <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+                {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground truncate">
+            {conv.lastMessage.content}
           </p>
-          {conv.unreadCount > 0 && (
-            <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center shrink-0">
-              {conv.unreadCount}
-            </span>
-          )}
         </div>
-        <p className="text-sm text-muted-foreground truncate">
-          {conv.lastMessage.content}
-        </p>
-      </div>
-    </button>
-  );
+      </button>
+    );
+  };
 
   const markMessagesAsRead = useCallback(
     (userId: string) => {
       getSocket().emit("mark_as_read", { senderId: userId });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["dm-unread-summary"] });
     },
     [queryClient],
   );
@@ -251,8 +282,15 @@ function ChatPageContent() {
   }, [selectedUserId, markMessagesAsRead]);
 
   useEffect(() => {
+    if (selectedGroupId) {
+      markGroupRead.mutate(selectedGroupId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedGroupId]);
+
+  useEffect(() => {
     const socket = getSocket();
-    socket.on("new_direct_message", (message: DirectMessage) => {
+    const onNewDirect = (message: DirectMessage) => {
       const otherUserId =
         message.senderId === user?.id ? message.receiverId : message.senderId;
       queryClient.setQueryData<DirectMessage[]>(
@@ -267,30 +305,36 @@ function ChatPageContent() {
       } else {
         queryClient.invalidateQueries({ queryKey: ["conversations"] });
       }
-    });
-    socket.on("messages_read", ({ readBy }: { readBy: string }) => {
+    };
+    const onMessagesRead = ({ readBy }: { readBy: string }) => {
       queryClient.invalidateQueries({ queryKey: ["messages", readBy] });
       queryClient.invalidateQueries({
         queryKey: ["conversation-documents", readBy],
       });
-    });
+    };
+    socket.on("new_direct_message", onNewDirect);
+    socket.on("messages_read", onMessagesRead);
     return () => {
-      socket.off("new_direct_message");
-      socket.off("messages_read");
+      // Pass specific callback — otherwise socket.off(event) wipes ALL
+      // listeners for that event, including the global ones in AppLayoutInner.
+      socket.off("new_direct_message", onNewDirect);
+      socket.off("messages_read", onMessagesRead);
     };
   }, [user?.id, queryClient, markMessagesAsRead]);
 
   useEffect(() => {
     const socket = getSocket();
-    socket.on("user_typing", ({ userId }: { userId: string }) => {
+    const onTyping = ({ userId }: { userId: string }) => {
       if (userId !== user?.id) setIsTyping(true);
-    });
-    socket.on("user_stopped_typing", ({ userId }: { userId: string }) => {
+    };
+    const onStopped = ({ userId }: { userId: string }) => {
       if (userId !== user?.id) setIsTyping(false);
-    });
+    };
+    socket.on("user_typing", onTyping);
+    socket.on("user_stopped_typing", onStopped);
     return () => {
-      socket.off("user_typing");
-      socket.off("user_stopped_typing");
+      socket.off("user_typing", onTyping);
+      socket.off("user_stopped_typing", onStopped);
     };
   }, [user?.id]);
 
@@ -483,26 +527,50 @@ function ChatPageContent() {
               </Button>
             </div>
             {filteredGroups.length > 0 ? (
-              filteredGroups.map((group) => (
-                <button
-                  key={`group-${group.id}`}
-                  onClick={() => handleSelectGroup(group.id)}
-                  className={cn(
-                    "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
-                    selectedGroupId === group.id && "bg-muted",
-                  )}
-                >
-                  <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{group.name}</p>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {group.managers.length} members
-                    </p>
-                  </div>
-                </button>
-              ))
+              filteredGroups.map((group) => {
+                const unread = groupUnreadMap.get(group.id) ?? 0;
+                const hasUnread = unread > 0;
+                return (
+                  <button
+                    key={`group-${group.id}`}
+                    onClick={() => handleSelectGroup(group.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
+                      selectedGroupId === group.id && "bg-muted",
+                      hasUnread &&
+                        selectedGroupId !== group.id &&
+                        "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+                    )}
+                  >
+                    <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        {hasUnread && (
+                          <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
+                        )}
+                        <p
+                          className={cn(
+                            "truncate flex-1",
+                            hasUnread ? "font-bold" : "font-medium",
+                          )}
+                        >
+                          {group.name}
+                        </p>
+                        {hasUnread && (
+                          <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+                            {unread > 99 ? "99+" : unread}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {group.managers.length} members
+                      </p>
+                    </div>
+                  </button>
+                );
+              })
             ) : searchQ ? (
               <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
                 No matching groups

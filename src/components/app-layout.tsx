@@ -22,6 +22,14 @@ import { NavItem } from "@/components/app-sidebar";
 import { useAuthStore } from "@/store/auth";
 import { useMyTrucks } from "@/hooks/use-trucks";
 import { useUnreadSummary, useUnreadSocketSync } from "@/hooks/use-unread";
+import {
+  useDmUnreadSummary,
+  useDmUnreadSocketSync,
+} from "@/hooks/use-dm-unread";
+import {
+  useGroupUnreadSummary,
+  useGroupUnreadSocketSync,
+} from "@/hooks/use-group-unread";
 import { useTruckChangedSync } from "@/hooks/use-trucks";
 import { useTabVisibilityPresence } from "@/hooks/use-tab-visibility-presence";
 import { useBrowserTimezoneSync } from "@/hooks/use-timezone-sync";
@@ -50,9 +58,17 @@ function UnreadBell() {
   const { data } = useUnreadSummary();
   useUnreadSocketSync();
   useTruckChangedSync();
+  const { data: dmData } = useDmUnreadSummary();
 
-  const total = data?.total ?? 0;
+  const { data: groupData } = useGroupUnreadSummary();
+
+  const tripTotal = data?.total ?? 0;
   const items = data?.items ?? [];
+  const dmTotal = dmData?.total ?? 0;
+  const dmItems = dmData?.items ?? [];
+  const groupTotal = groupData?.total ?? 0;
+  const groupItems = groupData?.items ?? [];
+  const total = tripTotal + dmTotal + groupTotal;
 
   return (
     <Popover>
@@ -72,12 +88,12 @@ function UnreadBell() {
             {total > 0 ? `${total} unread message${total === 1 ? "" : "s"}` : "All caught up"}
           </p>
         </div>
-        {items.length === 0 ? (
+        {total === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">No unread messages</p>
         ) : (
           <ul className="max-h-80 overflow-y-auto divide-y">
             {items.map((item) => (
-              <li key={item.truckId}>
+              <li key={`trip-${item.truckId}`}>
                 <button
                   className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors"
                   onClick={() => {
@@ -112,6 +128,64 @@ function UnreadBell() {
                 </button>
               </li>
             ))}
+            {dmItems.map((conv) => (
+              <li key={`dm-${conv.user.id}`}>
+                <button
+                  className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors"
+                  onClick={() => router.push(`/chat?userId=${conv.user.id}`)}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium text-sm truncate">
+                      {conv.user.name ?? conv.user.role}
+                    </span>
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">
+                      {conv.unreadCount}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    {conv.lastMessage.content}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                    {formatDistanceToNow(new Date(conv.lastMessage.createdAt), {
+                      addSuffix: true,
+                    })}
+                  </p>
+                </button>
+              </li>
+            ))}
+            {groupItems.map((g) => (
+              <li key={`group-${g.groupId}`}>
+                <button
+                  className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors"
+                  onClick={() => router.push(`/chat?groupId=${g.groupId}`)}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium text-sm truncate">
+                      # {g.name}
+                    </span>
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">
+                      {g.unreadCount}
+                    </span>
+                  </div>
+                  {g.latestMessage && (
+                    <>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        <span className="font-medium text-foreground/70">
+                          {g.latestMessage.senderName}:
+                        </span>{" "}
+                        {g.latestMessage.content}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                        {formatDistanceToNow(
+                          new Date(g.latestMessage.createdAt),
+                          { addSuffix: true },
+                        )}
+                      </p>
+                    </>
+                  )}
+                </button>
+              </li>
+            ))}
           </ul>
         )}
       </PopoverContent>
@@ -132,15 +206,28 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   // Push the browser's IANA timezone so backend can interpret alarm
   // wall-clock times on the target user's clock.
   useBrowserTimezoneSync();
+  // Global DM/group unread socket sync — always live, regardless of which
+  // page the user is on. Trip socket sync stays inside UnreadBell because
+  // it already works there.
+  useDmUnreadSocketSync();
+  useGroupUnreadSocketSync();
 
   const { data: myTrucks } = useMyTrucks();
   const hasMyTrucks = (myTrucks?.length ?? 0) > 0;
+  const { data: dmData } = useDmUnreadSummary();
+  const { data: groupData } = useGroupUnreadSummary();
+  const dmTotal = dmData?.total ?? 0;
+  const groupTotal = groupData?.total ?? 0;
+  const chatBadge = dmTotal + groupTotal;
 
   const showMyTrucks = isManagerRole || (isTeamlead && hasMyTrucks);
 
-  const navItems: NavItem[] = showMyTrucks
+  const baseNav: NavItem[] = showMyTrucks
     ? [{ title: "My Trucks", href: "/my-trucks", icon: BookMarked }, ...BASE_NAV]
     : BASE_NAV;
+  const navItems: NavItem[] = baseNav.map((item) =>
+    item.title === "Chat" ? { ...item, badge: chatBadge } : item,
+  );
 
   return (
     <SidebarProvider defaultOpen={true}>
