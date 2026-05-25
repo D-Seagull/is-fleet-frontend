@@ -134,6 +134,7 @@ import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { notFound, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageReactionsTrigger } from "@/components/message-reactions";
+import { MessageActionsContext } from "@/components/message-actions-menu";
 import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -1577,10 +1578,17 @@ function TripChat({
               }
 
               const isMine = msg.senderId === currentUserId;
-              const canDelete = isMine; // user always sees own; could extend to all later
+              const isDeleted = !!msg.deletedAt;
               const senderInitials = (msg.sender.name ?? "??")
                 .slice(0, 2)
                 .toUpperCase();
+              const actions = {
+                onCopy: () => navigator.clipboard.writeText(msg.content),
+                onDelete: isMine
+                  ? () => deleteMessage.mutate(msg.id)
+                  : undefined,
+                // Reply / Edit — TODO in later phases
+              };
               return (
                 <div
                   key={`msg-${msg.id}`}
@@ -1589,7 +1597,7 @@ function TripChat({
                     isMine && "self-end",
                   )}
                 >
-                  {isMine && (
+                  {isMine && !isDeleted && (
                     <MessageReactionsTrigger
                       messageId={msg.id}
                       type="TRIP"
@@ -1615,7 +1623,7 @@ function TripChat({
                   )}
                   <div
                     className={cn(
-                      "flex flex-col gap-0.5 max-w-[75%]",
+                      "flex flex-col gap-0.5 max-w-[75%] min-w-0",
                       isMine && "items-end",
                     )}
                   >
@@ -1630,35 +1638,31 @@ function TripChat({
                         {msg.sender.name ?? "Unknown"}
                       </button>
                     )}
-                    <div className="relative">
-                    <div className={cn("rounded-2xl px-3 py-2 text-sm", isMine ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                      {(() => {
-                        const [subject, ...rest] = msg.content.split("\n");
-                        return rest.length > 0 ? (
-                          <>
-                            <span className="font-semibold block">{subject}</span>
-                            <span className="whitespace-pre-wrap">{rest.join("\n")}</span>
-                          </>
-                        ) : msg.content;
-                      })()}
-                    </div>
-                    {canDelete && (
-                      <button
-                        title="Delete"
-                        onClick={() => {
-                          if (confirm("Delete this message?")) deleteMessage.mutate(msg.id);
-                        }}
-                        className={cn(
-                          "absolute -top-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background border shadow-sm p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                          // Reaction trigger sits on the LEFT for own
-                          // messages, so put delete on the opposite side.
-                          isMine ? "-right-1.5" : "-left-1.5",
+                    <MessageActionsContext actions={actions} isOwn={isMine} isDeleted={isDeleted}>
+                      <div className={cn(
+                        "rounded-2xl max-w-full",
+                        isDeleted
+                          ? "bg-muted/40 text-muted-foreground italic text-xs px-3 py-1 whitespace-nowrap"
+                          : cn(
+                              "px-3 py-2 text-sm whitespace-pre-wrap break-all",
+                              isMine ? "bg-primary text-primary-foreground" : "bg-muted",
+                            ),
+                      )}>
+                        {isDeleted ? (
+                          "Повідомлення видалено"
+                        ) : (
+                          (() => {
+                            const [subject, ...rest] = msg.content.split("\n");
+                            return rest.length > 0 ? (
+                              <>
+                                <span className="font-semibold block">{subject}</span>
+                                <span>{rest.join("\n")}</span>
+                              </>
+                            ) : msg.content;
+                          })()
                         )}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    )}
-                    </div>
+                      </div>
+                    </MessageActionsContext>
                     <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       {isMine && (
@@ -1668,7 +1672,7 @@ function TripChat({
                       )}
                     </span>
                   </div>
-                  {!isMine && (
+                  {!isMine && !isDeleted && (
                     <MessageReactionsTrigger
                       messageId={msg.id}
                       type="TRIP"

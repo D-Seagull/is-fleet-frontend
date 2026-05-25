@@ -8,6 +8,7 @@ export interface DirectMessage {
   content: string;
   isRead: boolean;
   createdAt: string;
+  deletedAt?: string | null;
   sender: {
     id: string;
     name: string | null;
@@ -44,6 +45,14 @@ export function useMessages(userId: string) {
       return res.data;
     },
     enabled: !!userId,
+  });
+}
+
+export function useDeleteDirectMessage() {
+  return useMutation({
+    mutationFn: async (messageId: string) => {
+      await api.delete(`/direct-messages/messages/${messageId}`);
+    },
   });
 }
 export function useChatUser(userId: string) {

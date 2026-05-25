@@ -25,6 +25,7 @@ export interface GroupMessage {
   senderId: string;
   content: string;
   createdAt: string;
+  deletedAt?: string | null;
   sender: {
     id: string;
     name: string | null;
@@ -139,6 +140,14 @@ export function useRemoveManagerFromGroup() {
 }
 
 // ─── Group Messages ───────────────────────────────────────────────────────────
+
+export function useDeleteGroupMessage() {
+  return useMutation({
+    mutationFn: async (messageId: string) => {
+      await api.delete(`/group-messages/messages/${messageId}`);
+    },
+  });
+}
 
 export function useGroupMessages(groupId: string) {
   return useQuery<GroupMessage[]>({

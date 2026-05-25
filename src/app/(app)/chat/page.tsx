@@ -23,6 +23,7 @@ import {
   useConversations,
   useMessages,
   useChatUser,
+  useDeleteDirectMessage,
   DirectMessage,
 } from "@/hooks/use-direct-messages";
 import { useAuthStore } from "@/store/auth";
@@ -44,6 +45,7 @@ import {
   useGroup,
   useGroupMessages,
   useRemoveManagerFromGroup,
+  useDeleteGroupMessage,
   GroupMessage,
 } from "@/hooks/use-groups";
 import { useTeamMembers } from "@/hooks/use-managers";
@@ -70,6 +72,7 @@ import {
   MessageReactionsBar,
   MessageReactionsTrigger,
 } from "@/components/message-reactions";
+import { MessageActionsContext } from "@/components/message-actions-menu";
 import {
   useReactionsSocketSync,
   type MessageReactionRow,
@@ -155,6 +158,8 @@ function ChatPageContent() {
   const createGroup = useCreateGroup();
   const addMember = useAddManagerToGroup();
   const removeMember = useRemoveManagerFromGroup();
+  const deleteDm = useDeleteDirectMessage();
+  const deleteGroupMsg = useDeleteGroupMessage();
   const dmDocUpload = useUploadConversationDocs(selectedUserId ?? "");
   const groupDocUpload = useUploadGroupDocs(selectedGroupId ?? "");
   const { data: dmDocs = [] } = useConversationDocuments(selectedUserId ?? "");
@@ -388,13 +393,46 @@ function ChatPageContent() {
         queryKey: ["conversation-documents", readBy],
       });
     };
+    const onDmDeleted = ({ id }: { id: string }) => {
+      // Flip the message to its "deleted" state in every open DM cache.
+      queryClient
+        .getQueryCache()
+        .findAll({ predicate: (q) => q.queryKey[0] === "messages" })
+        .forEach((q) => {
+          queryClient.setQueryData<DirectMessage[]>(q.queryKey, (prev = []) =>
+            prev.map((m) =>
+              m.id === id
+                ? { ...m, content: "", deletedAt: new Date().toISOString() }
+                : m,
+            ),
+          );
+        });
+    };
+    const onGroupDeleted = ({ id }: { id: string }) => {
+      queryClient
+        .getQueryCache()
+        .findAll({ predicate: (q) => q.queryKey[0] === "group-messages" })
+        .forEach((q) => {
+          queryClient.setQueryData<GroupMessage[]>(q.queryKey, (prev = []) =>
+            prev.map((m) =>
+              m.id === id
+                ? { ...m, content: "", deletedAt: new Date().toISOString() }
+                : m,
+            ),
+          );
+        });
+    };
     socket.on("new_direct_message", onNewDirect);
     socket.on("messages_read", onMessagesRead);
+    socket.on("dm_message_deleted", onDmDeleted);
+    socket.on("group_message_deleted", onGroupDeleted);
     return () => {
       // Pass specific callback — otherwise socket.off(event) wipes ALL
       // listeners for that event, including the global ones in AppLayoutInner.
       socket.off("new_direct_message", onNewDirect);
       socket.off("messages_read", onMessagesRead);
+      socket.off("dm_message_deleted", onDmDeleted);
+      socket.off("group_message_deleted", onGroupDeleted);
     };
   }, [user?.id, queryClient, markMessagesAsRead]);
 
@@ -1077,7 +1115,7 @@ function ChatPageContent() {
                           )}
                         >
                           {/* Own → trigger on the LEFT (no avatar) */}
-                          {isOwn && (
+                          {isOwn && !msg.deletedAt && (
                             <MessageReactionsTrigger
                               messageId={msg.id}
                               type={selectedGroupId ? "GROUP" : "DM"}
@@ -1109,7 +1147,7 @@ function ChatPageContent() {
                             ))}
                           <div
                             className={cn(
-                              "flex flex-col gap-0.5 max-w-[70%]",
+                              "flex flex-col gap-0.5 max-w-[70%] min-w-0",
                               isOwn && "items-end",
                             )}
                           >
@@ -1122,16 +1160,47 @@ function ChatPageContent() {
                                 {senderName}
                               </button>
                             )}
-                            <div
-                              className={cn(
-                                "rounded-lg px-4 py-2",
-                                isOwn
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted",
-                              )}
+                            <MessageActionsContext
+                              actions={{
+                                onCopy: () =>
+                                  navigator.clipboard.writeText(msg.content),
+                                onDelete: isOwn
+                                  ? () => {
+                                      if (selectedGroupId)
+                                        deleteGroupMsg.mutate(msg.id);
+                                      else deleteDm.mutate(msg.id);
+                                    }
+                                  : undefined,
+                              }}
+                              isOwn={isOwn}
+                              isDeleted={!!msg.deletedAt}
                             >
-                              <p className="text-sm">{msg.content}</p>
-                            </div>
+                              <div
+                                className={cn(
+                                  "rounded-lg max-w-full",
+                                  msg.deletedAt
+                                    ? "bg-muted/40 text-muted-foreground italic px-3 py-1"
+                                    : cn(
+                                        "px-4 py-2",
+                                        isOwn
+                                          ? "bg-primary text-primary-foreground"
+                                          : "bg-muted",
+                                      ),
+                                )}
+                              >
+                                <p
+                                  className={cn(
+                                    msg.deletedAt
+                                      ? "text-xs whitespace-nowrap"
+                                      : "text-sm whitespace-pre-wrap break-all",
+                                  )}
+                                >
+                                  {msg.deletedAt
+                                    ? "Повідомлення видалено"
+                                    : msg.content}
+                                </p>
+                              </div>
+                            </MessageActionsContext>
                             <div
                               className={cn(
                                 "flex items-center gap-2 px-1 min-h-[20px]",
@@ -1151,7 +1220,7 @@ function ChatPageContent() {
                                   </span>
                                 )}
                               </span>
-                              {selectedGroupId && (
+                              {selectedGroupId && !msg.deletedAt && (
                                 <MessageReactionsBar
                                   messageId={msg.id}
                                   type="GROUP"
@@ -1163,7 +1232,7 @@ function ChatPageContent() {
                             </div>
                           </div>
                           {/* Other party → trigger on the RIGHT */}
-                          {!isOwn && (
+                          {!isOwn && !msg.deletedAt && (
                             <MessageReactionsTrigger
                               messageId={msg.id}
                               type={selectedGroupId ? "GROUP" : "DM"}
