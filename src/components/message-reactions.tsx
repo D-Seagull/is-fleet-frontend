@@ -1,12 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import {
   QUICK_REACTION_EMOJIS,
   useToggleReaction,
@@ -22,12 +17,12 @@ interface CommonProps {
 }
 
 /**
- * Quick-action reaction button rendered alongside a bubble. Shows a single
- * 👍 outline by default; hovering opens a popover with the full set
- * (👍 😮 😢). Click toggles, similar to Viber's heart.
+ * Reaction trigger alongside a bubble. By default shows a single 👍
+ * outline (or your active emoji). Hovering the trigger reveals an inline
+ * picker with all three emojis (👍 😮 😢). Click toggles.
  *
- * Placement: render this OUTSIDE the bubble container — on the right side
- * of the other party's messages, on the left side of your own.
+ * Pure-CSS hover (named `group/picker`) — no Radix wrappers, so the
+ * onClick fires directly without any framework-level dismissal.
  */
 export function MessageReactionsTrigger({
   messageId,
@@ -37,62 +32,131 @@ export function MessageReactionsTrigger({
   hideWhenReacted = false,
 }: CommonProps & { hideWhenReacted?: boolean }) {
   const toggle = useToggleReaction(type);
-  const [open, setOpen] = useState(false);
   const myEmoji =
     reactions.find((r) => r.userId === currentUserId)?.emoji ?? null;
   const display = myEmoji ?? "👍";
   const hasMyReaction = !!myEmoji;
 
-  // In contexts that also show a persistent pills row (groups), the trigger
-  // is redundant once the user has already reacted — hide it to declutter.
+  // Mobile/tablet support — long-press opens the picker, short tap toggles.
+  // NOTE: hooks must run on every render — keep them above any early return.
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressed = useRef(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Close mobile picker when tapping anywhere outside the trigger area.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onDocPointerDown = (e: PointerEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onDocPointerDown);
+    return () => document.removeEventListener("pointerdown", onDocPointerDown);
+  }, [mobileOpen]);
+
   if (hideWhenReacted && hasMyReaction) return null;
 
+  const startLongPress = () => {
+    longPressed.current = false;
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    longPressTimer.current = setTimeout(() => {
+      longPressed.current = true;
+      setMobileOpen(true);
+    }, 450);
+  };
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
   return (
-    <HoverCard open={open} onOpenChange={setOpen} openDelay={150} closeDelay={150}>
-      <HoverCardTrigger asChild>
-        <button
-          type="button"
-          onClick={() => {
-            // Click on trigger toggles the user's current reaction (off) if
-            // any, otherwise adds the default 👍.
-            toggle.mutate({ messageId, emoji: myEmoji ?? "👍" });
-            setOpen(false);
-          }}
-          className={cn(
-            "h-7 w-7 shrink-0 rounded-full border bg-background flex items-center justify-center text-sm transition-opacity",
-            "opacity-0 group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100",
-            hasMyReaction
-              ? "opacity-100 bg-primary/10 border-primary"
-              : "text-muted-foreground hover:bg-muted",
-          )}
-          title="React"
-        >
-          {display}
-        </button>
-      </HoverCardTrigger>
-      <HoverCardContent
-        className="w-auto p-1 flex gap-1"
-        side="top"
-        align="center"
+    <div
+      ref={wrapperRef}
+      className="relative group/picker shrink-0 touch-manipulation"
+    >
+      {/* Default trigger — small + grayscale when idle. Scales up to full
+          colour on hover or when the user has reacted. */}
+      <button
+        type="button"
+        onPointerDown={(e) => {
+          if (e.pointerType === "touch" || e.pointerType === "pen") {
+            startLongPress();
+          }
+        }}
+        onPointerUp={cancelLongPress}
+        onPointerLeave={cancelLongPress}
+        onPointerCancel={cancelLongPress}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (longPressed.current) {
+            // Long-press already opened the picker; skip the tap-toggle.
+            longPressed.current = false;
+            return;
+          }
+          toggle.mutate({ messageId, emoji: myEmoji ?? "👍" });
+        }}
+        className={cn(
+          // Fixed outer size — keeps layout stable when the emoji scales
+          // up on hover/active. Only the font-size and opacity change.
+          "h-7 w-7 flex items-center justify-center transition-all duration-150",
+          hasMyReaction
+            ? "text-base opacity-100"
+            : "text-xs opacity-40 grayscale hover:text-base hover:opacity-100 hover:grayscale-0",
+        )}
+        title="React"
       >
-        {QUICK_REACTION_EMOJIS.map((emoji) => (
-          <button
-            key={emoji}
-            type="button"
-            onClick={() => {
-              toggle.mutate({ messageId, emoji });
-              setOpen(false);
-            }}
-            className={cn(
-              "h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center text-base",
-              myEmoji === emoji && "bg-primary/10",
-            )}
-          >
-            {emoji}
-          </button>
-        ))}
-      </HoverCardContent>
-    </HoverCard>
+        {display}
+      </button>
+
+      {/* Inline picker — appears when the trigger itself is hovered.
+          Positioned above the trigger like a small popover. Uses
+          padding-bottom (instead of margin) to create an invisible
+          "bridge" hover-zone over the gap to the trigger, so moving the
+          mouse up doesn't lose the hover state. */}
+      <div
+        className={cn(
+          "absolute bottom-full left-1/2 -translate-x-1/2 pb-2 z-10",
+          mobileOpen ? "flex" : "hidden group-hover/picker:flex",
+        )}
+      >
+        <div
+          className={cn(
+            "flex gap-1 p-1 rounded-full border bg-popover shadow-md",
+          )}
+        >
+        {QUICK_REACTION_EMOJIS.map((emoji) => {
+          const isMine = myEmoji === emoji;
+          return (
+            <button
+              key={emoji}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggle.mutate({ messageId, emoji });
+                setMobileOpen(false);
+              }}
+              className={cn(
+                "h-8 w-8 rounded-full flex items-center justify-center text-base hover:bg-muted transition-colors",
+                isMine && "bg-primary/10",
+              )}
+              title={`React ${emoji}`}
+            >
+              {emoji}
+            </button>
+          );
+        })}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -130,7 +194,11 @@ export function MessageReactionsBar({
           <button
             key={emoji}
             type="button"
-            onClick={() => toggle.mutate({ messageId, emoji })}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggle.mutate({ messageId, emoji });
+            }}
             className={cn(
               "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] leading-none hover:bg-muted transition-colors",
               isMine && "bg-primary/10 border-primary text-primary",

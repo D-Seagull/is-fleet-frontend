@@ -21,6 +21,7 @@ export interface TripDocumentFull {
     orderNumber: string | null;
     truck?: { id: string; plate: string };
   };
+  reactions?: { id: string; userId: string; emoji: string }[];
 }
 
 const QUERY_KEY = (truckId: string) => ["documents-truck", truckId];

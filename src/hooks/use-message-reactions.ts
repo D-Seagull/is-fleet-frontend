@@ -3,7 +3,13 @@ import { useEffect } from "react";
 import { api } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 
-export type ReactionTargetType = "DM" | "GROUP" | "TRIP";
+export type ReactionTargetType =
+  | "DM"
+  | "GROUP"
+  | "TRIP"
+  | "DM_DOC"
+  | "GROUP_DOC"
+  | "TRIP_DOC";
 
 export interface MessageReactionRow {
   id: string;
@@ -18,6 +24,9 @@ const REACT_ENDPOINT: Record<ReactionTargetType, string> = {
   DM: "/direct-messages/messages",
   GROUP: "/group-messages/messages",
   TRIP: "/messages",
+  DM_DOC: "/direct-messages/documents",
+  GROUP_DOC: "/group-messages/documents",
+  TRIP_DOC: "/documents",
 };
 
 export function useToggleReaction(type: ReactionTargetType) {
@@ -37,15 +46,19 @@ export function useToggleReaction(type: ReactionTargetType) {
       return res.data as MessageReactionRow[];
     },
     onSuccess: () => {
-      // Force refetch of any open message lists so the UI reflects the
-      // toggle instantly (without waiting for the socket round-trip).
+      // Force refetch of any open message lists or document lists so the
+      // UI reflects the toggle instantly (without waiting for the socket
+      // round-trip).
       void queryClient.invalidateQueries({
         predicate: (q) => {
           const key = q.queryKey[0];
           return (
             key === "messages" ||
             key === "group-messages" ||
-            key === "trip-messages"
+            key === "trip-messages" ||
+            key === "conversation-documents" ||
+            key === "group-documents" ||
+            key === "documents-trip"
           );
         },
       });
@@ -75,24 +88,28 @@ export function useReactionsSocketSync(opts?: {
       reactions: MessageReactionRow[];
     }) => {
       const { targetType, targetId, reactions } = payload;
+      const update = <T extends { id: string; reactions?: MessageReactionRow[] }>(
+        prev: T[] = [],
+      ) =>
+        prev.map((m) =>
+          m.id === targetId ? ({ ...m, reactions } as T) : m,
+        );
+
       if (targetType === "DM" && dmOther) {
-        queryClient.setQueryData<
-          Array<{ id: string; reactions?: MessageReactionRow[] }>
-        >(["messages", dmOther], (prev = []) =>
-          prev.map((m) => (m.id === targetId ? { ...m, reactions } : m)),
-        );
+        queryClient.setQueryData(["messages", dmOther], update);
       } else if (targetType === "GROUP" && groupId) {
-        queryClient.setQueryData<
-          Array<{ id: string; reactions?: MessageReactionRow[] }>
-        >(["group-messages", groupId], (prev = []) =>
-          prev.map((m) => (m.id === targetId ? { ...m, reactions } : m)),
-        );
+        queryClient.setQueryData(["group-messages", groupId], update);
       } else if (targetType === "TRIP" && tripId) {
-        queryClient.setQueryData<
-          Array<{ id: string; reactions?: MessageReactionRow[] }>
-        >(["trip-messages", tripId], (prev = []) =>
-          prev.map((m) => (m.id === targetId ? { ...m, reactions } : m)),
+        queryClient.setQueryData(["trip-messages", tripId], update);
+      } else if (targetType === "DM_DOC" && dmOther) {
+        queryClient.setQueryData(
+          ["conversation-documents", dmOther],
+          update,
         );
+      } else if (targetType === "GROUP_DOC" && groupId) {
+        queryClient.setQueryData(["group-documents", groupId], update);
+      } else if (targetType === "TRIP_DOC" && tripId) {
+        queryClient.setQueryData(["documents-trip", tripId], update);
       }
     };
     socket.on("reaction_changed", onChange);

@@ -1585,7 +1585,7 @@ function TripChat({
                 <div
                   key={`msg-${msg.id}`}
                   className={cn(
-                    "group flex items-start gap-2",
+                    "group flex items-center gap-2",
                     isMine && "self-end",
                   )}
                 >
@@ -1650,7 +1650,9 @@ function TripChat({
                         }}
                         className={cn(
                           "absolute -top-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background border shadow-sm p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                          isMine ? "-left-1.5" : "-right-1.5",
+                          // Reaction trigger sits on the LEFT for own
+                          // messages, so put delete on the opposite side.
+                          isMine ? "-right-1.5" : "-left-1.5",
                         )}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -1688,10 +1690,24 @@ function TripChat({
               <div
                 key={`doc-${doc.id}`}
                 className={cn(
+                  "group flex items-center gap-3",
+                  // Own: trigger on the LEFT, bubble on the right.
+                  // Other: bubble on the left, trigger on the RIGHT (reverse).
+                  isMine ? "self-end" : "self-start flex-row-reverse",
+                )}
+              >
+                <MessageReactionsTrigger
+                  messageId={doc.id}
+                  type="TRIP_DOC"
+                  reactions={doc.reactions ?? []}
+                  currentUserId={currentUserId}
+                />
+              <div
+                className={cn(
                   // w-fit so the bubble shrinks to its content (e.g. a 180px
                   // photo) instead of stretching to the 80% max-w container.
-                  "group flex flex-col gap-0.5 max-w-[80%] w-fit",
-                  isMine && "self-end items-end",
+                  "flex flex-col gap-0.5 max-w-[80%] w-fit",
+                  isMine && "items-end",
                 )}
               >
                 <span className="text-xs text-muted-foreground px-1">
@@ -1760,7 +1776,9 @@ function TripChat({
                     }}
                     className={cn(
                       "absolute -top-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background border shadow-sm p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                      isMine ? "-left-1.5" : "-right-1.5",
+                      // Trigger is on the LEFT for own messages, so put
+                      // the delete button on the opposite (right) side.
+                      isMine ? "-right-1.5" : "-left-1.5",
                     )}
                   >
                     <Trash2 className="h-3 w-3" />
@@ -1775,6 +1793,7 @@ function TripChat({
                     </span>
                   )}
                 </span>
+              </div>
               </div>
             );
           })

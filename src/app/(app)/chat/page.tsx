@@ -70,7 +70,10 @@ import {
   MessageReactionsBar,
   MessageReactionsTrigger,
 } from "@/components/message-reactions";
-import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
+import {
+  useReactionsSocketSync,
+  type MessageReactionRow,
+} from "@/hooks/use-message-reactions";
 import {
   useConversationDocuments,
   useUploadConversationDocs,
@@ -1069,7 +1072,7 @@ function ChatPageContent() {
                         <div
                           key={`msg-${msg.id}`}
                           className={cn(
-                            "group flex items-start gap-2",
+                            "group flex items-center gap-2",
                             isOwn ? "justify-end" : "justify-start",
                           )}
                         >
@@ -1194,10 +1197,22 @@ function ChatPageContent() {
                       <div
                         key={`doc-${doc.id}`}
                         className={cn(
-                          "flex items-end gap-2",
+                          "group flex items-center gap-2",
                           isOwn ? "justify-end" : "justify-start",
                         )}
                       >
+                        {isOwn && (
+                          <MessageReactionsTrigger
+                            messageId={doc.id}
+                            type={selectedGroupId ? "GROUP_DOC" : "DM_DOC"}
+                            reactions={
+                              (doc as { reactions?: MessageReactionRow[] })
+                                .reactions ?? []
+                            }
+                            currentUserId={user?.id}
+                            hideWhenReacted={!!selectedGroupId}
+                          />
+                        )}
                         {!isOwn &&
                           (selectedGroupId ? (
                             <button
@@ -1293,30 +1308,56 @@ function ChatPageContent() {
                               </button>
                             </div>
                           )}
-                          <span
+                          <div
                             className={cn(
-                              "text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1",
-                              isOwn && "justify-end",
+                              "flex items-center gap-2 px-1 min-h-[20px]",
+                              isOwn ? "flex-row-reverse" : "flex-row",
                             )}
                           >
-                            {new Date(doc.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                            {isOwn && !selectedGroupId && (
-                              <span
-                                className={cn(
-                                  (doc as ConversationDocumentFull).isRead &&
-                                    "text-primary",
-                                )}
-                              >
-                                {(doc as ConversationDocumentFull).isRead
-                                  ? "✓✓"
-                                  : "✓"}
-                              </span>
+                            <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1 shrink-0">
+                              {new Date(doc.createdAt).toLocaleTimeString(
+                                [],
+                                { hour: "2-digit", minute: "2-digit" },
+                              )}
+                              {isOwn && !selectedGroupId && (
+                                <span
+                                  className={cn(
+                                    (doc as ConversationDocumentFull).isRead &&
+                                      "text-primary",
+                                  )}
+                                >
+                                  {(doc as ConversationDocumentFull).isRead
+                                    ? "✓✓"
+                                    : "✓"}
+                                </span>
+                              )}
+                            </span>
+                            {selectedGroupId && (
+                              <MessageReactionsBar
+                                messageId={doc.id}
+                                type="GROUP_DOC"
+                                reactions={
+                                  (doc as { reactions?: MessageReactionRow[] })
+                                    .reactions ?? []
+                                }
+                                isOwn={isOwn}
+                                currentUserId={user?.id}
+                              />
                             )}
-                          </span>
+                          </div>
                         </div>
+                        {!isOwn && (
+                          <MessageReactionsTrigger
+                            messageId={doc.id}
+                            type={selectedGroupId ? "GROUP_DOC" : "DM_DOC"}
+                            reactions={
+                              (doc as { reactions?: MessageReactionRow[] })
+                                .reactions ?? []
+                            }
+                            currentUserId={user?.id}
+                            hideWhenReacted={!!selectedGroupId}
+                          />
+                        )}
                       </div>
                     );
                   })}

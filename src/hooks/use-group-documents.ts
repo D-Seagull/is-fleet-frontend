@@ -17,6 +17,7 @@ export interface GroupDocumentFull {
   isRead: boolean;
   createdAt: string;
   uploader: { id: string; name: string | null; role: string };
+  reactions?: { id: string; userId: string; emoji: string }[];
 }
 
 const QUERY_KEY = (groupId: string) => ["group-documents", groupId];
