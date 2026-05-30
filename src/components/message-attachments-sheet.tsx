@@ -81,8 +81,8 @@ export function MessageAttachmentsSheet({
     if (!files.length) return;
     setUploading(true);
     try {
-      if (isDm) await dmUpload.mutateAsync(files);
-      else await groupUpload.mutateAsync(files);
+      if (isDm) await dmUpload.mutateAsync({ files });
+      else await groupUpload.mutateAsync({ files });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
