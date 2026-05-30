@@ -33,6 +33,7 @@ export interface GroupMessage {
   content: string;
   createdAt: string;
   deletedAt?: string | null;
+  editedAt?: string | null;
   replyToId?: string | null;
   replyTo?: GroupMessageReplyPreview | null;
   sender: {
@@ -154,6 +155,24 @@ export function useDeleteGroupMessage() {
   return useMutation({
     mutationFn: async (messageId: string) => {
       await api.delete(`/group-messages/messages/${messageId}`);
+    },
+  });
+}
+
+export function useEditGroupMessage(groupId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+      const res = await api.patch(`/group-messages/messages/${id}`, {
+        content,
+      });
+      return res.data as GroupMessage;
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<GroupMessage[]>(
+        ["group-messages", groupId],
+        (old = []) => old.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+      );
     },
   });
 }

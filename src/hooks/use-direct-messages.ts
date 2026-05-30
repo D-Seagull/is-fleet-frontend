@@ -16,6 +16,7 @@ export interface DirectMessage {
   isRead: boolean;
   createdAt: string;
   deletedAt?: string | null;
+  editedAt?: string | null;
   replyToId?: string | null;
   replyTo?: MessageReplyPreview | null;
   sender: {
@@ -61,6 +62,27 @@ export function useDeleteDirectMessage() {
   return useMutation({
     mutationFn: async (messageId: string) => {
       await api.delete(`/direct-messages/messages/${messageId}`);
+    },
+  });
+}
+
+// Edits a DM message. The server broadcasts `dm_message_edited` so the cache
+// patch is also handled by the gateway listener — but we patch optimistically
+// here too so the bubble updates instantly for the editor.
+export function useEditDirectMessage(otherUserId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+      const res = await api.patch(`/direct-messages/messages/${id}`, {
+        content,
+      });
+      return res.data as DirectMessage;
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<DirectMessage[]>(
+        ["messages", otherUserId],
+        (old = []) => old.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+      );
     },
   });
 }

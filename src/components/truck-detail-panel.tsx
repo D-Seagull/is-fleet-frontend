@@ -103,6 +103,7 @@ import { useAssignableManagers } from "@/hooks/use-managers";
 import {
   useTripsByTruck,
   useDeleteMessage,
+  useEditTripMessage,
   useTripMessages,
   useTripChatArchive,
   useCreateTrip,
@@ -1122,8 +1123,12 @@ function TripChat({
   const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
   const { data: archiveSessions = [] } = useTripChatArchive(trip.id);
   const deleteMessage = useDeleteMessage(trip.id);
+  const editMessage = useEditTripMessage(trip.id);
   const deleteDocument = useDeleteDocument(truckId);
   const [text, setText] = useState("");
+  const [editing, setEditing] = useState<{ id: string; original: string } | null>(
+    null,
+  );
   const [replyingTo, setReplyingTo] = useState<{
     id: string;
     senderName: string | null;
@@ -1264,6 +1269,16 @@ function TripChat({
         (old = []) => old.filter((m) => m.id !== payload.messageId),
       );
     };
+    const handleMsgEdited = (payload: { tripId: string; message: TripMessage }) => {
+      if (payload.tripId !== trip.id) return;
+      queryClient.setQueryData<TripMessage[]>(
+        ["trip-messages", trip.id],
+        (old = []) =>
+          old.map((m) =>
+            m.id === payload.message.id ? { ...m, ...payload.message } : m,
+          ),
+      );
+    };
     const handleDocDeleted = (payload: { tripId: string; documentId: string }) => {
       if (payload.tripId !== trip.id) return;
       queryClient.setQueryData<TripDocumentFull[]>(
@@ -1309,6 +1324,7 @@ function TripChat({
     socket.on("newDocument", handleNewDoc);
     socket.on("tripMessagesRead", handleRead);
     socket.on("messageDeleted", handleMsgDeleted);
+    socket.on("messageEdited", handleMsgEdited);
     socket.on("documentDeleted", handleDocDeleted);
     socket.on("tripUpdated", handleTripUpdated);
     return () => {
@@ -1317,6 +1333,7 @@ function TripChat({
       socket.off("newDocument", handleNewDoc);
       socket.off("tripMessagesRead", handleRead);
       socket.off("messageDeleted", handleMsgDeleted);
+      socket.off("messageEdited", handleMsgEdited);
       socket.off("documentDeleted", handleDocDeleted);
       socket.off("tripUpdated", handleTripUpdated);
     };
@@ -1428,14 +1445,33 @@ function TripChat({
     }
   }, [messages.length, tripDocs.length]);
 
-  function handleSend() {
-    if (!text.trim()) return;
+  async function handleSend() {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    // Edit mode — PATCH instead of sending a new message.
+    if (editing) {
+      if (trimmed === editing.original.trim()) {
+        setEditing(null);
+        setText("");
+        return;
+      }
+      try {
+        await editMessage.mutateAsync({ id: editing.id, content: trimmed });
+      } finally {
+        setEditing(null);
+        setText("");
+        notifyStopTyping();
+      }
+      return;
+    }
+
     // User is sending — they want to see their own message, snap back to bottom
     nearBottomRef.current = true;
     setNewMsgCount(0);
     getSocket().emit("sendMessage", {
       tripId: trip.id,
-      content: text.trim(),
+      content: trimmed,
       replyToId: replyingTo?.id ?? null,
     });
     notifyStopTyping();
@@ -1601,6 +1637,12 @@ function TripChat({
               const senderInitials = (msg.sender.name ?? "??")
                 .slice(0, 2)
                 .toUpperCase();
+              const canEdit =
+                isMine &&
+                !isDeleted &&
+                !msg.isSystem &&
+                Date.now() - new Date(msg.createdAt).getTime() <
+                  15 * 60 * 1000;
               const actions = {
                 onCopy: () => navigator.clipboard.writeText(msg.content),
                 onReply: () =>
@@ -1610,10 +1652,16 @@ function TripChat({
                     content: msg.content,
                     isDeleted: !!msg.deletedAt,
                   }),
+                onEdit: canEdit
+                  ? () => {
+                      setEditing({ id: msg.id, original: msg.content });
+                      setText(msg.content);
+                      setReplyingTo(null);
+                    }
+                  : undefined,
                 onDelete: isMine
                   ? () => deleteMessage.mutate(msg.id)
                   : undefined,
-                // Edit — TODO in later phase
               };
               return (
                 <div
@@ -1702,6 +1750,14 @@ function TripChat({
                       </div>
                     </MessageActionsContext>
                     <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
+                      {msg.editedAt && !isDeleted && (
+                        <span
+                          title={`Редаговано о ${new Date(msg.editedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                          className="italic"
+                        >
+                          (ред.)
+                        </span>
+                      )}
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       {isMine && (
                         <span className={cn(msg.isRead && "text-primary")}>
@@ -1892,7 +1948,32 @@ function TripChat({
               </div>
             )}
 
-            {replyingTo && (
+            {editing && (
+              <div className="mb-2 flex items-start gap-2">
+                <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
+                  <p className="text-[11px] font-semibold text-primary leading-tight flex items-center gap-1">
+                    <Pencil className="h-3 w-3" />
+                    Редагування повідомлення
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-tight truncate">
+                    {editing.original}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(null);
+                    setText("");
+                  }}
+                  title="Скасувати редагування"
+                  className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
+            {replyingTo && !editing && (
               <div className="mb-2 flex items-start gap-2">
                 <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
                   <p className="text-[11px] font-semibold text-primary leading-tight">
@@ -1957,7 +2038,7 @@ function TripChat({
 
               {/* Інпут */}
               <Input
-                placeholder="Type a message..."
+                placeholder={editing ? "Редагуйте повідомлення…" : "Type a message..."}
                 value={text}
                 onChange={(e) => {
                   setText(e.target.value);
@@ -1967,14 +2048,26 @@ function TripChat({
                 onBlur={notifyStopTyping}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) handleSend();
-                  if (e.key === "Escape") setShowEmoji(false);
+                  if (e.key === "Escape") {
+                    setShowEmoji(false);
+                    if (editing) {
+                      setEditing(null);
+                      setText("");
+                    }
+                  }
                 }}
                 className="flex-1"
               />
 
-              {/* Відправити */}
-              <Button size="icon" onClick={handleSend} disabled={!text.trim()} className="h-9 w-9 shrink-0">
-                <Send className="h-4 w-4" />
+              {/* Відправити / Зберегти */}
+              <Button
+                size="icon"
+                onClick={handleSend}
+                disabled={!text.trim()}
+                title={editing ? "Зберегти" : "Send"}
+                className="h-9 w-9 shrink-0"
+              >
+                {editing ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
           </>

@@ -87,6 +87,7 @@ export interface TripMessage {
   isSystem?: boolean;
   createdAt: string;
   deletedAt?: string | null;
+  editedAt?: string | null;
   replyToId?: string | null;
   replyTo?: TripMessageReplyPreview | null;
   sender: { id: string; name: string | null; role: string };
@@ -207,6 +208,22 @@ export function useDeleteMessage(tripId: string) {
       queryClient.setQueryData<TripMessage[]>(
         ["trip-messages", tripId],
         (old = []) => old.filter((m) => m.id !== id),
+      );
+    },
+  });
+}
+
+export function useEditTripMessage(tripId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, content }: { id: string; content: string }) => {
+      const res = await api.patch(`/messages/${id}`, { content });
+      return res.data as TripMessage;
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<TripMessage[]>(
+        ["trip-messages", tripId],
+        (old = []) => old.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
       );
     },
   });

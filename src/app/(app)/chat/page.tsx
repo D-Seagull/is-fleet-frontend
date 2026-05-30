@@ -13,6 +13,8 @@ import {
   Search,
   Folder,
   Paperclip,
+  Pencil,
+  Check,
   Shield,
   X,
 } from "lucide-react";
@@ -24,6 +26,7 @@ import {
   useMessages,
   useChatUser,
   useDeleteDirectMessage,
+  useEditDirectMessage,
   DirectMessage,
 } from "@/hooks/use-direct-messages";
 import { useAuthStore } from "@/store/auth";
@@ -46,6 +49,7 @@ import {
   useGroupMessages,
   useRemoveManagerFromGroup,
   useDeleteGroupMessage,
+  useEditGroupMessage,
   GroupMessage,
 } from "@/hooks/use-groups";
 import { useTeamMembers } from "@/hooks/use-managers";
@@ -149,6 +153,9 @@ function ChatPageContent() {
     content: string;
     isDeleted: boolean;
   } | null>(null);
+  const [editing, setEditing] = useState<{ id: string; original: string } | null>(
+    null,
+  );
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
   const attachInputRef = useRef<HTMLInputElement>(null);
   const [attachUploading, setAttachUploading] = useState(false);
@@ -167,6 +174,8 @@ function ChatPageContent() {
   const removeMember = useRemoveManagerFromGroup();
   const deleteDm = useDeleteDirectMessage();
   const deleteGroupMsg = useDeleteGroupMessage();
+  const editDm = useEditDirectMessage(selectedUserId ?? "");
+  const editGroupMsg = useEditGroupMessage(selectedGroupId ?? "");
   const dmDocUpload = useUploadConversationDocs(selectedUserId ?? "");
   const groupDocUpload = useUploadGroupDocs(selectedGroupId ?? "");
   const { data: dmDocs = [] } = useConversationDocuments(selectedUserId ?? "");
@@ -429,10 +438,34 @@ function ChatPageContent() {
           );
         });
     };
+    const onDmEdited = (updated: DirectMessage) => {
+      // Patch every DM cache that may hold this message (sender's and
+      // receiver's views are stored under different `messages` keys).
+      queryClient
+        .getQueryCache()
+        .findAll({ predicate: (q) => q.queryKey[0] === "messages" })
+        .forEach((q) => {
+          queryClient.setQueryData<DirectMessage[]>(q.queryKey, (prev = []) =>
+            prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+          );
+        });
+    };
+    const onGroupEdited = (updated: GroupMessage) => {
+      queryClient
+        .getQueryCache()
+        .findAll({ predicate: (q) => q.queryKey[0] === "group-messages" })
+        .forEach((q) => {
+          queryClient.setQueryData<GroupMessage[]>(q.queryKey, (prev = []) =>
+            prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+          );
+        });
+    };
     socket.on("new_direct_message", onNewDirect);
     socket.on("messages_read", onMessagesRead);
     socket.on("dm_message_deleted", onDmDeleted);
     socket.on("group_message_deleted", onGroupDeleted);
+    socket.on("dm_message_edited", onDmEdited);
+    socket.on("group_message_edited", onGroupEdited);
     return () => {
       // Pass specific callback — otherwise socket.off(event) wipes ALL
       // listeners for that event, including the global ones in AppLayoutInner.
@@ -440,6 +473,8 @@ function ChatPageContent() {
       socket.off("messages_read", onMessagesRead);
       socket.off("dm_message_deleted", onDmDeleted);
       socket.off("group_message_deleted", onGroupDeleted);
+      socket.off("dm_message_edited", onDmEdited);
+      socket.off("group_message_edited", onGroupEdited);
     };
   }, [user?.id, queryClient, markMessagesAsRead]);
 
@@ -519,6 +554,7 @@ function ChatPageContent() {
     setShowConversations(false);
     setSearchQuery("");
     setReplyingTo(null);
+    setEditing(null);
   };
 
   const handleSelectGroup = (groupId: string) => {
@@ -527,6 +563,7 @@ function ChatPageContent() {
     setShowConversations(false);
     setSearchQuery("");
     setReplyingTo(null);
+    setEditing(null);
   };
 
   /** Scroll the original message into view and briefly highlight it. */
@@ -540,9 +577,32 @@ function ChatPageContent() {
     }, 1500);
   };
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    const trimmed = newMessage.trim();
+    if (!trimmed) return;
+
+    // Edit mode — PATCH the message instead of sending a new one.
+    if (editing) {
+      if (trimmed === editing.original.trim()) {
+        // No change — just exit edit mode silently.
+        setEditing(null);
+        setNewMessage("");
+        return;
+      }
+      try {
+        if (selectedGroupId) {
+          await editGroupMsg.mutateAsync({ id: editing.id, content: trimmed });
+        } else if (selectedUserId) {
+          await editDm.mutateAsync({ id: editing.id, content: trimmed });
+        }
+      } finally {
+        setEditing(null);
+        setNewMessage("");
+      }
+      return;
+    }
+
     if (selectedGroupId) {
       getSocket().emit("send_group_message", {
         groupId: selectedGroupId,
@@ -1195,6 +1255,21 @@ function ChatPageContent() {
                                     content: msg.content,
                                     isDeleted: !!msg.deletedAt,
                                   }),
+                                onEdit:
+                                  isOwn &&
+                                  !msg.deletedAt &&
+                                  Date.now() -
+                                    new Date(msg.createdAt).getTime() <
+                                    15 * 60 * 1000
+                                    ? () => {
+                                        setEditing({
+                                          id: msg.id,
+                                          original: msg.content,
+                                        });
+                                        setNewMessage(msg.content);
+                                        setReplyingTo(null);
+                                      }
+                                    : undefined,
                                 onDelete: isOwn
                                   ? () => {
                                       if (selectedGroupId)
@@ -1251,6 +1326,14 @@ function ChatPageContent() {
                               )}
                             >
                               <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1 shrink-0">
+                                {msg.editedAt && !msg.deletedAt && (
+                                  <span
+                                    title={`Редаговано о ${new Date(msg.editedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                                    className="italic"
+                                  >
+                                    (ред.)
+                                  </span>
+                                )}
                                 {new Date(msg.createdAt).toLocaleTimeString(
                                   [],
                                   { hour: "2-digit", minute: "2-digit" },
@@ -1499,7 +1582,32 @@ function ChatPageContent() {
               </div>
             )}
 
-            {replyingTo && (
+            {editing && (
+              <div className="px-4 pt-2 shrink-0 border-t flex items-start gap-2">
+                <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
+                  <p className="text-[11px] font-semibold text-primary leading-tight flex items-center gap-1">
+                    <Pencil className="h-3 w-3" />
+                    Редагування повідомлення
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-tight truncate">
+                    {editing.original}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(null);
+                    setNewMessage("");
+                  }}
+                  title="Скасувати редагування"
+                  className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
+            {replyingTo && !editing && (
               <div className="px-4 pt-2 shrink-0 border-t flex items-start gap-2">
                 <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
                   <p className="text-[11px] font-semibold text-primary leading-tight">
@@ -1531,7 +1639,7 @@ function ChatPageContent() {
               onSubmit={handleSend}
               className={cn(
                 "p-4 shrink-0 flex gap-2",
-                !replyingTo && "border-t",
+                !replyingTo && !editing && "border-t",
               )}
             >
               <Button
@@ -1577,11 +1685,22 @@ function ChatPageContent() {
               <Input
                 value={newMessage}
                 onChange={handleInputChange}
-                placeholder="Type a message..."
+                onKeyDown={(e) => {
+                  if (editing && e.key === "Escape") {
+                    e.preventDefault();
+                    setEditing(null);
+                    setNewMessage("");
+                  }
+                }}
+                placeholder={editing ? "Редагуйте повідомлення…" : "Type a message..."}
                 className="flex-1"
               />
-              <Button type="submit" size="icon">
-                <Send className="h-4 w-4" />
+              <Button type="submit" size="icon" title={editing ? "Зберегти" : "Send"}>
+                {editing ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
           </>
