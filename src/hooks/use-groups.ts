@@ -26,6 +26,14 @@ export interface GroupMessageReplyPreview {
   sender: { id: string; name: string | null };
 }
 
+export interface GroupDocReplyPreviewLite {
+  id: string;
+  fileName: string;
+  fileType: "PHOTO" | "DOCUMENT";
+  deletedAt: string | null;
+  uploader: { id: string; name: string | null };
+}
+
 export interface GroupMessage {
   id: string;
   groupId: string;
@@ -36,6 +44,8 @@ export interface GroupMessage {
   editedAt?: string | null;
   replyToId?: string | null;
   replyTo?: GroupMessageReplyPreview | null;
+  replyToDocumentId?: string | null;
+  replyToDocument?: GroupDocReplyPreviewLite | null;
   sender: {
     id: string;
     name: string | null;

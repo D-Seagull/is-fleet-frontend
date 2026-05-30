@@ -3,6 +3,21 @@ import { api } from "@/lib/api";
 
 export type FileDocType = "PHOTO" | "DOCUMENT";
 
+export interface TripDocReplyPreview {
+  id: string;
+  content: string;
+  deletedAt: string | null;
+  sender: { id: string; name: string | null };
+}
+
+export interface TripDocReplyPreviewLite {
+  id: string;
+  fileName: string;
+  fileType: FileDocType;
+  deletedAt: string | null;
+  uploader: { id: string; name: string | null };
+}
+
 export interface TripDocumentFull {
   id: string;
   tripId: string;
@@ -14,6 +29,12 @@ export interface TripDocumentFull {
   uploadedBy: string;
   isRead: boolean;
   createdAt: string;
+  deletedAt?: string | null;
+  caption?: string | null;
+  replyToMessageId?: string | null;
+  replyTo?: TripDocReplyPreview | null;
+  replyToDocumentId?: string | null;
+  replyToDocument?: TripDocReplyPreviewLite | null;
   uploader: { id: string; name: string | null; role: string };
   trip?: {
     id: string;
@@ -62,9 +83,25 @@ export function useDocumentsByTruck(truckId: string) {
 export function useUploadDocuments(truckId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ tripId, files }: { tripId: string; files: File[] }) => {
+    mutationFn: async ({
+      tripId,
+      files,
+      replyToMessageId,
+      replyToDocumentId,
+      caption,
+    }: {
+      tripId: string;
+      files: File[];
+      replyToMessageId?: string | null;
+      replyToDocumentId?: string | null;
+      caption?: string | null;
+    }) => {
       const form = new FormData();
       form.append("tripId", tripId);
+      if (replyToMessageId) form.append("replyToMessageId", replyToMessageId);
+      if (replyToDocumentId)
+        form.append("replyToDocumentId", replyToDocumentId);
+      if (caption) form.append("caption", caption);
       files.forEach((f) => form.append("files", f));
       const res = await api.post("/documents/upload-many", form, {
         headers: { "Content-Type": "multipart/form-data" },

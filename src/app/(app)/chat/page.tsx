@@ -85,12 +85,14 @@ import {
 import {
   useConversationDocuments,
   useUploadConversationDocs,
+  useDeleteConversationDoc,
   useConversationDocsSocketSync,
   type ConversationDocumentFull,
 } from "@/hooks/use-conversation-documents";
 import {
   useGroupDocuments,
   useUploadGroupDocs,
+  useDeleteGroupDoc,
   useGroupDocsSocketSync,
   type GroupDocumentFull,
 } from "@/hooks/use-group-documents";
@@ -149,7 +151,10 @@ function ChatPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [replyingTo, setReplyingTo] = useState<{
     id: string;
+    /** msg → reply to a text message; doc → reply to a document */
+    targetType: "msg" | "doc";
     senderName: string | null;
+    /** For msg: text content. For doc: file name. */
     content: string;
     isDeleted: boolean;
   } | null>(null);
@@ -159,6 +164,9 @@ function ChatPageContent() {
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
   const attachInputRef = useRef<HTMLInputElement>(null);
   const [attachUploading, setAttachUploading] = useState(false);
+  // Files staged for sending — uploaded together with the text on Send so a
+  // single reply can have both a caption AND a file (Telegram-style).
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
@@ -178,6 +186,8 @@ function ChatPageContent() {
   const editGroupMsg = useEditGroupMessage(selectedGroupId ?? "");
   const dmDocUpload = useUploadConversationDocs(selectedUserId ?? "");
   const groupDocUpload = useUploadGroupDocs(selectedGroupId ?? "");
+  const deleteDmDoc = useDeleteConversationDoc(selectedUserId ?? "");
+  const deleteGroupDoc = useDeleteGroupDoc(selectedGroupId ?? "");
   const { data: dmDocs = [] } = useConversationDocuments(selectedUserId ?? "");
   const { data: groupDocs = [] } = useGroupDocuments(selectedGroupId ?? "");
   useConversationDocsSocketSync(selectedUserId);
@@ -555,6 +565,7 @@ function ChatPageContent() {
     setSearchQuery("");
     setReplyingTo(null);
     setEditing(null);
+    setPendingFiles([]);
   };
 
   const handleSelectGroup = (groupId: string) => {
@@ -564,11 +575,21 @@ function ChatPageContent() {
     setSearchQuery("");
     setReplyingTo(null);
     setEditing(null);
+    setPendingFiles([]);
   };
 
-  /** Scroll the original message into view and briefly highlight it. */
+  /** Scroll a target (message OR doc) into view and briefly highlight it. */
   const scrollToMessage = (messageId: string) => {
     const el = document.getElementById(`chat-msg-${messageId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-primary", "rounded-lg");
+    setTimeout(() => {
+      el.classList.remove("ring-2", "ring-primary", "rounded-lg");
+    }, 1500);
+  };
+  const scrollToDoc = (docId: string) => {
+    const el = document.getElementById(`chat-doc-${docId}`);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
     el.classList.add("ring-2", "ring-primary", "rounded-lg");
@@ -580,10 +601,12 @@ function ChatPageContent() {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newMessage.trim();
-    if (!trimmed) return;
+    const hasFiles = pendingFiles.length > 0;
+    if (!trimmed && !hasFiles && !editing) return;
 
     // Edit mode — PATCH the message instead of sending a new one.
     if (editing) {
+      if (!trimmed) return;
       if (trimmed === editing.original.trim()) {
         // No change — just exit edit mode silently.
         setEditing(null);
@@ -603,21 +626,58 @@ function ChatPageContent() {
       return;
     }
 
-    if (selectedGroupId) {
-      getSocket().emit("send_group_message", {
-        groupId: selectedGroupId,
-        content: newMessage,
-        replyToId: replyingTo?.id ?? null,
-      });
-    } else if (selectedUserId) {
-      getSocket().emit("send_direct_message", {
-        receiverId: selectedUserId,
-        content: newMessage,
-        replyToId: replyingTo?.id ?? null,
-      });
-    } else {
-      return;
+    // replyTo can point at a message OR a document — pass exactly one.
+    const replyMsgId =
+      replyingTo?.targetType === "msg" ? replyingTo.id : null;
+    const replyDocId =
+      replyingTo?.targetType === "doc" ? replyingTo.id : null;
+
+    // Telegram-style: when files AND text are sent together, the text becomes
+    // the caption on the file bubble — NOT a separate message. Pure text or
+    // pure files use the existing single-channel paths.
+    if (hasFiles) {
+      setAttachUploading(true);
+      try {
+        if (selectedGroupId) {
+          await groupDocUpload.mutateAsync({
+            files: pendingFiles,
+            replyToMessageId: replyMsgId,
+            replyToDocumentId: replyDocId,
+            caption: trimmed || null,
+          });
+        } else if (selectedUserId) {
+          await dmDocUpload.mutateAsync({
+            files: pendingFiles,
+            replyToMessageId: replyMsgId,
+            replyToDocumentId: replyDocId,
+            caption: trimmed || null,
+          });
+        }
+      } catch (err) {
+        setAttachUploading(false);
+        console.error("[chat] file upload failed", err);
+        return;
+      }
+      setAttachUploading(false);
+      setPendingFiles([]);
+    } else if (trimmed) {
+      if (selectedGroupId) {
+        getSocket().emit("send_group_message", {
+          groupId: selectedGroupId,
+          content: trimmed,
+          replyToId: replyMsgId,
+          replyToDocumentId: replyDocId,
+        });
+      } else if (selectedUserId) {
+        getSocket().emit("send_direct_message", {
+          receiverId: selectedUserId,
+          content: trimmed,
+          replyToId: replyMsgId,
+          replyToDocumentId: replyDocId,
+        });
+      }
     }
+
     setNewMessage("");
     setReplyingTo(null);
   };
@@ -647,17 +707,17 @@ function ChatPageContent() {
     setNewMessage((prev) => prev + emojiData.emoji);
   };
 
-  async function handleAttach(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleAttach(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    setAttachUploading(true);
-    try {
-      if (selectedGroupId) await groupDocUpload.mutateAsync(files);
-      else if (selectedUserId) await dmDocUpload.mutateAsync(files);
-    } finally {
-      setAttachUploading(false);
-      if (attachInputRef.current) attachInputRef.current.value = "";
-    }
+    // Stage only — real upload fires from handleSend so the reply target and
+    // optional caption text are bundled with the same call.
+    setPendingFiles((prev) => [...prev, ...files]);
+    if (attachInputRef.current) attachInputRef.current.value = "";
+  }
+
+  function removePendingFile(idx: number) {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== idx));
   }
 
   async function handleCreateGroup() {
@@ -1250,6 +1310,7 @@ function ChatPageContent() {
                                 onReply: () =>
                                   setReplyingTo({
                                     id: msg.id,
+                                    targetType: "msg",
                                     senderName:
                                       msg.sender?.name ?? null,
                                     content: msg.content,
@@ -1268,6 +1329,7 @@ function ChatPageContent() {
                                         });
                                         setNewMessage(msg.content);
                                         setReplyingTo(null);
+                                        setPendingFiles([]);
                                       }
                                     : undefined,
                                 onDelete: isOwn
@@ -1302,6 +1364,21 @@ function ChatPageContent() {
                                     isDeleted={!!msg.replyTo.deletedAt}
                                     onClick={() =>
                                       scrollToMessage(msg.replyTo!.id)
+                                    }
+                                    variant={isOwn ? "onPrimary" : "default"}
+                                  />
+                                )}
+                                {msg.replyToDocument && (
+                                  <MessageQuote
+                                    kind="doc"
+                                    senderName={
+                                      msg.replyToDocument.uploader.name
+                                    }
+                                    fileName={msg.replyToDocument.fileName}
+                                    content=""
+                                    isDeleted={!!msg.replyToDocument.deletedAt}
+                                    onClick={() =>
+                                      scrollToDoc(msg.replyToDocument!.id)
                                     }
                                     variant={isOwn ? "onPrimary" : "default"}
                                   />
@@ -1373,6 +1450,7 @@ function ChatPageContent() {
                     // kind === "doc"
                     const doc = item.data;
                     const isOwn = doc.uploadedBy === user?.id;
+                    const isDeleted = !!doc.deletedAt;
                     const isPhoto = doc.fileType === "PHOTO";
                     const senderName =
                       !isOwn && selectedGroupId
@@ -1388,6 +1466,12 @@ function ChatPageContent() {
                       .toUpperCase();
                     const ext =
                       doc.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
+                    const docReplyToMsg =
+                      "replyTo" in doc ? doc.replyTo : null;
+                    const docReplyToDoc =
+                      "replyToDocument" in doc
+                        ? doc.replyToDocument
+                        : null;
                     return (
                       <div
                         key={`doc-${doc.id}`}
@@ -1396,7 +1480,7 @@ function ChatPageContent() {
                           isOwn ? "justify-end" : "justify-start",
                         )}
                       >
-                        {isOwn && (
+                        {isOwn && !isDeleted && (
                           <MessageReactionsTrigger
                             messageId={doc.id}
                             type={selectedGroupId ? "GROUP_DOC" : "DM_DOC"}
@@ -1432,7 +1516,7 @@ function ChatPageContent() {
                           ))}
                         <div
                           className={cn(
-                            "flex flex-col gap-0.5 max-w-[70%]",
+                            "flex flex-col gap-0.5 max-w-[70%] min-w-0",
                             isOwn && "items-end",
                           )}
                         >
@@ -1447,62 +1531,150 @@ function ChatPageContent() {
                               {senderName}
                             </button>
                           )}
-                          {isPhoto ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={doc.signedUrl}
-                              alt={doc.fileName}
-                              onClick={() =>
-                                window.open(doc.signedUrl, "_blank")
-                              }
-                              className="max-w-[200px] max-h-[200px] w-full object-cover rounded-2xl cursor-pointer border"
-                            />
-                          ) : (
+                          <MessageActionsContext
+                            actions={{
+                              onCopy: () =>
+                                navigator.clipboard.writeText(doc.fileName),
+                              onReply: () =>
+                                setReplyingTo({
+                                  id: doc.id,
+                                  targetType: "doc",
+                                  senderName: doc.uploader?.name ?? null,
+                                  content: doc.fileName,
+                                  isDeleted,
+                                }),
+                              onDelete: isOwn
+                                ? () => {
+                                    if (selectedGroupId)
+                                      deleteGroupDoc.mutate(doc.id);
+                                    else deleteDmDoc.mutate(doc.id);
+                                  }
+                                : undefined,
+                            }}
+                            isOwn={isOwn}
+                            isDeleted={isDeleted}
+                          >
                             <div
-                              role="button"
-                              tabIndex={0}
-                              onClick={() =>
-                                window.open(doc.signedUrl, "_blank")
-                              }
-                              onKeyDown={(e) =>
-                                e.key === "Enter" &&
-                                window.open(doc.signedUrl, "_blank")
-                              }
-                              className={cn(
-                                "flex items-center gap-2 rounded-2xl px-3 py-2 border cursor-pointer hover:opacity-80 transition-opacity",
-                                isOwn
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted",
-                              )}
+                              id={`chat-doc-${doc.id}`}
+                              className="max-w-full transition-shadow"
                             >
-                              <FileText className="h-5 w-5 shrink-0" />
-                              <div className="flex flex-col min-w-0 flex-1">
-                                <span className="text-sm truncate max-w-[180px] leading-tight">
-                                  {doc.fileName}
-                                </span>
-                                <span
+                              {(docReplyToMsg || docReplyToDoc) && (
+                                <div className={cn(
+                                  "rounded-md mb-1",
+                                  isOwn ? "" : "",
+                                )}>
+                                  {docReplyToMsg && (
+                                    <MessageQuote
+                                      senderName={docReplyToMsg.sender.name}
+                                      content={docReplyToMsg.content}
+                                      isDeleted={!!docReplyToMsg.deletedAt}
+                                      onClick={() =>
+                                        scrollToMessage(docReplyToMsg.id)
+                                      }
+                                      variant="default"
+                                    />
+                                  )}
+                                  {docReplyToDoc && (
+                                    <MessageQuote
+                                      kind="doc"
+                                      senderName={docReplyToDoc.uploader.name}
+                                      fileName={docReplyToDoc.fileName}
+                                      content=""
+                                      isDeleted={!!docReplyToDoc.deletedAt}
+                                      onClick={() =>
+                                        scrollToDoc(docReplyToDoc.id)
+                                      }
+                                      variant="default"
+                                    />
+                                  )}
+                                </div>
+                              )}
+                              {isDeleted ? (
+                                <div className="rounded-lg bg-muted/40 text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
+                                  Файл видалено
+                                </div>
+                              ) : isPhoto ? (
+                                <div
                                   className={cn(
-                                    "text-[10px] leading-tight",
-                                    isOwn
-                                      ? "text-primary-foreground/70"
-                                      : "text-muted-foreground",
+                                    "rounded-2xl overflow-hidden border max-w-[220px]",
+                                    doc.caption &&
+                                      (isOwn
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-muted"),
                                   )}
                                 >
-                                  {ext}
-                                </span>
-                              </div>
-                              <button
-                                title="Download"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  window.open(doc.signedUrl, "_blank");
-                                }}
-                                className="shrink-0 opacity-70 hover:opacity-100"
-                              >
-                                <Download className="h-3.5 w-3.5" />
-                              </button>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={doc.signedUrl}
+                                    alt={doc.fileName}
+                                    onClick={() =>
+                                      window.open(doc.signedUrl, "_blank")
+                                    }
+                                    className="block max-w-[220px] max-h-[200px] w-full object-cover cursor-pointer"
+                                  />
+                                  {doc.caption && (
+                                    <p className="text-sm whitespace-pre-wrap break-words px-3 py-2">
+                                      {doc.caption}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <div
+                                  className={cn(
+                                    "rounded-2xl border overflow-hidden",
+                                    isOwn
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-muted",
+                                  )}
+                                >
+                                  <div
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() =>
+                                      window.open(doc.signedUrl, "_blank")
+                                    }
+                                    onKeyDown={(e) =>
+                                      e.key === "Enter" &&
+                                      window.open(doc.signedUrl, "_blank")
+                                    }
+                                    className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                  >
+                                    <FileText className="h-5 w-5 shrink-0" />
+                                    <div className="flex flex-col min-w-0 flex-1">
+                                      <span className="text-sm truncate max-w-[180px] leading-tight">
+                                        {doc.fileName}
+                                      </span>
+                                      <span
+                                        className={cn(
+                                          "text-[10px] leading-tight",
+                                          isOwn
+                                            ? "text-primary-foreground/70"
+                                            : "text-muted-foreground",
+                                        )}
+                                      >
+                                        {ext}
+                                      </span>
+                                    </div>
+                                    <button
+                                      title="Download"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.open(doc.signedUrl, "_blank");
+                                      }}
+                                      className="shrink-0 opacity-70 hover:opacity-100"
+                                    >
+                                      <Download className="h-3.5 w-3.5" />
+                                    </button>
+                                  </div>
+                                  {doc.caption && (
+                                    <p className="text-sm whitespace-pre-wrap break-words px-3 pb-2">
+                                      {doc.caption}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </MessageActionsContext>
                           <div
                             className={cn(
                               "flex items-center gap-2 px-1 min-h-[20px]",
@@ -1514,7 +1686,7 @@ function ChatPageContent() {
                                 [],
                                 { hour: "2-digit", minute: "2-digit" },
                               )}
-                              {isOwn && !selectedGroupId && (
+                              {isOwn && !selectedGroupId && !isDeleted && (
                                 <span
                                   className={cn(
                                     (doc as ConversationDocumentFull).isRead &&
@@ -1527,7 +1699,7 @@ function ChatPageContent() {
                                 </span>
                               )}
                             </span>
-                            {selectedGroupId && (
+                            {selectedGroupId && !isDeleted && (
                               <MessageReactionsBar
                                 messageId={doc.id}
                                 type="GROUP_DOC"
@@ -1541,7 +1713,7 @@ function ChatPageContent() {
                             )}
                           </div>
                         </div>
-                        {!isOwn && (
+                        {!isOwn && !isDeleted && (
                           <MessageReactionsTrigger
                             messageId={doc.id}
                             type={selectedGroupId ? "GROUP_DOC" : "DM_DOC"}
@@ -1615,13 +1787,21 @@ function ChatPageContent() {
                   </p>
                   <p
                     className={cn(
-                      "text-[11px] text-muted-foreground leading-tight truncate",
+                      "text-[11px] text-muted-foreground leading-tight truncate flex items-center gap-1",
                       replyingTo.isDeleted && "italic",
                     )}
                   >
-                    {replyingTo.isDeleted
-                      ? "Повідомлення видалено"
-                      : replyingTo.content}
+                    {replyingTo.targetType === "doc" &&
+                      !replyingTo.isDeleted && (
+                        <Paperclip className="h-3 w-3 shrink-0" />
+                      )}
+                    <span className="truncate">
+                      {replyingTo.isDeleted
+                        ? replyingTo.targetType === "doc"
+                          ? "Файл видалено"
+                          : "Повідомлення видалено"
+                        : replyingTo.content}
+                    </span>
                   </p>
                 </div>
                 <button
@@ -1635,11 +1815,36 @@ function ChatPageContent() {
               </div>
             )}
 
+            {pendingFiles.length > 0 && (
+              <div className="px-4 pt-2 shrink-0 flex flex-wrap gap-1.5">
+                {pendingFiles.map((f, i) => (
+                  <div
+                    key={`${f.name}-${i}`}
+                    className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs max-w-[200px]"
+                  >
+                    <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{f.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removePendingFile(i)}
+                      title="Remove"
+                      className="shrink-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <form
               onSubmit={handleSend}
               className={cn(
                 "p-4 shrink-0 flex gap-2",
-                !replyingTo && !editing && "border-t",
+                !replyingTo &&
+                  !editing &&
+                  pendingFiles.length === 0 &&
+                  "border-t",
               )}
             >
               <Button
@@ -1695,7 +1900,16 @@ function ChatPageContent() {
                 placeholder={editing ? "Редагуйте повідомлення…" : "Type a message..."}
                 className="flex-1"
               />
-              <Button type="submit" size="icon" title={editing ? "Зберегти" : "Send"}>
+              <Button
+                type="submit"
+                size="icon"
+                title={editing ? "Зберегти" : "Send"}
+                disabled={
+                  editing
+                    ? !newMessage.trim()
+                    : !newMessage.trim() && pendingFiles.length === 0
+                }
+              >
                 {editing ? (
                   <Check className="h-4 w-4" />
                 ) : (

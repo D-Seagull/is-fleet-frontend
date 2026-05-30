@@ -1131,6 +1131,7 @@ function TripChat({
   );
   const [replyingTo, setReplyingTo] = useState<{
     id: string;
+    targetType: "msg" | "doc";
     senderName: string | null;
     content: string;
     isDeleted: boolean;
@@ -1138,6 +1139,15 @@ function TripChat({
 
   const scrollToTripMessage = (messageId: string) => {
     const el = document.getElementById(`trip-msg-${messageId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-primary", "rounded-lg");
+    setTimeout(() => {
+      el.classList.remove("ring-2", "ring-primary", "rounded-lg");
+    }, 1500);
+  };
+  const scrollToTripDoc = (docId: string) => {
+    const el = document.getElementById(`trip-doc-${docId}`);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
     el.classList.add("ring-2", "ring-primary", "rounded-lg");
@@ -1158,6 +1168,9 @@ function TripChat({
   const [newMsgCount, setNewMsgCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadDocuments(truckId);
+  // Files staged for sending — uploaded together with the text caption on
+  // Send so a single reply can carry both a file and text.
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   // unified timeline: messages + files sorted by createdAt
   type TimelineItem =
@@ -1219,7 +1232,7 @@ function TripChat({
     markRead();
     socket.on("connect", onConnect);
 
-    const handleNew = (msg: TripMessage) => {
+    const handleNew = (msg: TripMessage & { tempId?: string | null }) => {
       if (msg.tripId !== trip.id) return;
 
       // Privacy: ignore messages from a session the current user wasn't in.
@@ -1232,7 +1245,16 @@ function TripChat({
 
       queryClient.setQueryData<TripMessage[]>(
         ["trip-messages", trip.id],
-        (old = []) => old.some((m) => m.id === msg.id) ? old : [...old, msg],
+        (old = []) => {
+          // Optimistic swap: if the server echoed our tempId, drop the
+          // placeholder and append the real row in its place.
+          if (msg.tempId) {
+            const withoutTemp = old.filter((m) => m.id !== msg.tempId);
+            if (withoutTemp.some((m) => m.id === msg.id)) return withoutTemp;
+            return [...withoutTemp, msg];
+          }
+          return old.some((m) => m.id === msg.id) ? old : [...old, msg];
+        },
       );
       // Оновлюємо лічильники непрочитаних у шапці та картках
       void queryClient.invalidateQueries({ queryKey: UNREAD_QUERY_KEY });
@@ -1281,9 +1303,17 @@ function TripChat({
     };
     const handleDocDeleted = (payload: { tripId: string; documentId: string }) => {
       if (payload.tripId !== trip.id) return;
+      // Soft delete — patch the row so the chat shows a tombstone. The
+      // truck-level / company-level views can still purge via invalidate
+      // because they don't render soft-deleted rows.
       queryClient.setQueryData<TripDocumentFull[]>(
         ["documents-trip", trip.id],
-        (old = []) => old.filter((d) => d.id !== payload.documentId),
+        (old = []) =>
+          old.map((d) =>
+            d.id === payload.documentId
+              ? { ...d, deletedAt: new Date().toISOString(), signedUrl: "" }
+              : d,
+          ),
       );
       queryClient.invalidateQueries({ queryKey: ["documents-truck", truckId] });
       queryClient.invalidateQueries({ queryKey: ["documents-all"] });
@@ -1447,10 +1477,12 @@ function TripChat({
 
   async function handleSend() {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    const hasFiles = pendingFiles.length > 0;
+    if (!trimmed && !hasFiles && !editing) return;
 
     // Edit mode — PATCH instead of sending a new message.
     if (editing) {
+      if (!trimmed) return;
       if (trimmed === editing.original.trim()) {
         setEditing(null);
         setText("");
@@ -1466,14 +1498,103 @@ function TripChat({
       return;
     }
 
-    // User is sending — they want to see their own message, snap back to bottom
+    // User is sending — snap back to bottom so they see their own message.
     nearBottomRef.current = true;
     setNewMsgCount(0);
-    getSocket().emit("sendMessage", {
-      tripId: trip.id,
-      content: trimmed,
-      replyToId: replyingTo?.id ?? null,
-    });
+    const replyMsgId =
+      replyingTo?.targetType === "msg" ? replyingTo.id : null;
+    const replyDocId =
+      replyingTo?.targetType === "doc" ? replyingTo.id : null;
+
+    // Telegram-style: text + files = ONE file bubble with a caption (NOT a
+    // separate text message). Pure text or pure files keep their existing
+    // single-channel paths.
+    if (hasFiles) {
+      setUploading(true);
+      try {
+        await upload.mutateAsync({
+          tripId: trip.id,
+          files: pendingFiles,
+          replyToMessageId: replyMsgId,
+          replyToDocumentId: replyDocId,
+          caption: trimmed || null,
+        });
+      } catch (err) {
+        setUploading(false);
+        console.error("[trip-chat] file upload failed", err);
+        return;
+      }
+      setUploading(false);
+      setPendingFiles([]);
+      notifyStopTyping();
+      setText("");
+      setReplyingTo(null);
+      return;
+    }
+
+    // Optimistic text message — drop a "pending" bubble in the cache so the
+    // user sees their message instantly, then swap it out when the real one
+    // arrives over WS. Gateway echoes `tempId` back so we can locate the
+    // placeholder.
+    if (trimmed) {
+      const tempId = `temp-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}`;
+      const meId = currentUserIdRef.current ?? "";
+      const optimistic: TripMessage = {
+        id: tempId,
+        tripId: trip.id,
+        senderId: meId,
+        content: trimmed,
+        translatedContent: null,
+        isRead: false,
+        isSystem: false,
+        createdAt: new Date().toISOString(),
+        deletedAt: null,
+        editedAt: null,
+        replyToId: replyMsgId,
+        replyTo: replyingTo?.targetType === "msg"
+          ? {
+              id: replyingTo.id,
+              content: replyingTo.content,
+              deletedAt: replyingTo.isDeleted ? new Date().toISOString() : null,
+              sender: {
+                id: "",
+                name: replyingTo.senderName,
+              },
+            }
+          : null,
+        replyToDocumentId: replyDocId,
+        replyToDocument: replyingTo?.targetType === "doc"
+          ? {
+              id: replyingTo.id,
+              fileName: replyingTo.content,
+              fileType: "DOCUMENT",
+              deletedAt: replyingTo.isDeleted ? new Date().toISOString() : null,
+              uploader: { id: "", name: replyingTo.senderName },
+            }
+          : null,
+        sender: {
+          id: meId,
+          name: user?.name ?? null,
+          role: user?.role ?? "MANAGER",
+        },
+        reactions: [],
+      };
+      queryClient.setQueryData<TripMessage[]>(
+        ["trip-messages", trip.id],
+        (old = []) => [...old, optimistic],
+      );
+
+      getSocket().emit("sendMessage", {
+        tripId: trip.id,
+        content: trimmed,
+        replyToId: replyMsgId,
+        replyToDocumentId: replyDocId,
+        tempId,
+      });
+    }
+
     notifyStopTyping();
     setText("");
     setReplyingTo(null);
@@ -1484,16 +1605,17 @@ function TripChat({
     setShowEmoji(false);
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    setUploading(true);
-    try {
-      await upload.mutateAsync({ tripId: trip.id, files });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    // Stage only — the actual upload runs from handleSend so a caption + reply
+    // target can travel with the file in a single user action.
+    setPendingFiles((prev) => [...prev, ...files]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removePendingFile(idx: number) {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== idx));
   }
 
   return (
@@ -1648,6 +1770,7 @@ function TripChat({
                 onReply: () =>
                   setReplyingTo({
                     id: msg.id,
+                    targetType: "msg",
                     senderName: msg.sender?.name ?? null,
                     content: msg.content,
                     isDeleted: !!msg.deletedAt,
@@ -1657,6 +1780,7 @@ function TripChat({
                       setEditing({ id: msg.id, original: msg.content });
                       setText(msg.content);
                       setReplyingTo(null);
+                      setPendingFiles([]);
                     }
                   : undefined,
                 onDelete: isMine
@@ -1734,6 +1858,19 @@ function TripChat({
                             variant={isMine ? "onPrimary" : "default"}
                           />
                         )}
+                        {!isDeleted && msg.replyToDocument && (
+                          <MessageQuote
+                            kind="doc"
+                            senderName={msg.replyToDocument.uploader.name}
+                            fileName={msg.replyToDocument.fileName}
+                            content=""
+                            isDeleted={!!msg.replyToDocument.deletedAt}
+                            onClick={() =>
+                              scrollToTripDoc(msg.replyToDocument!.id)
+                            }
+                            variant={isMine ? "onPrimary" : "default"}
+                          />
+                        )}
                         {isDeleted ? (
                           "Повідомлення видалено"
                         ) : (
@@ -1781,9 +1918,24 @@ function TripChat({
             // file item
             const doc = item.data;
             const isMine = doc.uploadedBy === currentUserId;
+            const isDeletedDoc = !!doc.deletedAt;
             const isPhoto = doc.fileType === "PHOTO" ||
               /\.(jpe?g|png|gif|webp|heic|avif)$/i.test(doc.fileName);
             const ext = doc.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
+            const docActions = {
+              onCopy: () => navigator.clipboard.writeText(doc.fileName),
+              onReply: () =>
+                setReplyingTo({
+                  id: doc.id,
+                  targetType: "doc" as const,
+                  senderName: doc.uploader?.name ?? null,
+                  content: doc.fileName,
+                  isDeleted: isDeletedDoc,
+                }),
+              onDelete: isMine
+                ? () => deleteDocument.mutate(doc.id)
+                : undefined,
+            };
             return (
               <div
                 key={`doc-${doc.id}`}
@@ -1794,98 +1946,134 @@ function TripChat({
                   isMine ? "self-end" : "self-start flex-row-reverse",
                 )}
               >
-                <MessageReactionsTrigger
-                  messageId={doc.id}
-                  type="TRIP_DOC"
-                  reactions={doc.reactions ?? []}
-                  currentUserId={currentUserId}
-                />
+                {!isDeletedDoc && (
+                  <MessageReactionsTrigger
+                    messageId={doc.id}
+                    type="TRIP_DOC"
+                    reactions={doc.reactions ?? []}
+                    currentUserId={currentUserId}
+                  />
+                )}
               <div
                 className={cn(
                   // w-fit so the bubble shrinks to its content (e.g. a 180px
                   // photo) instead of stretching to the 80% max-w container.
-                  "flex flex-col gap-0.5 max-w-[80%] w-fit",
+                  "flex flex-col gap-0.5 max-w-[80%] w-fit min-w-0",
                   isMine && "items-end",
                 )}
               >
                 <span className="text-xs text-muted-foreground px-1">
                   {doc.uploader?.name ?? "Unknown"}
                 </span>
-                <div className="relative">
-                {isPhoto ? (
-                  <div
-                    className="rounded-2xl overflow-hidden cursor-pointer border hover:opacity-90 transition-opacity"
-                    onClick={() => setLightbox({ id: doc.id, signedUrl: doc.signedUrl })}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={doc.signedUrl}
-                      alt={doc.fileName}
-                      // Re-scroll once the image dimensions are known —
-                      // otherwise the bubble grows after our scroll fired
-                      // and the new content sits below the viewport.
-                      onLoad={() => {
-                        if (nearBottomRef.current) {
-                          const el = scrollContainerRef.current;
-                          if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+                <MessageActionsContext
+                  actions={docActions}
+                  isOwn={isMine}
+                  isDeleted={isDeletedDoc}
+                >
+                  <div id={`trip-doc-${doc.id}`} className="transition-shadow">
+                    {!isDeletedDoc && doc.replyTo && (
+                      <MessageQuote
+                        senderName={doc.replyTo.sender.name}
+                        content={doc.replyTo.content}
+                        isDeleted={!!doc.replyTo.deletedAt}
+                        onClick={() => scrollToTripMessage(doc.replyTo!.id)}
+                        variant="default"
+                      />
+                    )}
+                    {!isDeletedDoc && doc.replyToDocument && (
+                      <MessageQuote
+                        kind="doc"
+                        senderName={doc.replyToDocument.uploader.name}
+                        fileName={doc.replyToDocument.fileName}
+                        content=""
+                        isDeleted={!!doc.replyToDocument.deletedAt}
+                        onClick={() =>
+                          scrollToTripDoc(doc.replyToDocument!.id)
                         }
-                      }}
-                      className="max-w-[180px] max-h-[200px] w-full object-cover block"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => openDoc(doc.id)}
-                    onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id)}
-                    className={cn(
-                      "flex items-center gap-2 rounded-2xl px-3 py-2 border cursor-pointer hover:opacity-80 transition-opacity",
-                      isMine ? "bg-primary text-primary-foreground" : "bg-muted",
+                        variant="default"
+                      />
                     )}
-                  >
-                    <FileText className="h-5 w-5 shrink-0" />
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-sm truncate max-w-[180px] leading-tight">
-                        {doc.fileName}
-                      </span>
-                      <span className={cn(
-                        "text-[10px] leading-tight",
-                        isMine ? "text-primary-foreground/70" : "text-muted-foreground"
-                      )}>
-                        {ext}
-                      </span>
-                    </div>
-                    <button
-                      title="Download"
-                      onClick={(e) => { e.stopPropagation(); downloadDoc(doc.id); }}
-                      className="shrink-0 opacity-70 hover:opacity-100"
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                )}
-                {isMine && (
-                  <button
-                    title="Delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm(`Delete ${doc.fileName}?`)) deleteDocument.mutate(doc.id);
-                    }}
-                    className={cn(
-                      "absolute -top-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-background border shadow-sm p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground",
-                      // Trigger is on the LEFT for own messages, so put
-                      // the delete button on the opposite (right) side.
-                      isMine ? "-right-1.5" : "-left-1.5",
+                    {isDeletedDoc ? (
+                      <div className="rounded-2xl bg-muted/40 text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
+                        Файл видалено
+                      </div>
+                    ) : isPhoto ? (
+                      <div
+                        className={cn(
+                          "rounded-2xl overflow-hidden border max-w-[200px]",
+                          doc.caption &&
+                            (isMine ? "bg-primary text-primary-foreground" : "bg-muted"),
+                        )}
+                      >
+                        <div
+                          className="cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => setLightbox({ id: doc.id, signedUrl: doc.signedUrl })}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={doc.signedUrl}
+                            alt={doc.fileName}
+                            onLoad={() => {
+                              if (nearBottomRef.current) {
+                                const el = scrollContainerRef.current;
+                                if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+                              }
+                            }}
+                            className="max-w-[200px] max-h-[200px] w-full object-cover block"
+                          />
+                        </div>
+                        {doc.caption && (
+                          <p className="text-sm whitespace-pre-wrap break-words px-3 py-2">
+                            {doc.caption}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div
+                        className={cn(
+                          "rounded-2xl border overflow-hidden",
+                          isMine ? "bg-primary text-primary-foreground" : "bg-muted",
+                        )}
+                      >
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => openDoc(doc.id)}
+                          onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id)}
+                          className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:opacity-80 transition-opacity"
+                        >
+                          <FileText className="h-5 w-5 shrink-0" />
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-sm truncate max-w-[180px] leading-tight">
+                              {doc.fileName}
+                            </span>
+                            <span className={cn(
+                              "text-[10px] leading-tight",
+                              isMine ? "text-primary-foreground/70" : "text-muted-foreground"
+                            )}>
+                              {ext}
+                            </span>
+                          </div>
+                          <button
+                            title="Download"
+                            onClick={(e) => { e.stopPropagation(); downloadDoc(doc.id); }}
+                            className="shrink-0 opacity-70 hover:opacity-100"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                        {doc.caption && (
+                          <p className="text-sm whitespace-pre-wrap break-words px-3 pb-2">
+                            {doc.caption}
+                          </p>
+                        )}
+                      </div>
                     )}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                )}
-                </div>
+                  </div>
+                </MessageActionsContext>
                 <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
                   {new Date(doc.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  {isMine && (
+                  {isMine && !isDeletedDoc && (
                     <span className={cn(doc.isRead && "text-primary")}>
                       {doc.isRead ? "✓✓" : "✓"}
                     </span>
@@ -1981,13 +2169,21 @@ function TripChat({
                   </p>
                   <p
                     className={cn(
-                      "text-[11px] text-muted-foreground leading-tight truncate",
+                      "text-[11px] text-muted-foreground leading-tight truncate flex items-center gap-1",
                       replyingTo.isDeleted && "italic",
                     )}
                   >
-                    {replyingTo.isDeleted
-                      ? "Повідомлення видалено"
-                      : replyingTo.content}
+                    {replyingTo.targetType === "doc" &&
+                      !replyingTo.isDeleted && (
+                        <Paperclip className="h-3 w-3 shrink-0" />
+                      )}
+                    <span className="truncate">
+                      {replyingTo.isDeleted
+                        ? replyingTo.targetType === "doc"
+                          ? "Файл видалено"
+                          : "Повідомлення видалено"
+                        : replyingTo.content}
+                    </span>
                   </p>
                 </div>
                 <button
@@ -1998,6 +2194,28 @@ function TripChat({
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
+              </div>
+            )}
+
+            {pendingFiles.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                {pendingFiles.map((f, i) => (
+                  <div
+                    key={`${f.name}-${i}`}
+                    className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs max-w-[200px]"
+                  >
+                    <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{f.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removePendingFile(i)}
+                      title="Remove"
+                      className="shrink-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -2063,7 +2281,7 @@ function TripChat({
               <Button
                 size="icon"
                 onClick={handleSend}
-                disabled={!text.trim()}
+                disabled={!text.trim() && pendingFiles.length === 0}
                 title={editing ? "Зберегти" : "Send"}
                 className="h-9 w-9 shrink-0"
               >

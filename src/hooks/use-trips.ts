@@ -77,6 +77,14 @@ export interface TripMessageReplyPreview {
   sender: { id: string; name: string | null };
 }
 
+export interface TripDocReplyPreviewLite {
+  id: string;
+  fileName: string;
+  fileType: "PHOTO" | "DOCUMENT";
+  deletedAt: string | null;
+  uploader: { id: string; name: string | null };
+}
+
 export interface TripMessage {
   id: string;
   tripId: string;
@@ -90,6 +98,8 @@ export interface TripMessage {
   editedAt?: string | null;
   replyToId?: string | null;
   replyTo?: TripMessageReplyPreview | null;
+  replyToDocumentId?: string | null;
+  replyToDocument?: TripDocReplyPreviewLite | null;
   sender: { id: string; name: string | null; role: string };
   // Session participants — used by the realtime layer to drop messages
   // belonging to a session the current user wasn't part of.

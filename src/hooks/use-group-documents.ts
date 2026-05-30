@@ -5,6 +5,21 @@ import { getSocket } from "@/lib/socket";
 
 export type FileDocType = "PHOTO" | "DOCUMENT";
 
+export interface GroupDocReplyPreview {
+  id: string;
+  content: string;
+  deletedAt: string | null;
+  sender: { id: string; name: string | null };
+}
+
+export interface GroupDocReplyPreviewLite {
+  id: string;
+  fileName: string;
+  fileType: FileDocType;
+  deletedAt: string | null;
+  uploader: { id: string; name: string | null };
+}
+
 export interface GroupDocumentFull {
   id: string;
   groupId: string;
@@ -16,6 +31,12 @@ export interface GroupDocumentFull {
   publicId: string | null;
   isRead: boolean;
   createdAt: string;
+  deletedAt?: string | null;
+  caption?: string | null;
+  replyToMessageId?: string | null;
+  replyTo?: GroupDocReplyPreview | null;
+  replyToDocumentId?: string | null;
+  replyToDocument?: GroupDocReplyPreviewLite | null;
   uploader: { id: string; name: string | null; role: string };
   reactions?: { id: string; userId: string; emoji: string }[];
 }
@@ -36,9 +57,23 @@ export function useGroupDocuments(groupId: string) {
 export function useUploadGroupDocs(groupId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (files: File[]) => {
+    mutationFn: async ({
+      files,
+      replyToMessageId,
+      replyToDocumentId,
+      caption,
+    }: {
+      files: File[];
+      replyToMessageId?: string | null;
+      replyToDocumentId?: string | null;
+      caption?: string | null;
+    }) => {
       const form = new FormData();
       form.append("groupId", groupId);
+      if (replyToMessageId) form.append("replyToMessageId", replyToMessageId);
+      if (replyToDocumentId)
+        form.append("replyToDocumentId", replyToDocumentId);
+      if (caption) form.append("caption", caption);
       files.forEach((f) => form.append("files", f));
       const res = await api.post(
         "/group-messages/documents/upload-many",
@@ -85,7 +120,12 @@ export function useGroupDocsSocketSync(groupId: string | null) {
     const onDeleted = ({ id }: { id: string }) => {
       queryClient.setQueryData<GroupDocumentFull[]>(
         QUERY_KEY(groupId),
-        (prev = []) => prev.filter((d) => d.id !== id),
+        (prev = []) =>
+          prev.map((d) =>
+            d.id === id
+              ? { ...d, deletedAt: new Date().toISOString(), signedUrl: "" }
+              : d,
+          ),
       );
     };
     socket.on("new_group_document", onNew);

@@ -8,6 +8,14 @@ export interface MessageReplyPreview {
   sender: { id: string; name: string | null };
 }
 
+export interface DocReplyPreviewLite {
+  id: string;
+  fileName: string;
+  fileType: "PHOTO" | "DOCUMENT";
+  deletedAt: string | null;
+  uploader: { id: string; name: string | null };
+}
+
 export interface DirectMessage {
   id: string;
   senderId: string;
@@ -19,6 +27,8 @@ export interface DirectMessage {
   editedAt?: string | null;
   replyToId?: string | null;
   replyTo?: MessageReplyPreview | null;
+  replyToDocumentId?: string | null;
+  replyToDocument?: DocReplyPreviewLite | null;
   sender: {
     id: string;
     name: string | null;

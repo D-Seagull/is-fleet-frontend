@@ -5,6 +5,21 @@ import { getSocket } from "@/lib/socket";
 
 export type FileDocType = "PHOTO" | "DOCUMENT";
 
+export interface DocReplyPreview {
+  id: string;
+  content: string;
+  deletedAt: string | null;
+  sender: { id: string; name: string | null };
+}
+
+export interface DocReplyPreviewLite {
+  id: string;
+  fileName: string;
+  fileType: FileDocType;
+  deletedAt: string | null;
+  uploader: { id: string; name: string | null };
+}
+
 export interface ConversationDocumentFull {
   id: string;
   uploadedBy: string;
@@ -16,6 +31,12 @@ export interface ConversationDocumentFull {
   publicId: string | null;
   isRead: boolean;
   createdAt: string;
+  deletedAt?: string | null;
+  caption?: string | null;
+  replyToMessageId?: string | null;
+  replyTo?: DocReplyPreview | null;
+  replyToDocumentId?: string | null;
+  replyToDocument?: DocReplyPreviewLite | null;
   uploader: { id: string; name: string | null; role: string };
   reactions?: { id: string; userId: string; emoji: string }[];
 }
@@ -41,9 +62,23 @@ export function useConversationDocuments(otherUserId: string) {
 export function useUploadConversationDocs(otherUserId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (files: File[]) => {
+    mutationFn: async ({
+      files,
+      replyToMessageId,
+      replyToDocumentId,
+      caption,
+    }: {
+      files: File[];
+      replyToMessageId?: string | null;
+      replyToDocumentId?: string | null;
+      caption?: string | null;
+    }) => {
       const form = new FormData();
       form.append("otherUserId", otherUserId);
+      if (replyToMessageId) form.append("replyToMessageId", replyToMessageId);
+      if (replyToDocumentId)
+        form.append("replyToDocumentId", replyToDocumentId);
+      if (caption) form.append("caption", caption);
       files.forEach((f) => form.append("files", f));
       const res = await api.post(
         "/direct-messages/documents/upload-many",
@@ -93,9 +128,16 @@ export function useConversationDocsSocketSync(otherUserId: string | null) {
       );
     };
     const onDeleted = ({ id }: { id: string }) => {
+      // Soft delete — patch the row so the chat shows a tombstone instead
+      // of dropping it from the timeline.
       queryClient.setQueryData<ConversationDocumentFull[]>(
         QUERY_KEY(otherUserId),
-        (prev = []) => prev.filter((d) => d.id !== id),
+        (prev = []) =>
+          prev.map((d) =>
+            d.id === id
+              ? { ...d, deletedAt: new Date().toISOString(), signedUrl: "" }
+              : d,
+          ),
       );
     };
     socket.on("new_direct_document", onNew);

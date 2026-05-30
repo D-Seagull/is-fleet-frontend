@@ -1,12 +1,18 @@
 "use client";
 
+import { Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
   senderName: string | null;
+  /** Plain text content of the original message. Ignored when `kind === "doc"`. */
   content: string;
   isDeleted?: boolean;
-  /** Click handler — typically scrolls to the original message. */
+  /** What kind of target this quote points to. */
+  kind?: "msg" | "doc";
+  /** File name (only when `kind === "doc"`). */
+  fileName?: string;
+  /** Click handler — typically scrolls to the original message/doc. */
   onClick?: () => void;
   /** Tweaks colour for use inside the user's own (primary) bubble. */
   variant?: "default" | "onPrimary";
@@ -16,14 +22,21 @@ interface Props {
  * Telegram/Viber-style reply quote shown above a message's content. A
  * vertical accent line on the left, the original sender's name on top,
  * and a one-line preview of the original message below.
+ *
+ * For document quotes a 📎 icon + file name is shown instead of text.
  */
 export function MessageQuote({
   senderName,
   content,
   isDeleted = false,
+  kind = "msg",
+  fileName,
   onClick,
   variant = "default",
 }: Props) {
+  const isDoc = kind === "doc";
+  const tombstone = isDoc ? "Файл видалено" : "Повідомлення видалено";
+
   return (
     <button
       type="button"
@@ -49,14 +62,17 @@ export function MessageQuote({
       </p>
       <p
         className={cn(
-          "text-[11px] leading-tight truncate",
+          "text-[11px] leading-tight truncate flex items-center gap-1",
           isDeleted && "italic",
           variant === "onPrimary"
             ? "text-primary-foreground/70"
             : "text-muted-foreground",
         )}
       >
-        {isDeleted ? "Повідомлення видалено" : content}
+        {isDoc && !isDeleted && <Paperclip className="h-3 w-3 shrink-0" />}
+        <span className="truncate">
+          {isDeleted ? tombstone : isDoc ? (fileName ?? "Файл") : content}
+        </span>
       </p>
     </button>
   );
