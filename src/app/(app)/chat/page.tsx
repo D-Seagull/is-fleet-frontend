@@ -73,6 +73,7 @@ import {
   MessageReactionsTrigger,
 } from "@/components/message-reactions";
 import { MessageActionsContext } from "@/components/message-actions-menu";
+import { MessageQuote } from "@/components/message-quote";
 import {
   useReactionsSocketSync,
   type MessageReactionRow,
@@ -142,6 +143,12 @@ function ChatPageContent() {
   const [membersSheetOpen, setMembersSheetOpen] = useState(false);
   const [newMemberId, setNewMemberId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [replyingTo, setReplyingTo] = useState<{
+    id: string;
+    senderName: string | null;
+    content: string;
+    isDeleted: boolean;
+  } | null>(null);
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
   const attachInputRef = useRef<HTMLInputElement>(null);
   const [attachUploading, setAttachUploading] = useState(false);
@@ -511,6 +518,7 @@ function ChatPageContent() {
     setSelectedGroupId(null);
     setShowConversations(false);
     setSearchQuery("");
+    setReplyingTo(null);
   };
 
   const handleSelectGroup = (groupId: string) => {
@@ -518,6 +526,18 @@ function ChatPageContent() {
     setSelectedUserId(null);
     setShowConversations(false);
     setSearchQuery("");
+    setReplyingTo(null);
+  };
+
+  /** Scroll the original message into view and briefly highlight it. */
+  const scrollToMessage = (messageId: string) => {
+    const el = document.getElementById(`chat-msg-${messageId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-primary", "rounded-lg");
+    setTimeout(() => {
+      el.classList.remove("ring-2", "ring-primary", "rounded-lg");
+    }, 1500);
   };
 
   const handleSend = (e: React.FormEvent) => {
@@ -527,16 +547,19 @@ function ChatPageContent() {
       getSocket().emit("send_group_message", {
         groupId: selectedGroupId,
         content: newMessage,
+        replyToId: replyingTo?.id ?? null,
       });
     } else if (selectedUserId) {
       getSocket().emit("send_direct_message", {
         receiverId: selectedUserId,
         content: newMessage,
+        replyToId: replyingTo?.id ?? null,
       });
     } else {
       return;
     }
     setNewMessage("");
+    setReplyingTo(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1164,6 +1187,14 @@ function ChatPageContent() {
                               actions={{
                                 onCopy: () =>
                                   navigator.clipboard.writeText(msg.content),
+                                onReply: () =>
+                                  setReplyingTo({
+                                    id: msg.id,
+                                    senderName:
+                                      msg.sender?.name ?? null,
+                                    content: msg.content,
+                                    isDeleted: !!msg.deletedAt,
+                                  }),
                                 onDelete: isOwn
                                   ? () => {
                                       if (selectedGroupId)
@@ -1176,8 +1207,9 @@ function ChatPageContent() {
                               isDeleted={!!msg.deletedAt}
                             >
                               <div
+                                id={`chat-msg-${msg.id}`}
                                 className={cn(
-                                  "rounded-lg max-w-full",
+                                  "rounded-lg max-w-full transition-shadow",
                                   msg.deletedAt
                                     ? "bg-muted/40 text-muted-foreground italic px-3 py-1"
                                     : cn(
@@ -1188,6 +1220,17 @@ function ChatPageContent() {
                                       ),
                                 )}
                               >
+                                {msg.replyTo && (
+                                  <MessageQuote
+                                    senderName={msg.replyTo.sender.name}
+                                    content={msg.replyTo.content}
+                                    isDeleted={!!msg.replyTo.deletedAt}
+                                    onClick={() =>
+                                      scrollToMessage(msg.replyTo!.id)
+                                    }
+                                    variant={isOwn ? "onPrimary" : "default"}
+                                  />
+                                )}
                                 <p
                                   className={cn(
                                     msg.deletedAt
@@ -1456,9 +1499,40 @@ function ChatPageContent() {
               </div>
             )}
 
+            {replyingTo && (
+              <div className="px-4 pt-2 shrink-0 border-t flex items-start gap-2">
+                <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
+                  <p className="text-[11px] font-semibold text-primary leading-tight">
+                    Reply to {replyingTo.senderName ?? "Unknown"}
+                  </p>
+                  <p
+                    className={cn(
+                      "text-[11px] text-muted-foreground leading-tight truncate",
+                      replyingTo.isDeleted && "italic",
+                    )}
+                  >
+                    {replyingTo.isDeleted
+                      ? "Повідомлення видалено"
+                      : replyingTo.content}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  title="Cancel reply"
+                  className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
             <form
               onSubmit={handleSend}
-              className="p-4 border-t shrink-0 flex gap-2"
+              className={cn(
+                "p-4 shrink-0 flex gap-2",
+                !replyingTo && "border-t",
+              )}
             >
               <Button
                 type="button"

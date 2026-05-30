@@ -1,6 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
+export interface MessageReplyPreview {
+  id: string;
+  content: string;
+  deletedAt: string | null;
+  sender: { id: string; name: string | null };
+}
+
 export interface DirectMessage {
   id: string;
   senderId: string;
@@ -9,6 +16,8 @@ export interface DirectMessage {
   isRead: boolean;
   createdAt: string;
   deletedAt?: string | null;
+  replyToId?: string | null;
+  replyTo?: MessageReplyPreview | null;
   sender: {
     id: string;
     name: string | null;

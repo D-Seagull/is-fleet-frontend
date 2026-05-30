@@ -70,6 +70,13 @@ export interface Trip {
   documents: TripDocument[];
 }
 
+export interface TripMessageReplyPreview {
+  id: string;
+  content: string;
+  deletedAt: string | null;
+  sender: { id: string; name: string | null };
+}
+
 export interface TripMessage {
   id: string;
   tripId: string;
@@ -80,6 +87,8 @@ export interface TripMessage {
   isSystem?: boolean;
   createdAt: string;
   deletedAt?: string | null;
+  replyToId?: string | null;
+  replyTo?: TripMessageReplyPreview | null;
   sender: { id: string; name: string | null; role: string };
   // Session participants — used by the realtime layer to drop messages
   // belonging to a session the current user wasn't part of.

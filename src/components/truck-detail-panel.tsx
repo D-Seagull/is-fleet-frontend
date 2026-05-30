@@ -135,6 +135,7 @@ import { notFound, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageReactionsTrigger } from "@/components/message-reactions";
 import { MessageActionsContext } from "@/components/message-actions-menu";
+import { MessageQuote } from "@/components/message-quote";
 import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -1123,6 +1124,22 @@ function TripChat({
   const deleteMessage = useDeleteMessage(trip.id);
   const deleteDocument = useDeleteDocument(truckId);
   const [text, setText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<{
+    id: string;
+    senderName: string | null;
+    content: string;
+    isDeleted: boolean;
+  } | null>(null);
+
+  const scrollToTripMessage = (messageId: string) => {
+    const el = document.getElementById(`trip-msg-${messageId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-primary", "rounded-lg");
+    setTimeout(() => {
+      el.classList.remove("ring-2", "ring-primary", "rounded-lg");
+    }, 1500);
+  };
   const [showEmoji, setShowEmoji] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState<{ id: string; signedUrl: string } | null>(null);
@@ -1419,9 +1436,11 @@ function TripChat({
     getSocket().emit("sendMessage", {
       tripId: trip.id,
       content: text.trim(),
+      replyToId: replyingTo?.id ?? null,
     });
     notifyStopTyping();
     setText("");
+    setReplyingTo(null);
   }
 
   function onEmojiClick(data: EmojiClickData) {
@@ -1584,10 +1603,17 @@ function TripChat({
                 .toUpperCase();
               const actions = {
                 onCopy: () => navigator.clipboard.writeText(msg.content),
+                onReply: () =>
+                  setReplyingTo({
+                    id: msg.id,
+                    senderName: msg.sender?.name ?? null,
+                    content: msg.content,
+                    isDeleted: !!msg.deletedAt,
+                  }),
                 onDelete: isMine
                   ? () => deleteMessage.mutate(msg.id)
                   : undefined,
-                // Reply / Edit — TODO in later phases
+                // Edit — TODO in later phase
               };
               return (
                 <div
@@ -1639,15 +1665,27 @@ function TripChat({
                       </button>
                     )}
                     <MessageActionsContext actions={actions} isOwn={isMine} isDeleted={isDeleted}>
-                      <div className={cn(
-                        "rounded-2xl max-w-full",
-                        isDeleted
-                          ? "bg-muted/40 text-muted-foreground italic text-xs px-3 py-1 whitespace-nowrap"
-                          : cn(
-                              "px-3 py-2 text-sm whitespace-pre-wrap break-all",
-                              isMine ? "bg-primary text-primary-foreground" : "bg-muted",
-                            ),
-                      )}>
+                      <div
+                        id={`trip-msg-${msg.id}`}
+                        className={cn(
+                          "rounded-2xl max-w-full transition-shadow",
+                          isDeleted
+                            ? "bg-muted/40 text-muted-foreground italic text-xs px-3 py-1 whitespace-nowrap"
+                            : cn(
+                                "px-3 py-2 text-sm whitespace-pre-wrap break-all",
+                                isMine ? "bg-primary text-primary-foreground" : "bg-muted",
+                              ),
+                        )}
+                      >
+                        {!isDeleted && msg.replyTo && (
+                          <MessageQuote
+                            senderName={msg.replyTo.sender.name}
+                            content={msg.replyTo.content}
+                            isDeleted={!!msg.replyTo.deletedAt}
+                            onClick={() => scrollToTripMessage(msg.replyTo!.id)}
+                            variant={isMine ? "onPrimary" : "default"}
+                          />
+                        )}
                         {isDeleted ? (
                           "Повідомлення видалено"
                         ) : (
@@ -1851,6 +1889,34 @@ function TripChat({
                   width={300}
                   height={380}
                 />
+              </div>
+            )}
+
+            {replyingTo && (
+              <div className="mb-2 flex items-start gap-2">
+                <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
+                  <p className="text-[11px] font-semibold text-primary leading-tight">
+                    Reply to {replyingTo.senderName ?? "Unknown"}
+                  </p>
+                  <p
+                    className={cn(
+                      "text-[11px] text-muted-foreground leading-tight truncate",
+                      replyingTo.isDeleted && "italic",
+                    )}
+                  >
+                    {replyingTo.isDeleted
+                      ? "Повідомлення видалено"
+                      : replyingTo.content}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  title="Cancel reply"
+                  className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </div>
             )}
 

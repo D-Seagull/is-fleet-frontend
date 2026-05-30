@@ -19,6 +19,13 @@ export interface ManagerGroup {
   managers: GroupManager[];
 }
 
+export interface GroupMessageReplyPreview {
+  id: string;
+  content: string;
+  deletedAt: string | null;
+  sender: { id: string; name: string | null };
+}
+
 export interface GroupMessage {
   id: string;
   groupId: string;
@@ -26,6 +33,8 @@ export interface GroupMessage {
   content: string;
   createdAt: string;
   deletedAt?: string | null;
+  replyToId?: string | null;
+  replyTo?: GroupMessageReplyPreview | null;
   sender: {
     id: string;
     name: string | null;
