@@ -39,28 +39,71 @@ export function useToggleReaction(type: ReactionTargetType) {
       messageId: string;
       emoji: string;
     }) => {
+      const t0 = Date.now();
       const res = await api.post(
         `${REACT_ENDPOINT[type]}/${messageId}/react`,
         { emoji },
       );
+      const dt = Date.now() - t0;
+      // eslint-disable-next-line no-console
+      console.log(
+        `[reactions web] toggle ${type} ${messageId} POST round-trip=${dt}ms`,
+      );
       return res.data as MessageReactionRow[];
     },
-    onSuccess: () => {
-      // Force refetch of any open message lists or document lists so the
-      // UI reflects the toggle instantly (without waiting for the socket
-      // round-trip).
-      void queryClient.invalidateQueries({
-        predicate: (q) => {
-          const key = q.queryKey[0];
-          return (
-            key === "messages" ||
-            key === "group-messages" ||
-            key === "trip-messages" ||
-            key === "conversation-documents" ||
-            key === "group-documents" ||
-            key === "documents-trip"
-          );
-        },
+    // Optimistic patch — bubble flips IMMEDIATELY without waiting for the
+    // ~400-800ms POST round-trip (Supabase pgbouncer + EU-west-1 latency).
+    // The WS `reaction_changed` echo arrives ~500ms later and reconciles
+    // the cache to the authoritative server state.
+    //
+    // We intentionally do NOT invalidateQueries on success — that would
+    // trigger a full refetch of every open chat (+1s wasted). The WS
+    // event already keeps everyone in sync.
+    onMutate: ({ messageId, emoji }) => {
+      const patch = <
+        T extends { id: string; reactions?: MessageReactionRow[] },
+      >(
+        prev: T[] = [],
+      ) =>
+        prev.map((row) => {
+          if (row.id !== messageId) return row;
+          const reactions = [...(row.reactions ?? [])];
+          // Same-emoji entry assumed to be mine → toggle off. Otherwise
+          // append an optimistic row. Drift gets corrected by the WS echo.
+          const myIdx = reactions.findIndex((r) => r.emoji === emoji);
+          if (myIdx >= 0) {
+            reactions.splice(myIdx, 1);
+          } else {
+            reactions.push({
+              id: `optimistic-${Date.now()}`,
+              userId: "me",
+              emoji,
+            });
+          }
+          return { ...row, reactions };
+        });
+
+      const caches: string[] = (() => {
+        switch (type) {
+          case "DM":
+            return ["messages"];
+          case "GROUP":
+            return ["group-messages"];
+          case "TRIP":
+            return ["trip-messages"];
+          case "DM_DOC":
+            return ["conversation-documents"];
+          case "GROUP_DOC":
+            return ["group-documents"];
+          case "TRIP_DOC":
+            return ["documents-trip"];
+        }
+      })();
+      caches.forEach((key) => {
+        queryClient
+          .getQueryCache()
+          .findAll({ predicate: (q) => q.queryKey[0] === key })
+          .forEach((q) => queryClient.setQueryData(q.queryKey, patch));
       });
     },
   });
