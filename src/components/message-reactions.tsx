@@ -161,6 +161,64 @@ export function MessageReactionsTrigger({
 }
 
 /**
+ * Inline cluster shown next to a chat bubble. Always renders the user's
+ * Trigger (their own reaction or an idle 👍 outline) and — if anyone else
+ * reacted — their emojis as plain glyphs alongside it, without any chip
+ * background. Counts appear only when an emoji has more than one user.
+ *
+ * Matches the mobile MessageReactionsCluster — same shape on both sides.
+ */
+export function MessageReactionsCluster({
+  messageId,
+  type,
+  reactions,
+  currentUserId,
+}: CommonProps) {
+  const toggle = useToggleReaction(type);
+
+  // Group others' reactions (everyone except me) by emoji.
+  const others = new Map<string, number>();
+  for (const r of reactions) {
+    if (r.userId === currentUserId) continue;
+    others.set(r.emoji, (others.get(r.emoji) ?? 0) + 1);
+  }
+
+  return (
+    <div className="inline-flex items-center gap-0.5 shrink-0">
+      <MessageReactionsTrigger
+        messageId={messageId}
+        type={type}
+        reactions={reactions}
+        currentUserId={currentUserId}
+      />
+      {[...others.entries()].map(([emoji, count]) => (
+        <button
+          key={emoji}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle.mutate({ messageId, emoji });
+          }}
+          className={cn(
+            // Plain glyph — no background, no border. Slightly dimmed so
+            // the user's own active emoji (in the Trigger) reads brighter.
+            "inline-flex items-center gap-0.5 px-1 text-sm leading-none",
+            "text-muted-foreground hover:text-foreground transition-colors",
+          )}
+          title={`React ${emoji}`}
+        >
+          <span className="opacity-80">{emoji}</span>
+          {count > 1 && (
+            <span className="text-[10px] font-semibold">{count}</span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
  * Persistent pills under a bubble, one per distinct emoji, showing the
  * count. Your own reaction is highlighted. Click toggles the same way.
  */
@@ -200,12 +258,19 @@ export function MessageReactionsBar({
               toggle.mutate({ messageId, emoji });
             }}
             className={cn(
-              "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] leading-none hover:bg-muted transition-colors",
-              isMine && "bg-primary/10 border-primary text-primary",
+              // No border — keeps the row clean and matches the mobile
+              // reactions bar. Mine gets a subtle primary wash so the
+              // user can tell their own reaction at a glance.
+              "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] leading-none transition-colors",
+              isMine
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:bg-muted/60",
             )}
           >
-            <span>{emoji}</span>
-            <span className="font-medium">{list.length}</span>
+            <span className={cn(!isMine && "opacity-80")}>{emoji}</span>
+            {list.length > 1 && (
+              <span className="font-medium">{list.length}</span>
+            )}
           </button>
         );
       })}

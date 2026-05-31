@@ -72,10 +72,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageAttachmentsSheet } from "@/components/message-attachments-sheet";
-import {
-  MessageReactionsBar,
-  MessageReactionsTrigger,
-} from "@/components/message-reactions";
+import { MessageReactionsCluster } from "@/components/message-reactions";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
 import {
@@ -1257,14 +1254,15 @@ function ChatPageContent() {
                             isOwn ? "justify-end" : "justify-start",
                           )}
                         >
-                          {/* Own → trigger on the LEFT (no avatar) */}
+                          {/* Sidekick (own→LEFT). Trigger (mine / idle)
+                              + other participant's reactions as plain
+                              glyphs next to it. */}
                           {isOwn && !msg.deletedAt && (
-                            <MessageReactionsTrigger
+                            <MessageReactionsCluster
                               messageId={msg.id}
                               type={selectedGroupId ? "GROUP" : "DM"}
                               reactions={msg.reactions ?? []}
                               currentUserId={user?.id}
-                              hideWhenReacted={!!selectedGroupId}
                             />
                           )}
                           {showSenderAvatar &&
@@ -1423,25 +1421,17 @@ function ChatPageContent() {
                                   </span>
                                 )}
                               </span>
-                              {selectedGroupId && !msg.deletedAt && (
-                                <MessageReactionsBar
-                                  messageId={msg.id}
-                                  type="GROUP"
-                                  reactions={msg.reactions ?? []}
-                                  isOwn={isOwn}
-                                  currentUserId={user?.id}
-                                />
-                              )}
+                              {/* Bar moved to bubble's sidekick (above) so
+                                  reactions stay inline with the bubble. */}
                             </div>
                           </div>
-                          {/* Other party → trigger on the RIGHT */}
+                          {/* Sidekick (other→RIGHT). */}
                           {!isOwn && !msg.deletedAt && (
-                            <MessageReactionsTrigger
+                            <MessageReactionsCluster
                               messageId={msg.id}
                               type={selectedGroupId ? "GROUP" : "DM"}
                               reactions={msg.reactions ?? []}
                               currentUserId={user?.id}
-                              hideWhenReacted={!!selectedGroupId}
                             />
                           )}
                         </div>
@@ -1480,8 +1470,9 @@ function ChatPageContent() {
                           isOwn ? "justify-end" : "justify-start",
                         )}
                       >
+                        {/* Sidekick (own→LEFT) — cluster style. */}
                         {isOwn && !isDeleted && (
-                          <MessageReactionsTrigger
+                          <MessageReactionsCluster
                             messageId={doc.id}
                             type={selectedGroupId ? "GROUP_DOC" : "DM_DOC"}
                             reactions={
@@ -1489,7 +1480,6 @@ function ChatPageContent() {
                                 .reactions ?? []
                             }
                             currentUserId={user?.id}
-                            hideWhenReacted={!!selectedGroupId}
                           />
                         )}
                         {!isOwn &&
@@ -1699,22 +1689,12 @@ function ChatPageContent() {
                                 </span>
                               )}
                             </span>
-                            {selectedGroupId && !isDeleted && (
-                              <MessageReactionsBar
-                                messageId={doc.id}
-                                type="GROUP_DOC"
-                                reactions={
-                                  (doc as { reactions?: MessageReactionRow[] })
-                                    .reactions ?? []
-                                }
-                                isOwn={isOwn}
-                                currentUserId={user?.id}
-                              />
-                            )}
+                            {/* Bar moved to bubble's sidekick (above). */}
                           </div>
                         </div>
+                        {/* Sidekick (other→RIGHT) — cluster style. */}
                         {!isOwn && !isDeleted && (
-                          <MessageReactionsTrigger
+                          <MessageReactionsCluster
                             messageId={doc.id}
                             type={selectedGroupId ? "GROUP_DOC" : "DM_DOC"}
                             reactions={
@@ -1722,7 +1702,6 @@ function ChatPageContent() {
                                 .reactions ?? []
                             }
                             currentUserId={user?.id}
-                            hideWhenReacted={!!selectedGroupId}
                           />
                         )}
                       </div>

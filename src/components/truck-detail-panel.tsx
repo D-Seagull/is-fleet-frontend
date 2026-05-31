@@ -134,7 +134,7 @@ import {
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { notFound, useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageReactionsTrigger } from "@/components/message-reactions";
+import { MessageReactionsCluster } from "@/components/message-reactions";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
 import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
@@ -1795,8 +1795,9 @@ function TripChat({
                     isMine && "self-end",
                   )}
                 >
+                  {/* Sidekick — Trigger (mine / idle) + others inline. */}
                   {isMine && !isDeleted && (
-                    <MessageReactionsTrigger
+                    <MessageReactionsCluster
                       messageId={msg.id}
                       type="TRIP"
                       reactions={msg.reactions ?? []}
@@ -1903,8 +1904,9 @@ function TripChat({
                       )}
                     </span>
                   </div>
+                  {/* Sidekick (other side). */}
                   {!isMine && !isDeleted && (
-                    <MessageReactionsTrigger
+                    <MessageReactionsCluster
                       messageId={msg.id}
                       type="TRIP"
                       reactions={msg.reactions ?? []}
@@ -1946,8 +1948,10 @@ function TripChat({
                   isMine ? "self-end" : "self-start flex-row-reverse",
                 )}
               >
+                {/* Doc sidekick — cluster style. flex-row-reverse on
+                    `other` keeps the cluster on the visual right. */}
                 {!isDeletedDoc && (
-                  <MessageReactionsTrigger
+                  <MessageReactionsCluster
                     messageId={doc.id}
                     type="TRIP_DOC"
                     reactions={doc.reactions ?? []}
