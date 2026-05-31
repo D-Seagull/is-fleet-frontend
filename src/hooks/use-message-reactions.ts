@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { api } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
+import { useAuthStore } from "@/store/auth";
 
 export type ReactionTargetType =
   | "DM"
@@ -31,6 +32,7 @@ const REACT_ENDPOINT: Record<ReactionTargetType, string> = {
 
 export function useToggleReaction(type: ReactionTargetType) {
   const queryClient = useQueryClient();
+  const myId = useAuthStore((s) => s.user?.id);
   return useMutation({
     mutationFn: async ({
       messageId,
@@ -60,6 +62,10 @@ export function useToggleReaction(type: ReactionTargetType) {
     // trigger a full refetch of every open chat (+1s wasted). The WS
     // event already keeps everyone in sync.
     onMutate: ({ messageId, emoji }) => {
+      // Without a known userId we can't safely write an optimistic row —
+      // the row would land in "others" instead of replacing the user's
+      // own reaction. Skip the patch and let the WS echo populate state.
+      if (!myId) return;
       const patch = <
         T extends { id: string; reactions?: MessageReactionRow[] },
       >(
@@ -68,15 +74,21 @@ export function useToggleReaction(type: ReactionTargetType) {
         prev.map((row) => {
           if (row.id !== messageId) return row;
           const reactions = [...(row.reactions ?? [])];
-          // Same-emoji entry assumed to be mine → toggle off. Otherwise
-          // append an optimistic row. Drift gets corrected by the WS echo.
-          const myIdx = reactions.findIndex((r) => r.emoji === emoji);
+          // Find MY existing reaction (if any). Three cases:
+          //   - I already had this exact emoji → remove (toggle off)
+          //   - I had a different emoji → replace its emoji
+          //   - I had nothing → append a row tagged with my id
+          const myIdx = reactions.findIndex((r) => r.userId === myId);
           if (myIdx >= 0) {
-            reactions.splice(myIdx, 1);
+            if (reactions[myIdx].emoji === emoji) {
+              reactions.splice(myIdx, 1);
+            } else {
+              reactions[myIdx] = { ...reactions[myIdx], emoji };
+            }
           } else {
             reactions.push({
               id: `optimistic-${Date.now()}`,
-              userId: "me",
+              userId: myId,
               emoji,
             });
           }
