@@ -54,7 +54,8 @@ export default function ManagersPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
-  const [newName, setNewName] = useState("");
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
   const [createError, setCreateError] = useState("");
 
   const { data: managers, isLoading } = useManagers();
@@ -106,9 +107,12 @@ export default function ManagersPage() {
     e.preventDefault();
     setCreateError("");
     try {
-      const parts = (newName ?? "").trim().split(/\s+/).filter(Boolean);
-      const firstName = parts.shift() ?? "";
-      const lastName = parts.length > 0 ? parts.join(" ") : null;
+      const firstName = newFirstName.trim();
+      const lastName = newLastName.trim() || null;
+      if (!firstName) {
+        setCreateError("Ім'я обов'язкове");
+        return;
+      }
       await createManager.mutateAsync({
         email: newEmail,
         phone: newPhone,
@@ -118,7 +122,8 @@ export default function ManagersPage() {
       setDialogOpen(false);
       setNewEmail("");
       setNewPhone("");
-      setNewName("");
+      setNewFirstName("");
+      setNewLastName("");
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string | string[] } } };
       const msg = e.response?.data?.message;
@@ -145,13 +150,24 @@ export default function ManagersPage() {
             </DialogHeader>
             <form onSubmit={handleCreate} className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="name">Ім&apos;я (необов&apos;язково)</Label>
+                <Label htmlFor="firstName">Ім&apos;я</Label>
                 <Input
-                  id="name"
+                  id="firstName"
                   type="text"
-                  placeholder="Іван Петренко"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Іван"
+                  value={newFirstName}
+                  onChange={(e) => setNewFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="lastName">Прізвище (необов&apos;язково)</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Петренко"
+                  value={newLastName}
+                  onChange={(e) => setNewLastName(e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-2">

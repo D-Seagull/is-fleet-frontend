@@ -3012,7 +3012,7 @@ export function TruckDetailPanel({
     if (occupiedTruck && occupiedTruck.id !== truckId) {
       setPendingDriver({
         driverId: newDriverId,
-        driverName: fullName(selectedDriver) || selectedDriver?.email ?? "Driver",
+        driverName: fullName(selectedDriver) || selectedDriver?.email || "Driver",
         fromTruck: { id: occupiedTruck.id, plate: occupiedTruck.plate },
       });
       return;
