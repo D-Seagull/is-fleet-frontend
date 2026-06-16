@@ -137,7 +137,7 @@ function UnreadBell() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium text-sm truncate">
-                      {fullName(conv.user) ?? conv.user.role}
+                      {fullName(conv.user) || conv.user.role}
                     </span>
                     <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">
                       {conv.unreadCount}

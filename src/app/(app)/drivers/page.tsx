@@ -301,7 +301,7 @@ export default function DriversPage() {
                             </AvatarFallback>
                           </Avatar>
                           <Link href={`/drivers/${driver.id}`} className="font-medium hover:underline">
-                            {fullName(driver) ?? "—"}
+                            {fullName(driver) || "—"}
                           </Link>
                           <Button
                             variant="ghost"
@@ -315,7 +315,7 @@ export default function DriversPage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{driver.phone ?? "—"}</TableCell>
                       <TableCell className="hidden md:table-cell text-sm">{languageLabels[driver.language]}</TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{fullName(driver.manager) ?? "—"}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{fullName(driver.manager) || "—"}</TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()} className="text-sm">
                         {driver.currentTruck ? (
                           <Link href={`/trucks/${driver.currentTruck.id}`} className="hover:underline">
@@ -380,7 +380,7 @@ export default function DriversPage() {
                     deactivatedDrivers.map((driver) => (
                       <TableRow key={driver.id}>
                         <TableCell className="font-medium text-muted-foreground">
-                          {fullName(driver) ?? "—"}
+                          {fullName(driver) || "—"}
                         </TableCell>
                         <TableCell className="text-muted-foreground">{driver.phone ?? "—"}</TableCell>
                         <TableCell>

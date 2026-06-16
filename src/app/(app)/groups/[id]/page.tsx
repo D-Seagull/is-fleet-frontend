@@ -211,7 +211,7 @@ export default function GroupPage() {
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm">
-                      {fullName(d.manager) ?? "No name"}
+                      {fullName(d.manager) || "No name"}
                     </span>
                   </button>
                   <div className="flex items-center gap-1">
@@ -281,7 +281,7 @@ export default function GroupPage() {
                                 {d.email.slice(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <span>{fullName(d) ?? d.email}</span>
+                            <span>{fullName(d) || d.email}</span>
                           </button>
                         ))
                       )}
@@ -356,7 +356,7 @@ export default function GroupPage() {
                         router.push(`/chat?userId=${msg.senderId}`)
                       }
                     >
-                      {fullName(msg.sender) ?? msg.sender.role}
+                      {fullName(msg.sender) || msg.sender.role}
                     </button>
                   )}
                   <p className="text-sm">{msg.content}</p>

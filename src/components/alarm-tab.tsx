@@ -176,7 +176,7 @@ export function AlarmTab({
               <SelectContent>
                 <SelectItem value="self">Собі</SelectItem>
                 <SelectItem value="driver" disabled={!truck.currentDriver}>
-                  {fullName(truck.currentDriver) ?? "Водію (немає)"}
+                  {fullName(truck.currentDriver) || "Водію (немає)"}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -233,7 +233,7 @@ export function AlarmTab({
           {target === "driver" && truck.currentDriver && (
             <div className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-300/40 rounded px-2 py-1">
               ⏱ Час буде по часовій зоні водія{" "}
-              <strong>{fullName(truck.currentDriver) ?? "—"}</strong>. Тобто &laquo;
+              <strong>{fullName(truck.currentDriver) || "—"}</strong>. Тобто &laquo;
               {time.slice(11)}&raquo; означає {time.slice(11)} на його
               годиннику.
             </div>

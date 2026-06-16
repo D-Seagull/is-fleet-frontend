@@ -151,7 +151,7 @@ export default function TrucksPage() {
                     <SelectItem value="none">No driver</SelectItem>
                     {(drivers ?? []).map((driver) => (
                       <SelectItem key={driver.id} value={driver.id}>
-                        {fullName(driver) ?? driver.email}
+                        {fullName(driver) || driver.email}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -393,7 +393,7 @@ export default function TrucksPage() {
                           {truck.plate}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {fullName(truck.currentDriver) ?? "—"}
+                          {fullName(truck.currentDriver) || "—"}
                         </TableCell>
                         <TableCell>
                           <Button

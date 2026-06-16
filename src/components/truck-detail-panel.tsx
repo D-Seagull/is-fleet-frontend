@@ -452,7 +452,7 @@ export function NewTripDialog({
               <SelectContent>
                 {(drivers ?? []).map((d) => (
                   <SelectItem key={d.id} value={d.id}>
-                    {fullName(d) ?? d.email}
+                    {fullName(d) || d.email}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -1385,7 +1385,7 @@ function TripChat({
       if (payload.user.id === currentUserIdRef.current) return;
       setTypers((prev) => {
         const next = new Map(prev);
-        next.set(payload.user.id, fullName(payload.user) ?? "Someone");
+        next.set(payload.user.id, fullName(payload.user) || "Someone");
         return next;
       });
       // Reset auto-clear timeout
@@ -1759,7 +1759,7 @@ function TripChat({
 
               const isMine = msg.senderId === currentUserId;
               const isDeleted = !!msg.deletedAt;
-              const senderInitials = (fullName(msg.sender) ?? "??")
+              const senderInitials = (fullName(msg.sender) || "??")
                 .slice(0, 2)
                 .toUpperCase();
               const canEdit =
@@ -1774,7 +1774,7 @@ function TripChat({
                   setReplyingTo({
                     id: msg.id,
                     targetType: "msg",
-                    senderName: fullName(msg.sender) ?? null,
+                    senderName: fullName(msg.sender) || null,
                     content: msg.content,
                     isDeleted: !!msg.deletedAt,
                   }),
@@ -1814,7 +1814,7 @@ function TripChat({
                         router.push(`/chat?userId=${msg.senderId}`)
                       }
                       className="shrink-0"
-                      title={`Message ${fullName(msg.sender) ?? "user"}`}
+                      title={`Message ${fullName(msg.sender) || "user"}`}
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="text-xs bg-primary/10 text-primary">
@@ -1837,7 +1837,7 @@ function TripChat({
                         }
                         className="text-xs text-muted-foreground px-1 hover:underline cursor-pointer text-left"
                       >
-                        {fullName(msg.sender) ?? "Unknown"}
+                        {fullName(msg.sender) || "Unknown"}
                       </button>
                     )}
                     <MessageActionsContext actions={actions} isOwn={isMine} isDeleted={isDeleted}>
@@ -1933,7 +1933,7 @@ function TripChat({
                 setReplyingTo({
                   id: doc.id,
                   targetType: "doc" as const,
-                  senderName: fullName(doc.uploader) ?? null,
+                  senderName: fullName(doc.uploader) || null,
                   content: doc.fileName,
                   isDeleted: isDeletedDoc,
                 }),
@@ -1970,7 +1970,7 @@ function TripChat({
                 )}
               >
                 <span className="text-xs text-muted-foreground px-1">
-                  {fullName(doc.uploader) ?? "Unknown"}
+                  {fullName(doc.uploader) || "Unknown"}
                 </span>
                 <MessageActionsContext
                   actions={docActions}
@@ -2359,7 +2359,7 @@ function TripCombobox({
               {trips.map((t) => (
                 <CommandItem
                   key={t.id}
-                  value={`${t.title} ${t.orderNumber ?? ""} ${fullName(t.driver) ?? ""}`}
+                  value={`${t.title} ${t.orderNumber ?? ""} ${fullName(t.driver) || ""}`}
                   onSelect={() => {
                     onChange(t.id);
                     setOpen(false);
@@ -2789,7 +2789,7 @@ function DocumentsTab({ truckId }: { truckId: string }) {
                       {doc.trip?.orderNumber ? `#${doc.trip.orderNumber}` : "—"}
                     </TableCell>
                     <TableCell className="px-2 py-1.5 text-muted-foreground hidden md:table-cell">
-                      {fullName(doc.uploader) ?? "—"}
+                      {fullName(doc.uploader) || "—"}
                     </TableCell>
                     <TableCell className="px-2 py-1.5">
                       <div className="flex items-center gap-0.5 justify-end">
@@ -2840,7 +2840,7 @@ function TripsTab({
     return (
       t.title.toLowerCase().includes(q) ||
       (t.orderNumber ?? "").toLowerCase().includes(q) ||
-      (fullName(t.driver) ?? "").toLowerCase().includes(q)
+      (fullName(t.driver) || "").toLowerCase().includes(q)
     );
   });
 
@@ -3012,7 +3012,7 @@ export function TruckDetailPanel({
     if (occupiedTruck && occupiedTruck.id !== truckId) {
       setPendingDriver({
         driverId: newDriverId,
-        driverName: fullName(selectedDriver) ?? selectedDriver?.email ?? "Driver",
+        driverName: fullName(selectedDriver) || selectedDriver?.email ?? "Driver",
         fromTruck: { id: occupiedTruck.id, plate: occupiedTruck.plate },
       });
       return;
@@ -3182,7 +3182,7 @@ export function TruckDetailPanel({
                     <SelectItem value="none">No driver</SelectItem>
                     {(drivers ?? []).map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        {fullName(d) ?? d.email}
+                        {fullName(d) || d.email}
                         {d.currentTruck && d.currentTruck.id !== truckId && (
                           <span className="ml-1.5 text-muted-foreground">
                             · {d.currentTruck.plate}
@@ -3258,7 +3258,7 @@ export function TruckDetailPanel({
                     <SelectItem value="none">No manager</SelectItem>
                     {(assignableManagers ?? []).map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        {fullName(d) ?? d.email}
+                        {fullName(d) || d.email}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -3312,7 +3312,7 @@ export function TruckDetailPanel({
                     <div className="flex flex-col gap-0.5 flex-1">
                       <p className="text-sm">{note.content}</p>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <span>{fullName(note.user) ?? "Unknown"}</span>
+                        <span>{fullName(note.user) || "Unknown"}</span>
                         <span>·</span>
                         <span>
                           {new Date(note.createdAt).toLocaleString([], {

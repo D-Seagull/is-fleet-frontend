@@ -122,8 +122,8 @@ export default function TripsPage() {
       if ((t.orderNumber ?? "").toLowerCase().includes(q)) return true;
       if (t.title.toLowerCase().includes(q)) return true;
       if ((t.truck.plate ?? "").toLowerCase().includes(q)) return true;
-      if ((fullName(t.driver) ?? "").toLowerCase().includes(q)) return true;
-      if ((fullName(t.manager) ?? "").toLowerCase().includes(q)) return true;
+      if ((fullName(t.driver) || "").toLowerCase().includes(q)) return true;
+      if ((fullName(t.manager) || "").toLowerCase().includes(q)) return true;
       if (t.stops.some((s) => (s.address ?? "").toLowerCase().includes(q)))
         return true;
       return false;
@@ -254,14 +254,14 @@ export default function TripsPage() {
                       {/* Driver */}
                       <TableCell className="hidden md:table-cell py-3">
                         <span className="text-sm">
-                          {fullName(trip.driver) ?? "—"}
+                          {fullName(trip.driver) || "—"}
                         </span>
                       </TableCell>
 
                       {/* Manager */}
                       <TableCell className="hidden lg:table-cell py-3">
                         <span className="text-sm">
-                          {fullName(trip.manager) ?? "—"}
+                          {fullName(trip.manager) || "—"}
                         </span>
                       </TableCell>
 

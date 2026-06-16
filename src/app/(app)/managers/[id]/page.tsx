@@ -97,7 +97,7 @@ export default function ManagerDetailPage({
 
   useEffect(() => {
     if (!manager) return;
-    setName(fullName(manager) ?? "");
+    setName(fullName(manager) || "");
     setPhone(manager.phone ?? "");
     setNameDirty(false);
     setPhoneDirty(false);
@@ -133,7 +133,7 @@ export default function ManagerDetailPage({
         </Button>
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <h1 className="text-2xl font-bold truncate">
-            {fullName(manager) ?? manager.email}
+            {fullName(manager) || manager.email}
           </h1>
           <Badge
             variant="outline"
@@ -237,7 +237,7 @@ export default function ManagerDetailPage({
                       value={name}
                       onChange={(e) => {
                         setName(e.target.value);
-                        setNameDirty(e.target.value !== (fullName(manager) ?? ""));
+                        setNameDirty(e.target.value !== (fullName(manager) || ""));
                       }}
                       placeholder="Name"
                       className="text-xl font-semibold h-9"
@@ -268,7 +268,7 @@ export default function ManagerDetailPage({
                           variant="ghost"
                           className="h-8 w-8 shrink-0"
                           onClick={() => {
-                            setName(fullName(manager) ?? "");
+                            setName(fullName(manager) || "");
                             setNameDirty(false);
                           }}
                         >
@@ -447,7 +447,7 @@ export default function ManagerDetailPage({
                   <div className="flex-1 min-w-0">
                     <div className="font-medium">{t.plate}</div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {fullName(t.currentDriver) ?? "no driver"} · {t.status}
+                      {fullName(t.currentDriver) || "no driver"} · {t.status}
                     </div>
                   </div>
                 </Link>
@@ -471,12 +471,12 @@ export default function ManagerDetailPage({
                   <Avatar className="h-9 w-9 shrink-0">
                     <AvatarImage src={d.avatar ?? undefined} />
                     <AvatarFallback className="text-xs">
-                      {(fullName(d) ?? "??").slice(0, 2).toUpperCase()}
+                      {(fullName(d) || "??").slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">
-                      {fullName(d) ?? "—"}
+                      {fullName(d) || "—"}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
                       {d.phone ?? "—"}
@@ -540,7 +540,7 @@ export default function ManagerDetailPage({
                             ))}
                           </div>
                           <span className="text-sm font-medium">
-                            {fullName(r.ratedBy) ?? "Unknown"}
+                            {fullName(r.ratedBy) || "Unknown"}
                           </span>
                           <span className="text-xs text-muted-foreground ml-auto">
                             {new Date(r.createdAt).toLocaleDateString()}

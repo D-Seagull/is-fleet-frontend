@@ -71,7 +71,7 @@ export function ChatArchiveDialog({
           </DialogTitle>
           <DialogDescription>
             {selected
-              ? `${fullName(selected.driver) ?? "Unknown driver"} ↔ ${fullName(selected.manager) ?? "Unknown manager"} · ${fmtDate(selected.startedAt)} – ${selected.endedAt ? fmtDate(selected.endedAt) : "?"}`
+              ? `${fullName(selected.driver) || "Unknown driver"} ↔ ${fullName(selected.manager) || "Unknown manager"} · ${fmtDate(selected.startedAt)} – ${selected.endedAt ? fmtDate(selected.endedAt) : "?"}`
               : "Previous chat sessions for this trip. Read-only."}
           </DialogDescription>
         </DialogHeader>
@@ -102,9 +102,9 @@ export function ChatArchiveDialog({
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-medium text-sm">
-                        {fullName(s.driver) ?? "—"}
+                        {fullName(s.driver) || "—"}
                         <span className="text-muted-foreground"> ↔ </span>
-                        {fullName(s.manager) ?? "—"}
+                        {fullName(s.manager) || "—"}
                       </div>
                       {s.endReason && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
@@ -175,7 +175,7 @@ function ArchivedMessages({
                 {m.content}
               </div>
               <div className="text-[10px] text-muted-foreground mt-0.5">
-                {fullName(m.sender) ?? "—"} · {fmtDate(m.createdAt)}
+                {fullName(m.sender) || "—"} · {fmtDate(m.createdAt)}
               </div>
             </div>
           );

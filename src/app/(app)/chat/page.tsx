@@ -252,12 +252,12 @@ function ChatPageContent() {
   const filteredManagerConvs = !searchQ
     ? managerConvs
     : managerConvs.filter((c) =>
-        (fullName(c.user) ?? "").toLowerCase().includes(searchQ),
+        (fullName(c.user) || "").toLowerCase().includes(searchQ),
       );
   const filteredDriverConvs = !searchQ
     ? driverConvs
     : driverConvs.filter((c) =>
-        (fullName(c.user) ?? "").toLowerCase().includes(searchQ),
+        (fullName(c.user) || "").toLowerCase().includes(searchQ),
       );
 
   // Teams-style search: when the user types a query, also surface company
@@ -313,7 +313,7 @@ function ChatPageContent() {
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{fullName(u) ?? u.role}</p>
+        <p className="font-medium truncate">{fullName(u) || u.role}</p>
         <p className="text-xs text-muted-foreground truncate capitalize">
           {u.role.toLowerCase()}
         </p>
@@ -352,7 +352,7 @@ function ChatPageContent() {
                 hasUnread ? "font-bold" : "font-medium",
               )}
             >
-              {fullName(conv.user) ?? conv.user.role}
+              {fullName(conv.user) || conv.user.role}
             </p>
             {hasUnread && (
               <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
@@ -1105,7 +1105,7 @@ function ChatPageContent() {
                                         />
                                       )}
                                       <span className="truncate">
-                                        {fullName(gm.manager) ?? gm.manager.email}
+                                        {fullName(gm.manager) || gm.manager.email}
                                       </span>
                                       {isSelf && (
                                         <span className="text-xs text-muted-foreground shrink-0">
@@ -1171,7 +1171,7 @@ function ChatPageContent() {
                                   )
                                   .map((m) => (
                                     <option key={m.id} value={m.id}>
-                                      {fullName(m) ?? m.email}
+                                      {fullName(m) || m.email}
                                     </option>
                                   ))}
                               </select>
@@ -1205,7 +1205,7 @@ function ChatPageContent() {
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold truncate">
-                      {fullName(selectedUser) ?? "No name"}
+                      {fullName(selectedUser) || "No name"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {selectedUser.role}
@@ -1314,7 +1314,7 @@ function ChatPageContent() {
                                     id: msg.id,
                                     targetType: "msg",
                                     senderName:
-                                      fullName(msg.sender) ?? null,
+                                      fullName(msg.sender) || null,
                                     content: msg.content,
                                     isDeleted: !!msg.deletedAt,
                                   }),
@@ -1533,7 +1533,7 @@ function ChatPageContent() {
                                 setReplyingTo({
                                   id: doc.id,
                                   targetType: "doc",
-                                  senderName: fullName(doc.uploader) ?? null,
+                                  senderName: fullName(doc.uploader) || null,
                                   content: doc.fileName,
                                   isDeleted,
                                 }),
@@ -1718,7 +1718,7 @@ function ChatPageContent() {
 
             {!selectedGroupId && isTyping && (
               <div className="px-4 py-1 shrink-0 text-xs text-muted-foreground flex items-center gap-1">
-                <span>{fullName(selectedUser) ?? "Someone"} is typing</span>
+                <span>{fullName(selectedUser) || "Someone"} is typing</span>
                 <span className="flex gap-0.5">
                   <span className="animate-bounce delay-0">.</span>
                   <span className="animate-bounce delay-100">.</span>
@@ -1948,7 +1948,7 @@ function ChatPageContent() {
                             });
                           }}
                         />
-                        <span className="text-sm">{fullName(m) ?? m.email}</span>
+                        <span className="text-sm">{fullName(m) || m.email}</span>
                       </label>
                     ))}
                 </div>
@@ -1987,7 +1987,7 @@ function ChatPageContent() {
         title={
           selectedGroupId
             ? (selectedGroup?.name ?? "Group")
-            : (fullName(selectedUser) ?? "Conversation")
+            : (fullName(selectedUser) || "Conversation")
         }
       />
     </div>
