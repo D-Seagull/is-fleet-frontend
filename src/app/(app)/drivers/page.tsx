@@ -65,7 +65,8 @@ function normalizePhoneForCheck(raw: string): string {
 export default function DriversPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [language, setLanguage] = useState<Language>("EN");
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -98,10 +99,11 @@ export default function DriversPage() {
       ? "Enter international format, e.g. +380501234567"
       : null;
   const canSubmit =
-    name.trim().length >= 2 && phoneValid && !createDriver.isPending;
+    firstName.trim().length >= 1 && phoneValid && !createDriver.isPending;
 
   function resetForm() {
-    setName("");
+    setFirstName("");
+    setLastName("");
     setPhone("");
     setLanguage("EN");
     setSubmitError(null);
@@ -116,12 +118,9 @@ export default function DriversPage() {
     if (!canSubmit) return;
     setSubmitError(null);
     try {
-      const parts = name.trim().split(/\s+/);
-      const firstName = parts.shift() ?? "";
-      const lastName = parts.length > 0 ? parts.join(" ") : null;
       await createDriver.mutateAsync({
-        firstName,
-        lastName,
+        firstName: firstName.trim(),
+        lastName: lastName.trim() || null,
         phone: cleanedPhone,
         language,
       });
@@ -157,13 +156,24 @@ export default function DriversPage() {
             </DialogHeader>
             <div className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="d-name">Name</Label>
+                <Label htmlFor="d-firstName">First name</Label>
                 <Input
-                  id="d-name"
-                  placeholder="John Smith"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  id="d-firstName"
+                  placeholder="John"
+                  autoComplete="given-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="d-lastName">Last name (optional)</Label>
+                <Input
+                  id="d-lastName"
+                  placeholder="Smith"
+                  autoComplete="family-name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
