@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { fullName } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -83,9 +84,9 @@ export default function DriversPage() {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
     return (
-      (d.name?.toLowerCase().includes(q) ?? false) ||
+      (fullName(d)?.toLowerCase().includes(q) ?? false) ||
       (d.phone?.includes(searchQuery) ?? false) ||
-      (d.manager?.name?.toLowerCase().includes(q) ?? false) ||
+      (fullName(d.manager)?.toLowerCase().includes(q) ?? false) ||
       (d.currentTruck?.plate.toLowerCase().includes(q) ?? false)
     );
   });
@@ -115,8 +116,12 @@ export default function DriversPage() {
     if (!canSubmit) return;
     setSubmitError(null);
     try {
+      const parts = name.trim().split(/\s+/);
+      const firstName = parts.shift() ?? "";
+      const lastName = parts.length > 0 ? parts.join(" ") : null;
       await createDriver.mutateAsync({
-        name: name.trim(),
+        firstName,
+        lastName,
         phone: cleanedPhone,
         language,
       });
@@ -292,11 +297,11 @@ export default function DriversPage() {
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={driver.avatar ?? undefined} />
                             <AvatarFallback className="text-xs">
-                              {driver.name?.slice(0, 2).toUpperCase() ?? "DR"}
+                              {fullName(driver)?.slice(0, 2).toUpperCase() ?? "DR"}
                             </AvatarFallback>
                           </Avatar>
                           <Link href={`/drivers/${driver.id}`} className="font-medium hover:underline">
-                            {driver.name ?? "—"}
+                            {fullName(driver) ?? "—"}
                           </Link>
                           <Button
                             variant="ghost"
@@ -310,7 +315,7 @@ export default function DriversPage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{driver.phone ?? "—"}</TableCell>
                       <TableCell className="hidden md:table-cell text-sm">{languageLabels[driver.language]}</TableCell>
-                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{driver.manager?.name ?? "—"}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{fullName(driver.manager) ?? "—"}</TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()} className="text-sm">
                         {driver.currentTruck ? (
                           <Link href={`/trucks/${driver.currentTruck.id}`} className="hover:underline">
@@ -375,7 +380,7 @@ export default function DriversPage() {
                     deactivatedDrivers.map((driver) => (
                       <TableRow key={driver.id}>
                         <TableCell className="font-medium text-muted-foreground">
-                          {driver.name ?? "—"}
+                          {fullName(driver) ?? "—"}
                         </TableCell>
                         <TableCell className="text-muted-foreground">{driver.phone ?? "—"}</TableCell>
                         <TableCell>

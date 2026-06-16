@@ -5,7 +5,7 @@ export interface MessageReplyPreview {
   id: string;
   content: string;
   deletedAt: string | null;
-  sender: { id: string; name: string | null };
+  sender: { id: string; firstName: string; lastName: string | null };
 }
 
 export interface DocReplyPreviewLite {
@@ -13,7 +13,7 @@ export interface DocReplyPreviewLite {
   fileName: string;
   fileType: "PHOTO" | "DOCUMENT";
   deletedAt: string | null;
-  uploader: { id: string; name: string | null };
+  uploader: { id: string; firstName: string; lastName: string | null };
 }
 
 export interface DirectMessage {
@@ -31,7 +31,8 @@ export interface DirectMessage {
   replyToDocument?: DocReplyPreviewLite | null;
   sender: {
     id: string;
-    name: string | null;
+    firstName: string;
+    lastName: string | null;
     role: string;
   };
   reactions?: { id: string; userId: string; emoji: string }[];
@@ -40,7 +41,8 @@ export interface DirectMessage {
 export interface Conversation {
   user: {
     id: string;
-    name: string | null;
+    firstName: string;
+    lastName: string | null;
     role: string;
   };
   unreadCount: number;
@@ -101,7 +103,8 @@ export function useChatUser(userId: string) {
     queryKey: ["chat-user", userId],
     queryFn: async () => {
       const res = await api.get(`/users/${userId}`);
-      return res.data as { id: string; name: string | null; role: string };
+      return res.data as { id: string; firstName: string;
+    lastName: string | null; role: string };
     },
     enabled: !!userId,
   });

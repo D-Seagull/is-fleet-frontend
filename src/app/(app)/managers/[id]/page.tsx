@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound, useSearchParams } from "next/navigation";
+import { fullName } from "@/lib/format";
 import {
   ArrowLeft,
   Check,
@@ -96,12 +97,12 @@ export default function ManagerDetailPage({
 
   useEffect(() => {
     if (!manager) return;
-    setName(manager.name ?? "");
+    setName(fullName(manager) ?? "");
     setPhone(manager.phone ?? "");
     setNameDirty(false);
     setPhoneDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [manager?.id, manager?.name, manager?.phone]);
+  }, [manager?.id, fullName(manager), manager?.phone]);
 
   if (isLoading) {
     return (
@@ -132,7 +133,7 @@ export default function ManagerDetailPage({
         </Button>
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <h1 className="text-2xl font-bold truncate">
-            {manager.name ?? manager.email}
+            {fullName(manager) ?? manager.email}
           </h1>
           <Badge
             variant="outline"
@@ -236,7 +237,7 @@ export default function ManagerDetailPage({
                       value={name}
                       onChange={(e) => {
                         setName(e.target.value);
-                        setNameDirty(e.target.value !== (manager.name ?? ""));
+                        setNameDirty(e.target.value !== (fullName(manager) ?? ""));
                       }}
                       placeholder="Name"
                       className="text-xl font-semibold h-9"
@@ -249,7 +250,10 @@ export default function ManagerDetailPage({
                           className="h-8 w-8 shrink-0"
                           disabled={update.isPending || !name.trim()}
                           onClick={async () => {
-                            await update.mutateAsync({ name: name.trim() });
+                            const parts = name.trim().split(/\s+/);
+                            const firstName = parts.shift() ?? "";
+                            const lastName = parts.length > 0 ? parts.join(" ") : null;
+                            await update.mutateAsync({ firstName, lastName });
                             setNameDirty(false);
                           }}
                         >
@@ -264,7 +268,7 @@ export default function ManagerDetailPage({
                           variant="ghost"
                           className="h-8 w-8 shrink-0"
                           onClick={() => {
-                            setName(manager.name ?? "");
+                            setName(fullName(manager) ?? "");
                             setNameDirty(false);
                           }}
                         >
@@ -403,14 +407,14 @@ export default function ManagerDetailPage({
                               <SelectItem value="none">No teamlead</SelectItem>
                               {teamleads.map((t) => (
                                 <SelectItem key={t.id} value={t.id}>
-                                  {t.name ?? t.email}
+                                  {fullName(t) || t.email}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         ) : (
                           <p className="font-medium">
-                            {manager.teamlead?.name ??
+                            {fullName(manager.teamlead) ??
                               manager.teamlead?.email ?? (
                                 <span className="italic text-muted-foreground">
                                   not assigned
@@ -443,7 +447,7 @@ export default function ManagerDetailPage({
                   <div className="flex-1 min-w-0">
                     <div className="font-medium">{t.plate}</div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {t.currentDriver?.name ?? "no driver"} · {t.status}
+                      {fullName(t.currentDriver) ?? "no driver"} · {t.status}
                     </div>
                   </div>
                 </Link>
@@ -467,12 +471,12 @@ export default function ManagerDetailPage({
                   <Avatar className="h-9 w-9 shrink-0">
                     <AvatarImage src={d.avatar ?? undefined} />
                     <AvatarFallback className="text-xs">
-                      {(d.name ?? "??").slice(0, 2).toUpperCase()}
+                      {(fullName(d) ?? "??").slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">
-                      {d.name ?? "—"}
+                      {fullName(d) ?? "—"}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
                       {d.phone ?? "—"}
@@ -536,7 +540,7 @@ export default function ManagerDetailPage({
                             ))}
                           </div>
                           <span className="text-sm font-medium">
-                            {r.ratedBy.name ?? "Unknown"}
+                            {fullName(r.ratedBy) ?? "Unknown"}
                           </span>
                           <span className="text-xs text-muted-foreground ml-auto">
                             {new Date(r.createdAt).toLocaleDateString()}

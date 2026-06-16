@@ -33,7 +33,8 @@ function RegisterInner() {
   const [checking, setChecking] = useState(true);
   const [checkError, setCheckError] = useState<string | null>(null);
 
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -95,8 +96,9 @@ function RegisterInner() {
       const payload: Record<string, string> = {
         inviteToken: token,
         password,
-        name,
+        firstName: firstName.trim(),
       };
+      if (lastName.trim()) payload.lastName = lastName.trim();
       // Email is set on the User row already for `user` invites — backend
       // ignores it there. For company invites the TEAMLEAD must provide one.
       if (invite.type === "company") {
@@ -111,7 +113,13 @@ function RegisterInner() {
       const res = await api.post("/auth/register", payload);
       const { access_token, user } = res.data as {
         access_token: string;
-        user: { id: string; role: string; companyId: string; name: string };
+        user: {
+          id: string;
+          role: string;
+          companyId: string;
+          firstName: string;
+          lastName: string | null;
+        };
       };
 
       login(user, access_token, true);
@@ -191,14 +199,25 @@ function RegisterInner() {
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Full name</Label>
+            <Label htmlFor="firstName">First name</Label>
             <Input
-              id="name"
+              id="firstName"
               type="text"
-              placeholder="Іван Петренко"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Іван"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               required
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="lastName">Last name (optional)</Label>
+            <Input
+              id="lastName"
+              type="text"
+              placeholder="Петренко"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
             />
           </div>
 

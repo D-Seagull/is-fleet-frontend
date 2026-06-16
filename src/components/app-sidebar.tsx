@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LucideIcon, Truck, ChevronRight, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { fullName } from "@/lib/format";
 import {
   Sidebar,
   SidebarContent,
@@ -198,11 +199,11 @@ export function AppSidebar({
                 >
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {user?.name?.slice(0, 2).toUpperCase() ?? "??"}
+                      {fullName(user)?.slice(0, 2).toUpperCase() ?? "??"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold">{user?.name}</span>
+                    <span className="truncate font-semibold">{fullName(user)}</span>
                     <span className="truncate text-xs text-muted-foreground">
                       {user?.role}
                     </span>

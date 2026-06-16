@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { fullName } from "@/lib/format";
 import {
   Dialog,
   DialogContent,
@@ -73,7 +74,7 @@ function TruckListItem({
           </Badge>
         </div>
         {truck.currentDriver && (
-          <span className="text-xs text-muted-foreground truncate">{truck.currentDriver.name}</span>
+          <span className="text-xs text-muted-foreground truncate">{fullName(truck.currentDriver)}</span>
         )}
         {hasUnread && unread?.latestMessage ? (
           <span className="text-[11px] text-muted-foreground truncate">

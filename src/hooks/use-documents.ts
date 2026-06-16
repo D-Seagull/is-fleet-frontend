@@ -7,7 +7,7 @@ export interface TripDocReplyPreview {
   id: string;
   content: string;
   deletedAt: string | null;
-  sender: { id: string; name: string | null };
+  sender: { id: string; firstName: string; lastName: string | null };
 }
 
 export interface TripDocReplyPreviewLite {
@@ -15,7 +15,7 @@ export interface TripDocReplyPreviewLite {
   fileName: string;
   fileType: FileDocType;
   deletedAt: string | null;
-  uploader: { id: string; name: string | null };
+  uploader: { id: string; firstName: string; lastName: string | null };
 }
 
 export interface TripDocumentFull {
@@ -35,7 +35,8 @@ export interface TripDocumentFull {
   replyTo?: TripDocReplyPreview | null;
   replyToDocumentId?: string | null;
   replyToDocument?: TripDocReplyPreviewLite | null;
-  uploader: { id: string; name: string | null; role: string };
+  uploader: { id: string; firstName: string;
+    lastName: string | null; role: string };
   trip?: {
     id: string;
     title: string;

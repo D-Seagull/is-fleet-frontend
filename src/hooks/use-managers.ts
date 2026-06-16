@@ -9,7 +9,8 @@ export { useUpdateDriver as useUpdateUser } from "./use-drivers";
 
 export interface Manager {
   id: string;
-  name: string | null;
+  firstName: string;
+    lastName: string | null;
   email: string;
   phone: string | null;
   avatar: string | null;
@@ -20,14 +21,16 @@ export interface Manager {
   managerId: string | null;
   teamlead?: {
     id: string;
-    name: string | null;
+    firstName: string;
+    lastName: string | null;
     email?: string | null;
     phone?: string | null;
     avatar?: string | null;
   } | null;
   manager?: {
     id: string;
-    name: string | null;
+    firstName: string;
+    lastName: string | null;
     email?: string | null;
     phone?: string | null;
     avatar?: string | null;
@@ -43,7 +46,8 @@ export interface ManagerRating {
   comment: string | null;
   anonymous: boolean;
   createdAt: string;
-  ratedBy: { id: string; name: string | null; role: string };
+  ratedBy: { id: string; firstName: string;
+    lastName: string | null; role: string };
 }
 
 export interface ManagerDetail extends Manager {
@@ -53,11 +57,12 @@ export interface ManagerDetail extends Manager {
     id: string;
     plate: string;
     status: string;
-    currentDriver: { id: string; name: string | null } | null;
+    currentDriver: { id: string; firstName: string; lastName: string | null } | null;
   }[];
   drivers?: {
     id: string;
-    name: string | null;
+    firstName: string;
+    lastName: string | null;
     phone: string | null;
     avatar: string | null;
     currentTruck: { id: string; plate: string } | null;
@@ -117,7 +122,8 @@ export function useCreateManager() {
     mutationFn: async (payload: {
       email: string;
       phone: string;
-      name?: string;
+      firstName?: string;
+      lastName?: string | null;
     }) => {
       const res = await api.post("/users/manager", payload);
       return res.data;

@@ -4,6 +4,7 @@ import { use, useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { fullName } from "@/lib/format";
 import {
   ArrowLeft,
   Star,
@@ -189,7 +190,7 @@ function RatingTab({ driverId }: { driverId: string }) {
                           ))}
                         </div>
                         <span className="text-sm font-medium">
-                          {r.ratedBy.name ?? "Unknown"}
+                          {fullName(r.ratedBy) ?? "Unknown"}
                         </span>
                         <span className="text-xs text-muted-foreground ml-auto">
                           {new Date(r.createdAt).toLocaleDateString()}
@@ -327,7 +328,7 @@ function DriverDetailContent({ id }: { id: string }) {
           </Link>
         </Button>
         <div className="flex items-center gap-3 flex-1">
-          <h1 className="text-2xl font-bold">{driver.name ?? "—"}</h1>
+          <h1 className="text-2xl font-bold">{fullName(driver) ?? "—"}</h1>
           <Badge
             variant="outline"
             className={
@@ -420,7 +421,7 @@ function DriverDetailContent({ id }: { id: string }) {
                 <div className="flex flex-1 flex-col gap-4">
                   <div className="flex items-center gap-4">
                     <h2 className="text-2xl font-semibold">
-                      {driver.name ?? "—"}
+                      {fullName(driver) ?? "—"}
                     </h2>
                     <Badge
                       variant="outline"

@@ -5,7 +5,8 @@ export interface GroupManager {
   id: string;
   manager: {
     id: string;
-    name: string | null;
+    firstName: string;
+    lastName: string | null;
     email: string;
     role: string;
   };
@@ -23,7 +24,7 @@ export interface GroupMessageReplyPreview {
   id: string;
   content: string;
   deletedAt: string | null;
-  sender: { id: string; name: string | null };
+  sender: { id: string; firstName: string; lastName: string | null };
 }
 
 export interface GroupDocReplyPreviewLite {
@@ -31,7 +32,7 @@ export interface GroupDocReplyPreviewLite {
   fileName: string;
   fileType: "PHOTO" | "DOCUMENT";
   deletedAt: string | null;
-  uploader: { id: string; name: string | null };
+  uploader: { id: string; firstName: string; lastName: string | null };
 }
 
 export interface GroupMessage {
@@ -48,7 +49,8 @@ export interface GroupMessage {
   replyToDocument?: GroupDocReplyPreviewLite | null;
   sender: {
     id: string;
-    name: string | null;
+    firstName: string;
+    lastName: string | null;
     role: string;
   };
   reactions?: { id: string; userId: string; emoji: string }[];

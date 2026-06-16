@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import { fullName } from "@/lib/format";
 import {
   Loader2,
   Send,
@@ -251,12 +252,12 @@ function ChatPageContent() {
   const filteredManagerConvs = !searchQ
     ? managerConvs
     : managerConvs.filter((c) =>
-        (c.user.name ?? "").toLowerCase().includes(searchQ),
+        (fullName(c.user) ?? "").toLowerCase().includes(searchQ),
       );
   const filteredDriverConvs = !searchQ
     ? driverConvs
     : driverConvs.filter((c) =>
-        (c.user.name ?? "").toLowerCase().includes(searchQ),
+        (fullName(c.user) ?? "").toLowerCase().includes(searchQ),
       );
 
   // Teams-style search: when the user types a query, also surface company
@@ -282,7 +283,7 @@ function ChatPageContent() {
         (m) =>
           m.id !== user?.id &&
           !managerConvIds.has(m.id) &&
-          matchesQuery(m.name, m.phone, m.email),
+          matchesQuery(fullName(m), m.phone, m.email),
       );
   const extraDrivers = !searchQ
     ? []
@@ -290,12 +291,13 @@ function ChatPageContent() {
         (d) =>
           d.id !== user?.id &&
           !driverConvIds.has(d.id) &&
-          matchesQuery(d.name, d.phone, d.email),
+          matchesQuery(fullName(d), d.phone, d.email),
       );
 
   type SearchableUser = {
     id: string;
-    name: string | null;
+    firstName: string;
+    lastName: string | null;
     role: string;
     avatar?: string | null;
   };
@@ -307,11 +309,11 @@ function ChatPageContent() {
     >
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarFallback className="bg-primary/10 text-primary">
-          {u.name?.slice(0, 2).toUpperCase() ?? "??"}
+          {fullName(u)?.slice(0, 2).toUpperCase() ?? "??"}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{u.name ?? u.role}</p>
+        <p className="font-medium truncate">{fullName(u) ?? u.role}</p>
         <p className="text-xs text-muted-foreground truncate capitalize">
           {u.role.toLowerCase()}
         </p>
@@ -336,7 +338,7 @@ function ChatPageContent() {
       >
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarFallback className="bg-primary/10 text-primary">
-            {conv.user.name?.slice(0, 2).toUpperCase() ?? "??"}
+            {fullName(conv.user)?.slice(0, 2).toUpperCase() ?? "??"}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
@@ -350,7 +352,7 @@ function ChatPageContent() {
                 hasUnread ? "font-bold" : "font-medium",
               )}
             >
-              {conv.user.name ?? conv.user.role}
+              {fullName(conv.user) ?? conv.user.role}
             </p>
             {hasUnread && (
               <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
@@ -516,15 +518,17 @@ function ChatPageContent() {
     const onGroupTyping = ({
       groupId,
       userId,
-      name,
+      firstName,
+      lastName,
     }: {
       groupId: string;
       userId: string;
-      name?: string;
+      firstName?: string | null;
+      lastName?: string | null;
     }) => {
       if (groupId === selectedGroupId && userId !== user?.id) {
         setIsGroupTyping(true);
-        setGroupTypingName(name ?? null);
+        setGroupTypingName(fullName({ firstName, lastName }) || null);
       }
     };
     const onGroupStoppedTyping = ({
@@ -685,7 +689,7 @@ function ChatPageContent() {
     if (selectedGroupId) {
       socket.emit("group_typing", {
         groupId: selectedGroupId,
-        name: user?.name,
+        name: fullName(user),
       });
     } else if (selectedUserId) {
       socket.emit("typing_start", { receiverId: selectedUserId });
@@ -1088,7 +1092,7 @@ function ChatPageContent() {
                                   >
                                     <Avatar className="h-8 w-8 shrink-0">
                                       <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                        {gm.manager.name
+                                        {fullName(gm.manager)
                                           ?.slice(0, 2)
                                           .toUpperCase() ?? "??"}
                                       </AvatarFallback>
@@ -1101,7 +1105,7 @@ function ChatPageContent() {
                                         />
                                       )}
                                       <span className="truncate">
-                                        {gm.manager.name ?? gm.manager.email}
+                                        {fullName(gm.manager) ?? gm.manager.email}
                                       </span>
                                       {isSelf && (
                                         <span className="text-xs text-muted-foreground shrink-0">
@@ -1167,7 +1171,7 @@ function ChatPageContent() {
                                   )
                                   .map((m) => (
                                     <option key={m.id} value={m.id}>
-                                      {m.name ?? m.email}
+                                      {fullName(m) ?? m.email}
                                     </option>
                                   ))}
                               </select>
@@ -1196,12 +1200,12 @@ function ChatPageContent() {
                 <>
                   <Avatar className="h-9 w-9 shrink-0">
                     <AvatarFallback className="bg-primary/10 text-primary">
-                      {selectedUser.name?.slice(0, 2).toUpperCase() ?? "??"}
+                      {fullName(selectedUser)?.slice(0, 2).toUpperCase() ?? "??"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold truncate">
-                      {selectedUser.name ?? "No name"}
+                      {fullName(selectedUser) ?? "No name"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {selectedUser.role}
@@ -1232,7 +1236,7 @@ function ChatPageContent() {
                       const isOwn = msg.senderId === user?.id;
                       const senderName =
                         !isOwn && selectedGroupId
-                          ? (msg as GroupMessage).sender?.name
+                          ? fullName((msg as GroupMessage).sender)
                           : null;
                       const isRead = !selectedGroupId
                         ? (msg as DirectMessage).isRead
@@ -1240,8 +1244,8 @@ function ChatPageContent() {
                       const showSenderAvatar = !isOwn;
                       const avatarName = !isOwn
                         ? selectedGroupId
-                          ? (msg as GroupMessage).sender?.name
-                          : selectedUser?.name
+                          ? fullName((msg as GroupMessage).sender)
+                          : fullName(selectedUser)
                         : null;
                       const senderInitials = (avatarName ?? "??")
                         .slice(0, 2)
@@ -1310,7 +1314,7 @@ function ChatPageContent() {
                                     id: msg.id,
                                     targetType: "msg",
                                     senderName:
-                                      msg.sender?.name ?? null,
+                                      fullName(msg.sender) ?? null,
                                     content: msg.content,
                                     isDeleted: !!msg.deletedAt,
                                   }),
@@ -1357,7 +1361,7 @@ function ChatPageContent() {
                               >
                                 {msg.replyTo && (
                                   <MessageQuote
-                                    senderName={msg.replyTo.sender.name}
+                                    senderName={fullName(msg.replyTo.sender)}
                                     content={msg.replyTo.content}
                                     isDeleted={!!msg.replyTo.deletedAt}
                                     onClick={() =>
@@ -1370,7 +1374,7 @@ function ChatPageContent() {
                                   <MessageQuote
                                     kind="doc"
                                     senderName={
-                                      msg.replyToDocument.uploader.name
+                                      fullName(msg.replyToDocument.uploader)
                                     }
                                     fileName={msg.replyToDocument.fileName}
                                     content=""
@@ -1444,12 +1448,12 @@ function ChatPageContent() {
                     const isPhoto = doc.fileType === "PHOTO";
                     const senderName =
                       !isOwn && selectedGroupId
-                        ? doc.uploader?.name
+                        ? fullName(doc.uploader)
                         : null;
                     const avatarName = !isOwn
                       ? selectedGroupId
-                        ? doc.uploader?.name
-                        : selectedUser?.name
+                        ? fullName(doc.uploader)
+                        : fullName(selectedUser)
                       : null;
                     const senderInitials = (avatarName ?? "??")
                       .slice(0, 2)
@@ -1529,7 +1533,7 @@ function ChatPageContent() {
                                 setReplyingTo({
                                   id: doc.id,
                                   targetType: "doc",
-                                  senderName: doc.uploader?.name ?? null,
+                                  senderName: fullName(doc.uploader) ?? null,
                                   content: doc.fileName,
                                   isDeleted,
                                 }),
@@ -1555,7 +1559,7 @@ function ChatPageContent() {
                                 )}>
                                   {docReplyToMsg && (
                                     <MessageQuote
-                                      senderName={docReplyToMsg.sender.name}
+                                      senderName={fullName(docReplyToMsg.sender)}
                                       content={docReplyToMsg.content}
                                       isDeleted={!!docReplyToMsg.deletedAt}
                                       onClick={() =>
@@ -1567,7 +1571,7 @@ function ChatPageContent() {
                                   {docReplyToDoc && (
                                     <MessageQuote
                                       kind="doc"
-                                      senderName={docReplyToDoc.uploader.name}
+                                      senderName={fullName(docReplyToDoc.uploader)}
                                       fileName={docReplyToDoc.fileName}
                                       content=""
                                       isDeleted={!!docReplyToDoc.deletedAt}
@@ -1714,7 +1718,7 @@ function ChatPageContent() {
 
             {!selectedGroupId && isTyping && (
               <div className="px-4 py-1 shrink-0 text-xs text-muted-foreground flex items-center gap-1">
-                <span>{selectedUser?.name ?? "Someone"} is typing</span>
+                <span>{fullName(selectedUser) ?? "Someone"} is typing</span>
                 <span className="flex gap-0.5">
                   <span className="animate-bounce delay-0">.</span>
                   <span className="animate-bounce delay-100">.</span>
@@ -1944,7 +1948,7 @@ function ChatPageContent() {
                             });
                           }}
                         />
-                        <span className="text-sm">{m.name ?? m.email}</span>
+                        <span className="text-sm">{fullName(m) ?? m.email}</span>
                       </label>
                     ))}
                 </div>
@@ -1983,7 +1987,7 @@ function ChatPageContent() {
         title={
           selectedGroupId
             ? (selectedGroup?.name ?? "Group")
-            : (selectedUser?.name ?? "Conversation")
+            : (fullName(selectedUser) ?? "Conversation")
         }
       />
     </div>

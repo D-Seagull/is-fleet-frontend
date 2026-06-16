@@ -6,7 +6,8 @@ interface AuthUser {
   id: string;
   role: string;
   companyId: string | null;
-  name: string;
+  firstName: string;
+  lastName: string | null;
   timezone?: string | null;
 }
 

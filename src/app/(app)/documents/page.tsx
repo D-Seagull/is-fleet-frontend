@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { fullName } from "@/lib/format";
 import {
   Search,
   Folder,
@@ -307,7 +308,7 @@ function DocCard({
           </div>
           <div className="text-xs text-muted-foreground">
             {created}
-            {doc.uploader?.name ? ` · ${doc.uploader.name}` : ""}
+            {fullName(doc.uploader) ? ` · ${fullName(doc.uploader)}` : ""}
           </div>
         </div>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDownload}>

@@ -12,9 +12,9 @@ export interface Truck {
   status: TruckStatus;
   companyId: string;
   currentDriverId: string | null;
-  currentDriver: { id: string; name: string; phone: string } | null;
+  currentDriver: { id: string; firstName: string; lastName: string | null; phone: string } | null;
   managerId: string | null;
-  manager: { id: string; name: string | null } | null;
+  manager: { id: string; firstName: string; lastName: string | null } | null;
   truckNotes: { content: string; createdAt: string }[];
 }
 
@@ -23,12 +23,14 @@ export interface TruckNote {
   truckId: string;
   content: string;
   createdAt: string;
-  user: { id: string; name: string | null; role: string };
+  user: { id: string; firstName: string;
+    lastName: string | null; role: string };
 }
 
 export interface Driver {
   id: string;
-  name: string | null;
+  firstName: string;
+    lastName: string | null;
   email: string;
   role: string;
   currentTruck: { id: string; plate: string } | null;

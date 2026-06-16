@@ -9,7 +9,7 @@ export interface GroupDocReplyPreview {
   id: string;
   content: string;
   deletedAt: string | null;
-  sender: { id: string; name: string | null };
+  sender: { id: string; firstName: string; lastName: string | null };
 }
 
 export interface GroupDocReplyPreviewLite {
@@ -17,7 +17,7 @@ export interface GroupDocReplyPreviewLite {
   fileName: string;
   fileType: FileDocType;
   deletedAt: string | null;
-  uploader: { id: string; name: string | null };
+  uploader: { id: string; firstName: string; lastName: string | null };
 }
 
 export interface GroupDocumentFull {
@@ -37,7 +37,8 @@ export interface GroupDocumentFull {
   replyTo?: GroupDocReplyPreview | null;
   replyToDocumentId?: string | null;
   replyToDocument?: GroupDocReplyPreviewLite | null;
-  uploader: { id: string; name: string | null; role: string };
+  uploader: { id: string; firstName: string;
+    lastName: string | null; role: string };
   reactions?: { id: string; userId: string; emoji: string }[];
 }
 

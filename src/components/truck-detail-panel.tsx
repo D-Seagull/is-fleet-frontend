@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { fullName } from "@/lib/format";
 import {
   ArrowLeft,
   Loader2,
@@ -451,7 +452,7 @@ export function NewTripDialog({
               <SelectContent>
                 {(drivers ?? []).map((d) => (
                   <SelectItem key={d.id} value={d.id}>
-                    {d.name ?? d.email}
+                    {fullName(d) ?? d.email}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -690,10 +691,10 @@ function TripInfoCard({
                 <span className="text-muted-foreground font-normal"> · #{trip.orderNumber}</span>
               )}
             </span>
-            {trip.driver?.name && (
+            {fullName(trip.driver) && (
               <span className="shrink-0 flex items-center gap-0.5 text-[10px] text-muted-foreground">
                 <User className="h-3 w-3" />
-                {trip.driver.name}
+                {fullName(trip.driver)}
               </span>
             )}
             {isEdited && (
@@ -1379,12 +1380,12 @@ function TripChat({
   const typerTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   useEffect(() => {
     const socket = getSocket();
-    const onTyping = (payload: { tripId: string; user: { id: string; name: string | null } }) => {
+    const onTyping = (payload: { tripId: string; user: { id: string; firstName: string; lastName: string | null } }) => {
       if (payload.tripId !== trip.id) return;
       if (payload.user.id === currentUserIdRef.current) return;
       setTypers((prev) => {
         const next = new Map(prev);
-        next.set(payload.user.id, payload.user.name ?? "Someone");
+        next.set(payload.user.id, fullName(payload.user) ?? "Someone");
         return next;
       });
       // Reset auto-clear timeout
@@ -1560,7 +1561,8 @@ function TripChat({
               deletedAt: replyingTo.isDeleted ? new Date().toISOString() : null,
               sender: {
                 id: "",
-                name: replyingTo.senderName,
+                firstName: replyingTo.senderName ?? "",
+                lastName: null,
               },
             }
           : null,
@@ -1571,12 +1573,13 @@ function TripChat({
               fileName: replyingTo.content,
               fileType: "DOCUMENT",
               deletedAt: replyingTo.isDeleted ? new Date().toISOString() : null,
-              uploader: { id: "", name: replyingTo.senderName },
+              uploader: { id: "", firstName: replyingTo.senderName ?? "", lastName: null },
             }
           : null,
         sender: {
           id: meId,
-          name: user?.name ?? null,
+          firstName: user?.firstName ?? "",
+          lastName: user?.lastName ?? null,
           role: user?.role ?? "MANAGER",
         },
         reactions: [],
@@ -1756,7 +1759,7 @@ function TripChat({
 
               const isMine = msg.senderId === currentUserId;
               const isDeleted = !!msg.deletedAt;
-              const senderInitials = (msg.sender.name ?? "??")
+              const senderInitials = (fullName(msg.sender) ?? "??")
                 .slice(0, 2)
                 .toUpperCase();
               const canEdit =
@@ -1771,7 +1774,7 @@ function TripChat({
                   setReplyingTo({
                     id: msg.id,
                     targetType: "msg",
-                    senderName: msg.sender?.name ?? null,
+                    senderName: fullName(msg.sender) ?? null,
                     content: msg.content,
                     isDeleted: !!msg.deletedAt,
                   }),
@@ -1811,7 +1814,7 @@ function TripChat({
                         router.push(`/chat?userId=${msg.senderId}`)
                       }
                       className="shrink-0"
-                      title={`Message ${msg.sender.name ?? "user"}`}
+                      title={`Message ${fullName(msg.sender) ?? "user"}`}
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="text-xs bg-primary/10 text-primary">
@@ -1834,7 +1837,7 @@ function TripChat({
                         }
                         className="text-xs text-muted-foreground px-1 hover:underline cursor-pointer text-left"
                       >
-                        {msg.sender.name ?? "Unknown"}
+                        {fullName(msg.sender) ?? "Unknown"}
                       </button>
                     )}
                     <MessageActionsContext actions={actions} isOwn={isMine} isDeleted={isDeleted}>
@@ -1852,7 +1855,7 @@ function TripChat({
                       >
                         {!isDeleted && msg.replyTo && (
                           <MessageQuote
-                            senderName={msg.replyTo.sender.name}
+                            senderName={fullName(msg.replyTo.sender)}
                             content={msg.replyTo.content}
                             isDeleted={!!msg.replyTo.deletedAt}
                             onClick={() => scrollToTripMessage(msg.replyTo!.id)}
@@ -1862,7 +1865,7 @@ function TripChat({
                         {!isDeleted && msg.replyToDocument && (
                           <MessageQuote
                             kind="doc"
-                            senderName={msg.replyToDocument.uploader.name}
+                            senderName={fullName(msg.replyToDocument.uploader)}
                             fileName={msg.replyToDocument.fileName}
                             content=""
                             isDeleted={!!msg.replyToDocument.deletedAt}
@@ -1930,7 +1933,7 @@ function TripChat({
                 setReplyingTo({
                   id: doc.id,
                   targetType: "doc" as const,
-                  senderName: doc.uploader?.name ?? null,
+                  senderName: fullName(doc.uploader) ?? null,
                   content: doc.fileName,
                   isDeleted: isDeletedDoc,
                 }),
@@ -1967,7 +1970,7 @@ function TripChat({
                 )}
               >
                 <span className="text-xs text-muted-foreground px-1">
-                  {doc.uploader?.name ?? "Unknown"}
+                  {fullName(doc.uploader) ?? "Unknown"}
                 </span>
                 <MessageActionsContext
                   actions={docActions}
@@ -1977,7 +1980,7 @@ function TripChat({
                   <div id={`trip-doc-${doc.id}`} className="transition-shadow">
                     {!isDeletedDoc && doc.replyTo && (
                       <MessageQuote
-                        senderName={doc.replyTo.sender.name}
+                        senderName={fullName(doc.replyTo.sender)}
                         content={doc.replyTo.content}
                         isDeleted={!!doc.replyTo.deletedAt}
                         onClick={() => scrollToTripMessage(doc.replyTo!.id)}
@@ -1987,7 +1990,7 @@ function TripChat({
                     {!isDeletedDoc && doc.replyToDocument && (
                       <MessageQuote
                         kind="doc"
-                        senderName={doc.replyToDocument.uploader.name}
+                        senderName={fullName(doc.replyToDocument.uploader)}
                         fileName={doc.replyToDocument.fileName}
                         content=""
                         isDeleted={!!doc.replyToDocument.deletedAt}
@@ -2356,7 +2359,7 @@ function TripCombobox({
               {trips.map((t) => (
                 <CommandItem
                   key={t.id}
-                  value={`${t.title} ${t.orderNumber ?? ""} ${t.driver.name ?? ""}`}
+                  value={`${t.title} ${t.orderNumber ?? ""} ${fullName(t.driver) ?? ""}`}
                   onSelect={() => {
                     onChange(t.id);
                     setOpen(false);
@@ -2538,7 +2541,7 @@ function TripCard({
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            {trip.driver.name} · {new Date(trip.createdAt).toLocaleDateString()}
+            {fullName(trip.driver)} · {new Date(trip.createdAt).toLocaleDateString()}
           </p>
         </div>
         <div
@@ -2786,7 +2789,7 @@ function DocumentsTab({ truckId }: { truckId: string }) {
                       {doc.trip?.orderNumber ? `#${doc.trip.orderNumber}` : "—"}
                     </TableCell>
                     <TableCell className="px-2 py-1.5 text-muted-foreground hidden md:table-cell">
-                      {doc.uploader?.name ?? "—"}
+                      {fullName(doc.uploader) ?? "—"}
                     </TableCell>
                     <TableCell className="px-2 py-1.5">
                       <div className="flex items-center gap-0.5 justify-end">
@@ -2837,7 +2840,7 @@ function TripsTab({
     return (
       t.title.toLowerCase().includes(q) ||
       (t.orderNumber ?? "").toLowerCase().includes(q) ||
-      (t.driver.name ?? "").toLowerCase().includes(q)
+      (fullName(t.driver) ?? "").toLowerCase().includes(q)
     );
   });
 
@@ -3009,7 +3012,7 @@ export function TruckDetailPanel({
     if (occupiedTruck && occupiedTruck.id !== truckId) {
       setPendingDriver({
         driverId: newDriverId,
-        driverName: selectedDriver?.name ?? selectedDriver?.email ?? "Driver",
+        driverName: fullName(selectedDriver) ?? selectedDriver?.email ?? "Driver",
         fromTruck: { id: occupiedTruck.id, plate: occupiedTruck.plate },
       });
       return;
@@ -3050,7 +3053,7 @@ export function TruckDetailPanel({
               href={`/drivers/${truck.currentDriver.id}`}
               className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors"
             >
-              Driver: {truck.currentDriver.name}
+              Driver: {fullName(truck.currentDriver)}
             </Link>
           )}
           <button
@@ -3179,7 +3182,7 @@ export function TruckDetailPanel({
                     <SelectItem value="none">No driver</SelectItem>
                     {(drivers ?? []).map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        {d.name ?? d.email}
+                        {fullName(d) ?? d.email}
                         {d.currentTruck && d.currentTruck.id !== truckId && (
                           <span className="ml-1.5 text-muted-foreground">
                             · {d.currentTruck.plate}
@@ -3255,7 +3258,7 @@ export function TruckDetailPanel({
                     <SelectItem value="none">No manager</SelectItem>
                     {(assignableManagers ?? []).map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        {d.name ?? d.email}
+                        {fullName(d) ?? d.email}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -3309,7 +3312,7 @@ export function TruckDetailPanel({
                     <div className="flex flex-col gap-0.5 flex-1">
                       <p className="text-sm">{note.content}</p>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <span>{note.user.name ?? "Unknown"}</span>
+                        <span>{fullName(note.user) ?? "Unknown"}</span>
                         <span>·</span>
                         <span>
                           {new Date(note.createdAt).toLocaleString([], {

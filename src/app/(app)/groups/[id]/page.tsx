@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { fullName } from "@/lib/format";
 import {
   ArrowLeft,
   Users,
@@ -142,7 +143,7 @@ export default function GroupPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
-    getSocket().emit("group_typing", { groupId: id, name: user?.name });
+    getSocket().emit("group_typing", { groupId: id, name: fullName(user) });
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       getSocket().emit("group_stopped_typing", { groupId: id });
@@ -206,11 +207,11 @@ export default function GroupPage() {
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {d.manager.name?.slice(0, 2).toUpperCase() ?? "??"}
+                        {fullName(d.manager)?.slice(0, 2).toUpperCase() ?? "??"}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm">
-                      {d.manager.name ?? "No name"}
+                      {fullName(d.manager) ?? "No name"}
                     </span>
                   </button>
                   <div className="flex items-center gap-1">
@@ -280,7 +281,7 @@ export default function GroupPage() {
                                 {d.email.slice(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <span>{d.name ?? d.email}</span>
+                            <span>{fullName(d) ?? d.email}</span>
                           </button>
                         ))
                       )}
@@ -335,7 +336,7 @@ export default function GroupPage() {
                   >
                     <Avatar className="h-7 w-7 hover:opacity-75 transition-opacity">
                       <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {msg.sender.name?.slice(0, 2).toUpperCase() ?? "??"}
+                        {fullName(msg.sender)?.slice(0, 2).toUpperCase() ?? "??"}
                       </AvatarFallback>
                     </Avatar>
                   </button>
@@ -355,7 +356,7 @@ export default function GroupPage() {
                         router.push(`/chat?userId=${msg.senderId}`)
                       }
                     >
-                      {msg.sender.name ?? msg.sender.role}
+                      {fullName(msg.sender) ?? msg.sender.role}
                     </button>
                   )}
                   <p className="text-sm">{msg.content}</p>

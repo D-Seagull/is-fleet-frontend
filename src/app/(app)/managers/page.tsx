@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { fullName } from "@/lib/format";
 import {
   Search,
   Plus,
@@ -79,7 +80,7 @@ export default function ManagersPage() {
       if (!q) return true;
       return (
         m.email.toLowerCase().includes(q) ||
-        (m.name ?? "").toLowerCase().includes(q) ||
+        (fullName(m) ?? "").toLowerCase().includes(q) ||
         (m.phone ?? "").toLowerCase().includes(q)
       );
     });
@@ -105,10 +106,14 @@ export default function ManagersPage() {
     e.preventDefault();
     setCreateError("");
     try {
+      const parts = (newName ?? "").trim().split(/\s+/).filter(Boolean);
+      const firstName = parts.shift() ?? "";
+      const lastName = parts.length > 0 ? parts.join(" ") : null;
       await createManager.mutateAsync({
         email: newEmail,
         phone: newPhone,
-        name: newName || undefined,
+        firstName,
+        lastName,
       });
       setDialogOpen(false);
       setNewEmail("");
@@ -256,7 +261,7 @@ export default function ManagersPage() {
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={m.avatar ?? undefined} />
                               <AvatarFallback className="text-xs">
-                                {(m.name ?? m.email)
+                                {(fullName(m) ?? m.email)
                                   .slice(0, 2)
                                   .toUpperCase()}
                               </AvatarFallback>
@@ -265,7 +270,7 @@ export default function ManagersPage() {
                               href={`/managers/${m.id}`}
                               className="font-medium hover:underline"
                             >
-                              {m.name ?? m.email}
+                              {fullName(m) ?? m.email}
                             </Link>
                             {!m.isActive && (
                               <Badge variant="outline" className="text-xs">
@@ -366,7 +371,7 @@ export default function ManagersPage() {
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={m.avatar ?? undefined} />
                               <AvatarFallback className="text-xs">
-                                {(m.name ?? m.email)
+                                {(fullName(m) ?? m.email)
                                   .slice(0, 2)
                                   .toUpperCase()}
                               </AvatarFallback>
@@ -375,7 +380,7 @@ export default function ManagersPage() {
                               href={`/managers/${m.id}`}
                               className="font-medium hover:underline"
                             >
-                              {m.name ?? m.email}
+                              {fullName(m) ?? m.email}
                             </Link>
                             {!m.isActive && (
                               <Badge variant="outline" className="text-xs">
@@ -390,7 +395,7 @@ export default function ManagersPage() {
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
                           <div className="flex items-center gap-1.5">
                             <UserCircle2 className="h-3.5 w-3.5" />
-                            <span>{m.teamlead?.name ?? "—"}</span>
+                            <span>{fullName(m.teamlead) ?? "—"}</span>
                           </div>
                         </TableCell>
                         <TableCell

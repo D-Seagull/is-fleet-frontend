@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { fullName } from "@/lib/format";
 import {
   Plus,
   Search,
@@ -89,7 +90,7 @@ export default function TrucksPage() {
     if (!q) return true;
     return (
       truck.plate.toLowerCase().includes(q) ||
-      (truck.currentDriver?.name?.toLowerCase().includes(q) ?? false) ||
+      (fullName(truck.currentDriver)?.toLowerCase().includes(q) ?? false) ||
       (truck.currentDriver?.phone?.includes(searchQuery) ?? false)
     );
   });
@@ -150,7 +151,7 @@ export default function TrucksPage() {
                     <SelectItem value="none">No driver</SelectItem>
                     {(drivers ?? []).map((driver) => (
                       <SelectItem key={driver.id} value={driver.id}>
-                        {driver.name ?? driver.email}
+                        {fullName(driver) ?? driver.email}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -282,7 +283,7 @@ export default function TrucksPage() {
                             href={`/drivers/${truck.currentDriver.id}`}
                             className="hover:underline"
                           >
-                            {truck.currentDriver.name}
+                            {fullName(truck.currentDriver)}
                           </Link>
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -392,7 +393,7 @@ export default function TrucksPage() {
                           {truck.plate}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {truck.currentDriver?.name ?? "—"}
+                          {fullName(truck.currentDriver) ?? "—"}
                         </TableCell>
                         <TableCell>
                           <Button
