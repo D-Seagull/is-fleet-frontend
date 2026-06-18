@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusDot } from "@/components/status-dot";
 import {
   useDrivers,
   useDeactivatedDrivers,
@@ -304,10 +305,18 @@ export default function DriversPage() {
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-3 max-w-[200px]">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={driver.avatar ?? undefined} />
-<AvatarFallback className="text-xs">{initials(driver)}</AvatarFallback>
-                          </Avatar>
+                          <span className="relative shrink-0">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={driver.avatar ?? undefined} />
+                              <AvatarFallback className="text-xs">{initials(driver)}</AvatarFallback>
+                            </Avatar>
+                            <StatusDot
+                              user={driver}
+                              isOnline
+                              size="xs"
+                              className="absolute -bottom-0.5 -right-0.5"
+                            />
+                          </span>
                           <Link href={`/drivers/${driver.id}`} className="font-medium hover:underline">
                             {fullName(driver) || "—"}
                           </Link>

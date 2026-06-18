@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
+import { StatusDot } from "@/components/status-dot";
 import {
   useConversations,
   useMessages,
@@ -336,10 +337,18 @@ function ChatPageContent() {
             "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
         )}
       >
-        <Avatar className="h-10 w-10 shrink-0">
-          <AvatarImage src={conv.user?.avatar ?? undefined} />
-<AvatarFallback className="bg-primary/10 text-primary">{initials(conv.user)}</AvatarFallback>
-        </Avatar>
+        <span className="relative shrink-0">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={conv.user?.avatar ?? undefined} />
+            <AvatarFallback className="bg-primary/10 text-primary">{initials(conv.user)}</AvatarFallback>
+          </Avatar>
+          <StatusDot
+            user={conv.user}
+            isOnline
+            size="sm"
+            className="absolute -bottom-0.5 -right-0.5"
+          />
+        </span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             {hasUnread && (
@@ -1212,10 +1221,18 @@ function ChatPageContent() {
                 </>
               ) : selectedUser ? (
                 <>
-                  <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarImage src={selectedUser?.avatar ?? undefined} />
-<AvatarFallback className="bg-primary/10 text-primary">{initials(selectedUser)}</AvatarFallback>
-                  </Avatar>
+                  <span className="relative shrink-0">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={selectedUser?.avatar ?? undefined} />
+                      <AvatarFallback className="bg-primary/10 text-primary">{initials(selectedUser)}</AvatarFallback>
+                    </Avatar>
+                    <StatusDot
+                      user={selectedUser}
+                      isOnline
+                      size="sm"
+                      className="absolute -bottom-0.5 -right-0.5"
+                    />
+                  </span>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold truncate">
                       {fullName(selectedUser) || "No name"}

@@ -17,6 +17,10 @@ export interface UpdateMePayload {
   lastName?: string | null;
   phone?: string;
   language?: Language;
+  status?: "ONLINE" | "BUSY" | "SLEEP";
+  /** ISO-8601 timestamp at which BUSY/SLEEP should auto-clear. `null` =
+   *  indefinite. Omit to leave the timer untouched. */
+  statusUntil?: string | null;
 }
 
 /**

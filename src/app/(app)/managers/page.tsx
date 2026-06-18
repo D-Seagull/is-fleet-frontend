@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusDot } from "@/components/status-dot";
 import {
   Dialog,
   DialogContent,
@@ -274,10 +275,18 @@ export default function ManagersPage() {
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={m.avatar ?? undefined} />
-<AvatarFallback className="text-xs">{initials(m)}</AvatarFallback>
-                            </Avatar>
+                            <span className="relative shrink-0">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={m.avatar ?? undefined} />
+                                <AvatarFallback className="text-xs">{initials(m)}</AvatarFallback>
+                              </Avatar>
+                              <StatusDot
+                                user={m}
+                                isOnline
+                                size="xs"
+                                className="absolute -bottom-0.5 -right-0.5"
+                              />
+                            </span>
                             <Link
                               href={`/managers/${m.id}`}
                               className="font-medium hover:underline"
@@ -380,10 +389,18 @@ export default function ManagersPage() {
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={m.avatar ?? undefined} />
-<AvatarFallback className="text-xs">{initials(m)}</AvatarFallback>
-                            </Avatar>
+                            <span className="relative shrink-0">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={m.avatar ?? undefined} />
+                                <AvatarFallback className="text-xs">{initials(m)}</AvatarFallback>
+                              </Avatar>
+                              <StatusDot
+                                user={m}
+                                isOnline
+                                size="xs"
+                                className="absolute -bottom-0.5 -right-0.5"
+                              />
+                            </span>
                             <Link
                               href={`/managers/${m.id}`}
                               className="font-medium hover:underline"

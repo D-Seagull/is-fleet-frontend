@@ -14,6 +14,8 @@ export interface Manager {
   email: string;
   phone: string | null;
   avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
   role: string;
   isActive: boolean;
   createdAt: string;
@@ -47,7 +49,9 @@ export interface ManagerRating {
   anonymous: boolean;
   createdAt: string;
   ratedBy: { id: string; firstName: string;
-    lastName: string | null; avatar: string | null; role: string };
+    lastName: string | null; avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null; role: string };
 }
 
 export interface ManagerDetail extends Manager {
@@ -65,6 +69,8 @@ export interface ManagerDetail extends Manager {
     lastName: string | null;
     phone: string | null;
     avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
     currentTruck: { id: string; plate: string } | null;
   }[];
   managerRatingsReceived?: ManagerRating[];

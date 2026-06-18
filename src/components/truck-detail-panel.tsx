@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { fullName } from "@/lib/format";
+import { StatusDot } from "@/components/status-dot";
 import {
   ArrowLeft,
   Loader2,
@@ -692,8 +693,8 @@ function TripInfoCard({
               )}
             </span>
             {fullName(trip.driver) && (
-              <span className="shrink-0 flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                <User className="h-3 w-3" />
+              <span className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground">
+                <StatusDot user={trip.driver} isOnline size="xs" />
                 {fullName(trip.driver)}
               </span>
             )}
@@ -2542,7 +2543,8 @@ function TripCard({
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <StatusDot user={trip.driver} isOnline size="xs" />
             {fullName(trip.driver)} · {new Date(trip.createdAt).toLocaleDateString()}
           </p>
         </div>
@@ -3053,8 +3055,9 @@ export function TruckDetailPanel({
           {truck.currentDriver && (
             <Link
               href={`/drivers/${truck.currentDriver.id}`}
-              className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors"
+              className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors inline-flex items-center gap-1.5"
             >
+              <StatusDot user={truck.currentDriver} isOnline size="xs" />
               Driver: {fullName(truck.currentDriver)}
             </Link>
           )}

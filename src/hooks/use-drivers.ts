@@ -10,6 +10,8 @@ export interface Driver {
   email: string | null;
   phone: string | null;
   avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
   role: string;
   language: Language;
   isActive: boolean;
@@ -27,7 +29,9 @@ export interface DriverRating {
   anonymous: boolean;
   createdAt: string;
   ratedBy: { id: string; firstName: string;
-    lastName: string | null; avatar: string | null; role: string };
+    lastName: string | null; avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null; role: string };
 }
 
 export interface DriverDetail {
@@ -37,12 +41,16 @@ export interface DriverDetail {
   email: string | null;
   phone: string | null;
   avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
   role: string;
   language: Language;
   isActive: boolean;
   createdAt: string;
   manager: { id: string; firstName: string;
-    lastName: string | null; avatar: string | null; email: string | null } | null;
+    lastName: string | null; avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null; email: string | null } | null;
   currentTruck: { id: string; plate: string; status: string } | null;
   ratingsReceived: DriverRating[];
   averageRating: number | null;
@@ -174,7 +182,9 @@ export function useCompanyManagers() {
     queryFn: async () => {
       const res = await api.get("/users");
       return (res.data as { id: string; firstName: string;
-    lastName: string | null; avatar: string | null; role: string }[]).filter(
+    lastName: string | null; avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null; role: string }[]).filter(
         (u) => u.role === "MANAGER" || u.role === "TEAMLEAD",
       );
     },

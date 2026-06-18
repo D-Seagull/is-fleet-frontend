@@ -8,6 +8,8 @@ export interface GroupManager {
     firstName: string;
     lastName: string | null;
     avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
     email: string;
     role: string;
   };
@@ -17,6 +19,8 @@ export interface ManagerGroup {
   id: string;
   name: string;
   avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
   type: string;
   createdBy: string;
   managers: GroupManager[];
@@ -54,6 +58,8 @@ export interface GroupMessage {
     firstName: string;
     lastName: string | null;
     avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
     role: string;
   };
   reactions?: { id: string; userId: string; emoji: string }[];

@@ -12,6 +12,8 @@ interface AuthUser {
   phone?: string | null;
   avatar?: string | null;
   language?: "UK" | "EN" | "PL" | "LT" | "UZ" | "KZ" | "HI" | "RU";
+  status?: "ONLINE" | "BUSY" | "SLEEP";
+  statusUntil?: string | null;
   timezone?: string | null;
 }
 

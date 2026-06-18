@@ -32,9 +32,16 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { StatusDot } from "@/components/status-dot";
+import { useUpdateMe } from "@/hooks/use-avatar";
+import { STATUS_LABEL } from "@/lib/status";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/store/auth";
 import { useRouter } from "next/navigation";
@@ -197,10 +204,18 @@ export function AppSidebar({
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                  <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarImage src={user?.avatar ?? undefined} alt={fullName(user)} />
-<AvatarFallback className="bg-primary text-primary-foreground">{initials(user)}</AvatarFallback>
-                  </Avatar>
+                  <span className="relative shrink-0">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.avatar ?? undefined} alt={fullName(user)} />
+                      <AvatarFallback className="bg-primary text-primary-foreground">{initials(user)}</AvatarFallback>
+                    </Avatar>
+                    <StatusDot
+                      user={user}
+                      isOnline
+                      size="sm"
+                      className="absolute -bottom-0.5 -right-0.5"
+                    />
+                  </span>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-semibold">{fullName(user)}</span>
                     <span className="truncate text-xs text-muted-foreground">
@@ -216,6 +231,8 @@ export function AppSidebar({
                 align="start"
                 sideOffset={4}
               >
+                <StatusSubmenu />
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
                     if (isMobile) {
@@ -252,5 +269,84 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
+  );
+}
+
+// Sleep duration presets for managers. The "indefinite" pick is added
+// inline below — it always lands at the bottom of the list. Hours are
+// translated to ISO timestamps when the user picks them.
+const SLEEP_PRESETS: { label: string; hours: number }[] = [
+  { label: "1 година", hours: 1 },
+  { label: "4 години", hours: 4 },
+  { label: "8 годин", hours: 8 },
+  { label: "До завтра (12 год)", hours: 12 },
+];
+
+function StatusSubmenu() {
+  const user = useAuthStore((s) => s.user);
+  const updateMe = useUpdateMe();
+  const currentStatus = user?.status ?? "ONLINE";
+
+  const setStatus = (
+    status: "ONLINE" | "BUSY" | "SLEEP",
+    hours?: number,
+  ) => {
+    const statusUntil =
+      status !== "ONLINE" && hours
+        ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
+        : null;
+    updateMe.mutate({ status, statusUntil });
+  };
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+          <StatusDot user={user} isOnline size="sm" />
+        </span>
+        Статус
+        <span className="ml-auto text-xs text-muted-foreground">
+          {STATUS_LABEL[currentStatus]}
+        </span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent className="w-56">
+        <DropdownMenuItem onClick={() => setStatus("ONLINE")}>
+          <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+          </span>
+          Online
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setStatus("BUSY")}>
+          <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+          </span>
+          Не турбувати
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+              <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+            </span>
+            Сплю
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              На скільки?
+            </DropdownMenuLabel>
+            {SLEEP_PRESETS.map((p) => (
+              <DropdownMenuItem
+                key={p.label}
+                onClick={() => setStatus("SLEEP", p.hours)}
+              >
+                {p.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem onClick={() => setStatus("SLEEP")}>
+              Без обмеження
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   );
 }

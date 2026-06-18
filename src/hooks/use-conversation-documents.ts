@@ -38,7 +38,9 @@ export interface ConversationDocumentFull {
   replyToDocumentId?: string | null;
   replyToDocument?: DocReplyPreviewLite | null;
   uploader: { id: string; firstName: string;
-    lastName: string | null; avatar: string | null; role: string };
+    lastName: string | null; avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null; role: string };
   reactions?: { id: string; userId: string; emoji: string }[];
 }
 

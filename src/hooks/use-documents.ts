@@ -36,7 +36,9 @@ export interface TripDocumentFull {
   replyToDocumentId?: string | null;
   replyToDocument?: TripDocReplyPreviewLite | null;
   uploader: { id: string; firstName: string;
-    lastName: string | null; avatar: string | null; role: string };
+    lastName: string | null; avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null; role: string };
   trip?: {
     id: string;
     title: string;

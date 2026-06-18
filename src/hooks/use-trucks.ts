@@ -12,9 +12,24 @@ export interface Truck {
   status: TruckStatus;
   companyId: string;
   currentDriverId: string | null;
-  currentDriver: { id: string; firstName: string; lastName: string | null; phone: string } | null;
+  currentDriver: {
+    id: string;
+    firstName: string;
+    lastName: string | null;
+    phone: string;
+    avatar?: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
+  } | null;
   managerId: string | null;
-  manager: { id: string; firstName: string; lastName: string | null; avatar: string | null } | null;
+  manager: {
+    id: string;
+    firstName: string;
+    lastName: string | null;
+    avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
+  } | null;
   truckNotes: { content: string; createdAt: string }[];
 }
 
@@ -24,7 +39,9 @@ export interface TruckNote {
   content: string;
   createdAt: string;
   user: { id: string; firstName: string;
-    lastName: string | null; avatar: string | null; role: string };
+    lastName: string | null; avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null; role: string };
 }
 
 export interface Driver {
@@ -32,6 +49,8 @@ export interface Driver {
   firstName: string;
     lastName: string | null;
     avatar: string | null;
+    status?: "ONLINE" | "BUSY" | "SLEEP";
+    statusUntil?: string | null;
   email: string;
   role: string;
   currentTruck: { id: string; plate: string } | null;
