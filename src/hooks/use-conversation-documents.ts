@@ -9,7 +9,7 @@ export interface DocReplyPreview {
   id: string;
   content: string;
   deletedAt: string | null;
-  sender: { id: string; firstName: string; lastName: string | null };
+  sender: { id: string; firstName: string; lastName: string | null; avatar: string | null };
 }
 
 export interface DocReplyPreviewLite {
@@ -17,7 +17,7 @@ export interface DocReplyPreviewLite {
   fileName: string;
   fileType: FileDocType;
   deletedAt: string | null;
-  uploader: { id: string; firstName: string; lastName: string | null };
+  uploader: { id: string; firstName: string; lastName: string | null; avatar: string | null };
 }
 
 export interface ConversationDocumentFull {
@@ -38,7 +38,7 @@ export interface ConversationDocumentFull {
   replyToDocumentId?: string | null;
   replyToDocument?: DocReplyPreviewLite | null;
   uploader: { id: string; firstName: string;
-    lastName: string | null; role: string };
+    lastName: string | null; avatar: string | null; role: string };
   reactions?: { id: string; userId: string; emoji: string }[];
 }
 

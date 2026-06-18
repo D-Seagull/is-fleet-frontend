@@ -17,9 +17,9 @@ export interface Alarm {
   createdAt: string;
   updatedAt: string;
   creator: { id: string; firstName: string;
-    lastName: string | null; role: string };
+    lastName: string | null; avatar: string | null; role: string };
   target: { id: string; firstName: string;
-    lastName: string | null; role: string };
+    lastName: string | null; avatar: string | null; role: string };
   trip: { id: string; title: string; truckId: string } | null;
 }
 

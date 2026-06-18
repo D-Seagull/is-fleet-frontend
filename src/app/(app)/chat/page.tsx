@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
-import { fullName } from "@/lib/format";
+import { fullName, initials } from "@/lib/format";
 import {
   Loader2,
   Send,
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   useConversations,
   useMessages,
@@ -308,9 +308,8 @@ function ChatPageContent() {
       className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
     >
       <Avatar className="h-10 w-10 shrink-0">
-        <AvatarFallback className="bg-primary/10 text-primary">
-          {fullName(u)?.slice(0, 2).toUpperCase() ?? "??"}
-        </AvatarFallback>
+        <AvatarImage src={u?.avatar ?? undefined} />
+<AvatarFallback className="bg-primary/10 text-primary">{initials(u)}</AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{fullName(u) || u.role}</p>
@@ -337,9 +336,8 @@ function ChatPageContent() {
         )}
       >
         <Avatar className="h-10 w-10 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary">
-            {fullName(conv.user)?.slice(0, 2).toUpperCase() ?? "??"}
-          </AvatarFallback>
+          <AvatarImage src={conv.user?.avatar ?? undefined} />
+<AvatarFallback className="bg-primary/10 text-primary">{initials(conv.user)}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -1199,9 +1197,8 @@ function ChatPageContent() {
               ) : selectedUser ? (
                 <>
                   <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {fullName(selectedUser)?.slice(0, 2).toUpperCase() ?? "??"}
-                    </AvatarFallback>
+                    <AvatarImage src={selectedUser?.avatar ?? undefined} />
+<AvatarFallback className="bg-primary/10 text-primary">{initials(selectedUser)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold truncate">
@@ -1241,15 +1238,14 @@ function ChatPageContent() {
                       const isRead = !selectedGroupId
                         ? (msg as DirectMessage).isRead
                         : null;
-                      const showSenderAvatar = !isOwn;
-                      const avatarName = !isOwn
-                        ? selectedGroupId
-                          ? fullName((msg as GroupMessage).sender)
-                          : fullName(selectedUser)
+                      // Group chats show each sender's avatar beside their
+                      // bubble (Telegram-style group identity). DM chats
+                      // don't — the header already says who you're talking
+                      // to, repeating the avatar on every bubble is noise.
+                      const showSenderAvatar = !isOwn && !!selectedGroupId;
+                      const groupSender = selectedGroupId
+                        ? (msg as GroupMessage).sender
                         : null;
-                      const senderInitials = (avatarName ?? "??")
-                        .slice(0, 2)
-                        .toUpperCase();
                       return (
                         <div
                           key={`msg-${msg.id}`}
@@ -1269,27 +1265,24 @@ function ChatPageContent() {
                               currentUserId={user?.id}
                             />
                           )}
-                          {showSenderAvatar &&
-                            (selectedGroupId ? (
-                              <button
-                                type="button"
-                                onClick={() => handleSelectUser(msg.senderId)}
-                                className="shrink-0"
-                                title={`Message ${senderName ?? "user"}`}
-                              >
-                                <Avatar className="h-8 w-8">
-                                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                    {senderInitials}
-                                  </AvatarFallback>
-                                </Avatar>
-                              </button>
-                            ) : (
-                              <Avatar className="h-8 w-8 shrink-0">
+                          {showSenderAvatar && groupSender && (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectUser(msg.senderId)}
+                              className="shrink-0"
+                              title={`Message ${senderName ?? "user"}`}
+                            >
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage
+                                  src={groupSender.avatar ?? undefined}
+                                  alt={fullName(groupSender)}
+                                />
                                 <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                  {senderInitials}
+                                  {initials(groupSender)}
                                 </AvatarFallback>
                               </Avatar>
-                            ))}
+                            </button>
+                          )}
                           <div
                             className={cn(
                               "flex flex-col gap-0.5 max-w-[70%] min-w-0",

@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound, useSearchParams } from "next/navigation";
-import { fullName } from "@/lib/format";
+import { fullName, initials } from "@/lib/format";
 import {
   ArrowLeft,
   Check,
@@ -470,9 +470,7 @@ export default function ManagerDetailPage({
                 >
                   <Avatar className="h-9 w-9 shrink-0">
                     <AvatarImage src={d.avatar ?? undefined} />
-                    <AvatarFallback className="text-xs">
-                      {(fullName(d) || "??").slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
+<AvatarFallback className="text-xs">{initials(d)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">

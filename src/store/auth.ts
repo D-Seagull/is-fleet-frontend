@@ -8,6 +8,10 @@ interface AuthUser {
   companyId: string | null;
   firstName: string;
   lastName: string | null;
+  email?: string | null;
+  phone?: string | null;
+  avatar?: string | null;
+  language?: "UK" | "EN" | "PL" | "LT" | "UZ" | "KZ" | "HI" | "RU";
   timezone?: string | null;
 }
 
@@ -18,6 +22,7 @@ interface AuthState {
   login: (user: AuthUser, token: string, remember: boolean) => void;
   logout: () => void;
   fetchMe: (tokenOverride?: string) => Promise<void>;
+  setUser: (user: AuthUser) => void;
   setLoading: (v: boolean) => void;
 }
 
@@ -44,6 +49,8 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true, // true поки не перевірено токен
 
       setLoading: (v) => set({ isLoading: v }),
+
+      setUser: (user) => set({ user }),
 
       login: (user, token, remember) => {
         localStorage.setItem(TOKEN_KEY, token);

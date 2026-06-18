@@ -1563,6 +1563,7 @@ function TripChat({
                 id: "",
                 firstName: replyingTo.senderName ?? "",
                 lastName: null,
+                avatar: null,
               },
             }
           : null,
@@ -1573,13 +1574,14 @@ function TripChat({
               fileName: replyingTo.content,
               fileType: "DOCUMENT",
               deletedAt: replyingTo.isDeleted ? new Date().toISOString() : null,
-              uploader: { id: "", firstName: replyingTo.senderName ?? "", lastName: null },
+              uploader: { id: "", firstName: replyingTo.senderName ?? "", lastName: null, avatar: null },
             }
           : null,
         sender: {
           id: meId,
           firstName: user?.firstName ?? "",
           lastName: user?.lastName ?? null,
+          avatar: user?.avatar ?? null,
           role: user?.role ?? "MANAGER",
         },
         reactions: [],

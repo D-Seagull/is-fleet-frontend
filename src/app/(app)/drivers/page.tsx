@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { fullName } from "@/lib/format";
+import { fullName, initials } from "@/lib/format";
 import {
   Table,
   TableBody,
@@ -306,9 +306,7 @@ export default function DriversPage() {
                         <div className="flex items-center gap-3 max-w-[200px]">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={driver.avatar ?? undefined} />
-                            <AvatarFallback className="text-xs">
-                              {fullName(driver)?.slice(0, 2).toUpperCase() ?? "DR"}
-                            </AvatarFallback>
+<AvatarFallback className="text-xs">{initials(driver)}</AvatarFallback>
                           </Avatar>
                           <Link href={`/drivers/${driver.id}`} className="font-medium hover:underline">
                             {fullName(driver) || "—"}

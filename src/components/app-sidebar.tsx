@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LucideIcon, Truck, ChevronRight, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { fullName } from "@/lib/format";
+import { fullName, initials } from "@/lib/format";
 import {
   Sidebar,
   SidebarContent,
@@ -27,7 +27,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronUp, LogOut, Settings } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -198,9 +198,8 @@ export function AppSidebar({
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {fullName(user)?.slice(0, 2).toUpperCase() ?? "??"}
-                    </AvatarFallback>
+                    <AvatarImage src={user?.avatar ?? undefined} alt={fullName(user)} />
+<AvatarFallback className="bg-primary text-primary-foreground">{initials(user)}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-semibold">{fullName(user)}</span>
@@ -217,7 +216,16 @@ export function AppSidebar({
                 align="start"
                 sideOffset={4}
               >
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (isMobile) {
+                      setOpenMobile(false);
+                    } else {
+                      setOpen(false);
+                    }
+                    router.push("/account");
+                  }}
+                >
                   <Settings className="mr-2 h-4 w-4" />
                   Account Settings
                 </DropdownMenuItem>

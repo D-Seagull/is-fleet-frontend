@@ -64,8 +64,8 @@ export interface Trip {
   updatedAt: string;
   chatResetAt: string | null;
   driver: { id: string; firstName: string;
-    lastName: string | null; phone: string | null };
-  manager: { id: string; firstName: string; lastName: string | null };
+    lastName: string | null; avatar: string | null; phone: string | null };
+  manager: { id: string; firstName: string; lastName: string | null; avatar: string | null };
   truck: { id: string; plate: string };
   stops: TripStop[];
   documents: TripDocument[];
@@ -75,7 +75,7 @@ export interface TripMessageReplyPreview {
   id: string;
   content: string;
   deletedAt: string | null;
-  sender: { id: string; firstName: string; lastName: string | null };
+  sender: { id: string; firstName: string; lastName: string | null; avatar: string | null };
 }
 
 export interface TripDocReplyPreviewLite {
@@ -83,7 +83,7 @@ export interface TripDocReplyPreviewLite {
   fileName: string;
   fileType: "PHOTO" | "DOCUMENT";
   deletedAt: string | null;
-  uploader: { id: string; firstName: string; lastName: string | null };
+  uploader: { id: string; firstName: string; lastName: string | null; avatar: string | null };
 }
 
 export interface TripMessage {
@@ -102,7 +102,7 @@ export interface TripMessage {
   replyToDocumentId?: string | null;
   replyToDocument?: TripDocReplyPreviewLite | null;
   sender: { id: string; firstName: string;
-    lastName: string | null; role: string };
+    lastName: string | null; avatar: string | null; role: string };
   // Session participants — used by the realtime layer to drop messages
   // belonging to a session the current user wasn't part of.
   session?: { driverId: string | null; managerId: string | null };
@@ -176,9 +176,9 @@ export interface ChatArchiveSession {
   endedAt: string | null;
   endReason: SessionEndReason | null;
   driver: { id: string; firstName: string;
-    lastName: string | null; role: string } | null;
+    lastName: string | null; avatar: string | null; role: string } | null;
   manager: { id: string; firstName: string;
-    lastName: string | null; role: string } | null;
+    lastName: string | null; avatar: string | null; role: string } | null;
 }
 
 // Closed chat sessions for a trip — visible to managers (all) and to

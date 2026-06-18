@@ -6,7 +6,7 @@ export type Language = "UK" | "EN" | "PL" | "LT" | "UZ" | "KZ" | "HI" | "RU";
 export interface Driver {
   id: string;
   firstName: string;
-    lastName: string | null;
+  lastName: string | null;
   email: string | null;
   phone: string | null;
   avatar: string | null;
@@ -14,7 +14,7 @@ export interface Driver {
   language: Language;
   isActive: boolean;
   createdAt: string;
-  manager: { id: string; firstName: string; lastName: string | null } | null;
+  manager: { id: string; firstName: string; lastName: string | null; avatar: string | null } | null;
   currentTruck: { id: string; plate: string; status: string } | null;
   ratingCount: number;
   averageRating: number | null;
@@ -27,13 +27,13 @@ export interface DriverRating {
   anonymous: boolean;
   createdAt: string;
   ratedBy: { id: string; firstName: string;
-    lastName: string | null; role: string };
+    lastName: string | null; avatar: string | null; role: string };
 }
 
 export interface DriverDetail {
   id: string;
   firstName: string;
-    lastName: string | null;
+  lastName: string | null;
   email: string | null;
   phone: string | null;
   avatar: string | null;
@@ -42,7 +42,7 @@ export interface DriverDetail {
   isActive: boolean;
   createdAt: string;
   manager: { id: string; firstName: string;
-    lastName: string | null; email: string | null } | null;
+    lastName: string | null; avatar: string | null; email: string | null } | null;
   currentTruck: { id: string; plate: string; status: string } | null;
   ratingsReceived: DriverRating[];
   averageRating: number | null;
@@ -169,12 +169,12 @@ export function useUpdateDriver(id: string) {
 }
 
 export function useCompanyManagers() {
-  return useQuery<{ id: string; firstName: string; lastName: string | null }[]>({
+  return useQuery<{ id: string; firstName: string; lastName: string | null; avatar: string | null }[]>({
     queryKey: ["managers"],
     queryFn: async () => {
       const res = await api.get("/users");
       return (res.data as { id: string; firstName: string;
-    lastName: string | null; role: string }[]).filter(
+    lastName: string | null; avatar: string | null; role: string }[]).filter(
         (u) => u.role === "MANAGER" || u.role === "TEAMLEAD",
       );
     },

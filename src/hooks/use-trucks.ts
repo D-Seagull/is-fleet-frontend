@@ -14,7 +14,7 @@ export interface Truck {
   currentDriverId: string | null;
   currentDriver: { id: string; firstName: string; lastName: string | null; phone: string } | null;
   managerId: string | null;
-  manager: { id: string; firstName: string; lastName: string | null } | null;
+  manager: { id: string; firstName: string; lastName: string | null; avatar: string | null } | null;
   truckNotes: { content: string; createdAt: string }[];
 }
 
@@ -24,13 +24,14 @@ export interface TruckNote {
   content: string;
   createdAt: string;
   user: { id: string; firstName: string;
-    lastName: string | null; role: string };
+    lastName: string | null; avatar: string | null; role: string };
 }
 
 export interface Driver {
   id: string;
   firstName: string;
     lastName: string | null;
+    avatar: string | null;
   email: string;
   role: string;
   currentTruck: { id: string; plate: string } | null;

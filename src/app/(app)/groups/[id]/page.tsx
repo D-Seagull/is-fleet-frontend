@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { fullName } from "@/lib/format";
+import { fullName, initials } from "@/lib/format";
 import {
   ArrowLeft,
   Users,
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sheet,
   SheetContent,
@@ -206,9 +206,8 @@ export default function GroupPage() {
                     }
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {fullName(d.manager)?.slice(0, 2).toUpperCase() ?? "??"}
-                      </AvatarFallback>
+                      <AvatarImage src={d.manager?.avatar ?? undefined} />
+<AvatarFallback className="text-xs bg-primary/10 text-primary">{initials(d.manager)}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">
                       {fullName(d.manager) || "No name"}
@@ -277,9 +276,8 @@ export default function GroupPage() {
                             className="flex items-center gap-2 p-2 rounded-md hover:bg-muted text-left text-sm"
                           >
                             <Avatar className="h-6 w-6">
-                              <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                {d.email.slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
+                              <AvatarImage src={d?.avatar ?? undefined} />
+<AvatarFallback className="text-xs bg-primary/10 text-primary">{initials(d)}</AvatarFallback>
                             </Avatar>
                             <span>{fullName(d) || d.email}</span>
                           </button>
@@ -335,9 +333,8 @@ export default function GroupPage() {
                     }
                   >
                     <Avatar className="h-7 w-7 hover:opacity-75 transition-opacity">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {fullName(msg.sender)?.slice(0, 2).toUpperCase() ?? "??"}
-                      </AvatarFallback>
+                      <AvatarImage src={msg.sender?.avatar ?? undefined} />
+<AvatarFallback className="text-xs bg-primary/10 text-primary">{initials(msg.sender)}</AvatarFallback>
                     </Avatar>
                   </button>
                 )}

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { fullName } from "@/lib/format";
+import { fullName, initials } from "@/lib/format";
 import {
   Search,
   Plus,
@@ -276,11 +276,7 @@ export default function ManagersPage() {
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={m.avatar ?? undefined} />
-                              <AvatarFallback className="text-xs">
-                                {(fullName(m) || m.email)
-                                  .slice(0, 2)
-                                  .toUpperCase()}
-                              </AvatarFallback>
+<AvatarFallback className="text-xs">{initials(m)}</AvatarFallback>
                             </Avatar>
                             <Link
                               href={`/managers/${m.id}`}
@@ -386,11 +382,7 @@ export default function ManagersPage() {
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={m.avatar ?? undefined} />
-                              <AvatarFallback className="text-xs">
-                                {(fullName(m) || m.email)
-                                  .slice(0, 2)
-                                  .toUpperCase()}
-                              </AvatarFallback>
+<AvatarFallback className="text-xs">{initials(m)}</AvatarFallback>
                             </Avatar>
                             <Link
                               href={`/managers/${m.id}`}

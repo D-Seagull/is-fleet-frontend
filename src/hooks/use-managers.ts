@@ -10,7 +10,7 @@ export { useUpdateDriver as useUpdateUser } from "./use-drivers";
 export interface Manager {
   id: string;
   firstName: string;
-    lastName: string | null;
+  lastName: string | null;
   email: string;
   phone: string | null;
   avatar: string | null;
@@ -47,7 +47,7 @@ export interface ManagerRating {
   anonymous: boolean;
   createdAt: string;
   ratedBy: { id: string; firstName: string;
-    lastName: string | null; role: string };
+    lastName: string | null; avatar: string | null; role: string };
 }
 
 export interface ManagerDetail extends Manager {
@@ -57,7 +57,7 @@ export interface ManagerDetail extends Manager {
     id: string;
     plate: string;
     status: string;
-    currentDriver: { id: string; firstName: string; lastName: string | null } | null;
+    currentDriver: { id: string; firstName: string; lastName: string | null; avatar: string | null } | null;
   }[];
   drivers?: {
     id: string;
