@@ -13,7 +13,6 @@ import {
   BookMarked,
   Users,
   MessageSquare,
-  FileText,
   Settings,
   Headset,
   Route,
@@ -44,15 +43,22 @@ import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
+// Base nav — items visible to every signed-in role. Managers + Settings
+// land here too but get filtered out below for non-TEAMLEAD users so the
+// teamlead doesn't share a deduplicated list with every viewer.
 const BASE_NAV: NavItem[] = [
   { title: "Trucks", href: "/trucks", icon: Truck },
   { title: "Trips", href: "/trips", icon: Route },
   { title: "Drivers", href: "/drivers", icon: Users },
   { title: "Managers", href: "/managers", icon: Headset },
   { title: "Chat", href: "/chat", icon: MessageSquare },
-  { title: "Documents", href: "/documents", icon: FileText },
   { title: "Settings", href: "/settings", icon: Settings },
 ];
+
+// Items that only TEAMLEAD should see in the sidebar. Routes stay live
+// for everyone (the backend already gates writes) — this is purely a
+// navigation-affordance filter.
+const TEAMLEAD_ONLY = new Set(["Managers", "Settings"]);
 
 function UnreadBell() {
   const router = useRouter();
@@ -226,9 +232,11 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const baseNav: NavItem[] = showMyTrucks
     ? [{ title: "My Trucks", href: "/my-trucks", icon: BookMarked }, ...BASE_NAV]
     : BASE_NAV;
-  const navItems: NavItem[] = baseNav.map((item) =>
-    item.title === "Chat" ? { ...item, badge: chatBadge } : item,
-  );
+  const navItems: NavItem[] = baseNav
+    .filter((item) => isTeamlead || !TEAMLEAD_ONLY.has(item.title))
+    .map((item) =>
+      item.title === "Chat" ? { ...item, badge: chatBadge } : item,
+    );
 
   return (
     <SidebarProvider defaultOpen={true}>

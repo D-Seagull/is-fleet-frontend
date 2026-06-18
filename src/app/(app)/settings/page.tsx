@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Building2, Mail, Globe } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Building2, Loader2, ShieldAlert } from "lucide-react";
+import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,167 +14,173 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useAuthStore } from "@/store/auth";
+import { useCompany, useUpdateCompany } from "@/hooks/use-company";
 
 export default function SettingsPage() {
-  const [companyName, setCompanyName] = useState("IS Fleet Company");
-  const [companyAddress, setCompanyAddress] = useState(
-    "123 Fleet Street, City, ST 12345",
-  );
-  const [companyPhone, setCompanyPhone] = useState("+1 555-0100");
-  const [companyEmail, setCompanyEmail] = useState("contact@isfleet.com");
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const isTeamlead = user?.role === "TEAMLEAD";
 
-  const [smtpHost, setSmtpHost] = useState("smtp.example.com");
-  const [smtpPort, setSmtpPort] = useState("587");
-  const [smtpUser, setSmtpUser] = useState("noreply@isfleet.com");
-  const [smtpPassword, setSmtpPassword] = useState("");
+  const { data: company, isLoading } = useCompany();
+  const updateCompany = useUpdateCompany();
 
-  const [language, setLanguage] = useState("english");
+  const [accountingEmail, setAccountingEmail] = useState("");
+  const [hrEmail, setHrEmail] = useState("");
+  const [directorEmail, setDirectorEmail] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!company) return;
+    setAccountingEmail(company.accountingEmail ?? "");
+    setHrEmail(company.hrEmail ?? "");
+    setDirectorEmail(company.directorEmail ?? "");
+    setSaved(false);
+    setError(null);
+  }, [company]);
+
+  // Non-teamlead users land on a soft 403 instead of seeing an empty form
+  // they can't submit. Drivers and managers don't need this page at all.
+  if (user && !isTeamlead) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 gap-3 text-center">
+        <ShieldAlert className="h-10 w-10 text-muted-foreground" />
+        <h1 className="text-xl font-semibold">Доступ обмежений</h1>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Налаштування компанії редагує лише тімлід. Якщо вам потрібно
+          щось змінити — попросіть тімліда.
+        </p>
+        <Button variant="outline" onClick={() => router.push("/trucks")}>
+          На головну
+        </Button>
+      </div>
+    );
+  }
+
+  // Company name is locked — it was chosen on signup and changing it would
+  // ripple through historical invoices, exports, etc. Only emails are
+  // mutable from this surface.
+  const isDirty =
+    accountingEmail.trim() !== (company?.accountingEmail ?? "") ||
+    hrEmail.trim() !== (company?.hrEmail ?? "") ||
+    directorEmail.trim() !== (company?.directorEmail ?? "");
+  const canSubmit = isDirty && !updateCompany.isPending;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setError(null);
+    try {
+      await updateCompany.mutateAsync({
+        accountingEmail: accountingEmail.trim() || null,
+        hrEmail: hrEmail.trim() || null,
+        directorEmail: directorEmail.trim() || null,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      if (isAxiosError(err)) {
+        const data = err.response?.data as
+          | { message?: string | string[] }
+          | undefined;
+        const msg = Array.isArray(data?.message)
+          ? data?.message?.[0]
+          : data?.message;
+        setError(msg ?? "Не вдалось зберегти зміни.");
+      } else {
+        setError("Не вдалось зберегти зміни.");
+      }
+    }
+  };
+
+  if (isLoading || !company) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4">
       <h1 className="text-2xl font-bold">Settings</h1>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              <CardTitle>Company Information</CardTitle>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            <CardTitle>Інформація про компанію</CardTitle>
+          </div>
+          <CardDescription>
+            Дані, які ви вказали при реєстрації компанії. Ці контакти
+            використовуються як отримувачі за замовчуванням для авансів та
+            HR-сповіщень.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="grid gap-4 max-w-2xl">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="company-name">Назва компанії</Label>
+              <Input
+                id="company-name"
+                value={company.name}
+                disabled
+                readOnly
+                className="cursor-not-allowed opacity-70"
+              />
+              <p className="text-xs text-muted-foreground">
+                Назва компанії незмінна після реєстрації. Якщо потрібно її
+                оновити — звʼяжіться з підтримкою.
+              </p>
             </div>
-            <CardDescription>
-              Manage your company details and contact information.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="company-name">Company Name</Label>
-                <Input
-                  id="company-name"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="company-phone">Phone</Label>
-                <Input
-                  id="company-phone"
-                  value={companyPhone}
-                  onChange={(e) => setCompanyPhone(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="company-email">Email</Label>
-                <Input
-                  id="company-email"
-                  type="email"
-                  value={companyEmail}
-                  onChange={(e) => setCompanyEmail(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="company-address">Address</Label>
-                <Input
-                  id="company-address"
-                  value={companyAddress}
-                  onChange={(e) => setCompanyAddress(e.target.value)}
-                />
-              </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="accounting-email">Email бухгалтерії</Label>
+              <Input
+                id="accounting-email"
+                type="email"
+                placeholder="accounting@company.com"
+                value={accountingEmail}
+                onChange={(e) => setAccountingEmail(e.target.value)}
+              />
             </div>
-            <Button className="mt-4">Save Company Info</Button>
-          </CardContent>
-        </Card>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="hr-email">Email HR</Label>
+              <Input
+                id="hr-email"
+                type="email"
+                placeholder="hr@company.com"
+                value={hrEmail}
+                onChange={(e) => setHrEmail(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="director-email">Email директора</Label>
+              <Input
+                id="director-email"
+                type="email"
+                placeholder="director@company.com"
+                value={directorEmail}
+                onChange={(e) => setDirectorEmail(e.target.value)}
+              />
+            </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              <CardTitle>SMTP Email Settings</CardTitle>
-            </div>
-            <CardDescription>
-              Configure your email server for sending notifications.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="smtp-host">SMTP Host</Label>
-                <Input
-                  id="smtp-host"
-                  value={smtpHost}
-                  onChange={(e) => setSmtpHost(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="smtp-port">SMTP Port</Label>
-                <Input
-                  id="smtp-port"
-                  value={smtpPort}
-                  onChange={(e) => setSmtpPort(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="smtp-user">SMTP Username</Label>
-                <Input
-                  id="smtp-user"
-                  value={smtpUser}
-                  onChange={(e) => setSmtpUser(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="smtp-password">SMTP Password</Label>
-                <Input
-                  id="smtp-password"
-                  type="password"
-                  value={smtpPassword}
-                  onChange={(e) => setSmtpPassword(e.target.value)}
-                  placeholder="Enter password"
-                />
-              </div>
-            </div>
-            <Button className="mt-4">Save Email Settings</Button>
-          </CardContent>
-        </Card>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            {saved && (
+              <p className="text-sm text-emerald-600">Зміни збережено ✓</p>
+            )}
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              <CardTitle>Language Settings</CardTitle>
+            <div>
+              <Button type="submit" disabled={!canSubmit}>
+                {updateCompany.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Зберегти зміни
+              </Button>
             </div>
-            <CardDescription>
-              Choose your preferred language for the application.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4 max-w-sm">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="language">Application Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="english">English</SelectItem>
-                    <SelectItem value="spanish">Spanish</SelectItem>
-                    <SelectItem value="russian">Russian</SelectItem>
-                    <SelectItem value="korean">Korean</SelectItem>
-                    <SelectItem value="german">German</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button className="w-fit">Save Language</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -48,6 +48,7 @@ import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 
 export default function GroupPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,6 +73,15 @@ export default function GroupPage() {
     group?.managers.map((d) => d.manager.id) ?? [];
   const availableManagers =
     managers?.filter((d) => !groupManagerIds.includes(d.id)) ?? [];
+
+  // Members + creator + admin/teamlead can change the group avatar; everyone
+  // else only sees it. This mirrors the server-side check.
+  const canEditAvatar =
+    !!user &&
+    (user.role === "ADMIN" ||
+      user.role === "TEAMLEAD" ||
+      group?.createdBy === user.id ||
+      groupManagerIds.includes(user.id));
 
   useEffect(() => {
     const socket = getSocket();
@@ -176,6 +186,7 @@ export default function GroupPage() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
+          <GroupAvatarTrigger group={group} canEdit={canEditAvatar} />
           <div>
             <p className="font-semibold">{group.name}</p>
             <p className="text-xs text-muted-foreground">
@@ -419,3 +430,4 @@ export default function GroupPage() {
     </div>
   );
 }
+

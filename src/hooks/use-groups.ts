@@ -16,6 +16,7 @@ export interface GroupManager {
 export interface ManagerGroup {
   id: string;
   name: string;
+  avatar: string | null;
   type: string;
   createdBy: string;
   managers: GroupManager[];
@@ -156,6 +157,36 @@ export function useRemoveManagerFromGroup() {
         `/groups/${groupId}/managers/${managerId}`,
       );
       return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["manager-groups"] });
+    },
+  });
+}
+
+export function useUploadGroupAvatar(groupId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await api.post(`/groups/${groupId}/avatar`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data as ManagerGroup;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["manager-groups"] });
+    },
+  });
+}
+
+export function useDeleteGroupAvatar(groupId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const res = await api.delete(`/groups/${groupId}/avatar`);
+      return res.data as ManagerGroup;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["manager-groups"] });

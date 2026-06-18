@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 import {
   useConversations,
   useMessages,
@@ -798,9 +799,12 @@ function ChatPageContent() {
                         "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
                     )}
                   >
-                    <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Users className="h-5 w-5 text-primary" />
-                    </div>
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarImage src={group.avatar ?? undefined} alt={group.name} />
+                      <AvatarFallback className="bg-primary/20 text-primary">
+                        {group.name ? group.name.charAt(0).toUpperCase() : "#"}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         {hasUnread && (
@@ -916,9 +920,12 @@ function ChatPageContent() {
                         "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
                     )}
                   >
-                    <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Users className="h-5 w-5 text-primary" />
-                    </div>
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarImage src={group.avatar ?? undefined} alt={group.name} />
+                      <AvatarFallback className="bg-primary/20 text-primary">
+                        {group.name ? group.name.charAt(0).toUpperCase() : "#"}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         {hasUnread && (
@@ -1033,9 +1040,18 @@ function ChatPageContent() {
               </Button>
               {selectedGroup ? (
                 <>
-                  <div className="h-9 w-9 shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
+                  <GroupAvatarTrigger
+                    group={selectedGroup}
+                    canEdit={
+                      !!user &&
+                      (user.role === "ADMIN" ||
+                        user.role === "TEAMLEAD" ||
+                        selectedGroup.createdBy === user.id ||
+                        selectedGroup.managers.some(
+                          (m) => m.manager.id === user.id,
+                        ))
+                    }
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold truncate">
                       {selectedGroup.name}
