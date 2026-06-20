@@ -29,8 +29,10 @@ export function useGroupUnreadSummary() {
       const res = await api.get("/group-messages/unread");
       return res.data;
     },
-    refetchInterval: 20_000,
-    staleTime: 10_000,
+    // Cache is kept fresh by useGroupUnreadSocketSync (new_group_message /
+    // group_messages_read / group_unread_update). No fixed polling — long
+    // staleTime suppresses automatic refetches on remount / window-focus.
+    staleTime: 60_000,
   });
 }
 

@@ -39,9 +39,11 @@ export function useUnreadSummary() {
       const res = await api.get("/messages/unread");
       return res.data;
     },
-    // Refetch у фоні кожні 20 сек як fallback якщо сокет пропустить подію
-    refetchInterval: 20_000,
-    staleTime: 10_000,
+    // Socket events (newMessage / tripMessagesRead) invalidate the cache
+    // via useUnreadSocketSync. The summary is heavy on the backend, so we
+    // don't poll on a fixed interval — the long staleTime stops React Query
+    // from automatically re-fetching on remount / window-focus.
+    staleTime: 60_000,
   });
 }
 
