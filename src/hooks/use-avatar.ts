@@ -17,7 +17,7 @@ export interface UpdateMePayload {
   lastName?: string | null;
   phone?: string;
   language?: Language;
-  status?: "ONLINE" | "BUSY" | "SLEEP";
+  status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
   /** ISO-8601 timestamp at which BUSY/SLEEP should auto-clear. `null` =
    *  indefinite. Omit to leave the timer untouched. */
   statusUntil?: string | null;
@@ -32,7 +32,20 @@ export function useUpdateMe() {
   const queryClient = useQueryClient();
   const setUser = useAuthStore((s) => s.setUser);
   return useMutation({
+    // Update the store optimistically *before* the round-trip so the sidebar
+    // dot flips colour the instant the user clicks. The server response then
+    // confirms with the authoritative payload.
     mutationFn: async (payload: UpdateMePayload) => {
+      const current = useAuthStore.getState().user;
+      if (current && (payload.status !== undefined || payload.statusUntil !== undefined)) {
+        setUser({
+          ...current,
+          ...(payload.status !== undefined ? { status: payload.status } : {}),
+          ...(payload.statusUntil !== undefined
+            ? { statusUntil: payload.statusUntil }
+            : {}),
+        });
+      }
       const res = await api.patch("/users/me", payload);
       return res.data;
     },

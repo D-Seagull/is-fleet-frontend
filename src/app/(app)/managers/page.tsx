@@ -282,7 +282,6 @@ export default function ManagersPage() {
                               </Avatar>
                               <StatusDot
                                 user={m}
-                                isOnline
                                 size="xs"
                                 className="absolute -bottom-0.5 -right-0.5"
                               />
@@ -396,7 +395,6 @@ export default function ManagersPage() {
                               </Avatar>
                               <StatusDot
                                 user={m}
-                                isOnline
                                 size="xs"
                                 className="absolute -bottom-0.5 -right-0.5"
                               />

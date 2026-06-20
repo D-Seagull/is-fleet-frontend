@@ -18,7 +18,7 @@ export interface Truck {
     lastName: string | null;
     phone: string;
     avatar?: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
   } | null;
   managerId: string | null;
@@ -27,7 +27,7 @@ export interface Truck {
     firstName: string;
     lastName: string | null;
     avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
   } | null;
   truckNotes: { content: string; createdAt: string }[];
@@ -40,7 +40,7 @@ export interface TruckNote {
   createdAt: string;
   user: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string };
 }
 
@@ -49,7 +49,7 @@ export interface Driver {
   firstName: string;
     lastName: string | null;
     avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
   email: string;
   role: string;

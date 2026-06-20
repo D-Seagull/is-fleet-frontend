@@ -18,11 +18,11 @@ export interface Alarm {
   updatedAt: string;
   creator: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string };
   target: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string };
   trip: { id: string; title: string; truckId: string } | null;
 }

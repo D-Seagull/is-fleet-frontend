@@ -26,7 +26,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronUp, LogOut, Settings } from "lucide-react";
+import { ChevronUp, LogOut, Moon, Settings } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -204,6 +204,9 @@ export function AppSidebar({
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
+                  {/* SidebarMenuButton clips overflow, so the status dot
+                      can't overhang the avatar — anchor it just inside the
+                      bottom-right corner instead of using negative offsets. */}
                   <span className="relative shrink-0">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user?.avatar ?? undefined} alt={fullName(user)} />
@@ -212,8 +215,8 @@ export function AppSidebar({
                     <StatusDot
                       user={user}
                       isOnline
-                      size="sm"
-                      className="absolute -bottom-0.5 -right-0.5"
+                      size="xs"
+                      className="absolute bottom-0 right-0"
                     />
                   </span>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
@@ -272,14 +275,21 @@ export function AppSidebar({
   );
 }
 
-// Sleep duration presets for managers. The "indefinite" pick is added
-// inline below — it always lands at the bottom of the list. Hours are
-// translated to ISO timestamps when the user picks them.
+// Duration presets per status. Sleep is hour-based (typical EU
+// rest-break convention); vacation is day-based since people usually
+// take more than one day off.
 const SLEEP_PRESETS: { label: string; hours: number }[] = [
   { label: "1 година", hours: 1 },
   { label: "4 години", hours: 4 },
   { label: "8 годин", hours: 8 },
   { label: "До завтра (12 год)", hours: 12 },
+];
+
+const VACATION_PRESETS: { label: string; hours: number }[] = [
+  { label: "1 день", hours: 24 },
+  { label: "3 дні", hours: 72 },
+  { label: "Тиждень", hours: 168 },
+  { label: "2 тижні", hours: 336 },
 ];
 
 function StatusSubmenu() {
@@ -288,7 +298,7 @@ function StatusSubmenu() {
   const currentStatus = user?.status ?? "ONLINE";
 
   const setStatus = (
-    status: "ONLINE" | "BUSY" | "SLEEP",
+    status: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION",
     hours?: number,
   ) => {
     const statusUntil =
@@ -318,14 +328,22 @@ function StatusSubmenu() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setStatus("BUSY")}>
           <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
-            <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+            <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
           </span>
           Не турбувати
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setStatus("AWAY")}>
+          <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+          </span>
+          Не на місці
+        </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
-            <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
-              <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+            <span className="mr-2 inline-flex h-5 w-5 items-center justify-center">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-500">
+                <Moon className="h-2.5 w-2.5 text-white" />
+              </span>
             </span>
             Сплю
           </DropdownMenuSubTrigger>
@@ -342,6 +360,35 @@ function StatusSubmenu() {
               </DropdownMenuItem>
             ))}
             <DropdownMenuItem onClick={() => setStatus("SLEEP")}>
+              Без обмеження
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <span className="mr-2 inline-flex h-5 w-5 items-center justify-center">
+              {/* Emoji 🌴 (brown trunk + green leaves) — matches the driver
+                  app's rendering and keeps full color detail at small
+                  sizes where a flat SVG icon turns into a blob. */}
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500 text-[10px] leading-none">
+                🌴
+              </span>
+            </span>
+            Відпочиваю
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              На скільки?
+            </DropdownMenuLabel>
+            {VACATION_PRESETS.map((p) => (
+              <DropdownMenuItem
+                key={p.label}
+                onClick={() => setStatus("VACATION", p.hours)}
+              >
+                {p.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem onClick={() => setStatus("VACATION")}>
               Без обмеження
             </DropdownMenuItem>
           </DropdownMenuSubContent>

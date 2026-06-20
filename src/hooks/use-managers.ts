@@ -14,7 +14,7 @@ export interface Manager {
   email: string;
   phone: string | null;
   avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
   role: string;
   isActive: boolean;
@@ -50,7 +50,7 @@ export interface ManagerRating {
   createdAt: string;
   ratedBy: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string };
 }
 
@@ -69,7 +69,7 @@ export interface ManagerDetail extends Manager {
     lastName: string | null;
     phone: string | null;
     avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
     currentTruck: { id: string; plate: string } | null;
   }[];

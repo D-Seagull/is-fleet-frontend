@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { api } from "@/lib/api";
+import { disconnectSocket } from "@/lib/socket";
 
 interface AuthUser {
   id: string;
@@ -12,7 +13,7 @@ interface AuthUser {
   phone?: string | null;
   avatar?: string | null;
   language?: "UK" | "EN" | "PL" | "LT" | "UZ" | "KZ" | "HI" | "RU";
-  status?: "ONLINE" | "BUSY" | "SLEEP";
+  status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
   statusUntil?: string | null;
   timezone?: string | null;
 }
@@ -45,7 +46,7 @@ function clearCookie() {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isLoading: true, // true поки не перевірено токен
@@ -55,12 +56,29 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user }),
 
       login: (user, token, remember) => {
+        // Drop any pre-existing socket so the next getSocket() picks up
+        // the fresh token and re-runs the backend's handleConnection
+        // (presence broadcast included). Without this, a stale socket
+        // from a previous session — or one created with no auth before
+        // login — keeps the backend thinking we're nobody.
+        disconnectSocket();
         localStorage.setItem(TOKEN_KEY, token);
         setCookie(token, remember);
         set({ user, token, isLoading: false });
+        // The /auth/login response only carries the bare-minimum
+        // fields used by the token (id, role, firstName, lastName).
+        // Pull the full /auth/me row asynchronously so the sidebar
+        // avatar, language, presence status, etc. populate without
+        // waiting for a page reload.
+        void get().fetchMe(token);
       },
 
       logout: () => {
+        // Tear the socket down BEFORE we clear the token. Otherwise the
+        // backend never fires `handleDisconnect` for this session, so
+        // teammates keep seeing the leaving user's stored status instead
+        // of OFFLINE until the socket times out on its own.
+        disconnectSocket();
         localStorage.removeItem(TOKEN_KEY);
         clearCookie();
         set({ user: null, token: null, isLoading: false });

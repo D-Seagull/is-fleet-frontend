@@ -7,18 +7,21 @@ import {
   type DisplayStatus,
   type UserStatus,
 } from "@/lib/status";
+import { useIsUserOnline } from "@/hooks/use-presence";
 
 interface StatusDotProps {
   user:
     | {
+        id?: string;
         status?: UserStatus | null;
         statusUntil?: string | null;
       }
     | null
     | undefined;
-  /** Most call sites can't tell on their own — they pass `true` if the
-   *  viewer's app concept of "is this person around" is true, else false. */
-  isOnline: boolean;
+  /** Override the live presence lookup. Optional — when omitted (the
+   *  common case) we read whether the user is online from the shared
+   *  presence store maintained by usePresenceSync. */
+  isOnline?: boolean;
   size?: "xs" | "sm" | "md";
   className?: string;
 }
@@ -35,8 +38,18 @@ const SIZE_PX: Record<NonNullable<StatusDotProps["size"]>, string> = {
  * glance. Always wrapped with `title` so hover spelling-out the label
  * works even when the surrounding text doesn't repeat it.
  */
-export function StatusDot({ user, isOnline, size = "sm", className }: StatusDotProps) {
-  const status: DisplayStatus = resolveDisplayStatus(user, isOnline);
+export function StatusDot({
+  user,
+  isOnline,
+  size = "sm",
+  className,
+}: StatusDotProps) {
+  // Read presence from the live store unless the caller explicitly
+  // override it (e.g. an avatar where you always want the dot, like
+  // your own profile preview).
+  const livePresence = useIsUserOnline(user?.id);
+  const effectiveOnline = isOnline ?? livePresence;
+  const status: DisplayStatus = resolveDisplayStatus(user, effectiveOnline);
   const sizeClass = SIZE_PX[size];
   return (
     <span
@@ -55,6 +68,19 @@ export function StatusDot({ user, isOnline, size = "sm", className }: StatusDotP
             size === "xs" ? "h-1.5 w-1.5" : size === "sm" ? "h-2 w-2" : "h-2.5 w-2.5",
           )}
         />
+      )}
+      {status === "VACATION" && (
+        // Emoji 🌴 — full color (brown trunk, green leaves) matches the
+        // driver app and stays recognisable on a yellow background where
+        // a single-color SVG palm would blur.
+        <span
+          className={cn(
+            "leading-none",
+            size === "xs" ? "text-[6px]" : size === "sm" ? "text-[8px]" : "text-[10px]",
+          )}
+        >
+          🌴
+        </span>
       )}
     </span>
   );

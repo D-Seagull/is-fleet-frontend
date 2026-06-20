@@ -5,7 +5,12 @@
  * client-side, not stored.
  */
 
-export type UserStatus = "ONLINE" | "BUSY" | "SLEEP";
+export type UserStatus =
+  | "ONLINE"
+  | "BUSY"
+  | "AWAY"
+  | "SLEEP"
+  | "VACATION";
 export type DisplayStatus = UserStatus | "OFFLINE";
 
 /**
@@ -36,14 +41,18 @@ export function resolveDisplayStatus(
 
 export const STATUS_COLOR: Record<DisplayStatus, string> = {
   ONLINE: "bg-emerald-500",
-  BUSY: "bg-amber-500",
+  BUSY: "bg-red-500",
+  AWAY: "bg-amber-500",
   SLEEP: "bg-indigo-500",
+  VACATION: "bg-yellow-500",
   OFFLINE: "bg-zinc-400 dark:bg-zinc-600",
 };
 
 export const STATUS_LABEL: Record<DisplayStatus, string> = {
   ONLINE: "Online",
   BUSY: "Не турбувати",
+  AWAY: "Не на місці",
   SLEEP: "Сплю",
+  VACATION: "Відпочиваю",
   OFFLINE: "Не в додатку",
 };

@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
+import { GroupActionsMenu } from "@/components/group-actions-menu";
 import { StatusDot } from "@/components/status-dot";
 import {
   useConversations,
@@ -344,7 +345,6 @@ function ChatPageContent() {
           </Avatar>
           <StatusDot
             user={conv.user}
-            isOnline
             size="sm"
             className="absolute -bottom-0.5 -right-0.5"
           />
@@ -1049,18 +1049,10 @@ function ChatPageContent() {
               </Button>
               {selectedGroup ? (
                 <>
-                  <GroupAvatarTrigger
-                    group={selectedGroup}
-                    canEdit={
-                      !!user &&
-                      (user.role === "ADMIN" ||
-                        user.role === "TEAMLEAD" ||
-                        selectedGroup.createdBy === user.id ||
-                        selectedGroup.managers.some(
-                          (m) => m.manager.id === user.id,
-                        ))
-                    }
-                  />
+                  {/* Avatar is display-only here — edit actions live in the
+                      "..." dropdown below so the header doesn't have two
+                      separate edit affordances side by side. */}
+                  <GroupAvatarTrigger group={selectedGroup} canEdit={false} />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold truncate">
                       {selectedGroup.name}
@@ -1218,6 +1210,18 @@ function ChatPageContent() {
                       </div>
                     </SheetContent>
                   </Sheet>
+                  <GroupActionsMenu
+                    group={selectedGroup}
+                    canEdit={
+                      !!user &&
+                      (user.role === "ADMIN" ||
+                        user.role === "TEAMLEAD" ||
+                        selectedGroup.createdBy === user.id ||
+                        selectedGroup.managers.some(
+                          (m) => m.manager.id === user.id,
+                        ))
+                    }
+                  />
                 </>
               ) : selectedUser ? (
                 <>
@@ -1228,7 +1232,6 @@ function ChatPageContent() {
                     </Avatar>
                     <StatusDot
                       user={selectedUser}
-                      isOnline
                       size="sm"
                       className="absolute -bottom-0.5 -right-0.5"
                     />
@@ -1302,7 +1305,7 @@ function ChatPageContent() {
                             <button
                               type="button"
                               onClick={() => handleSelectUser(msg.senderId)}
-                              className="shrink-0"
+                              className="relative shrink-0"
                               title={`Message ${senderName ?? "user"}`}
                             >
                               <Avatar className="h-8 w-8">
@@ -1314,6 +1317,11 @@ function ChatPageContent() {
                                   {initials(groupSender)}
                                 </AvatarFallback>
                               </Avatar>
+                              <StatusDot
+                                user={groupSender}
+                                size="xs"
+                                className="absolute -bottom-0.5 -right-0.5"
+                              />
                             </button>
                           )}
                           <div

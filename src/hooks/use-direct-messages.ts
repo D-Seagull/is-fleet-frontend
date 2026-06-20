@@ -34,7 +34,7 @@ export interface DirectMessage {
     firstName: string;
     lastName: string | null;
     avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
     role: string;
   };
@@ -47,7 +47,7 @@ export interface Conversation {
     firstName: string;
     lastName: string | null;
     avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
     role: string;
   };
@@ -111,7 +111,7 @@ export function useChatUser(userId: string) {
       const res = await api.get(`/users/${userId}`);
       return res.data as { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string };
     },
     enabled: !!userId,

@@ -694,7 +694,7 @@ function TripInfoCard({
             </span>
             {fullName(trip.driver) && (
               <span className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground">
-                <StatusDot user={trip.driver} isOnline size="xs" />
+                <StatusDot user={trip.driver} size="xs" />
                 {fullName(trip.driver)}
               </span>
             )}
@@ -2544,7 +2544,7 @@ function TripCard({
             )}
           </div>
           <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <StatusDot user={trip.driver} isOnline size="xs" />
+            <StatusDot user={trip.driver} size="xs" />
             {fullName(trip.driver)} · {new Date(trip.createdAt).toLocaleDateString()}
           </p>
         </div>
@@ -3057,7 +3057,7 @@ export function TruckDetailPanel({
               href={`/drivers/${truck.currentDriver.id}`}
               className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors inline-flex items-center gap-1.5"
             >
-              <StatusDot user={truck.currentDriver} isOnline size="xs" />
+              <StatusDot user={truck.currentDriver} size="xs" />
               Driver: {fullName(truck.currentDriver)}
             </Link>
           )}

@@ -65,7 +65,7 @@ export interface Trip {
   chatResetAt: string | null;
   driver: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; phone: string | null };
   manager: { id: string; firstName: string; lastName: string | null; avatar: string | null };
   truck: { id: string; plate: string };
@@ -105,7 +105,7 @@ export interface TripMessage {
   replyToDocument?: TripDocReplyPreviewLite | null;
   sender: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string };
   // Session participants — used by the realtime layer to drop messages
   // belonging to a session the current user wasn't part of.
@@ -181,11 +181,11 @@ export interface ChatArchiveSession {
   endReason: SessionEndReason | null;
   driver: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string } | null;
   manager: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string } | null;
 }
 

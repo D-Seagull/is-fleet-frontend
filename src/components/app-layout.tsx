@@ -33,6 +33,9 @@ import {
 import { useTruckChangedSync } from "@/hooks/use-trucks";
 import { useTabVisibilityPresence } from "@/hooks/use-tab-visibility-presence";
 import { useBrowserTimezoneSync } from "@/hooks/use-timezone-sync";
+import { useUserStatusSync } from "@/hooks/use-user-status-sync";
+import { usePresenceSync } from "@/hooks/use-presence";
+import { useAutoAway } from "@/hooks/use-auto-away";
 import { AlarmNoticeOverlay } from "@/components/alarm-notice-overlay";
 import {
   Popover,
@@ -218,6 +221,16 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   // it already works there.
   useDmUnreadSocketSync();
   useGroupUnreadSocketSync();
+  // Live presence dots — patches every cached user payload when a
+  // teammate flips Online/Busy/Sleep, so other sessions stop needing
+  // a full reload to see the change.
+  useUserStatusSync();
+  // Maintains the Set of currently-online teammate IDs so StatusDot
+  // can render OFFLINE when someone logs out / closes the app.
+  usePresenceSync();
+  // Auto-AWAY after 15 min of input silence (managers/teamleads/admins
+  // only — bails inside the hook for drivers).
+  useAutoAway();
 
   const { data: myTrucks } = useMyTrucks();
   const hasMyTrucks = (myTrucks?.length ?? 0) > 0;

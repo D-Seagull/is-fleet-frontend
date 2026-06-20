@@ -312,7 +312,6 @@ export default function DriversPage() {
                             </Avatar>
                             <StatusDot
                               user={driver}
-                              isOnline
                               size="xs"
                               className="absolute -bottom-0.5 -right-0.5"
                             />

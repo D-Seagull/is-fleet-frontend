@@ -39,7 +39,7 @@ export interface GroupDocumentFull {
   replyToDocument?: GroupDocReplyPreviewLite | null;
   uploader: { id: string; firstName: string;
     lastName: string | null; avatar: string | null;
-    status?: "ONLINE" | "BUSY" | "SLEEP";
+    status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; role: string };
   reactions?: { id: string; userId: string; emoji: string }[];
 }
