@@ -55,19 +55,21 @@ export function useUnreadSocketSync() {
   useEffect(() => {
     const socket = getSocket();
 
-    const onNewMessage = () => {
-      void queryClient.invalidateQueries({ queryKey: UNREAD_QUERY_KEY });
-    };
-    const onRead = () => {
+    // Was: socket.on("newMessage", ...) — backend used to re-broadcast
+    // every chat message's full payload to the company room just so the
+    // sidebar badge could invalidate. Now backend emits a lightweight
+    // `tripUnreadChanged` event for that purpose; `newMessage` is sent
+    // only to the actual trip room (participants viewing the chat).
+    const onChange = () => {
       void queryClient.invalidateQueries({ queryKey: UNREAD_QUERY_KEY });
     };
 
-    socket.on("newMessage", onNewMessage);
-    socket.on("tripMessagesRead", onRead);
+    socket.on("tripUnreadChanged", onChange);
+    socket.on("tripMessagesRead", onChange);
 
     return () => {
-      socket.off("newMessage", onNewMessage);
-      socket.off("tripMessagesRead", onRead);
+      socket.off("tripUnreadChanged", onChange);
+      socket.off("tripMessagesRead", onChange);
     };
   }, [queryClient]);
 }
