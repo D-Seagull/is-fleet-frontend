@@ -1,5 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
+import { useMemo } from "react";
 import { api } from "@/lib/api";
+import {
+  filterInfinitePages,
+  flattenInfinitePages,
+  patchInfiniteMessage,
+} from "@/lib/infinite-messages";
+
+const TRIP_MSG_PAGE_SIZE = 50;
 
 export type TripStatus =
   | "ASSIGNED"
@@ -154,15 +168,47 @@ export function useTripsByTruck(truckId: string) {
 }
 
 // message history for a trip (loaded once on mount, then WS takes over)
+/**
+ * Paginated trip-chat history. Same shape as useMessages — flat
+ * `data: TripMessage[]` plus fetchOlder / hasOlder controls for the
+ * load-older button.
+ */
 export function useTripMessages(tripId: string) {
-  return useQuery<TripMessage[]>({
-    queryKey: ["trip-messages", tripId],
-    queryFn: async () => {
-      const res = await api.get(`/trips/${tripId}/messages`);
-      return res.data;
+  const query = useInfiniteQuery<
+    TripMessage[],
+    Error,
+    InfiniteData<TripMessage[]>,
+    readonly ["trip-messages", string],
+    string | undefined
+  >({
+    queryKey: ["trip-messages", tripId] as const,
+    queryFn: async ({ pageParam }) => {
+      const params: Record<string, string> = {};
+      if (pageParam) params.before = pageParam;
+      const res = await api.get(`/trips/${tripId}/messages`, { params });
+      return res.data as TripMessage[];
+    },
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage || lastPage.length < TRIP_MSG_PAGE_SIZE) return undefined;
+      return lastPage[0]?.createdAt;
     },
     enabled: !!tripId,
   });
+
+  const messages = useMemo(
+    () => flattenInfinitePages<TripMessage>(query.data),
+    [query.data],
+  );
+
+  return {
+    data: messages,
+    isLoading: query.isLoading,
+    error: query.error,
+    fetchOlder: query.fetchNextPage,
+    hasOlder: !!query.hasNextPage,
+    isFetchingOlder: query.isFetchingNextPage,
+  };
 }
 
 export type SessionEndReason =
@@ -227,9 +273,9 @@ export function useDeleteMessage(tripId: string) {
       return id;
     },
     onSuccess: (id) => {
-      queryClient.setQueryData<TripMessage[]>(
+      queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", tripId],
-        (old = []) => old.filter((m) => m.id !== id),
+        (prev) => filterInfinitePages(prev, (m) => m.id !== id),
       );
     },
   });
@@ -243,9 +289,10 @@ export function useEditTripMessage(tripId: string) {
       return res.data as TripMessage;
     },
     onSuccess: (updated) => {
-      queryClient.setQueryData<TripMessage[]>(
+      queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", tripId],
-        (old = []) => old.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+        (prev) =>
+          patchInfiniteMessage(prev, updated.id, (m) => ({ ...m, ...updated })),
       );
     },
   });

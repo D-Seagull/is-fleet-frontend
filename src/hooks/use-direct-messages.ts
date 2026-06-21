@@ -1,7 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
+import { useMemo } from "react";
 import { api } from "@/lib/api";
+import {
+  flattenInfinitePages,
+  patchInfiniteMessage,
+} from "@/lib/infinite-messages";
 
 const CHAT_INIT_QUERY_KEY = ["chat-init"] as const;
+const DM_PAGE_SIZE = 50;
 
 export interface MessageReplyPreview {
   id: string;
@@ -77,15 +89,49 @@ export function useConversations() {
   });
 }
 
+/**
+ * Paginated DM history. The hook keeps the `data: DirectMessage[]` shape
+ * the chat page already consumes — page flattening happens here so the
+ * UI just sees a single chronological array. Extra controls (fetchOlder,
+ * hasOlder, isFetchingOlder) drive the "Load older" button at the top.
+ */
 export function useMessages(userId: string) {
-  return useQuery<DirectMessage[]>({
-    queryKey: ["messages", userId],
-    queryFn: async () => {
-      const res = await api.get(`/direct-messages/${userId}`);
-      return res.data;
+  const query = useInfiniteQuery<
+    DirectMessage[],
+    Error,
+    InfiniteData<DirectMessage[]>,
+    readonly ["messages", string],
+    string | undefined
+  >({
+    queryKey: ["messages", userId] as const,
+    queryFn: async ({ pageParam }) => {
+      const params: Record<string, string> = {};
+      if (pageParam) params.before = pageParam;
+      const res = await api.get(`/direct-messages/${userId}`, { params });
+      return res.data as DirectMessage[];
+    },
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => {
+      // Less than a full page → no older history left.
+      if (!lastPage || lastPage.length < DM_PAGE_SIZE) return undefined;
+      return lastPage[0]?.createdAt;
     },
     enabled: !!userId,
   });
+
+  const messages = useMemo(
+    () => flattenInfinitePages<DirectMessage>(query.data),
+    [query.data],
+  );
+
+  return {
+    data: messages,
+    isLoading: query.isLoading,
+    error: query.error,
+    fetchOlder: query.fetchNextPage,
+    hasOlder: !!query.hasNextPage,
+    isFetchingOlder: query.isFetchingNextPage,
+  };
 }
 
 export function useDeleteDirectMessage() {
@@ -109,9 +155,10 @@ export function useEditDirectMessage(otherUserId: string) {
       return res.data as DirectMessage;
     },
     onSuccess: (updated) => {
-      queryClient.setQueryData<DirectMessage[]>(
+      queryClient.setQueryData<InfiniteData<DirectMessage[]>>(
         ["messages", otherUserId],
-        (old = []) => old.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+        (prev) =>
+          patchInfiniteMessage(prev, updated.id, (m) => ({ ...m, ...updated })),
       );
     },
   });

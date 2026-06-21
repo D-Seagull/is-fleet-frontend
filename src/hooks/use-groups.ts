@@ -1,5 +1,18 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
+import { useMemo } from "react";
 import { api } from "@/lib/api";
+import {
+  flattenInfinitePages,
+  patchInfiniteMessage,
+} from "@/lib/infinite-messages";
+
+const GROUP_PAGE_SIZE = 50;
 
 export interface GroupManager {
   id: string;
@@ -220,23 +233,56 @@ export function useEditGroupMessage(groupId: string) {
       return res.data as GroupMessage;
     },
     onSuccess: (updated) => {
-      queryClient.setQueryData<GroupMessage[]>(
+      queryClient.setQueryData<InfiniteData<GroupMessage[]>>(
         ["group-messages", groupId],
-        (old = []) => old.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+        (prev) =>
+          patchInfiniteMessage(prev, updated.id, (m) => ({ ...m, ...updated })),
       );
     },
   });
 }
 
+/**
+ * Paginated group history — same shape as useMessages.
+ * `data` stays a flat chronological GroupMessage[]; `fetchOlder` / `hasOlder`
+ * drive the "Load older" button.
+ */
 export function useGroupMessages(groupId: string) {
-  return useQuery<GroupMessage[]>({
-    queryKey: ["group-messages", groupId],
-    queryFn: async () => {
-      const res = await api.get(`/group-messages/${groupId}`);
-      return res.data;
+  const query = useInfiniteQuery<
+    GroupMessage[],
+    Error,
+    InfiniteData<GroupMessage[]>,
+    readonly ["group-messages", string],
+    string | undefined
+  >({
+    queryKey: ["group-messages", groupId] as const,
+    queryFn: async ({ pageParam }) => {
+      const params: Record<string, string> = {};
+      if (pageParam) params.before = pageParam;
+      const res = await api.get(`/group-messages/${groupId}`, { params });
+      return res.data as GroupMessage[];
+    },
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage || lastPage.length < GROUP_PAGE_SIZE) return undefined;
+      return lastPage[0]?.createdAt;
     },
     enabled: !!groupId,
   });
+
+  const messages = useMemo(
+    () => flattenInfinitePages<GroupMessage>(query.data),
+    [query.data],
+  );
+
+  return {
+    data: messages,
+    isLoading: query.isLoading,
+    error: query.error,
+    fetchOlder: query.fetchNextPage,
+    hasOlder: !!query.hasNextPage,
+    isFetchingOlder: query.isFetchingNextPage,
+  };
 }
 export function useGroupsForChat() {
   return useQuery<ManagerGroup[]>({

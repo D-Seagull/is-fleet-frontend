@@ -46,7 +46,9 @@ import {
 import { useManagers } from "@/hooks/use-managers";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import { appendInfiniteMessage } from "@/lib/infinite-messages";
+import { LoadOlderMessages } from "@/components/load-older-messages";
 import { cn } from "@/lib/utils";
 import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 
@@ -64,7 +66,13 @@ export default function GroupPage() {
   const [showAddManager, setShowAddManager] = useState(false);
 
   const { data: group, isLoading: loadingGroup } = useGroup(id);
-  const { data: messages, isLoading: loadingMessages } = useGroupMessages(id);
+  const {
+    data: messages,
+    isLoading: loadingMessages,
+    fetchOlder: fetchOlderGroup,
+    hasOlder: hasOlderGroup,
+    isFetchingOlder: isFetchingOlderGroup,
+  } = useGroupMessages(id);
   const { data: managers } = useManagers();
   const addManager = useAddManagerToGroup();
   const removeManager = useRemoveManagerFromGroup();
@@ -98,9 +106,9 @@ export default function GroupPage() {
     }
 
     const onNewGroupMessage = (message: GroupMessage) => {
-      queryClient.setQueryData<GroupMessage[]>(
+      queryClient.setQueryData<InfiniteData<GroupMessage[]>>(
         ["group-messages", id],
-        (prev = []) => [...prev, message],
+        (prev) => appendInfiniteMessage(prev, message),
       );
     };
     const onGroupTyping = ({
@@ -328,6 +336,11 @@ export default function GroupPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
+            <LoadOlderMessages
+              hasOlder={hasOlderGroup}
+              isFetchingOlder={isFetchingOlderGroup}
+              onLoadOlder={() => void fetchOlderGroup()}
+            />
             {messages?.map((msg) => (
               <div
                 key={msg.id}

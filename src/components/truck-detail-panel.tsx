@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import {
+  appendInfiniteMessage,
+  filterInfinitePages,
+  mapInfinitePages,
+  patchInfiniteMessage,
+} from "@/lib/infinite-messages";
+import { LoadOlderMessages } from "@/components/load-older-messages";
 import Link from "next/link";
 import { fullName } from "@/lib/format";
 import { StatusDot } from "@/components/status-dot";
@@ -1121,7 +1128,13 @@ function TripChat({
   // active session — backend enforces this too. Other roles see a notice.
   const isActiveParticipant =
     trip.driverId === currentUserId || trip.managerId === currentUserId;
-  const { data: messages = [], isLoading } = useTripMessages(trip.id);
+  const {
+    data: messages = [],
+    isLoading,
+    fetchOlder: fetchOlderTrip,
+    hasOlder: hasOlderTrip,
+    isFetchingOlder: isFetchingOlderTrip,
+  } = useTripMessages(trip.id);
   const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
   const { data: archiveSessions = [] } = useTripChatArchive(trip.id);
   const deleteMessage = useDeleteMessage(trip.id);
@@ -1245,17 +1258,19 @@ function TripChat({
         msg.session?.driverId === meId || msg.session?.managerId === meId;
       if (!isManagerRef.current && !inSession) return;
 
-      queryClient.setQueryData<TripMessage[]>(
+      queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", trip.id],
-        (old = []) => {
+        (prev) => {
           // Optimistic swap: if the server echoed our tempId, drop the
           // placeholder and append the real row in its place.
           if (msg.tempId) {
-            const withoutTemp = old.filter((m) => m.id !== msg.tempId);
-            if (withoutTemp.some((m) => m.id === msg.id)) return withoutTemp;
-            return [...withoutTemp, msg];
+            const withoutTemp = filterInfinitePages(
+              prev,
+              (m) => m.id !== msg.tempId,
+            );
+            return appendInfiniteMessage(withoutTemp, msg);
           }
-          return old.some((m) => m.id === msg.id) ? old : [...old, msg];
+          return appendInfiniteMessage(prev, msg);
         },
       );
       // Оновлюємо лічильники непрочитаних у шапці та картках
@@ -1288,19 +1303,20 @@ function TripChat({
     };
     const handleMsgDeleted = (payload: { tripId: string; messageId: string }) => {
       if (payload.tripId !== trip.id) return;
-      queryClient.setQueryData<TripMessage[]>(
+      queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", trip.id],
-        (old = []) => old.filter((m) => m.id !== payload.messageId),
+        (prev) => filterInfinitePages(prev, (m) => m.id !== payload.messageId),
       );
     };
     const handleMsgEdited = (payload: { tripId: string; message: TripMessage }) => {
       if (payload.tripId !== trip.id) return;
-      queryClient.setQueryData<TripMessage[]>(
+      queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", trip.id],
-        (old = []) =>
-          old.map((m) =>
-            m.id === payload.message.id ? { ...m, ...payload.message } : m,
-          ),
+        (prev) =>
+          patchInfiniteMessage(prev, payload.message.id, (m) => ({
+            ...m,
+            ...payload.message,
+          })),
       );
     };
     const handleDocDeleted = (payload: { tripId: string; documentId: string }) => {
@@ -1329,10 +1345,12 @@ function TripChat({
       const msgIds = new Set(payload.messageIds ?? []);
       const docIds = new Set(payload.documentIds ?? []);
       if (msgIds.size > 0) {
-        queryClient.setQueryData<TripMessage[]>(
+        queryClient.setQueryData<InfiniteData<TripMessage[]>>(
           ["trip-messages", trip.id],
-          (old = []) =>
-            old.map((m) => (msgIds.has(m.id) ? { ...m, isRead: true } : m)),
+          (prev) =>
+            mapInfinitePages(prev, (m) =>
+              msgIds.has(m.id) ? { ...m, isRead: true } : m,
+            ),
         );
       }
       if (docIds.size > 0) {
@@ -1587,9 +1605,9 @@ function TripChat({
         },
         reactions: [],
       };
-      queryClient.setQueryData<TripMessage[]>(
+      queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", trip.id],
-        (old = []) => [...old, optimistic],
+        (prev) => appendInfiniteMessage(prev, optimistic),
       );
 
       getSocket().emit("sendMessage", {
@@ -1743,7 +1761,13 @@ function TripChat({
             No messages yet. Start the conversation.
           </p>
         ) : (
-          timeline.map((item) => {
+          <>
+            <LoadOlderMessages
+              hasOlder={hasOlderTrip}
+              isFetchingOlder={isFetchingOlderTrip}
+              onLoadOlder={() => void fetchOlderTrip()}
+            />
+            {timeline.map((item) => {
             if (item.kind === "msg") {
               const msg = item.data;
 
@@ -2092,7 +2116,8 @@ function TripChat({
               </div>
               </div>
             );
-          })
+          })}
+          </>
         )}
       </div>
       {/* "↓ N new" pill — visible when user scrolled up and new messages arrived */}

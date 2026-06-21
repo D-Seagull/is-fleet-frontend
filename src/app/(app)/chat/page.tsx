@@ -36,7 +36,12 @@ import {
 import { useChatInit } from "@/hooks/use-chat-init";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import {
+  appendInfiniteMessage,
+  patchInfiniteMessage,
+} from "@/lib/infinite-messages";
+import { LoadOlderMessages } from "@/components/load-older-messages";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
@@ -177,9 +182,13 @@ function ChatPageContent() {
   useChatInit();
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
-  const { data: messages, isLoading: loadingMessages } = useMessages(
-    selectedUserId ?? "",
-  );
+  const {
+    data: messages,
+    isLoading: loadingMessages,
+    fetchOlder: fetchOlderDm,
+    hasOlder: hasOlderDm,
+    isFetchingOlder: isFetchingOlderDm,
+  } = useMessages(selectedUserId ?? "");
   const { data: chatUser } = useChatUser(selectedUserId ?? "");
   const { data: groups } = useGroupsForChat();
   const { data: teamMembers } = useTeamMembers();
@@ -209,7 +218,12 @@ function ChatPageContent() {
     (groupUnreadData?.items ?? []).map((g) => [g.groupId, g.unreadCount]),
   );
   const { data: selectedGroup } = useGroup(selectedGroupId ?? "");
-  const { data: groupMessages } = useGroupMessages(selectedGroupId ?? "");
+  const {
+    data: groupMessages,
+    fetchOlder: fetchOlderGroup,
+    hasOlder: hasOlderGroup,
+    isFetchingOlder: isFetchingOlderGroup,
+  } = useGroupMessages(selectedGroupId ?? "");
 
   const selectedUser =
     conversations?.find((c) => c.user.id === selectedUserId)?.user ?? chatUser;
@@ -413,9 +427,9 @@ function ChatPageContent() {
     const onNewDirect = (message: DirectMessage) => {
       const otherUserId =
         message.senderId === user?.id ? message.receiverId : message.senderId;
-      queryClient.setQueryData<DirectMessage[]>(
+      queryClient.setQueryData<InfiniteData<DirectMessage[]>>(
         ["messages", otherUserId],
-        (prev = []) => [...prev, message],
+        (prev) => appendInfiniteMessage(prev, message),
       );
       if (
         message.senderId !== user?.id &&
@@ -445,10 +459,9 @@ function ChatPageContent() {
       const meId = user?.id;
       const peerId =
         payload.senderId === meId ? payload.receiverId : payload.senderId;
-      queryClient.setQueryData<DirectMessage[]>(
+      queryClient.setQueryData<InfiniteData<DirectMessage[]>>(
         ["messages", peerId],
-        (prev = []) =>
-          prev.map((m) => (m.id === payload.id ? mutator(m) : m)),
+        (prev) => patchInfiniteMessage(prev, payload.id, mutator),
       );
     };
     const onDmDeleted = (payload: {
@@ -463,14 +476,14 @@ function ChatPageContent() {
       }));
     };
     const onGroupDeleted = ({ id, groupId }: { id: string; groupId: string }) => {
-      queryClient.setQueryData<GroupMessage[]>(
+      queryClient.setQueryData<InfiniteData<GroupMessage[]>>(
         ["group-messages", groupId],
-        (prev = []) =>
-          prev.map((m) =>
-            m.id === id
-              ? { ...m, content: "", deletedAt: new Date().toISOString() }
-              : m,
-          ),
+        (prev) =>
+          patchInfiniteMessage(prev, id, (m) => ({
+            ...m,
+            content: "",
+            deletedAt: new Date().toISOString(),
+          })),
       );
     };
     const onDmEdited = (updated: DirectMessage) => {
@@ -480,10 +493,10 @@ function ChatPageContent() {
       );
     };
     const onGroupEdited = (updated: GroupMessage) => {
-      queryClient.setQueryData<GroupMessage[]>(
+      queryClient.setQueryData<InfiniteData<GroupMessage[]>>(
         ["group-messages", updated.groupId],
-        (prev = []) =>
-          prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+        (prev) =>
+          patchInfiniteMessage(prev, updated.id, (m) => ({ ...m, ...updated })),
       );
     };
     socket.on("new_direct_message", onNewDirect);
@@ -527,9 +540,9 @@ function ChatPageContent() {
 
     const onNewGroupMessage = (msg: GroupMessage) => {
       if (msg.groupId !== selectedGroupId) return;
-      queryClient.setQueryData<GroupMessage[]>(
+      queryClient.setQueryData<InfiniteData<GroupMessage[]>>(
         ["group-messages", selectedGroupId],
-        (prev = []) => [...prev, msg],
+        (prev) => appendInfiniteMessage(prev, msg),
       );
     };
     const onGroupTyping = ({
@@ -1272,6 +1285,20 @@ function ChatPageContent() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
+                  <LoadOlderMessages
+                    hasOlder={
+                      selectedGroupId ? hasOlderGroup : hasOlderDm
+                    }
+                    isFetchingOlder={
+                      selectedGroupId
+                        ? isFetchingOlderGroup
+                        : isFetchingOlderDm
+                    }
+                    onLoadOlder={() => {
+                      if (selectedGroupId) void fetchOlderGroup();
+                      else if (selectedUserId) void fetchOlderDm();
+                    }}
+                  />
                   {timeline.map((item) => {
                     if (item.kind === "msg") {
                       const msg = item.data;
