@@ -79,3 +79,31 @@ export function filterInfinitePages<T extends WithId>(
     pages: data.pages.map((page) => page.filter(predicate)),
   };
 }
+
+/**
+ * Patch a single message by id regardless of the cache shape.
+ * Some caches (messages, group-messages, trip-messages) are paginated
+ * via useInfiniteQuery and so store an `InfiniteData<T[]>`. Others
+ * (conversation-documents, group-documents, documents-trip) are still
+ * plain arrays. Reaction handling has to touch both, so we dispatch on
+ * the shape we actually find.
+ */
+export function patchMessageInAnyShape<T extends WithId>(
+  data: T[] | InfiniteData<T[]> | undefined,
+  id: string,
+  mutator: (msg: T) => T,
+): T[] | InfiniteData<T[]> | undefined {
+  if (!data) return data;
+  if (Array.isArray(data)) {
+    return data.map((m) => (m.id === id ? mutator(m) : m));
+  }
+  if ("pages" in data) {
+    return {
+      ...data,
+      pages: data.pages.map((page) =>
+        page.map((m) => (m.id === id ? mutator(m) : m)),
+      ),
+    };
+  }
+  return data;
+}

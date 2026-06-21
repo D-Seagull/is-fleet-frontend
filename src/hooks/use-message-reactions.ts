@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { api } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 import { useAuthStore } from "@/store/auth";
+import { patchMessageInAnyShape } from "@/lib/infinite-messages";
 
 export type ReactionTargetType =
   | "DM"
@@ -66,34 +67,32 @@ export function useToggleReaction(type: ReactionTargetType) {
       // the row would land in "others" instead of replacing the user's
       // own reaction. Skip the patch and let the WS echo populate state.
       if (!myId) return;
-      const patch = <
+      // Three cases per existing reaction from me:
+      //   - same emoji   → remove (toggle off)
+      //   - other emoji  → replace its emoji
+      //   - none         → append a row tagged with my id
+      const reactionMutator = <
         T extends { id: string; reactions?: MessageReactionRow[] },
       >(
-        prev: T[] = [],
-      ) =>
-        prev.map((row) => {
-          if (row.id !== messageId) return row;
-          const reactions = [...(row.reactions ?? [])];
-          // Find MY existing reaction (if any). Three cases:
-          //   - I already had this exact emoji → remove (toggle off)
-          //   - I had a different emoji → replace its emoji
-          //   - I had nothing → append a row tagged with my id
-          const myIdx = reactions.findIndex((r) => r.userId === myId);
-          if (myIdx >= 0) {
-            if (reactions[myIdx].emoji === emoji) {
-              reactions.splice(myIdx, 1);
-            } else {
-              reactions[myIdx] = { ...reactions[myIdx], emoji };
-            }
+        row: T,
+      ): T => {
+        const reactions = [...(row.reactions ?? [])];
+        const myIdx = reactions.findIndex((r) => r.userId === myId);
+        if (myIdx >= 0) {
+          if (reactions[myIdx].emoji === emoji) {
+            reactions.splice(myIdx, 1);
           } else {
-            reactions.push({
-              id: `optimistic-${Date.now()}`,
-              userId: myId,
-              emoji,
-            });
+            reactions[myIdx] = { ...reactions[myIdx], emoji };
           }
-          return { ...row, reactions };
-        });
+        } else {
+          reactions.push({
+            id: `optimistic-${Date.now()}`,
+            userId: myId,
+            emoji,
+          });
+        }
+        return { ...row, reactions };
+      };
 
       const caches: string[] = (() => {
         switch (type) {
@@ -115,7 +114,15 @@ export function useToggleReaction(type: ReactionTargetType) {
         queryClient
           .getQueryCache()
           .findAll({ predicate: (q) => q.queryKey[0] === key })
-          .forEach((q) => queryClient.setQueryData(q.queryKey, patch));
+          .forEach((q) =>
+            queryClient.setQueryData(q.queryKey, (prev: unknown) =>
+              patchMessageInAnyShape(
+                prev as Parameters<typeof patchMessageInAnyShape>[0],
+                messageId,
+                reactionMutator,
+              ),
+            ),
+          );
       });
     },
   });
@@ -143,29 +150,38 @@ export function useReactionsSocketSync(opts?: {
       reactions: MessageReactionRow[];
     }) => {
       const { targetType, targetId, reactions } = payload;
-      const update = <T extends { id: string; reactions?: MessageReactionRow[] }>(
-        prev: T[] = [],
-      ) =>
-        prev.map((m) =>
-          m.id === targetId ? ({ ...m, reactions } as T) : m,
-        );
+      const mutator = <
+        T extends { id: string; reactions?: MessageReactionRow[] },
+      >(
+        m: T,
+      ): T => ({ ...m, reactions });
 
-      if (targetType === "DM" && dmOther) {
-        queryClient.setQueryData(["messages", dmOther], update);
-      } else if (targetType === "GROUP" && groupId) {
-        queryClient.setQueryData(["group-messages", groupId], update);
-      } else if (targetType === "TRIP" && tripId) {
-        queryClient.setQueryData(["trip-messages", tripId], update);
-      } else if (targetType === "DM_DOC" && dmOther) {
-        queryClient.setQueryData(
-          ["conversation-documents", dmOther],
-          update,
-        );
-      } else if (targetType === "GROUP_DOC" && groupId) {
-        queryClient.setQueryData(["group-documents", groupId], update);
-      } else if (targetType === "TRIP_DOC" && tripId) {
-        queryClient.setQueryData(["documents-trip", tripId], update);
-      }
+      const key = (() => {
+        switch (targetType) {
+          case "DM":
+            return dmOther ? (["messages", dmOther] as const) : null;
+          case "GROUP":
+            return groupId ? (["group-messages", groupId] as const) : null;
+          case "TRIP":
+            return tripId ? (["trip-messages", tripId] as const) : null;
+          case "DM_DOC":
+            return dmOther
+              ? (["conversation-documents", dmOther] as const)
+              : null;
+          case "GROUP_DOC":
+            return groupId ? (["group-documents", groupId] as const) : null;
+          case "TRIP_DOC":
+            return tripId ? (["documents-trip", tripId] as const) : null;
+        }
+      })();
+      if (!key) return;
+      queryClient.setQueryData(key, (prev: unknown) =>
+        patchMessageInAnyShape(
+          prev as Parameters<typeof patchMessageInAnyShape>[0],
+          targetId,
+          mutator,
+        ),
+      );
     };
     socket.on("reaction_changed", onChange);
     return () => {
