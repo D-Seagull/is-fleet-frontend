@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
+const CHAT_INIT_QUERY_KEY = ["chat-init"] as const;
+
 export interface MessageReplyPreview {
   id: string;
   content: string;
@@ -56,15 +58,21 @@ export interface Conversation {
 }
 
 export function useConversations() {
+  const queryClient = useQueryClient();
   return useQuery<Conversation[]>({
     queryKey: ["conversations"],
     queryFn: async () => {
       const res = await api.get("/direct-messages/conversations");
       return res.data;
     },
-    // useChatInit pre-populates the cache and socket events invalidate on
-    // change, so a long staleTime stops React Query from auto-refetching
-    // on remount and turning the /chat page mount into N redundant calls.
+    // On the /chat page useChatInit mounts in the same render tick and
+    // seeds the conversations cache when its request resolves. If we just
+    // rely on staleTime we still fetch on the first cold mount because
+    // both queries see an empty cache. Skip the fetch when chat-init is
+    // already present (or in-flight) — its setQueryData will populate us.
+    // On other pages where chat-init never runs, getQueryState returns
+    // undefined and the fetch happens as usual.
+    enabled: !queryClient.getQueryState(CHAT_INIT_QUERY_KEY),
     staleTime: 60_000,
   });
 }
