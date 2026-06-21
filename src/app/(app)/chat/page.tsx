@@ -432,56 +432,59 @@ function ChatPageContent() {
         queryKey: ["conversation-documents", readBy],
       });
     };
-    const onDmDeleted = ({ id }: { id: string }) => {
-      // Flip the message to its "deleted" state in every open DM cache.
-      queryClient
-        .getQueryCache()
-        .findAll({ predicate: (q) => q.queryKey[0] === "messages" })
-        .forEach((q) => {
-          queryClient.setQueryData<DirectMessage[]>(q.queryKey, (prev = []) =>
-            prev.map((m) =>
-              m.id === id
-                ? { ...m, content: "", deletedAt: new Date().toISOString() }
-                : m,
-            ),
-          );
-        });
+    // Patch a single DM cache slot scoped to the (current user, peer) pair.
+    // The backend now includes senderId + receiverId on delete events and
+    // the edited message object already carries them, so we can target the
+    // exact ["messages", peerId] key instead of iterating every cached
+    // DM conversation (which gets expensive for managers who open many
+    // chats during a shift).
+    const patchDm = (
+      payload: { id: string; senderId: string; receiverId: string },
+      mutator: (msg: DirectMessage) => DirectMessage,
+    ) => {
+      const meId = user?.id;
+      const peerId =
+        payload.senderId === meId ? payload.receiverId : payload.senderId;
+      queryClient.setQueryData<DirectMessage[]>(
+        ["messages", peerId],
+        (prev = []) =>
+          prev.map((m) => (m.id === payload.id ? mutator(m) : m)),
+      );
     };
-    const onGroupDeleted = ({ id }: { id: string }) => {
-      queryClient
-        .getQueryCache()
-        .findAll({ predicate: (q) => q.queryKey[0] === "group-messages" })
-        .forEach((q) => {
-          queryClient.setQueryData<GroupMessage[]>(q.queryKey, (prev = []) =>
-            prev.map((m) =>
-              m.id === id
-                ? { ...m, content: "", deletedAt: new Date().toISOString() }
-                : m,
-            ),
-          );
-        });
+    const onDmDeleted = (payload: {
+      id: string;
+      senderId: string;
+      receiverId: string;
+    }) => {
+      patchDm(payload, (m) => ({
+        ...m,
+        content: "",
+        deletedAt: new Date().toISOString(),
+      }));
+    };
+    const onGroupDeleted = ({ id, groupId }: { id: string; groupId: string }) => {
+      queryClient.setQueryData<GroupMessage[]>(
+        ["group-messages", groupId],
+        (prev = []) =>
+          prev.map((m) =>
+            m.id === id
+              ? { ...m, content: "", deletedAt: new Date().toISOString() }
+              : m,
+          ),
+      );
     };
     const onDmEdited = (updated: DirectMessage) => {
-      // Patch every DM cache that may hold this message (sender's and
-      // receiver's views are stored under different `messages` keys).
-      queryClient
-        .getQueryCache()
-        .findAll({ predicate: (q) => q.queryKey[0] === "messages" })
-        .forEach((q) => {
-          queryClient.setQueryData<DirectMessage[]>(q.queryKey, (prev = []) =>
-            prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
-          );
-        });
+      patchDm(
+        { id: updated.id, senderId: updated.senderId, receiverId: updated.receiverId },
+        (m) => ({ ...m, ...updated }),
+      );
     };
     const onGroupEdited = (updated: GroupMessage) => {
-      queryClient
-        .getQueryCache()
-        .findAll({ predicate: (q) => q.queryKey[0] === "group-messages" })
-        .forEach((q) => {
-          queryClient.setQueryData<GroupMessage[]>(q.queryKey, (prev = []) =>
-            prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
-          );
-        });
+      queryClient.setQueryData<GroupMessage[]>(
+        ["group-messages", updated.groupId],
+        (prev = []) =>
+          prev.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)),
+      );
     };
     socket.on("new_direct_message", onNewDirect);
     socket.on("messages_read", onMessagesRead);
