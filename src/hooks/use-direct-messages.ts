@@ -62,6 +62,10 @@ export function useConversations() {
       const res = await api.get("/direct-messages/conversations");
       return res.data;
     },
+    // useChatInit pre-populates the cache and socket events invalidate on
+    // change, so a long staleTime stops React Query from auto-refetching
+    // on remount and turning the /chat page mount into N redundant calls.
+    staleTime: 60_000,
   });
 }
 

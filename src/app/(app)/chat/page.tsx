@@ -33,6 +33,7 @@ import {
   useEditDirectMessage,
   DirectMessage,
 } from "@/hooks/use-direct-messages";
+import { useChatInit } from "@/hooks/use-chat-init";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
@@ -169,6 +170,11 @@ function ChatPageContent() {
   // single reply can have both a caption AND a file (Telegram-style).
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
+  // Pre-fetches conversations + dm/group/trip unread summaries in a single
+  // round-trip and seeds the corresponding query caches, so the dependent
+  // hooks below (useConversations, useDmUnreadSummary, etc.) read from
+  // cache instantly on mount.
+  useChatInit();
   const { data: conversations, isLoading: loadingConversations } =
     useConversations();
   const { data: messages, isLoading: loadingMessages } = useMessages(
