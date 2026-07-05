@@ -1705,9 +1705,10 @@ function TripChat({
         </div>
       )}
 
-      {/* Archive banner — only admins/teamleads see it. Drivers/managers see
-          system messages inline in the chat instead. */}
-      {isManager && archiveSessions.length > 0 && (
+      {/* Archive banner — visible to every role. Whether the archive
+          contains anything for this user is decided by the server (see
+          TripChatSessionsService.findArchived). */}
+      {archiveSessions.length > 0 && (
         <div className="shrink-0 border-y bg-muted/30 px-3 py-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
             <History className="h-3.5 w-3.5 shrink-0" />
@@ -1727,14 +1728,12 @@ function TripChat({
         </div>
       )}
 
-      {isManager && (
-        <ChatArchiveDialog
-          open={showArchive}
-          onOpenChange={setShowArchive}
-          tripId={trip.id}
-          currentUserId={currentUserId}
-        />
-      )}
+      <ChatArchiveDialog
+        open={showArchive}
+        onOpenChange={setShowArchive}
+        tripId={trip.id}
+        currentUserId={currentUserId}
+      />
 
       <div className="relative flex-1 min-h-0">
       <div
