@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Truck, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,13 +120,12 @@ export default function LoginPage() {
                   Remember me
                 </Label>
               </div>
-              <Button
-                type="button"
-                variant="link"
-                className="h-auto p-0 text-sm"
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary underline-offset-4 hover:underline"
               >
                 Forgot password?
-              </Button>
+              </Link>
             </div>
             {error && (
               <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
