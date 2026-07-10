@@ -32,6 +32,7 @@ import {
   useDeleteDirectMessage,
   useEditDirectMessage,
   DirectMessage,
+  type Conversation,
 } from "@/hooks/use-direct-messages";
 import { useChatInit } from "@/hooks/use-chat-init";
 import { useAuthStore } from "@/store/auth";
@@ -300,22 +301,26 @@ function ChatPageContent() {
   };
   const managerConvIds = new Set(managerConvs.map((c) => c.user.id));
   const driverConvIds = new Set(driverConvs.map((c) => c.user.id));
-  const extraTeamMembers = !searchQ
-    ? []
-    : (teamMembers ?? []).filter(
-        (m) =>
-          m.id !== user?.id &&
-          !managerConvIds.has(m.id) &&
-          matchesQuery(fullName(m), m.phone, m.email),
-      );
-  const extraDrivers = !searchQ
-    ? []
-    : (allDrivers ?? []).filter(
-        (d) =>
-          d.id !== user?.id &&
-          !driverConvIds.has(d.id) &&
-          matchesQuery(fullName(d), d.phone, d.email),
-      );
+  // Managers-tab mirrors Drivers: permanent "All team" directory under Recent.
+  // Search narrows to matches; otherwise the full team minus users already in
+  // Recent. ADMIN is a system role — managers don't chat with them, so drop
+  // ADMIN from the directory (useTeamMembers keeps them for other pages).
+  const extraTeamMembers = (teamMembers ?? []).filter((m) => {
+    if (m.id === user?.id) return false;
+    if (m.role === "ADMIN") return false;
+    if (managerConvIds.has(m.id)) return false;
+    if (!searchQ) return true;
+    return matchesQuery(fullName(m), m.phone, m.email);
+  });
+  // Drivers-tab shows a permanent "All drivers" directory below "Recent".
+  // Under a search query, filter to matches; otherwise show the full list
+  // minus anyone who already has a conversation (they appear under Recent).
+  const extraDrivers = (allDrivers ?? []).filter((d) => {
+    if (d.id === user?.id) return false;
+    if (driverConvIds.has(d.id)) return false;
+    if (!searchQ) return true;
+    return matchesQuery(fullName(d), d.phone, d.email);
+  });
 
   type SearchableUser = {
     id: string;
@@ -437,7 +442,42 @@ function ChatPageContent() {
       ) {
         markMessagesAsRead(message.senderId);
       } else {
-        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        // Bump the peer's row locally so it re-sorts to the top of Recent
+        // and its lastMessage/unreadCount update without a network hit.
+        // If the peer has no row yet — genuinely first message ever — we
+        // fall back to refetching chat-init so a full Conversation object
+        // (with user profile) enters the cache. On /chat the plain
+        // ["conversations"] key is a no-op because useConversations is
+        // disabled while chat-init owns the cache.
+        const existing =
+          queryClient.getQueryData<Conversation[]>(["conversations"]) ?? [];
+        const alreadyKnown = existing.some((c) => c.user.id === otherUserId);
+
+        if (alreadyKnown) {
+          queryClient.setQueryData<Conversation[]>(["conversations"], (prev) => {
+            if (!prev) return prev;
+            const isIncoming = message.senderId !== user?.id;
+            const patched = prev.map((c) =>
+              c.user.id === otherUserId
+                ? {
+                    ...c,
+                    lastMessage: message,
+                    unreadCount: isIncoming
+                      ? c.unreadCount + 1
+                      : c.unreadCount,
+                  }
+                : c,
+            );
+            return [...patched].sort(
+              (a, b) =>
+                new Date(b.lastMessage.createdAt).getTime() -
+                new Date(a.lastMessage.createdAt).getTime(),
+            );
+          });
+        } else {
+          queryClient.invalidateQueries({ queryKey: ["chat-init"] });
+          queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        }
       }
     };
     const onMessagesRead = ({ readBy }: { readBy: string }) => {
@@ -993,9 +1033,6 @@ function ChatPageContent() {
               </p>
             )}
 
-            <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
-              Direct Messages
-            </div>
             {loadingConversations ? (
               <div className="flex justify-center p-4">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -1003,15 +1040,22 @@ function ChatPageContent() {
             ) : filteredManagerConvs.length === 0 &&
               extraTeamMembers.length === 0 ? (
               <p className="text-center text-muted-foreground p-4 text-sm">
-                {searchQ ? "No matches" : "No conversations yet"}
+                {searchQ ? "No matches" : "No team members in the company yet"}
               </p>
             ) : (
               <>
-                {filteredManagerConvs.map((conv) => renderConvButton(conv))}
+                {filteredManagerConvs.length > 0 && (
+                  <>
+                    <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
+                      Recent
+                    </div>
+                    {filteredManagerConvs.map((conv) => renderConvButton(conv))}
+                  </>
+                )}
                 {extraTeamMembers.length > 0 && (
                   <>
                     <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
-                      Find people
+                      All team ({extraTeamMembers.length})
                     </div>
                     {extraTeamMembers.map((m) => renderUserButton(m))}
                   </>
@@ -1031,15 +1075,22 @@ function ChatPageContent() {
             ) : filteredDriverConvs.length === 0 &&
               extraDrivers.length === 0 ? (
               <p className="text-center text-muted-foreground p-4 text-sm">
-                {searchQ ? "No matches" : "No conversations yet"}
+                {searchQ ? "No matches" : "No drivers in the company yet"}
               </p>
             ) : (
               <>
-                {filteredDriverConvs.map((conv) => renderConvButton(conv))}
+                {filteredDriverConvs.length > 0 && (
+                  <>
+                    <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Recent
+                    </div>
+                    {filteredDriverConvs.map((conv) => renderConvButton(conv))}
+                  </>
+                )}
                 {extraDrivers.length > 0 && (
                   <>
                     <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
-                      Find people
+                      All drivers ({extraDrivers.length})
                     </div>
                     {extraDrivers.map((d) => renderUserButton(d))}
                   </>
