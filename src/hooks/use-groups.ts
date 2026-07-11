@@ -141,6 +141,23 @@ export function useDeleteGroup() {
   });
 }
 
+// "Hide for me" — remove the group from this user's sidebar only. The
+// group and its membership are left intact so other members are unaffected.
+export function useHideGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (groupId: string) => {
+      const res = await api.post(`/groups/${groupId}/hide`);
+      return res.data;
+    },
+    onSuccess: (_, groupId) => {
+      queryClient.setQueryData<ManagerGroup[]>(["manager-groups"], (prev) =>
+        prev ? prev.filter((g) => g.id !== groupId) : prev,
+      );
+    },
+  });
+}
+
 export function useAddManagerToGroup() {
   const queryClient = useQueryClient();
   return useMutation({

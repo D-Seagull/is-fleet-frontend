@@ -31,9 +31,21 @@ import {
   useChatUser,
   useDeleteDirectMessage,
   useEditDirectMessage,
+  useHideConversation,
   DirectMessage,
   type Conversation,
 } from "@/hooks/use-direct-messages";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useChatInit } from "@/hooks/use-chat-init";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
@@ -59,9 +71,11 @@ import {
   useGroup,
   useGroupMessages,
   useRemoveManagerFromGroup,
+  useDeleteGroup,
   useDeleteGroupMessage,
   useEditGroupMessage,
   GroupMessage,
+  type ManagerGroup,
 } from "@/hooks/use-groups";
 import { useTeamMembers } from "@/hooks/use-managers";
 import { useDrivers } from "@/hooks/use-drivers";
@@ -123,6 +137,70 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// Overlay kebab (⋯) on a conversation / group row. Hidden until row-hover
+// on desktop; always visible on touch devices where hover-intent doesn't
+// exist. Uses Radix's recommended AlertDialogTrigger-inside-DropdownMenuItem
+// pattern so the dropdown closes into the confirmation dialog cleanly and
+// AlertDialogAction auto-dismisses the dialog when clicked.
+function RowKebab({
+  label,
+  icon,
+  confirmTitle,
+  confirmDescription,
+  onConfirm,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  confirmTitle: string;
+  confirmDescription: string;
+  onConfirm: () => void;
+}) {
+  return (
+    <AlertDialog>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label={label}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-muted opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity"
+          >
+            <MoreVertical className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem
+              onSelect={(e) => e.preventDefault()}
+              className="text-destructive focus:text-destructive"
+            >
+              {icon}
+              <span className="ml-2">{label}</span>
+            </DropdownMenuItem>
+          </AlertDialogTrigger>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{confirmTitle}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {confirmDescription}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+              {label}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+  );
+}
+
 function ChatPageContent() {
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
@@ -138,6 +216,7 @@ function ChatPageContent() {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedUserIdRef = useRef(selectedUserId);
+  const selectedGroupIdRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -199,6 +278,8 @@ function ChatPageContent() {
   const removeMember = useRemoveManagerFromGroup();
   const deleteDm = useDeleteDirectMessage();
   const deleteGroupMsg = useDeleteGroupMessage();
+  const hideConversation = useHideConversation();
+  const deleteGroup = useDeleteGroup();
   const editDm = useEditDirectMessage(selectedUserId ?? "");
   const editGroupMsg = useEditGroupMessage(selectedGroupId ?? "");
   const dmDocUpload = useUploadConversationDocs(selectedUserId ?? "");
@@ -352,52 +433,127 @@ function ChatPageContent() {
   const renderConvButton = (conv: Conv) => {
     const hasUnread = conv.unreadCount > 0;
     return (
-      <button
-        key={conv.user.id}
-        onClick={() => handleSelectUser(conv.user.id)}
-        className={cn(
-          "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
-          selectedUserId === conv.user.id && "bg-muted",
-          hasUnread &&
-            selectedUserId !== conv.user.id &&
-            "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
-        )}
-      >
-        <span className="relative shrink-0">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={conv.user?.avatar ?? undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary">{initials(conv.user)}</AvatarFallback>
-          </Avatar>
-          <StatusDot
-            user={conv.user}
-            size="sm"
-            className="absolute -bottom-0.5 -right-0.5"
-          />
-        </span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            {hasUnread && (
-              <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
-            )}
-            <p
-              className={cn(
-                "truncate flex-1",
-                hasUnread ? "font-bold" : "font-medium",
+      <div key={conv.user.id} className="group relative">
+        <button
+          onClick={() => handleSelectUser(conv.user.id)}
+          className={cn(
+            "w-full flex items-center gap-3 p-4 pr-12 text-left hover:bg-muted/50 transition-colors",
+            selectedUserId === conv.user.id && "bg-muted",
+            hasUnread &&
+              selectedUserId !== conv.user.id &&
+              "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+          )}
+        >
+          <span className="relative shrink-0">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={conv.user?.avatar ?? undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary">{initials(conv.user)}</AvatarFallback>
+            </Avatar>
+            <StatusDot
+              user={conv.user}
+              size="sm"
+              className="absolute -bottom-0.5 -right-0.5"
+            />
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              {hasUnread && (
+                <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
               )}
-            >
-              {fullName(conv.user) || conv.user.role}
+              <p
+                className={cn(
+                  "truncate flex-1",
+                  hasUnread ? "font-bold" : "font-medium",
+                )}
+              >
+                {fullName(conv.user) || conv.user.role}
+              </p>
+              {hasUnread && (
+                <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+                  {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground truncate">
+              {conv.lastMessage.content}
             </p>
-            {hasUnread && (
-              <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
-                {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
-              </span>
-            )}
           </div>
-          <p className="text-sm text-muted-foreground truncate">
-            {conv.lastMessage.content}
-          </p>
-        </div>
-      </button>
+        </button>
+        <RowKebab
+          label="Delete for me"
+          icon={<Trash2 className="h-4 w-4" />}
+          confirmTitle="Delete conversation?"
+          confirmDescription={`Remove your chat with ${fullName(conv.user) || conv.user.role}. If they message you again the chat will reappear.`}
+          onConfirm={() => hideConversation.mutate(conv.user.id)}
+        />
+      </div>
+    );
+  };
+
+  const renderGroupButton = (group: ManagerGroup) => {
+    const unread = groupUnreadMap.get(group.id) ?? 0;
+    const hasUnread = unread > 0;
+    return (
+      <div key={`group-${group.id}`} className="group relative">
+        <button
+          onClick={() => handleSelectGroup(group.id)}
+          className={cn(
+            "w-full flex items-center gap-3 p-4 pr-12 text-left hover:bg-muted/50 transition-colors",
+            selectedGroupId === group.id && "bg-muted",
+            hasUnread &&
+              selectedGroupId !== group.id &&
+              "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+          )}
+        >
+          <Avatar className="h-10 w-10 shrink-0">
+            <AvatarImage src={group.avatar ?? undefined} alt={group.name} />
+            <AvatarFallback className="bg-primary/20 text-primary">
+              {group.name ? group.name.charAt(0).toUpperCase() : "#"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              {hasUnread && (
+                <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
+              )}
+              <p
+                className={cn(
+                  "truncate flex-1",
+                  hasUnread ? "font-bold" : "font-medium",
+                )}
+              >
+                {group.name}
+              </p>
+              {hasUnread && (
+                <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground truncate">
+              {group.managers.length} members
+            </p>
+          </div>
+        </button>
+        {group.createdBy === user?.id && (
+          <RowKebab
+            label="Delete"
+            icon={<Trash2 className="h-4 w-4" />}
+            confirmTitle={`Delete "${group.name}"?`}
+            confirmDescription="This will delete the group for everyone. This cannot be undone."
+            onConfirm={() =>
+              deleteGroup.mutate(group.id, {
+                onError: (err) => {
+                  const msg =
+                    (err as { response?: { data?: { message?: string } } })
+                      ?.response?.data?.message ?? err.message;
+                  window.alert(`Cannot delete group: ${msg}`);
+                },
+              })
+            }
+          />
+        )}
+      </div>
     );
   };
 
@@ -413,6 +569,10 @@ function ChatPageContent() {
   useEffect(() => {
     selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
+
+  useEffect(() => {
+    selectedGroupIdRef.current = selectedGroupId;
+  }, [selectedGroupId]);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -539,12 +699,25 @@ function ChatPageContent() {
           patchInfiniteMessage(prev, updated.id, (m) => ({ ...m, ...updated })),
       );
     };
+    // Backend broadcasts group_deleted to `group:{id}` room and to each
+    // member's `user:{memberId}` room after a successful delete. Drop the
+    // row from the cache and clear selection if the open chat is the one
+    // that vanished.
+    const onGroupDeletedForAll = (payload: { id: string }) => {
+      queryClient.setQueryData<ManagerGroup[]>(["manager-groups"], (prev) =>
+        prev ? prev.filter((g) => g.id !== payload.id) : prev,
+      );
+      if (selectedGroupIdRef.current === payload.id) {
+        setSelectedGroupId(null);
+      }
+    };
     socket.on("new_direct_message", onNewDirect);
     socket.on("messages_read", onMessagesRead);
     socket.on("dm_message_deleted", onDmDeleted);
     socket.on("group_message_deleted", onGroupDeleted);
     socket.on("dm_message_edited", onDmEdited);
     socket.on("group_message_edited", onGroupEdited);
+    socket.on("group_deleted", onGroupDeletedForAll);
     return () => {
       // Pass specific callback — otherwise socket.off(event) wipes ALL
       // listeners for that event, including the global ones in AppLayoutInner.
@@ -554,6 +727,7 @@ function ChatPageContent() {
       socket.off("group_message_deleted", onGroupDeleted);
       socket.off("dm_message_edited", onDmEdited);
       socket.off("group_message_edited", onGroupEdited);
+      socket.off("group_deleted", onGroupDeletedForAll);
     };
   }, [user?.id, queryClient, markMessagesAsRead]);
 
@@ -855,53 +1029,7 @@ function ChatPageContent() {
               </Button>
             </div>
             {filteredGroups.length > 0 ? (
-              filteredGroups.map((group) => {
-                const unread = groupUnreadMap.get(group.id) ?? 0;
-                const hasUnread = unread > 0;
-                return (
-                  <button
-                    key={`group-${group.id}`}
-                    onClick={() => handleSelectGroup(group.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
-                      selectedGroupId === group.id && "bg-muted",
-                      hasUnread &&
-                        selectedGroupId !== group.id &&
-                        "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
-                    )}
-                  >
-                    <Avatar className="h-10 w-10 shrink-0">
-                      <AvatarImage src={group.avatar ?? undefined} alt={group.name} />
-                      <AvatarFallback className="bg-primary/20 text-primary">
-                        {group.name ? group.name.charAt(0).toUpperCase() : "#"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        {hasUnread && (
-                          <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
-                        )}
-                        <p
-                          className={cn(
-                            "truncate flex-1",
-                            hasUnread ? "font-bold" : "font-medium",
-                          )}
-                        >
-                          {group.name}
-                        </p>
-                        {hasUnread && (
-                          <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
-                            {unread > 99 ? "99+" : unread}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {group.managers.length} members
-                      </p>
-                    </div>
-                  </button>
-                );
-              })
+              filteredGroups.map((group) => renderGroupButton(group))
             ) : (
               <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
                 No matching groups
@@ -976,53 +1104,7 @@ function ChatPageContent() {
               </Button>
             </div>
             {filteredGroups.length > 0 ? (
-              filteredGroups.map((group) => {
-                const unread = groupUnreadMap.get(group.id) ?? 0;
-                const hasUnread = unread > 0;
-                return (
-                  <button
-                    key={`group-${group.id}`}
-                    onClick={() => handleSelectGroup(group.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors",
-                      selectedGroupId === group.id && "bg-muted",
-                      hasUnread &&
-                        selectedGroupId !== group.id &&
-                        "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
-                    )}
-                  >
-                    <Avatar className="h-10 w-10 shrink-0">
-                      <AvatarImage src={group.avatar ?? undefined} alt={group.name} />
-                      <AvatarFallback className="bg-primary/20 text-primary">
-                        {group.name ? group.name.charAt(0).toUpperCase() : "#"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        {hasUnread && (
-                          <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
-                        )}
-                        <p
-                          className={cn(
-                            "truncate flex-1",
-                            hasUnread ? "font-bold" : "font-medium",
-                          )}
-                        >
-                          {group.name}
-                        </p>
-                        {hasUnread && (
-                          <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
-                            {unread > 99 ? "99+" : unread}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {group.managers.length} members
-                      </p>
-                    </div>
-                  </button>
-                );
-              })
+              filteredGroups.map((group) => renderGroupButton(group))
             ) : searchQ ? (
               <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
                 No matching groups

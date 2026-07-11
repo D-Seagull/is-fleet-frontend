@@ -191,3 +191,24 @@ export function useMarkAsRead() {
     },
   });
 }
+
+// "Delete for me" — hide the DM conversation with `peerId` from Recent.
+// Patches the conversations cache optimistically so the row disappears
+// without waiting for a refetch. Also invalidates chat-init so the next
+// hydrate matches the server state.
+export function useHideConversation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (peerId: string) => {
+      const res = await api.post(`/direct-messages/${peerId}/hide`);
+      return res.data;
+    },
+    onSuccess: (_, peerId) => {
+      queryClient.setQueryData<Conversation[]>(["conversations"], (prev) =>
+        prev ? prev.filter((c) => c.user.id !== peerId) : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: ["chat-init"] });
+    },
+  });
+}
