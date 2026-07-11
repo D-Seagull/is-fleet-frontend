@@ -722,6 +722,14 @@ function ChatPageContent() {
         return [group, ...prev];
       });
     };
+    // The group's name / avatar / member list was edited — swap the row
+    // in place so every member's sidebar reflects the change instantly.
+    const onGroupUpdated = (group: ManagerGroup) => {
+      queryClient.setQueryData<ManagerGroup[]>(["manager-groups"], (prev) => {
+        if (!prev) return prev;
+        return prev.map((g) => (g.id === group.id ? group : g));
+      });
+    };
     // An existing group I'm already in gained a new member — patch the
     // managers list so the member count / avatars in the sidebar refresh.
     const onGroupMemberAdded = (payload: {
@@ -751,6 +759,7 @@ function ChatPageContent() {
     socket.on("group_message_edited", onGroupEdited);
     socket.on("group_deleted", onGroupDeletedForAll);
     socket.on("group_added", onGroupAdded);
+    socket.on("group_updated", onGroupUpdated);
     socket.on("group_member_added", onGroupMemberAdded);
     return () => {
       // Pass specific callback — otherwise socket.off(event) wipes ALL
@@ -763,6 +772,7 @@ function ChatPageContent() {
       socket.off("group_message_edited", onGroupEdited);
       socket.off("group_deleted", onGroupDeletedForAll);
       socket.off("group_added", onGroupAdded);
+      socket.off("group_updated", onGroupUpdated);
       socket.off("group_member_added", onGroupMemberAdded);
     };
   }, [user?.id, queryClient, markMessagesAsRead]);
