@@ -711,6 +711,38 @@ function ChatPageContent() {
         setSelectedGroupId(null);
       }
     };
+    // A new group I've just been added to arrives here; prepend so it
+    // shows up at the top of the list. Guard against duplicates in case the
+    // adder is also the caller of the mutation (their optimistic invalidate
+    // may have already brought it in).
+    const onGroupAdded = (group: ManagerGroup) => {
+      queryClient.setQueryData<ManagerGroup[]>(["manager-groups"], (prev) => {
+        if (!prev) return [group];
+        if (prev.some((g) => g.id === group.id)) return prev;
+        return [group, ...prev];
+      });
+    };
+    // An existing group I'm already in gained a new member — patch the
+    // managers list so the member count / avatars in the sidebar refresh.
+    const onGroupMemberAdded = (payload: {
+      groupId: string;
+      manager: ManagerGroup["managers"][number]["manager"];
+    }) => {
+      queryClient.setQueryData<ManagerGroup[]>(["manager-groups"], (prev) => {
+        if (!prev) return prev;
+        return prev.map((g) => {
+          if (g.id !== payload.groupId) return g;
+          if (g.managers.some((m) => m.manager.id === payload.manager.id)) return g;
+          return {
+            ...g,
+            managers: [
+              ...g.managers,
+              { id: `${payload.groupId}:${payload.manager.id}`, manager: payload.manager },
+            ],
+          };
+        });
+      });
+    };
     socket.on("new_direct_message", onNewDirect);
     socket.on("messages_read", onMessagesRead);
     socket.on("dm_message_deleted", onDmDeleted);
@@ -718,6 +750,8 @@ function ChatPageContent() {
     socket.on("dm_message_edited", onDmEdited);
     socket.on("group_message_edited", onGroupEdited);
     socket.on("group_deleted", onGroupDeletedForAll);
+    socket.on("group_added", onGroupAdded);
+    socket.on("group_member_added", onGroupMemberAdded);
     return () => {
       // Pass specific callback — otherwise socket.off(event) wipes ALL
       // listeners for that event, including the global ones in AppLayoutInner.
@@ -728,6 +762,8 @@ function ChatPageContent() {
       socket.off("dm_message_edited", onDmEdited);
       socket.off("group_message_edited", onGroupEdited);
       socket.off("group_deleted", onGroupDeletedForAll);
+      socket.off("group_added", onGroupAdded);
+      socket.off("group_member_added", onGroupMemberAdded);
     };
   }, [user?.id, queryClient, markMessagesAsRead]);
 
