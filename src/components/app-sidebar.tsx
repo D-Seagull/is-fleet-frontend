@@ -178,7 +178,12 @@ export function AppSidebar({
                       tooltip={item.title}
                     >
                       <Link href={item.href} onClick={handleNavClick}>
-                        <item.icon className="h-4 w-4" />
+                        <span className="relative">
+                          <item.icon className="h-4 w-4" />
+                          {item.badge !== undefined && item.badge > 0 && (
+                            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive ring-2 ring-sidebar" />
+                          )}
+                        </span>
                         <span>{item.title}</span>
                         {item.badge !== undefined && item.badge > 0 && (
                           <span className="ml-auto inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">

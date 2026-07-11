@@ -560,7 +560,19 @@ function ChatPageContent() {
   const markMessagesAsRead = useCallback(
     (userId: string) => {
       getSocket().emit("mark_as_read", { senderId: userId });
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      // useConversations is disabled on /chat while chat-init owns the cache,
+      // so an invalidate on ["conversations"] alone wouldn't refetch and the
+      // unread badge would linger until the next chat-init hydrate. Patch
+      // the peer's row to 0 optimistically for an instant repaint, then
+      // invalidate chat-init so the next fresh fetch matches server state.
+      queryClient.setQueryData<Conversation[]>(["conversations"], (prev) =>
+        prev
+          ? prev.map((c) =>
+              c.user.id === userId ? { ...c, unreadCount: 0 } : c,
+            )
+          : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: ["chat-init"] });
       queryClient.invalidateQueries({ queryKey: ["dm-unread-summary"] });
     },
     [queryClient],
@@ -573,6 +585,41 @@ function ChatPageContent() {
   useEffect(() => {
     selectedGroupIdRef.current = selectedGroupId;
   }, [selectedGroupId]);
+
+  // Bell-notification clicks push `/chat?userId=X` even when we're already on
+  // /chat. useState only reads the query on first mount, so without this
+  // sync the URL changes but the sidebar stays put.
+  useEffect(() => {
+    if (userIdFromUrl && userIdFromUrl !== selectedUserId) {
+      handleSelectUser(userIdFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIdFromUrl]);
+
+  useEffect(() => {
+    if (groupIdFromUrl && groupIdFromUrl !== selectedGroupId) {
+      handleSelectGroup(groupIdFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupIdFromUrl]);
+
+  // Keep the sidebar tab aligned with whoever is currently selected. Fires
+  // on mount (URL-driven initial selection) and after handleSelectUser too,
+  // so a bell click that reveals a manager auto-switches away from Drivers.
+  // Deps use the raw query results (stable refs) instead of the per-render
+  // driverConvs / managerConvs filters — otherwise every render creates a
+  // fresh array reference and the effect re-fires, overriding any manual
+  // tab click the user just made.
+  useEffect(() => {
+    if (!selectedUserId) return;
+    const conv =
+      conversations?.find((c) => c.user.id === selectedUserId)?.user ??
+      (allDrivers ?? []).find((d) => d.id === selectedUserId) ??
+      (teamMembers ?? []).find((m) => m.id === selectedUserId);
+    if (conv) {
+      setActiveTab(conv.role === "DRIVER" ? "drivers" : "managers");
+    }
+  }, [selectedUserId, conversations, allDrivers, teamMembers]);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -1126,8 +1173,18 @@ function ChatPageContent() {
           className="flex-1 flex flex-col overflow-hidden"
         >
           <TabsList className="mx-4 mt-2 grid grid-cols-2 shrink-0">
-            <TabsTrigger value="managers">Managers</TabsTrigger>
-            <TabsTrigger value="drivers">Drivers</TabsTrigger>
+            <TabsTrigger value="managers" className="relative">
+              Managers
+              {managerConvs.some((c) => c.unreadCount > 0) && (
+                <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-destructive" />
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="drivers" className="relative">
+              Drivers
+              {driverConvs.some((c) => c.unreadCount > 0) && (
+                <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-destructive" />
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent
@@ -1481,6 +1538,23 @@ function ChatPageContent() {
                   {timeline.map((item) => {
                     if (item.kind === "msg") {
                       const msg = item.data;
+                      // Backend-authored notice ("added X" / "removed X").
+                      // Render as a small centred muted line, no bubble.
+                      if (
+                        selectedGroupId &&
+                        (msg as GroupMessage).isSystem
+                      ) {
+                        return (
+                          <div
+                            key={`msg-${msg.id}`}
+                            className="flex justify-center py-1"
+                          >
+                            <span className="text-xs text-muted-foreground italic">
+                              {msg.content}
+                            </span>
+                          </div>
+                        );
+                      }
                       const isOwn = msg.senderId === user?.id;
                       const senderName =
                         !isOwn && selectedGroupId

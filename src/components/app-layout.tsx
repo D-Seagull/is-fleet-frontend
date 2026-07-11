@@ -36,6 +36,7 @@ import { useBrowserTimezoneSync } from "@/hooks/use-timezone-sync";
 import { useUserStatusSync } from "@/hooks/use-user-status-sync";
 import { usePresenceSync } from "@/hooks/use-presence";
 import { useAutoAway } from "@/hooks/use-auto-away";
+import { useChatSoundSync } from "@/hooks/use-chat-sound";
 import { AlarmNoticeOverlay } from "@/components/alarm-notice-overlay";
 import {
   Popover,
@@ -221,6 +222,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   // it already works there.
   useDmUnreadSocketSync();
   useGroupUnreadSocketSync();
+  // Audible ping on incoming DM / group message / freshly-created group.
+  useChatSoundSync();
   // Live presence dots — patches every cached user payload when a
   // teammate flips Online/Busy/Sleep, so other sessions stop needing
   // a full reload to see the change.

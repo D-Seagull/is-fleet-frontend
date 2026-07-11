@@ -59,6 +59,9 @@ export interface GroupMessage {
   groupId: string;
   senderId: string;
   content: string;
+  /** Backend-authored notices ("added X", "removed X"). Rendered as a
+   * centred muted line, no bubble / avatar / reply affordances. */
+  isSystem?: boolean;
   createdAt: string;
   deletedAt?: string | null;
   editedAt?: string | null;
