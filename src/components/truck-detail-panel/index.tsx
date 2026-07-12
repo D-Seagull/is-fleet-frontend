@@ -1,61 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import {
-  appendInfiniteMessage,
-  filterInfinitePages,
-  mapInfinitePages,
-  patchInfiniteMessage,
-} from "@/lib/infinite-messages";
-import { LoadOlderMessages } from "@/components/load-older-messages";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { fullName } from "@/lib/format";
-import { StatusDot } from "@/components/status-dot";
+import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Loader2,
   Trash2,
-  User,
   Plus,
-  Send,
-  MapPin,
-  Hash,
-  Navigation,
-  Copy,
-  ExternalLink,
-  FileText,
-  X,
-  Pencil,
   ChevronDown,
   ChevronUp,
-  Paperclip,
-  ChevronsUpDown,
-  Check,
-  Search,
-  FolderOpen,
-  ImageIcon,
-  Download,
-  Smile,
-  Eye,
-  History,
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { openDoc, downloadDoc, fetchSignedUrl } from "@/lib/doc-helpers";
+import { fullName } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { StatusDot } from "@/components/status-dot";
+import { AlarmTab } from "@/components/alarm-tab";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -74,32 +37,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   useTruck,
   useUpdateTruck,
   useTruckNotes,
@@ -109,114 +46,23 @@ import {
   type TruckStatus,
 } from "@/hooks/use-trucks";
 import { useAssignableManagers } from "@/hooks/use-managers";
-import {
-  useTripsByTruck,
-  useDeleteMessage,
-  useEditTripMessage,
-  useTripMessages,
-  useTripChatArchive,
-  useCreateTrip,
-  useUpdateTripStatus,
-  useUpdateTripInfo,
-  useReassignTrip,
-  TRIP_STATUS_LABELS,
-  TRIP_STATUS_COLORS,
-  type Trip,
-  type TripMessage,
-  type TripStatus,
-  type StopType,
-} from "@/hooks/use-trips";
-import { ChatArchiveDialog } from "@/components/chat-archive-dialog";
-import { AlarmTab } from "@/components/alarm-tab";
+import { useTripsByTruck, useReassignTrip } from "@/hooks/use-trips";
 import { useAuthStore } from "@/store/auth";
-import { getSocket } from "@/lib/socket";
-import { useUnreadSummary, UNREAD_QUERY_KEY } from "@/hooks/use-unread";
-import { cn } from "@/lib/utils";
-import {
-  useDocumentsByTruck,
-  useDocumentsByTrip,
-  useUploadDocuments,
-  useDeleteDocument,
-  type TripDocumentFull,
-} from "@/hooks/use-documents";
-import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
-import { notFound, useRouter } from "next/navigation";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageReactionsCluster } from "@/components/message-reactions";
-import { MessageActionsContext } from "@/components/message-actions-menu";
-import { MessageQuote } from "@/components/message-quote";
-import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
+import { useUnreadSummary } from "@/hooks/use-unread";
 
-// ─── constants + utils re-exported for external consumers ────────────────────
-// Actual definitions live in ./constants.ts and ./utils.ts. Kept here as
-// named re-exports so existing `import { TRUCK_STATUS_COLORS } from
-// "@/components/truck-detail-panel"` sites don't break.
-import {
-  TRUCK_STATUS_COLORS,
-  TRUCK_STATUS_LABELS,
-  ACTIVE_STATUSES,
-} from "./constants";
+// Folder split parts. Actual code lives in each sibling; index.tsx is the
+// shell that renders the truck header + tabs and re-exports the public
+// surface so `import { X } from "@/components/truck-detail-panel"` sites
+// don't break.
+import { TRUCK_STATUS_COLORS, TRUCK_STATUS_LABELS } from "./constants";
 import { shortenTripTitle } from "./utils";
-import { emptyStop, type StopRowData } from "./stop-row";
-import { CoordsCell } from "./coords-cell";
 import { NewTripDialog } from "./new-trip-dialog";
-import { TripCombobox } from "./trip-combobox";
 import { DocumentsTab } from "./documents-tab";
-import { TripAttachmentsContent } from "./trip-attachments-content";
-import { TripInfoCard } from "./trip-info-card";
-import { TripChat } from "./trip-chat";
 import { ChatTab } from "./chat-tab";
 import { TripsTab } from "./trips-tab";
 export { NewTripDialog, ChatTab };
-export {
-  TRUCK_STATUS_COLORS,
-  TRUCK_STATUS_LABELS,
-  ACTIVE_STATUSES,
-  shortenTripTitle,
-};
-
-// StopRow + emptyStop moved to ./stop-row.tsx
-
-// ─── New Trip Dialog ──────────────────────────────────────────────────────────
-
-// NewTripDialog moved to ./new-trip-dialog.tsx (see re-export in imports).
-
-
-// ─── Coords Cell ──────────────────────────────────────────────────────────────
-
-// CoordsCell moved to ./coords-cell.tsx
-
-// ─── Trip Info Card ───────────────────────────────────────────────────────────
-
-// TripInfoCard moved to ./trip-info-card.tsx.
-
-
-// ─── Trip Attachments Content ─────────────────────────────────────────────────
-
-// TripAttachmentsContent moved to ./trip-attachments-content.tsx.
-
-
-// ─── Trip Chat ────────────────────────────────────────────────────────────────
-
-// TripChat moved to ./trip-chat.tsx.
-
-
-// ─── Trip Combobox ────────────────────────────────────────────────────────────
-
-// TripCombobox moved to ./trip-combobox.tsx (imported at the top).
-
-
-// ─── Chat Tab ─────────────────────────────────────────────────────────────────
-
-// ChatTab moved to ./chat-tab.tsx (re-exported below).
-
-
-// ─── Trip Card ────────────────────────────────────────────────────────────────
-
-// TripCard + TripsTab moved to ./trips-tab.tsx.
-
-
-// ─── Truck Detail Panel ───────────────────────────────────────────────────────
+export { TRUCK_STATUS_COLORS, TRUCK_STATUS_LABELS, shortenTripTitle };
+export { ACTIVE_STATUSES } from "./constants";
 
 interface TruckDetailPanelProps {
   truckId: string;
