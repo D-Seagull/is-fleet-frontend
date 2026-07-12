@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   ArrowLeft,
   Loader2,
@@ -14,7 +15,6 @@ import {
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "@/components/status-dot";
-import { AlarmTab } from "@/components/alarm-tab";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -57,12 +57,38 @@ import { useUnreadSummary } from "@/hooks/use-unread";
 import { TRUCK_STATUS_COLORS, TRUCK_STATUS_LABELS } from "./constants";
 import { shortenTripTitle } from "./utils";
 import { NewTripDialog } from "./new-trip-dialog";
-import { DocumentsTab } from "./documents-tab";
-import { ChatTab } from "./chat-tab";
-import { TripsTab } from "./trips-tab";
-export { NewTripDialog, ChatTab };
+
+// Tabs are lazy-loaded. Info renders synchronously (it's the only tab that
+// consumes state already in this shell); everything else drops a spinner
+// while its chunk streams in. Re-exports keep the eager ChatTab for other
+// pages (e.g. /chat) — they get the direct import, not the lazy wrapper.
+export { NewTripDialog };
+export { ChatTab } from "./chat-tab";
 export { TRUCK_STATUS_COLORS, TRUCK_STATUS_LABELS, shortenTripTitle };
 export { ACTIVE_STATUSES } from "./constants";
+
+const TabSpinner = () => (
+  <div className="flex-1 flex items-center justify-center py-16">
+    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+  </div>
+);
+
+const ChatTab = dynamic(
+  () => import("./chat-tab").then((m) => ({ default: m.ChatTab })),
+  { loading: TabSpinner, ssr: false },
+);
+const TripsTab = dynamic(
+  () => import("./trips-tab").then((m) => ({ default: m.TripsTab })),
+  { loading: TabSpinner, ssr: false },
+);
+const DocumentsTab = dynamic(
+  () => import("./documents-tab").then((m) => ({ default: m.DocumentsTab })),
+  { loading: TabSpinner, ssr: false },
+);
+const AlarmTab = dynamic(
+  () => import("@/components/alarm-tab").then((m) => ({ default: m.AlarmTab })),
+  { loading: TabSpinner, ssr: false },
+);
 
 interface TruckDetailPanelProps {
   truckId: string;
