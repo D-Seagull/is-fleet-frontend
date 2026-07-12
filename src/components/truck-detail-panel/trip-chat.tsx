@@ -4,20 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import {
-  X,
   Download,
   Loader2,
   ChevronDown,
   FolderOpen,
-  Pencil,
-  Paperclip,
-  Check,
-  Send,
-  Smile,
   FileText,
   History,
 } from "lucide-react";
-import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
@@ -29,7 +22,6 @@ import {
 } from "@/lib/infinite-messages";
 import { getSocket } from "@/lib/socket";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Sheet,
@@ -61,6 +53,8 @@ import {
 import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
 import { TripInfoCard } from "./trip-info-card";
 import { TripAttachmentsContent } from "./trip-attachments-content";
+import { ChatComposer } from "./chat-composer";
+import { ChatLightbox } from "./chat-lightbox";
 
 export function TripChat({
   trip,
@@ -618,11 +612,6 @@ export function TripChat({
     setReplyingTo(null);
   }
 
-  function onEmojiClick(data: EmojiClickData) {
-    setText((prev) => prev + data.emoji);
-    setShowEmoji(false);
-  }
-
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
@@ -675,38 +664,7 @@ export function TripChat({
         </SheetContent>
       </Sheet>
 
-      {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-          onClick={() => setLightbox(null)}
-        >
-          <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white"
-            onClick={() => setLightbox(null)}
-          >
-            <X className="h-6 w-6" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={lightbox.signedUrl}
-            alt="preview"
-            className="max-w-full max-h-full object-contain rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className="absolute bottom-4 flex gap-2">
-            <button
-              className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-white text-sm transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                downloadDoc(lightbox.id);
-              }}
-            >
-              <Download className="h-4 w-4" /> Download
-            </button>
-          </div>
-        </div>
-      )}
+      <ChatLightbox item={lightbox} onClose={() => setLightbox(null)} />
 
       {/* Archive banner — visible to every role. Whether the archive
           contains anything for this user is decided by the server (see
@@ -1207,187 +1165,25 @@ export function TripChat({
         </div>
       )}
 
-      <div className="shrink-0 border-t pt-3 relative">
-        {!isActiveParticipant ? (
-          <div className="px-3 py-3 text-center text-xs text-muted-foreground">
-            Ви більше не учасник цього чату — перегляд тільки для читання.
-          </div>
-        ) : (
-          <>
-            {/* Emoji picker */}
-            {showEmoji && (
-              <div className="absolute bottom-full right-0 mb-2 z-50">
-                <EmojiPicker
-                  onEmojiClick={onEmojiClick}
-                  theme={Theme.AUTO}
-                  width={300}
-                  height={380}
-                />
-              </div>
-            )}
-
-            {editing && (
-              <div className="mb-2 flex items-start gap-2">
-                <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
-                  <p className="text-[11px] font-semibold text-primary leading-tight flex items-center gap-1">
-                    <Pencil className="h-3 w-3" />
-                    Редагування повідомлення
-                  </p>
-                  <p className="text-[11px] text-muted-foreground leading-tight truncate">
-                    {editing.original}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditing(null);
-                    setText("");
-                  }}
-                  title="Скасувати редагування"
-                  className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-
-            {replyingTo && !editing && (
-              <div className="mb-2 flex items-start gap-2">
-                <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
-                  <p className="text-[11px] font-semibold text-primary leading-tight">
-                    Reply to {replyingTo.senderName ?? "Unknown"}
-                  </p>
-                  <p
-                    className={cn(
-                      "text-[11px] text-muted-foreground leading-tight truncate flex items-center gap-1",
-                      replyingTo.isDeleted && "italic",
-                    )}
-                  >
-                    {replyingTo.targetType === "doc" &&
-                      !replyingTo.isDeleted && (
-                        <Paperclip className="h-3 w-3 shrink-0" />
-                      )}
-                    <span className="truncate">
-                      {replyingTo.isDeleted
-                        ? replyingTo.targetType === "doc"
-                          ? "Файл видалено"
-                          : "Повідомлення видалено"
-                        : replyingTo.content}
-                    </span>
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setReplyingTo(null)}
-                  title="Cancel reply"
-                  className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-
-            {pendingFiles.length > 0 && (
-              <div className="mb-2 flex flex-wrap gap-1.5">
-                {pendingFiles.map((f, i) => (
-                  <div
-                    key={`${f.name}-${i}`}
-                    className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs max-w-[200px]"
-                  >
-                    <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{f.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removePendingFile(i)}
-                      title="Remove"
-                      className="shrink-0 text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex items-center gap-1.5">
-              {/* Файл */}
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-9 w-9 shrink-0"
-                title="Attach file"
-                disabled={uploading}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {uploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Paperclip className="h-4 w-4 text-muted-foreground" />
-                )}
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-
-              {/* Смайли */}
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-9 w-9 shrink-0"
-                title="Emoji"
-                onClick={() => setShowEmoji((v) => !v)}
-              >
-                <Smile className="h-4 w-4 text-muted-foreground" />
-              </Button>
-
-              {/* Інпут */}
-              <Input
-                placeholder={
-                  editing ? "Редагуйте повідомлення…" : "Type a message..."
-                }
-                value={text}
-                onChange={(e) => {
-                  setText(e.target.value);
-                  if (e.target.value.length > 0) notifyTyping();
-                  else notifyStopTyping();
-                }}
-                onBlur={notifyStopTyping}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) handleSend();
-                  if (e.key === "Escape") {
-                    setShowEmoji(false);
-                    if (editing) {
-                      setEditing(null);
-                      setText("");
-                    }
-                  }
-                }}
-                className="flex-1"
-              />
-
-              {/* Відправити / Зберегти */}
-              <Button
-                size="icon"
-                onClick={handleSend}
-                disabled={!text.trim() && pendingFiles.length === 0}
-                title={editing ? "Зберегти" : "Send"}
-                className="h-9 w-9 shrink-0"
-              >
-                {editing ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
+      <ChatComposer
+        isActiveParticipant={isActiveParticipant}
+        text={text}
+        setText={setText}
+        editing={editing}
+        setEditing={setEditing}
+        replyingTo={replyingTo}
+        setReplyingTo={setReplyingTo}
+        showEmoji={showEmoji}
+        setShowEmoji={setShowEmoji}
+        pendingFiles={pendingFiles}
+        removePendingFile={removePendingFile}
+        uploading={uploading}
+        fileInputRef={fileInputRef}
+        handleSend={handleSend}
+        handleFileUpload={handleFileUpload}
+        notifyTyping={notifyTyping}
+        notifyStopTyping={notifyStopTyping}
+      />
     </div>
   );
 }
