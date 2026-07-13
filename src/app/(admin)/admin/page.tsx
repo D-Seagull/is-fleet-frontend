@@ -1,104 +1,184 @@
 "use client";
 
-import { useState } from "react";
-import { Truck, Loader2 } from "lucide-react";
-import { api } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import Link from "next/link";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useCompanies } from "@/hooks/use-companies";
+  Building2,
+  Users,
+  Wifi,
+  Truck as TruckIcon,
+  Loader2,
+  Clock,
+  CheckCircle2,
+  MailWarning,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { useAdminStats } from "@/hooks/use-admin-stats";
 
-const initialForm = { name: "", email: "" };
-
-const AdminCreateCompany = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [form, setForm] = useState(initialForm);
-
-  const { refetch } = useCompanies(); // ← виклик на верхньому рівні
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isLoading) return;
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    try {
-      await api.post("/admin/companies", form);
-      setForm(initialForm);
-      await refetch(); // ← оновлюємо список після створення
-    } catch (err: any) {
-      setError(err.response?.data?.message?.message ?? "Помилка створення");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export default function AdminDashboardPage() {
+  const { data, isLoading, isError } = useAdminStats();
 
   return (
-    <div className="relative min-w-screen flex items-center justify-center">
-      <Card className="w-full max-w-md mx-4">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <Truck className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl">Реєстрація</CardTitle>
-          <CardDescription>Створіть акаунт компанії</CardDescription>
+    <div className="p-6 w-full max-w-6xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Огляд</h1>
+        <p className="text-sm text-muted-foreground">
+          Ключові показники по всіх компаніях
+        </p>
+      </div>
+
+      {isError && (
+        <div className="text-destructive text-sm">
+          Помилка завантаження статистики
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard
+          title="Компаній"
+          icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
+          value={data?.companies.total}
+          subline={
+            data
+              ? `${data.companies.active} активних · ${data.companies.deactivated} деактивованих`
+              : undefined
+          }
+          isLoading={isLoading}
+        />
+        <KpiCard
+          title="Юзерів усього"
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          value={data?.users.total}
+          subline={
+            data
+              ? `${data.users.byRole.DRIVER} водіїв · ${data.users.byRole.MANAGER} менеджерів`
+              : undefined
+          }
+          isLoading={isLoading}
+        />
+        <KpiCard
+          title="Онлайн"
+          icon={<Wifi className="h-4 w-4 text-emerald-500" />}
+          value={
+            data ? data.onlineNow.drivers + data.onlineNow.managers : undefined
+          }
+          subline={
+            data
+              ? `${data.onlineNow.drivers} водіїв · ${data.onlineNow.managers} менеджерів`
+              : undefined
+          }
+          isLoading={isLoading}
+        />
+        <KpiCard
+          title="Активних поїздок"
+          icon={<TruckIcon className="h-4 w-4 text-muted-foreground" />}
+          value={data?.activeTrips}
+          subline="У процесі виконання"
+          isLoading={isLoading}
+        />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Clock className="h-4 w-4" />
+            Останні реєстрації
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Компанія</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="IS Fleet"
-                value={form.name}
-                onChange={handleChange}
-                required
-              />
+          {isLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Завантаження...
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="name@company.com"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
+          ) : data && data.recentCompanies.length > 0 ? (
+            <ul className="divide-y">
+              {data.recentCompanies.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/admin/companies/${c.id}`}
+                    className="flex items-center justify-between py-3 hover:bg-muted/50 -mx-2 px-2 rounded-md transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{c.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(c.createdAt).toLocaleDateString("uk-UA", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                          {" · "}
+                          {c.usersCount}{" "}
+                          {c.usersCount === 1 ? "юзер" : "юзерів"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {c.awaitingInvite ? (
+                        <Badge variant="secondary" className="gap-1">
+                          <MailWarning className="h-3 w-3" />
+                          Чекає TeamLead-а
+                        </Badge>
+                      ) : c.isActive ? (
+                        <Badge className="gap-1 bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/30">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Активна
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive">Деактивована</Badge>
+                      )}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-sm text-muted-foreground py-6 text-center">
+              Компаній ще немає
             </div>
-            {error && (
-              <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
-                {error}
-              </div>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Реєстрація...
-                </>
-              ) : (
-                "Зареєструватись"
-              )}
-            </Button>
-          </form>
+          )}
         </CardContent>
       </Card>
     </div>
   );
-};
+}
 
-export default AdminCreateCompany;
+function KpiCard({
+  title,
+  icon,
+  value,
+  subline,
+  isLoading,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  value: number | undefined;
+  subline?: string;
+  isLoading: boolean;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
+        {icon}
+      </CardHeader>
+      <CardContent>
+        {isLoading || value === undefined ? (
+          <Skeleton className="h-8 w-16" />
+        ) : (
+          <div className="text-2xl font-semibold">{value}</div>
+        )}
+        {subline && (
+          <p className="text-xs text-muted-foreground mt-1">{subline}</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
