@@ -26,6 +26,10 @@ import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 import { GroupActionsMenu } from "@/components/group-actions-menu";
 import { StatusDot } from "@/components/status-dot";
 import {
+  ConversationListSkeleton,
+  MessageListSkeleton,
+} from "@/components/chat-skeletons";
+import {
   useConversations,
   useMessages,
   useChatUser,
@@ -1219,9 +1223,7 @@ function ChatPageContent() {
             )}
 
             {loadingConversations ? (
-              <div className="flex justify-center p-4">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
+              <ConversationListSkeleton />
             ) : filteredManagerConvs.length === 0 &&
               extraTeamMembers.length === 0 ? (
               <p className="text-center text-muted-foreground p-4 text-sm">
@@ -1254,9 +1256,7 @@ function ChatPageContent() {
             className="flex-1 overflow-y-auto m-0 data-[state=inactive]:hidden"
           >
             {loadingConversations ? (
-              <div className="flex justify-center p-4">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
+              <ConversationListSkeleton />
             ) : filteredDriverConvs.length === 0 &&
               extraDrivers.length === 0 ? (
               <p className="text-center text-muted-foreground p-4 text-sm">
@@ -1516,9 +1516,7 @@ function ChatPageContent() {
 
             <div className="flex-1 overflow-y-auto p-4">
               {loadingMessages && !selectedGroupId ? (
-                <div className="flex justify-center">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
+                <MessageListSkeleton />
               ) : (
                 <div className="flex flex-col gap-3">
                   <LoadOlderMessages
