@@ -225,7 +225,7 @@ function ChatPageContent() {
   const user = useAuthStore((s) => s.user);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeTab, setActiveTab] = useState<"managers" | "drivers">(
-    groupIdFromUrl ? "managers" : "managers",
+    "managers",
   );
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
@@ -599,6 +599,23 @@ function ChatPageContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userIdFromUrl]);
+
+  // When we arrive at /chat?userId=X (deep-link from /drivers or /managers),
+  // switch the sidebar tab to match the target user's role so their row is
+  // visible in the visible list. Waits for allDrivers/conversations to
+  // resolve; falls back to a chatUser lookup for users the current viewer
+  // has never messaged and who aren't in the drivers dropdown.
+  useEffect(() => {
+    if (!userIdFromUrl) return;
+    const role =
+      (allDrivers ?? []).find((d) => d.id === userIdFromUrl)?.role ??
+      (conversations ?? []).find((c) => c.user.id === userIdFromUrl)?.user
+        .role ??
+      chatUser?.role;
+    if (role === "DRIVER") setActiveTab("drivers");
+    else if (role === "MANAGER" || role === "TEAMLEAD" || role === "ADMIN")
+      setActiveTab("managers");
+  }, [userIdFromUrl, allDrivers, conversations, chatUser]);
 
   useEffect(() => {
     if (groupIdFromUrl && groupIdFromUrl !== selectedGroupId) {
