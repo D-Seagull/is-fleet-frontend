@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Camera,
+  Globe,
   Loader2,
   Trash2,
   User as UserIcon,
@@ -35,6 +36,7 @@ import {
 } from "@/hooks/use-avatar";
 import { fullName, initials } from "@/lib/format";
 import { AvatarCropperDialog } from "@/components/avatar-cropper-dialog";
+import { UiLocalePicker } from "@/components/ui-locale-picker";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -342,6 +344,22 @@ export default function AccountSettingsPage() {
         <CardContent className="flex flex-col gap-8">
           <AvatarSection />
           <ProfileForm />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            <CardTitle>Мова інтерфейсу</CardTitle>
+          </div>
+          <CardDescription>
+            Мова, у якій відображатимуться кнопки, форми та повідомлення
+            застосунку. Не впливає на переклад чат-повідомлень.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UiLocalePicker />
         </CardContent>
       </Card>
     </div>

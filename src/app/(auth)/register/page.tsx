@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Truck, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,9 @@ interface InviteInfo {
 }
 
 function RegisterInner() {
+  const t = useTranslations("auth.register");
+  const tRoles = useTranslations("common.roles");
+  const tValid = useTranslations("common.validation");
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get("token");
@@ -49,7 +53,7 @@ function RegisterInner() {
   // instead of letting the user fill the form before learning the truth.
   useEffect(() => {
     if (!token) {
-      setCheckError("Token is missing in the URL.");
+      setCheckError(t("checkErrorMissingToken"));
       setChecking(false);
       return;
     }
@@ -65,8 +69,8 @@ function RegisterInner() {
         if (cancelled) return;
         const msg =
           (err?.response?.data?.message as string | undefined) ??
-          "Invalid or expired invite token.";
-        setCheckError(typeof msg === "string" ? msg : "Invalid invite token.");
+          t("checkErrorInvalidToken");
+        setCheckError(typeof msg === "string" ? msg : t("checkErrorGeneric"));
       })
       .finally(() => {
         if (!cancelled) setChecking(false);
@@ -74,6 +78,7 @@ function RegisterInner() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,11 +86,11 @@ function RegisterInner() {
     if (submitting || !token || !invite) return;
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(tValid("passwordShort"));
       return;
     }
     if (password !== password2) {
-      setError("Passwords do not match.");
+      setError(tValid("passwordMismatch"));
       return;
     }
 
@@ -136,7 +141,7 @@ function RegisterInner() {
       const msg = e.response?.data?.message;
       if (Array.isArray(msg)) setError(msg.join(", "));
       else if (typeof msg === "string") setError(msg);
-      else setError("Registration failed. Try again.");
+      else setError(t("errorGeneric"));
     } finally {
       setSubmitting(false);
     }
@@ -159,8 +164,8 @@ function RegisterInner() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
             <ShieldCheck className="h-6 w-6 text-destructive" />
           </div>
-          <CardTitle className="text-2xl">Invite invalid</CardTitle>
-          <CardDescription>{checkError ?? "Unknown error."}</CardDescription>
+          <CardTitle className="text-2xl">{t("errorCardTitle")}</CardTitle>
+          <CardDescription>{checkError ?? t("errorCardUnknown")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
@@ -168,21 +173,14 @@ function RegisterInner() {
             className="w-full"
             onClick={() => router.push("/login")}
           >
-            Go to login
+            {t("goToLogin")}
           </Button>
         </CardContent>
       </CenterCard>
     );
   }
 
-  const roleLabel =
-    invite.role === "TEAMLEAD"
-      ? "Team Lead"
-      : invite.role === "MANAGER"
-        ? "Manager"
-        : invite.role === "DRIVER"
-          ? "Driver"
-          : invite.role;
+  const roleLabel = tRoles(invite.role);
 
   return (
     <CenterCard>
@@ -190,20 +188,24 @@ function RegisterInner() {
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
           <Truck className="h-6 w-6 text-primary-foreground" />
         </div>
-        <CardTitle className="text-2xl">Join {invite.companyName}</CardTitle>
+        <CardTitle className="text-2xl">
+          {t("title", { companyName: invite.companyName })}
+        </CardTitle>
         <CardDescription>
-          You&apos;ve been invited as <b>{roleLabel}</b>. Set up your account
-          below.
+          {t.rich("inviteAs", {
+            role: roleLabel,
+            b: (chunks) => <b>{chunks}</b>,
+          })}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="firstName">First name</Label>
+            <Label htmlFor="firstName">{t("firstNameLabel")}</Label>
             <Input
               id="firstName"
               type="text"
-              placeholder="Іван"
+              placeholder={t("firstNamePlaceholder")}
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
@@ -211,11 +213,11 @@ function RegisterInner() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="lastName">Last name (optional)</Label>
+            <Label htmlFor="lastName">{t("lastNameLabel")}</Label>
             <Input
               id="lastName"
               type="text"
-              placeholder="Петренко"
+              placeholder={t("lastNamePlaceholder")}
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
             />
@@ -223,11 +225,11 @@ function RegisterInner() {
 
           {invite.type === "company" && (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("emailLabel")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@company.com"
+                placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -236,13 +238,13 @@ function RegisterInner() {
           )}
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("passwordLabel")}</Label>
             <div className="relative">
               <Input
                 id="password"
                 autoComplete="new-password"
                 type={showPassword ? "text" : "password"}
-                placeholder="At least 6 characters"
+                placeholder={t("passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -266,12 +268,12 @@ function RegisterInner() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password2">Confirm password</Label>
+            <Label htmlFor="password2">{t("password2Label")}</Label>
             <Input
               id="password2"
               autoComplete="new-password"
               type={showPassword ? "text" : "password"}
-              placeholder="Repeat the password"
+              placeholder={t("password2Placeholder")}
               value={password2}
               onChange={(e) => setPassword2(e.target.value)}
               required
@@ -281,45 +283,42 @@ function RegisterInner() {
 
           {invite.type === "company" && invite.isFirstUser && (
             <div className="flex flex-col gap-3 rounded-md border bg-muted/40 p-3">
-              <p className="text-sm font-medium">
-                Company contacts (optional)
-              </p>
+              <p className="text-sm font-medium">{t("contactsTitle")}</p>
               <p className="text-xs text-muted-foreground -mt-1">
-                Used as default recipients for advance requests, HR
-                notifications, etc. You can change these later in Settings.
+                {t("contactsHelper")}
               </p>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="accountingEmail" className="text-xs">
-                  Accounting email
+                  {t("accountingLabel")}
                 </Label>
                 <Input
                   id="accountingEmail"
                   type="email"
-                  placeholder="accounting@company.com"
+                  placeholder={t("accountingPlaceholder")}
                   value={accountingEmail}
                   onChange={(e) => setAccountingEmail(e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="hrEmail" className="text-xs">
-                  HR email
+                  {t("hrLabel")}
                 </Label>
                 <Input
                   id="hrEmail"
                   type="email"
-                  placeholder="hr@company.com"
+                  placeholder={t("hrPlaceholder")}
                   value={hrEmail}
                   onChange={(e) => setHrEmail(e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="directorEmail" className="text-xs">
-                  Director email
+                  {t("directorLabel")}
                 </Label>
                 <Input
                   id="directorEmail"
                   type="email"
-                  placeholder="director@company.com"
+                  placeholder={t("directorPlaceholder")}
                   value={directorEmail}
                   onChange={(e) => setDirectorEmail(e.target.value)}
                 />
@@ -337,10 +336,10 @@ function RegisterInner() {
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                {t("submitLoading")}
               </>
             ) : (
-              "Create account"
+              t("submitButton")
             )}
           </Button>
 
@@ -350,7 +349,7 @@ function RegisterInner() {
             className="h-auto p-0 text-sm self-center"
             onClick={() => router.push("/login")}
           >
-            Already have an account? Sign in
+            {t("haveAccount")}
           </Button>
         </form>
       </CardContent>

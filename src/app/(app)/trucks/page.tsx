@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
   Plus,
@@ -68,6 +69,7 @@ const statusLabels: Record<TruckStatus, string> = {
 };
 
 export default function TrucksPage() {
+  const t = useTranslations("trucks");
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [plate, setPlate] = useState("");
@@ -117,7 +119,7 @@ export default function TrucksPage() {
   return (
     <div className="flex flex-col p-4 gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Trucks</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -378,7 +380,7 @@ export default function TrucksPage() {
                       </TableCell>
                     </TableRow>
                   ))
-              )}
+                )}
               </TableBody>
             </Table>
           </div>

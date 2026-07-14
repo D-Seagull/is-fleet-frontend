@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "IS Fleet",
+    "roles": {
+      "TEAMLEAD": "Тімлід",
+      "MANAGER": "Менеджер",
+      "DRIVER": "Водій",
+      "ADMIN": "Адмін"
+    },
+    "validation": {
+      "passwordShort": "Пароль має бути щонайменше 6 символів.",
+      "passwordMismatch": "Паролі не збігаються."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Ласкаво просимо до IS Fleet",
+      "subtitle": "Увійдіть в акаунт, щоб продовжити",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Введіть пароль",
+      "rememberMe": "Запам'ятати мене",
+      "forgotPassword": "Забули пароль?",
+      "submitButton": "Увійти",
+      "submitLoading": "Вхід...",
+      "errorInvalidCredentials": "Невірний email або пароль"
+    },
+    "register": {
+      "checkErrorMissingToken": "Токен відсутній у посиланні.",
+      "checkErrorInvalidToken": "Запрошення недійсне або прострочене.",
+      "checkErrorGeneric": "Недійсний токен запрошення.",
+      "errorCardTitle": "Запрошення недійсне",
+      "errorCardUnknown": "Невідома помилка.",
+      "goToLogin": "Перейти до входу",
+      "title": "Приєднатися до {companyName}",
+      "inviteAs": "Вас запросили як <b>{role}</b>. Налаштуйте свій акаунт нижче.",
+      "firstNameLabel": "Ім'я",
+      "firstNamePlaceholder": "Василь",
+      "lastNameLabel": "Прізвище (необов'язково)",
+      "lastNamePlaceholder": "Петренко",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Щонайменше 6 символів",
+      "password2Label": "Підтвердити пароль",
+      "password2Placeholder": "Повторіть пароль",
+      "contactsTitle": "Контакти компанії (необов'язково)",
+      "contactsHelper": "Використовуються за замовчуванням для HR-повідомлень та внутрішніх запитів. Можна змінити пізніше в налаштуваннях.",
+      "accountingLabel": "Email бухгалтерії",
+      "accountingPlaceholder": "accounting@company.com",
+      "hrLabel": "Email HR",
+      "hrPlaceholder": "hr@company.com",
+      "directorLabel": "Email директора",
+      "directorPlaceholder": "director@company.com",
+      "submitButton": "Створити акаунт",
+      "submitLoading": "Створення акаунта...",
+      "haveAccount": "Уже маєш акаунт? Увійти",
+      "errorGeneric": "Не вдалось зареєструватись. Спробуйте ще раз."
+    },
+    "forgotPassword": {
+      "titleAfter": "Перевірте пошту",
+      "titleBefore": "Забули пароль?",
+      "subtitleAfter": "Якщо для цього email є акаунт, посилання для скидання пароля вже летить. Посилання дійсне 1 годину.",
+      "subtitleBefore": "Введіть email — надішлемо посилання для скидання пароля.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "submitButton": "Надіслати посилання",
+      "submitLoading": "Надсилання...",
+      "backToSignIn": "Назад до входу",
+      "errorGeneric": "Щось пішло не так. Спробуйте ще раз."
+    },
+    "resetPassword": {
+      "titleBefore": "Скинути пароль",
+      "titleAfter": "Пароль оновлено",
+      "subtitleBefore": "Оберіть новий пароль для акаунту.",
+      "subtitleAfter": "Перенаправлення на вхід…",
+      "passwordLabel": "Новий пароль",
+      "passwordPlaceholder": "Щонайменше 6 символів",
+      "confirmLabel": "Підтвердити пароль",
+      "confirmPlaceholder": "Повторіть новий пароль",
+      "submitButton": "Оновити пароль",
+      "submitLoading": "Оновлення...",
+      "errorMissingToken": "У посиланні відсутній токен.",
+      "errorInvalidOrExpired": "Посилання недійсне або прострочене. Запросіть нове."
+    }
+  },
+  "trucks": {
+    "title": "Вантажівки"
+  }
+}

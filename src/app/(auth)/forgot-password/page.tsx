@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Truck, Loader2, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import {
 import { api } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth.forgotPassword");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -34,9 +36,7 @@ export default function ForgotPasswordPage() {
     } catch (err) {
       const msg = (err as { response?: { data?: { message?: string } } })
         ?.response?.data?.message;
-      setError(
-        typeof msg === "string" ? msg : "Something went wrong. Try again.",
-      );
+      setError(typeof msg === "string" ? msg : t("errorGeneric"));
     } finally {
       setIsLoading(false);
     }
@@ -54,29 +54,27 @@ export default function ForgotPasswordPage() {
             )}
           </div>
           <CardTitle className="text-2xl">
-            {submitted ? "Check your inbox" : "Forgot password?"}
+            {submitted ? t("titleAfter") : t("titleBefore")}
           </CardTitle>
           <CardDescription>
-            {submitted
-              ? "If an account exists for that email, a reset link is on its way. The link expires in 1 hour."
-              : "Enter your email and we'll send you a link to reset your password."}
+            {submitted ? t("subtitleAfter") : t("subtitleBefore")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {submitted ? (
             <div className="flex flex-col gap-4">
               <Button asChild className="w-full">
-                <Link href="/login">Back to sign in</Link>
+                <Link href="/login">{t("backToSignIn")}</Link>
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("emailLabel")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@company.com"
+                  placeholder={t("emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -91,10 +89,10 @@ export default function ForgotPasswordPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    {t("submitLoading")}
                   </>
                 ) : (
-                  "Send reset link"
+                  t("submitButton")
                 )}
               </Button>
               <Button
@@ -102,7 +100,7 @@ export default function ForgotPasswordPage() {
                 variant="link"
                 className="h-auto p-0 text-sm mx-auto"
               >
-                <Link href="/login">Back to sign in</Link>
+                <Link href="/login">{t("backToSignIn")}</Link>
               </Button>
             </form>
           )}

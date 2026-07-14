@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Truck, Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,9 @@ import {
 import { api } from "@/lib/api";
 
 function ResetPasswordForm() {
+  const t = useTranslations("auth.resetPassword");
+  const tValid = useTranslations("common.validation");
+  const tForgot = useTranslations("auth.forgotPassword");
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
@@ -35,15 +39,15 @@ function ResetPasswordForm() {
     setError("");
 
     if (!token) {
-      setError("Reset link is missing a token.");
+      setError(t("errorMissingToken"));
       return;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(tValid("passwordShort"));
       return;
     }
     if (password !== confirm) {
-      setError("Passwords do not match.");
+      setError(tValid("passwordMismatch"));
       return;
     }
 
@@ -55,11 +59,7 @@ function ResetPasswordForm() {
     } catch (err) {
       const msg = (err as { response?: { data?: { message?: string } } })
         ?.response?.data?.message;
-      setError(
-        typeof msg === "string"
-          ? msg
-          : "Reset link is invalid or expired. Request a new one.",
-      );
+      setError(typeof msg === "string" ? msg : t("errorInvalidOrExpired"));
     } finally {
       setIsLoading(false);
     }
@@ -77,25 +77,23 @@ function ResetPasswordForm() {
             )}
           </div>
           <CardTitle className="text-2xl">
-            {success ? "Password updated" : "Reset your password"}
+            {success ? t("titleAfter") : t("titleBefore")}
           </CardTitle>
           <CardDescription>
-            {success
-              ? "Redirecting to sign in…"
-              : "Choose a new password for your account."}
+            {success ? t("subtitleAfter") : t("subtitleBefore")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {!success && (
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="password">New password</Label>
+                <Label htmlFor="password">{t("passwordLabel")}</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     autoComplete="new-password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="At least 6 characters"
+                    placeholder={t("passwordPlaceholder")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -116,12 +114,12 @@ function ResetPasswordForm() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="confirm">Confirm password</Label>
+                <Label htmlFor="confirm">{t("confirmLabel")}</Label>
                 <Input
                   id="confirm"
                   autoComplete="new-password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Repeat new password"
+                  placeholder={t("confirmPlaceholder")}
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   required
@@ -136,10 +134,10 @@ function ResetPasswordForm() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
+                    {t("submitLoading")}
                   </>
                 ) : (
-                  "Update password"
+                  t("submitButton")
                 )}
               </Button>
               <Button
@@ -147,7 +145,7 @@ function ResetPasswordForm() {
                 variant="link"
                 className="h-auto p-0 text-sm mx-auto"
               >
-                <Link href="/login">Back to sign in</Link>
+                <Link href="/login">{tForgot("backToSignIn")}</Link>
               </Button>
             </form>
           )}

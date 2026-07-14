@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "IS Fleet",
+    "roles": {
+      "TEAMLEAD": "Team Lead",
+      "MANAGER": "Manager",
+      "DRIVER": "Driver",
+      "ADMIN": "Admin"
+    },
+    "validation": {
+      "passwordShort": "Password must be at least 6 characters.",
+      "passwordMismatch": "Passwords do not match."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome to IS Fleet",
+      "subtitle": "Sign in to your account to continue",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submitButton": "Sign In",
+      "submitLoading": "Signing in...",
+      "errorInvalidCredentials": "Invalid email or password"
+    },
+    "register": {
+      "checkErrorMissingToken": "Token is missing in the URL.",
+      "checkErrorInvalidToken": "Invalid or expired invite token.",
+      "checkErrorGeneric": "Invalid invite token.",
+      "errorCardTitle": "Invite invalid",
+      "errorCardUnknown": "Unknown error.",
+      "goToLogin": "Go to login",
+      "title": "Join {companyName}",
+      "inviteAs": "You've been invited as <b>{role}</b>. Set up your account below.",
+      "firstNameLabel": "First name",
+      "firstNamePlaceholder": "John",
+      "lastNameLabel": "Last name (optional)",
+      "lastNamePlaceholder": "Doe",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 6 characters",
+      "password2Label": "Confirm password",
+      "password2Placeholder": "Repeat the password",
+      "contactsTitle": "Company contacts (optional)",
+      "contactsHelper": "Used as default recipients for HR notifications and internal requests. You can change these later in Settings.",
+      "accountingLabel": "Accounting email",
+      "accountingPlaceholder": "accounting@company.com",
+      "hrLabel": "HR email",
+      "hrPlaceholder": "hr@company.com",
+      "directorLabel": "Director email",
+      "directorPlaceholder": "director@company.com",
+      "submitButton": "Create account",
+      "submitLoading": "Creating account...",
+      "haveAccount": "Already have an account? Sign in",
+      "errorGeneric": "Registration failed. Try again."
+    },
+    "forgotPassword": {
+      "titleAfter": "Check your inbox",
+      "titleBefore": "Forgot password?",
+      "subtitleAfter": "If an account exists for that email, a reset link is on its way. The link expires in 1 hour.",
+      "subtitleBefore": "Enter your email and we'll send you a link to reset your password.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "submitButton": "Send reset link",
+      "submitLoading": "Sending...",
+      "backToSignIn": "Back to sign in",
+      "errorGeneric": "Something went wrong. Try again."
+    },
+    "resetPassword": {
+      "titleBefore": "Reset your password",
+      "titleAfter": "Password updated",
+      "subtitleBefore": "Choose a new password for your account.",
+      "subtitleAfter": "Redirecting to sign in…",
+      "passwordLabel": "New password",
+      "passwordPlaceholder": "At least 6 characters",
+      "confirmLabel": "Confirm password",
+      "confirmPlaceholder": "Repeat new password",
+      "submitButton": "Update password",
+      "submitLoading": "Updating...",
+      "errorMissingToken": "Reset link is missing a token.",
+      "errorInvalidOrExpired": "Reset link is invalid or expired. Request a new one."
+    }
+  },
+  "trucks": {
+    "title": "Trucks"
+  }
+}

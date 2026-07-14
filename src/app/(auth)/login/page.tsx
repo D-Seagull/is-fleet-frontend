@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Truck, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 
 export default function LoginPage() {
+  const t = useTranslations("auth.login");
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
@@ -50,7 +52,7 @@ export default function LoginPage() {
       } else if (typeof msg === "string") {
         setError(msg);
       } else {
-        setError("Невірний email або пароль");
+        setError(t("errorInvalidCredentials"));
       }
     } finally {
       setIsLoading(false);
@@ -64,30 +66,30 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
             <Truck className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">Welcome to IS Fleet</CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
+          <CardTitle className="text-2xl">{t("title")}</CardTitle>
+          <CardDescription>{t("subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("emailLabel")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="name@company.com"
+                placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("passwordLabel")}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   autoComplete="current-password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder={t("passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -117,14 +119,14 @@ export default function LoginPage() {
                   }
                 />
                 <Label htmlFor="remember" className="text-sm font-normal">
-                  Remember me
+                  {t("rememberMe")}
                 </Label>
               </div>
               <Link
                 href="/forgot-password"
                 className="text-sm text-primary underline-offset-4 hover:underline"
               >
-                Forgot password?
+                {t("forgotPassword")}
               </Link>
             </div>
             {error && (
@@ -136,10 +138,10 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Вхід...
+                  {t("submitLoading")}
                 </>
               ) : (
-                "Sign In"
+                t("submitButton")
               )}
             </Button>
           </form>
