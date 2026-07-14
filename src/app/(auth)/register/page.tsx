@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
+import { writeUiLocaleCookie, type UiLocaleDb } from "@/lib/ui-locale";
 
 interface InviteInfo {
   type: "user" | "company";
@@ -124,10 +125,12 @@ function RegisterInner() {
           companyId: string;
           firstName: string;
           lastName: string | null;
+          uiLocale?: UiLocaleDb;
         };
       };
 
       login(user, access_token, true);
+      if (user.uiLocale) writeUiLocaleCookie(user.uiLocale);
 
       router.push(
         user.role === "ADMIN"

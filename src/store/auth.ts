@@ -13,6 +13,8 @@ interface AuthUser {
   phone?: string | null;
   avatar?: string | null;
   language?: "UK" | "EN" | "PL" | "LT" | "UZ" | "KZ" | "HI" | "RU";
+  /** UI locale — drives which messages/*.json the app renders. */
+  uiLocale?: "UK" | "EN" | "PL" | "LT" | "DE" | "RU";
   status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
   statusUntil?: string | null;
   timezone?: string | null;

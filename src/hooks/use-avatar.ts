@@ -12,11 +12,14 @@ export type Language =
   | "HI"
   | "RU";
 
+export type UiLocaleDb = "UK" | "EN" | "PL" | "LT" | "DE" | "RU";
+
 export interface UpdateMePayload {
   firstName?: string;
   lastName?: string | null;
   phone?: string;
   language?: Language;
+  uiLocale?: UiLocaleDb;
   status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
   /** ISO-8601 timestamp at which BUSY/SLEEP should auto-clear. `null` =
    *  indefinite. Omit to leave the timer untouched. */
