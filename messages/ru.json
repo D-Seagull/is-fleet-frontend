@@ -1,5 +1,91 @@
 {
   "common": {
-    "appName": "IS Fleet"
+    "appName": "IS Fleet",
+    "roles": {
+      "TEAMLEAD": "Тимлид",
+      "MANAGER": "Менеджер",
+      "DRIVER": "Водитель",
+      "ADMIN": "Админ"
+    },
+    "validation": {
+      "passwordShort": "Пароль должен содержать не менее 6 символов.",
+      "passwordMismatch": "Пароли не совпадают."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Добро пожаловать в IS Fleet",
+      "subtitle": "Войдите в аккаунт, чтобы продолжить",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Введите пароль",
+      "rememberMe": "Запомнить меня",
+      "forgotPassword": "Забыли пароль?",
+      "submitButton": "Войти",
+      "submitLoading": "Вход...",
+      "errorInvalidCredentials": "Неверный email или пароль"
+    },
+    "register": {
+      "checkErrorMissingToken": "В ссылке отсутствует токен.",
+      "checkErrorInvalidToken": "Приглашение недействительно или истекло.",
+      "checkErrorGeneric": "Недействительный токен приглашения.",
+      "errorCardTitle": "Приглашение недействительно",
+      "errorCardUnknown": "Неизвестная ошибка.",
+      "goToLogin": "Перейти ко входу",
+      "title": "Присоединиться к {companyName}",
+      "inviteAs": "Вас пригласили как <b>{role}</b>. Настройте свой аккаунт ниже.",
+      "firstNameLabel": "Имя",
+      "firstNamePlaceholder": "Иван",
+      "lastNameLabel": "Фамилия (необязательно)",
+      "lastNamePlaceholder": "Петров",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Не менее 6 символов",
+      "password2Label": "Подтвердить пароль",
+      "password2Placeholder": "Повторите пароль",
+      "contactsTitle": "Контакты компании (необязательно)",
+      "contactsHelper": "Используются по умолчанию для HR-уведомлений и внутренних запросов. Можно изменить позже в настройках.",
+      "accountingLabel": "Email бухгалтерии",
+      "accountingPlaceholder": "accounting@company.com",
+      "hrLabel": "Email HR",
+      "hrPlaceholder": "hr@company.com",
+      "directorLabel": "Email директора",
+      "directorPlaceholder": "director@company.com",
+      "submitButton": "Создать аккаунт",
+      "submitLoading": "Создание аккаунта...",
+      "haveAccount": "Уже есть аккаунт? Войти",
+      "errorGeneric": "Не удалось зарегистрироваться. Попробуйте ещё раз."
+    },
+    "forgotPassword": {
+      "titleAfter": "Проверьте почту",
+      "titleBefore": "Забыли пароль?",
+      "subtitleAfter": "Если для этого email есть аккаунт, ссылка для сброса пароля уже летит. Ссылка действует 1 час.",
+      "subtitleBefore": "Введите email — отправим ссылку для сброса пароля.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "submitButton": "Отправить ссылку",
+      "submitLoading": "Отправка...",
+      "backToSignIn": "Назад ко входу",
+      "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз."
+    },
+    "resetPassword": {
+      "titleBefore": "Сбросить пароль",
+      "titleAfter": "Пароль обновлён",
+      "subtitleBefore": "Выберите новый пароль для аккаунта.",
+      "subtitleAfter": "Перенаправление ко входу…",
+      "passwordLabel": "Новый пароль",
+      "passwordPlaceholder": "Не менее 6 символов",
+      "confirmLabel": "Подтвердить пароль",
+      "confirmPlaceholder": "Повторите новый пароль",
+      "submitButton": "Обновить пароль",
+      "submitLoading": "Обновление...",
+      "errorMissingToken": "В ссылке отсутствует токен.",
+      "errorInvalidOrExpired": "Ссылка недействительна или истекла. Запросите новую."
+    }
+  },
+  "trucks": {
+    "title": "Грузовики"
   }
 }

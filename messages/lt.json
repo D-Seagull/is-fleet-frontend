@@ -1,5 +1,91 @@
 {
   "common": {
-    "appName": "IS Fleet"
+    "appName": "IS Fleet",
+    "roles": {
+      "TEAMLEAD": "Komandos vadovas",
+      "MANAGER": "Vadybininkas",
+      "DRIVER": "Vairuotojas",
+      "ADMIN": "Administratorius"
+    },
+    "validation": {
+      "passwordShort": "Slaptažodis turi būti bent 6 simbolių.",
+      "passwordMismatch": "Slaptažodžiai nesutampa."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sveiki atvykę į IS Fleet",
+      "subtitle": "Prisijunkite prie savo paskyros, kad tęstumėte",
+      "emailLabel": "El. paštas",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Slaptažodis",
+      "passwordPlaceholder": "Įveskite slaptažodį",
+      "rememberMe": "Prisiminti mane",
+      "forgotPassword": "Pamiršote slaptažodį?",
+      "submitButton": "Prisijungti",
+      "submitLoading": "Prisijungiama...",
+      "errorInvalidCredentials": "Neteisingas el. paštas arba slaptažodis"
+    },
+    "register": {
+      "checkErrorMissingToken": "Nuorodoje trūksta žetono.",
+      "checkErrorInvalidToken": "Kvietimas negalioja arba pasibaigęs.",
+      "checkErrorGeneric": "Neteisingas kvietimo žetonas.",
+      "errorCardTitle": "Kvietimas negalioja",
+      "errorCardUnknown": "Nežinoma klaida.",
+      "goToLogin": "Eiti į prisijungimą",
+      "title": "Prisijungti prie {companyName}",
+      "inviteAs": "Jūs pakviesti kaip <b>{role}</b>. Sukurkite savo paskyrą žemiau.",
+      "firstNameLabel": "Vardas",
+      "firstNamePlaceholder": "Jonas",
+      "lastNameLabel": "Pavardė (neprivaloma)",
+      "lastNamePlaceholder": "Petraitis",
+      "emailLabel": "El. paštas",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "Slaptažodis",
+      "passwordPlaceholder": "Bent 6 simboliai",
+      "password2Label": "Patvirtinti slaptažodį",
+      "password2Placeholder": "Pakartokite slaptažodį",
+      "contactsTitle": "Įmonės kontaktai (neprivaloma)",
+      "contactsHelper": "Naudojami kaip numatytieji gavėjai HR pranešimams ir vidiniams užklausoms. Galite juos pakeisti vėliau nustatymuose.",
+      "accountingLabel": "Buhalterijos el. paštas",
+      "accountingPlaceholder": "accounting@company.com",
+      "hrLabel": "HR el. paštas",
+      "hrPlaceholder": "hr@company.com",
+      "directorLabel": "Direktoriaus el. paštas",
+      "directorPlaceholder": "director@company.com",
+      "submitButton": "Sukurti paskyrą",
+      "submitLoading": "Kuriama paskyra...",
+      "haveAccount": "Jau turite paskyrą? Prisijungti",
+      "errorGeneric": "Registracija nepavyko. Bandykite dar kartą."
+    },
+    "forgotPassword": {
+      "titleAfter": "Patikrinkite savo pašto dėžutę",
+      "titleBefore": "Pamiršote slaptažodį?",
+      "subtitleAfter": "Jei šiam el. paštui yra paskyra, atkūrimo nuoroda jau kelyje. Nuoroda galioja 1 valandą.",
+      "subtitleBefore": "Įveskite el. paštą — atsiųsime slaptažodžio atkūrimo nuorodą.",
+      "emailLabel": "El. paštas",
+      "emailPlaceholder": "name@company.com",
+      "submitButton": "Siųsti atkūrimo nuorodą",
+      "submitLoading": "Siunčiama...",
+      "backToSignIn": "Grįžti į prisijungimą",
+      "errorGeneric": "Kažkas nutiko. Bandykite dar kartą."
+    },
+    "resetPassword": {
+      "titleBefore": "Atkurti slaptažodį",
+      "titleAfter": "Slaptažodis atnaujintas",
+      "subtitleBefore": "Pasirinkite naują slaptažodį paskyrai.",
+      "subtitleAfter": "Nukreipiama į prisijungimą…",
+      "passwordLabel": "Naujas slaptažodis",
+      "passwordPlaceholder": "Bent 6 simboliai",
+      "confirmLabel": "Patvirtinti slaptažodį",
+      "confirmPlaceholder": "Pakartokite naują slaptažodį",
+      "submitButton": "Atnaujinti slaptažodį",
+      "submitLoading": "Atnaujinama...",
+      "errorMissingToken": "Nuorodoje trūksta žetono.",
+      "errorInvalidOrExpired": "Nuoroda negalioja arba pasibaigusi. Užklausykite naujos."
+    }
+  },
+  "trucks": {
+    "title": "Sunkvežimiai"
   }
 }

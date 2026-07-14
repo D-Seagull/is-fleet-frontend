@@ -1,5 +1,91 @@
 {
   "common": {
-    "appName": "IS Fleet"
+    "appName": "IS Fleet",
+    "roles": {
+      "TEAMLEAD": "Lider zespołu",
+      "MANAGER": "Menedżer",
+      "DRIVER": "Kierowca",
+      "ADMIN": "Administrator"
+    },
+    "validation": {
+      "passwordShort": "Hasło musi mieć co najmniej 6 znaków.",
+      "passwordMismatch": "Hasła nie są zgodne."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Witamy w IS Fleet",
+      "subtitle": "Zaloguj się do swojego konta, aby kontynuować",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Hasło",
+      "passwordPlaceholder": "Wprowadź hasło",
+      "rememberMe": "Zapamiętaj mnie",
+      "forgotPassword": "Nie pamiętasz hasła?",
+      "submitButton": "Zaloguj się",
+      "submitLoading": "Logowanie...",
+      "errorInvalidCredentials": "Nieprawidłowy email lub hasło"
+    },
+    "register": {
+      "checkErrorMissingToken": "W adresie brakuje tokenu.",
+      "checkErrorInvalidToken": "Zaproszenie jest nieważne lub wygasło.",
+      "checkErrorGeneric": "Nieprawidłowy token zaproszenia.",
+      "errorCardTitle": "Zaproszenie nieważne",
+      "errorCardUnknown": "Nieznany błąd.",
+      "goToLogin": "Przejdź do logowania",
+      "title": "Dołącz do {companyName}",
+      "inviteAs": "Zostałeś zaproszony jako <b>{role}</b>. Skonfiguruj swoje konto poniżej.",
+      "firstNameLabel": "Imię",
+      "firstNamePlaceholder": "Jan",
+      "lastNameLabel": "Nazwisko (opcjonalnie)",
+      "lastNamePlaceholder": "Kowalski",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "Hasło",
+      "passwordPlaceholder": "Co najmniej 6 znaków",
+      "password2Label": "Potwierdź hasło",
+      "password2Placeholder": "Powtórz hasło",
+      "contactsTitle": "Kontakty firmy (opcjonalnie)",
+      "contactsHelper": "Używane jako domyślni odbiorcy powiadomień HR i próśb wewnętrznych. Możesz zmienić je później w ustawieniach.",
+      "accountingLabel": "Email księgowości",
+      "accountingPlaceholder": "accounting@company.com",
+      "hrLabel": "Email HR",
+      "hrPlaceholder": "hr@company.com",
+      "directorLabel": "Email dyrektora",
+      "directorPlaceholder": "director@company.com",
+      "submitButton": "Utwórz konto",
+      "submitLoading": "Tworzenie konta...",
+      "haveAccount": "Masz już konto? Zaloguj się",
+      "errorGeneric": "Rejestracja nie powiodła się. Spróbuj ponownie."
+    },
+    "forgotPassword": {
+      "titleAfter": "Sprawdź skrzynkę",
+      "titleBefore": "Nie pamiętasz hasła?",
+      "subtitleAfter": "Jeśli istnieje konto dla tego adresu email, link do resetu hasła jest już w drodze. Link wygasa za 1 godzinę.",
+      "subtitleBefore": "Wprowadź email — wyślemy link do resetu hasła.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@company.com",
+      "submitButton": "Wyślij link resetujący",
+      "submitLoading": "Wysyłanie...",
+      "backToSignIn": "Wróć do logowania",
+      "errorGeneric": "Coś poszło nie tak. Spróbuj ponownie."
+    },
+    "resetPassword": {
+      "titleBefore": "Zresetuj hasło",
+      "titleAfter": "Hasło zaktualizowane",
+      "subtitleBefore": "Wybierz nowe hasło do konta.",
+      "subtitleAfter": "Przekierowanie do logowania…",
+      "passwordLabel": "Nowe hasło",
+      "passwordPlaceholder": "Co najmniej 6 znaków",
+      "confirmLabel": "Potwierdź hasło",
+      "confirmPlaceholder": "Powtórz nowe hasło",
+      "submitButton": "Zaktualizuj hasło",
+      "submitLoading": "Aktualizowanie...",
+      "errorMissingToken": "W linku brakuje tokenu.",
+      "errorInvalidOrExpired": "Link jest nieważny lub wygasł. Poproś o nowy."
+    }
+  },
+  "trucks": {
+    "title": "Ciężarówki"
   }
 }

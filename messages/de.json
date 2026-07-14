@@ -1,5 +1,91 @@
 {
   "common": {
-    "appName": "IS Fleet"
+    "appName": "IS Fleet",
+    "roles": {
+      "TEAMLEAD": "Teamleiter",
+      "MANAGER": "Manager",
+      "DRIVER": "Fahrer",
+      "ADMIN": "Administrator"
+    },
+    "validation": {
+      "passwordShort": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+      "passwordMismatch": "Passwörter stimmen nicht überein."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Willkommen bei IS Fleet",
+      "subtitle": "Melden Sie sich bei Ihrem Konto an, um fortzufahren",
+      "emailLabel": "E-Mail",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Passwort",
+      "passwordPlaceholder": "Passwort eingeben",
+      "rememberMe": "Angemeldet bleiben",
+      "forgotPassword": "Passwort vergessen?",
+      "submitButton": "Anmelden",
+      "submitLoading": "Anmeldung...",
+      "errorInvalidCredentials": "Ungültige E-Mail oder Passwort"
+    },
+    "register": {
+      "checkErrorMissingToken": "In der URL fehlt das Token.",
+      "checkErrorInvalidToken": "Einladung ungültig oder abgelaufen.",
+      "checkErrorGeneric": "Ungültiges Einladungstoken.",
+      "errorCardTitle": "Einladung ungültig",
+      "errorCardUnknown": "Unbekannter Fehler.",
+      "goToLogin": "Zur Anmeldung",
+      "title": "{companyName} beitreten",
+      "inviteAs": "Sie wurden als <b>{role}</b> eingeladen. Richten Sie unten Ihr Konto ein.",
+      "firstNameLabel": "Vorname",
+      "firstNamePlaceholder": "Max",
+      "lastNameLabel": "Nachname (optional)",
+      "lastNamePlaceholder": "Mustermann",
+      "emailLabel": "E-Mail",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "Passwort",
+      "passwordPlaceholder": "Mindestens 6 Zeichen",
+      "password2Label": "Passwort bestätigen",
+      "password2Placeholder": "Passwort wiederholen",
+      "contactsTitle": "Firmenkontakte (optional)",
+      "contactsHelper": "Werden als Standardempfänger für HR-Benachrichtigungen und interne Anfragen verwendet. Sie können sie später in den Einstellungen ändern.",
+      "accountingLabel": "Buchhaltung E-Mail",
+      "accountingPlaceholder": "accounting@company.com",
+      "hrLabel": "HR E-Mail",
+      "hrPlaceholder": "hr@company.com",
+      "directorLabel": "Direktor E-Mail",
+      "directorPlaceholder": "director@company.com",
+      "submitButton": "Konto erstellen",
+      "submitLoading": "Konto wird erstellt...",
+      "haveAccount": "Haben Sie schon ein Konto? Anmelden",
+      "errorGeneric": "Registrierung fehlgeschlagen. Bitte erneut versuchen."
+    },
+    "forgotPassword": {
+      "titleAfter": "Prüfen Sie Ihren Posteingang",
+      "titleBefore": "Passwort vergessen?",
+      "subtitleAfter": "Wenn für diese E-Mail ein Konto besteht, ist ein Link zum Zurücksetzen unterwegs. Der Link läuft in 1 Stunde ab.",
+      "subtitleBefore": "Geben Sie Ihre E-Mail ein — wir senden Ihnen einen Link zum Zurücksetzen des Passworts.",
+      "emailLabel": "E-Mail",
+      "emailPlaceholder": "name@company.com",
+      "submitButton": "Reset-Link senden",
+      "submitLoading": "Wird gesendet...",
+      "backToSignIn": "Zurück zur Anmeldung",
+      "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen."
+    },
+    "resetPassword": {
+      "titleBefore": "Passwort zurücksetzen",
+      "titleAfter": "Passwort aktualisiert",
+      "subtitleBefore": "Wählen Sie ein neues Passwort für Ihr Konto.",
+      "subtitleAfter": "Weiterleitung zur Anmeldung…",
+      "passwordLabel": "Neues Passwort",
+      "passwordPlaceholder": "Mindestens 6 Zeichen",
+      "confirmLabel": "Passwort bestätigen",
+      "confirmPlaceholder": "Neues Passwort wiederholen",
+      "submitButton": "Passwort aktualisieren",
+      "submitLoading": "Wird aktualisiert...",
+      "errorMissingToken": "Im Link fehlt das Token.",
+      "errorInvalidOrExpired": "Link ungültig oder abgelaufen. Fordern Sie einen neuen an."
+    }
+  },
+  "trucks": {
+    "title": "LKW"
   }
 }
