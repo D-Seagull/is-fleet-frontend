@@ -25,6 +25,14 @@
       "AVAILABLE": "Verfügbar",
       "ON_TRIP": "Unterwegs",
       "REPAIR": "Reparatur"
+    },
+    "tripStatus": {
+      "ASSIGNED": "Zugewiesen",
+      "ACCEPTED": "Angenommen",
+      "ON_WAY": "Unterwegs",
+      "ON_SITE": "Vor Ort",
+      "LOADED": "Beladen",
+      "DELIVERED": "Zugestellt"
     }
   },
   "auth": {
@@ -122,6 +130,21 @@
     "releaseTruck": "LKW freigeben",
     "activate": "Aktivieren",
     "deleteConfirm": "Diesen LKW deaktivieren? Er verschwindet aus der Liste."
+  },
+  "trips": {
+    "title": "Fahrten",
+    "searchPlaceholder": "Nach Bestell-Nr., Fahrt, LKW, Fahrer, Manager suchen…",
+    "colOrder": "Bestell-Nr.",
+    "colTrip": "Fahrt",
+    "colStatus": "Status",
+    "colTruck": "LKW",
+    "colDriver": "Fahrer",
+    "colManager": "Manager",
+    "colAddresses": "Adressen",
+    "emptySearch": "Keine Fahrten für Ihre Suche gefunden.",
+    "empty": "Noch keine Fahrten.",
+    "docView": "Ansehen",
+    "docDownload": "Herunterladen"
   },
   "account": {
     "title": "Kontoeinstellungen",

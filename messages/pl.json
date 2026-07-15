@@ -25,6 +25,14 @@
       "AVAILABLE": "Dostępna",
       "ON_TRIP": "W trasie",
       "REPAIR": "Naprawa"
+    },
+    "tripStatus": {
+      "ASSIGNED": "Przypisany",
+      "ACCEPTED": "Zaakceptowany",
+      "ON_WAY": "W drodze",
+      "ON_SITE": "Na miejscu",
+      "LOADED": "Załadowany",
+      "DELIVERED": "Dostarczony"
     }
   },
   "auth": {
@@ -122,6 +130,21 @@
     "releaseTruck": "Zwolnij ciężarówkę",
     "activate": "Aktywuj",
     "deleteConfirm": "Dezaktywować tę ciężarówkę? Zniknie z listy."
+  },
+  "trips": {
+    "title": "Trasy",
+    "searchPlaceholder": "Szukaj po nr zamówienia, trasie, ciężarówce, kierowcy, menedżerze…",
+    "colOrder": "Nr zamówienia",
+    "colTrip": "Trasa",
+    "colStatus": "Status",
+    "colTruck": "Ciężarówka",
+    "colDriver": "Kierowca",
+    "colManager": "Menedżer",
+    "colAddresses": "Adresy",
+    "emptySearch": "Brak tras pasujących do wyszukiwania.",
+    "empty": "Brak tras.",
+    "docView": "Podgląd",
+    "docDownload": "Pobierz"
   },
   "account": {
     "title": "Ustawienia konta",

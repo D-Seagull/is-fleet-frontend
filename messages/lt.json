@@ -25,6 +25,14 @@
       "AVAILABLE": "Laisvas",
       "ON_TRIP": "Kelyje",
       "REPAIR": "Remontas"
+    },
+    "tripStatus": {
+      "ASSIGNED": "Priskirtas",
+      "ACCEPTED": "Priimtas",
+      "ON_WAY": "Kelyje",
+      "ON_SITE": "Vietoje",
+      "LOADED": "Pakrautas",
+      "DELIVERED": "Pristatytas"
     }
   },
   "auth": {
@@ -122,6 +130,21 @@
     "releaseTruck": "Atleisti sunkvežimį",
     "activate": "Aktyvuoti",
     "deleteConfirm": "Deaktyvuoti šį sunkvežimį? Jis dings iš sąrašo."
+  },
+  "trips": {
+    "title": "Reisai",
+    "searchPlaceholder": "Ieškoti pagal užsakymo nr., reisą, sunkvežimį, vairuotoją, vadybininką…",
+    "colOrder": "Užsakymo nr.",
+    "colTrip": "Reisas",
+    "colStatus": "Būsena",
+    "colTruck": "Sunkvežimis",
+    "colDriver": "Vairuotojas",
+    "colManager": "Vadybininkas",
+    "colAddresses": "Adresai",
+    "emptySearch": "Nėra reisų, atitinkančių paiešką.",
+    "empty": "Reisų dar nėra.",
+    "docView": "Peržiūrėti",
+    "docDownload": "Atsisiųsti"
   },
   "account": {
     "title": "Paskyros nustatymai",

@@ -25,6 +25,14 @@
       "AVAILABLE": "Свободна",
       "ON_TRIP": "В рейсе",
       "REPAIR": "Ремонт"
+    },
+    "tripStatus": {
+      "ASSIGNED": "Назначен",
+      "ACCEPTED": "Принят",
+      "ON_WAY": "В пути",
+      "ON_SITE": "На месте",
+      "LOADED": "Загружен",
+      "DELIVERED": "Доставлен"
     }
   },
   "auth": {
@@ -122,6 +130,21 @@
     "releaseTruck": "Отпустить грузовик",
     "activate": "Активировать",
     "deleteConfirm": "Деактивировать грузовик? Он исчезнет из списка."
+  },
+  "trips": {
+    "title": "Рейсы",
+    "searchPlaceholder": "Поиск по № заказа, рейсу, грузовику, водителю, менеджеру…",
+    "colOrder": "№ заказа",
+    "colTrip": "Рейс",
+    "colStatus": "Статус",
+    "colTruck": "Грузовик",
+    "colDriver": "Водитель",
+    "colManager": "Менеджер",
+    "colAddresses": "Адреса",
+    "emptySearch": "Нет рейсов по вашему запросу.",
+    "empty": "Рейсов пока нет.",
+    "docView": "Просмотр",
+    "docDownload": "Скачать"
   },
   "account": {
     "title": "Настройки аккаунта",

@@ -25,6 +25,14 @@
       "AVAILABLE": "Вільна",
       "ON_TRIP": "У рейсі",
       "REPAIR": "Ремонт"
+    },
+    "tripStatus": {
+      "ASSIGNED": "Призначено",
+      "ACCEPTED": "Прийнято",
+      "ON_WAY": "У дорозі",
+      "ON_SITE": "На місці",
+      "LOADED": "Завантажено",
+      "DELIVERED": "Доставлено"
     }
   },
   "auth": {
@@ -122,6 +130,21 @@
     "releaseTruck": "Відпустити вантажівку",
     "activate": "Активні",
     "deleteConfirm": "Деактивувати вантажівку? Вона зникне зі списку."
+  },
+  "trips": {
+    "title": "Рейси",
+    "searchPlaceholder": "Пошук за № замовлення, рейсом, вантажівкою, водієм, менеджером…",
+    "colOrder": "№ замовлення",
+    "colTrip": "Рейс",
+    "colStatus": "Статус",
+    "colTruck": "Вантажівка",
+    "colDriver": "Водій",
+    "colManager": "Менеджер",
+    "colAddresses": "Адреси",
+    "emptySearch": "Немає рейсів за вашим запитом.",
+    "empty": "Рейсів ще немає.",
+    "docView": "Переглянути",
+    "docDownload": "Завантажити"
   },
   "account": {
     "title": "Налаштування акаунту",

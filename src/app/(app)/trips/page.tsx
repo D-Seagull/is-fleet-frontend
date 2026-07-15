@@ -2,6 +2,7 @@
 
 import { useState, useMemo, Fragment } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
   Search,
@@ -28,7 +29,6 @@ import {
 } from "@/components/ui/table";
 import {
   useTrips,
-  TRIP_STATUS_LABELS,
   TRIP_STATUS_COLORS,
   type Trip,
 } from "@/hooks/use-trips";
@@ -57,6 +57,7 @@ function StopsCell({ stops }: { stops: Trip["stops"] }) {
 }
 
 function DocsDropdown({ trip }: { trip: Trip }) {
+  const t = useTranslations("trips");
   if (trip.documents.length === 0) return null;
   return (
     <div className="flex flex-col gap-0.5 py-1">
@@ -86,7 +87,7 @@ function DocsDropdown({ trip }: { trip: Trip }) {
                 e.stopPropagation();
                 openDoc(doc.id);
               }}
-              title="View"
+              title={t("docView")}
               className="p-1 rounded hover:bg-muted"
             >
               <Eye className="h-3 w-3 text-muted-foreground" />
@@ -96,7 +97,7 @@ function DocsDropdown({ trip }: { trip: Trip }) {
                 e.stopPropagation();
                 downloadDoc(doc.id);
               }}
-              title="Download"
+              title={t("docDownload")}
               className="p-1 rounded hover:bg-muted"
             >
               <Download className="h-3 w-3 text-muted-foreground" />
@@ -111,6 +112,8 @@ function DocsDropdown({ trip }: { trip: Trip }) {
 const COLS = 8;
 
 export default function TripsPage() {
+  const t = useTranslations("trips");
+  const tStatus = useTranslations("common.tripStatus");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -137,12 +140,12 @@ export default function TripsPage() {
 
   return (
     <div className="flex flex-col p-4 gap-6">
-      <h1 className="text-2xl font-bold">Trips</h1>
+      <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search by order #, trip, truck, driver, manager..."
+          placeholder={t("searchPlaceholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
@@ -153,22 +156,22 @@ export default function TripsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Order #</TableHead>
-              <TableHead className="w-[160px]">Trip</TableHead>
+              <TableHead className="w-[100px]">{t("colOrder")}</TableHead>
+              <TableHead className="w-[160px]">{t("colTrip")}</TableHead>
               <TableHead className="hidden md:table-cell w-[110px]">
-                Status
+                {t("colStatus")}
               </TableHead>
-              <TableHead className="w-[90px]">Truck</TableHead>
+              <TableHead className="w-[90px]">{t("colTruck")}</TableHead>
               <TableHead className="hidden md:table-cell w-[130px]">
-                Driver
+                {t("colDriver")}
               </TableHead>
               <TableHead className="hidden lg:table-cell w-[130px]">
-                Manager
+                {t("colManager")}
               </TableHead>
               <TableHead className="hidden lg:table-cell">
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
-                  Addresses
+                  {t("colAddresses")}
                 </div>
               </TableHead>
               <TableHead className="w-[60px] text-center">
@@ -212,9 +215,7 @@ export default function TripsPage() {
                   colSpan={COLS}
                   className="text-center py-12 text-muted-foreground"
                 >
-                  {searchQuery
-                    ? "No trips match your search."
-                    : "No trips yet."}
+                  {searchQuery ? t("emptySearch") : t("empty")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -258,7 +259,7 @@ export default function TripsPage() {
                           variant="outline"
                           className={TRIP_STATUS_COLORS[trip.status]}
                         >
-                          {TRIP_STATUS_LABELS[trip.status]}
+                          {tStatus(trip.status)}
                         </Badge>
                       </TableCell>
 

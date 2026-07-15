@@ -25,6 +25,14 @@
       "AVAILABLE": "Available",
       "ON_TRIP": "On Trip",
       "REPAIR": "Repair"
+    },
+    "tripStatus": {
+      "ASSIGNED": "Assigned",
+      "ACCEPTED": "Accepted",
+      "ON_WAY": "On Way",
+      "ON_SITE": "On Site",
+      "LOADED": "Loaded",
+      "DELIVERED": "Delivered"
     }
   },
   "auth": {
@@ -122,6 +130,21 @@
     "releaseTruck": "Release truck",
     "activate": "Activate",
     "deleteConfirm": "Deactivate this truck? It will disappear from the list."
+  },
+  "trips": {
+    "title": "Trips",
+    "searchPlaceholder": "Search by order #, trip, truck, driver, manager...",
+    "colOrder": "Order #",
+    "colTrip": "Trip",
+    "colStatus": "Status",
+    "colTruck": "Truck",
+    "colDriver": "Driver",
+    "colManager": "Manager",
+    "colAddresses": "Addresses",
+    "emptySearch": "No trips match your search.",
+    "empty": "No trips yet.",
+    "docView": "View",
+    "docDownload": "Download"
   },
   "account": {
     "title": "Account Settings",
