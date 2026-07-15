@@ -20,6 +20,11 @@
       "KZ": "Kazakh",
       "HI": "Hindi",
       "RU": "Russian"
+    },
+    "truckStatus": {
+      "AVAILABLE": "Available",
+      "ON_TRIP": "On Trip",
+      "REPAIR": "Repair"
     }
   },
   "auth": {
@@ -96,7 +101,27 @@
     }
   },
   "trucks": {
-    "title": "Trucks"
+    "title": "Trucks",
+    "addButton": "Add Truck",
+    "addDialogTitle": "Add New Truck",
+    "plateLabel": "Plate Number",
+    "driverLabel": "Driver (optional)",
+    "driverPlaceholder": "Select driver",
+    "noDriver": "No driver",
+    "tabActive": "Active",
+    "tabDeactivated": "Deactivated",
+    "searchPlaceholder": "Search by plate, driver, phone…",
+    "colPlate": "Plate",
+    "colStatus": "Status",
+    "colDriver": "Driver",
+    "colLastNote": "Last note",
+    "colActions": "Actions",
+    "emptyActive": "No trucks found.",
+    "emptyDeactivated": "No deactivated trucks.",
+    "takeTruck": "Take truck",
+    "releaseTruck": "Release truck",
+    "activate": "Activate",
+    "deleteConfirm": "Deactivate this truck? It will disappear from the list."
   },
   "account": {
     "title": "Account Settings",

@@ -20,6 +20,11 @@
       "KZ": "Kazachski",
       "HI": "Hindi",
       "RU": "Rosyjski"
+    },
+    "truckStatus": {
+      "AVAILABLE": "Dostępna",
+      "ON_TRIP": "W trasie",
+      "REPAIR": "Naprawa"
     }
   },
   "auth": {
@@ -96,7 +101,27 @@
     }
   },
   "trucks": {
-    "title": "Ciężarówki"
+    "title": "Ciężarówki",
+    "addButton": "Dodaj ciężarówkę",
+    "addDialogTitle": "Nowa ciężarówka",
+    "plateLabel": "Numer rejestracyjny",
+    "driverLabel": "Kierowca (opcjonalnie)",
+    "driverPlaceholder": "Wybierz kierowcę",
+    "noDriver": "Bez kierowcy",
+    "tabActive": "Aktywne",
+    "tabDeactivated": "Dezaktywowane",
+    "searchPlaceholder": "Szukaj po numerze, kierowcy, telefonie…",
+    "colPlate": "Numer",
+    "colStatus": "Status",
+    "colDriver": "Kierowca",
+    "colLastNote": "Ostatnia notatka",
+    "colActions": "Akcje",
+    "emptyActive": "Nie znaleziono ciężarówek.",
+    "emptyDeactivated": "Brak dezaktywowanych ciężarówek.",
+    "takeTruck": "Przejmij ciężarówkę",
+    "releaseTruck": "Zwolnij ciężarówkę",
+    "activate": "Aktywuj",
+    "deleteConfirm": "Dezaktywować tę ciężarówkę? Zniknie z listy."
   },
   "account": {
     "title": "Ustawienia konta",

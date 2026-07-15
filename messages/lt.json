@@ -20,6 +20,11 @@
       "KZ": "Kazachų",
       "HI": "Hindi",
       "RU": "Rusų"
+    },
+    "truckStatus": {
+      "AVAILABLE": "Laisvas",
+      "ON_TRIP": "Kelyje",
+      "REPAIR": "Remontas"
     }
   },
   "auth": {
@@ -96,7 +101,27 @@
     }
   },
   "trucks": {
-    "title": "Sunkvežimiai"
+    "title": "Sunkvežimiai",
+    "addButton": "Pridėti sunkvežimį",
+    "addDialogTitle": "Naujas sunkvežimis",
+    "plateLabel": "Valstybinis numeris",
+    "driverLabel": "Vairuotojas (neprivaloma)",
+    "driverPlaceholder": "Pasirinkite vairuotoją",
+    "noDriver": "Be vairuotojo",
+    "tabActive": "Aktyvūs",
+    "tabDeactivated": "Deaktyvuoti",
+    "searchPlaceholder": "Ieškoti pagal numerį, vairuotoją, telefoną…",
+    "colPlate": "Numeris",
+    "colStatus": "Būsena",
+    "colDriver": "Vairuotojas",
+    "colLastNote": "Paskutinė pastaba",
+    "colActions": "Veiksmai",
+    "emptyActive": "Sunkvežimių nerasta.",
+    "emptyDeactivated": "Nėra deaktyvuotų sunkvežimių.",
+    "takeTruck": "Paimti sunkvežimį",
+    "releaseTruck": "Atleisti sunkvežimį",
+    "activate": "Aktyvuoti",
+    "deleteConfirm": "Deaktyvuoti šį sunkvežimį? Jis dings iš sąrašo."
   },
   "account": {
     "title": "Paskyros nustatymai",

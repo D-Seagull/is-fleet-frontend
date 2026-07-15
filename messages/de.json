@@ -20,6 +20,11 @@
       "KZ": "Kasachisch",
       "HI": "Hindi",
       "RU": "Russisch"
+    },
+    "truckStatus": {
+      "AVAILABLE": "Verfügbar",
+      "ON_TRIP": "Unterwegs",
+      "REPAIR": "Reparatur"
     }
   },
   "auth": {
@@ -96,7 +101,27 @@
     }
   },
   "trucks": {
-    "title": "LKW"
+    "title": "LKW",
+    "addButton": "LKW hinzufügen",
+    "addDialogTitle": "Neuer LKW",
+    "plateLabel": "Kennzeichen",
+    "driverLabel": "Fahrer (optional)",
+    "driverPlaceholder": "Fahrer auswählen",
+    "noDriver": "Kein Fahrer",
+    "tabActive": "Aktiv",
+    "tabDeactivated": "Deaktiviert",
+    "searchPlaceholder": "Nach Kennzeichen, Fahrer, Telefon suchen…",
+    "colPlate": "Kennzeichen",
+    "colStatus": "Status",
+    "colDriver": "Fahrer",
+    "colLastNote": "Letzte Notiz",
+    "colActions": "Aktionen",
+    "emptyActive": "Keine LKW gefunden.",
+    "emptyDeactivated": "Keine deaktivierten LKW.",
+    "takeTruck": "LKW übernehmen",
+    "releaseTruck": "LKW freigeben",
+    "activate": "Aktivieren",
+    "deleteConfirm": "Diesen LKW deaktivieren? Er verschwindet aus der Liste."
   },
   "account": {
     "title": "Kontoeinstellungen",

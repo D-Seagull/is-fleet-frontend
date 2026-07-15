@@ -20,6 +20,11 @@
       "KZ": "Казахська",
       "HI": "Гінді",
       "RU": "Російська"
+    },
+    "truckStatus": {
+      "AVAILABLE": "Вільна",
+      "ON_TRIP": "У рейсі",
+      "REPAIR": "Ремонт"
     }
   },
   "auth": {
@@ -96,7 +101,27 @@
     }
   },
   "trucks": {
-    "title": "Вантажівки"
+    "title": "Вантажівки",
+    "addButton": "Додати вантажівку",
+    "addDialogTitle": "Нова вантажівка",
+    "plateLabel": "Номерний знак",
+    "driverLabel": "Водій (необов'язково)",
+    "driverPlaceholder": "Оберіть водія",
+    "noDriver": "Без водія",
+    "tabActive": "Активні",
+    "tabDeactivated": "Деактивовані",
+    "searchPlaceholder": "Пошук за номером, водієм, телефоном…",
+    "colPlate": "Номер",
+    "colStatus": "Статус",
+    "colDriver": "Водій",
+    "colLastNote": "Остання нотатка",
+    "colActions": "Дії",
+    "emptyActive": "Вантажівок не знайдено.",
+    "emptyDeactivated": "Немає деактивованих вантажівок.",
+    "takeTruck": "Взяти вантажівку",
+    "releaseTruck": "Відпустити вантажівку",
+    "activate": "Активні",
+    "deleteConfirm": "Деактивувати вантажівку? Вона зникне зі списку."
   },
   "account": {
     "title": "Налаштування акаунту",

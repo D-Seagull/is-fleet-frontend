@@ -20,6 +20,11 @@
       "KZ": "Казахский",
       "HI": "Хинди",
       "RU": "Русский"
+    },
+    "truckStatus": {
+      "AVAILABLE": "Свободна",
+      "ON_TRIP": "В рейсе",
+      "REPAIR": "Ремонт"
     }
   },
   "auth": {
@@ -96,7 +101,27 @@
     }
   },
   "trucks": {
-    "title": "Грузовики"
+    "title": "Грузовики",
+    "addButton": "Добавить грузовик",
+    "addDialogTitle": "Новый грузовик",
+    "plateLabel": "Гос. номер",
+    "driverLabel": "Водитель (необязательно)",
+    "driverPlaceholder": "Выберите водителя",
+    "noDriver": "Без водителя",
+    "tabActive": "Активные",
+    "tabDeactivated": "Деактивированные",
+    "searchPlaceholder": "Поиск по номеру, водителю, телефону…",
+    "colPlate": "Номер",
+    "colStatus": "Статус",
+    "colDriver": "Водитель",
+    "colLastNote": "Последняя заметка",
+    "colActions": "Действия",
+    "emptyActive": "Грузовиков не найдено.",
+    "emptyDeactivated": "Нет деактивированных грузовиков.",
+    "takeTruck": "Взять грузовик",
+    "releaseTruck": "Отпустить грузовик",
+    "activate": "Активировать",
+    "deleteConfirm": "Деактивировать грузовик? Он исчезнет из списка."
   },
   "account": {
     "title": "Настройки аккаунта",

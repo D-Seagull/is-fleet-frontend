@@ -62,14 +62,10 @@ const statusColors: Record<TruckStatus, string> = {
   REPAIR: "bg-red-500/10 text-red-600 border-red-500/20",
 };
 
-const statusLabels: Record<TruckStatus, string> = {
-  AVAILABLE: "Available",
-  ON_TRIP: "On Trip",
-  REPAIR: "Repair",
-};
 
 export default function TrucksPage() {
   const t = useTranslations("trucks");
+  const tStatus = useTranslations("common.truckStatus");
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [plate, setPlate] = useState("");
@@ -112,7 +108,7 @@ export default function TrucksPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Деактивувати вантажівку? Вона зникне зі списку.")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     await deleteTruck.mutateAsync(id);
   }
 
@@ -124,16 +120,16 @@ export default function TrucksPage() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Truck
+              {t("addButton")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Truck</DialogTitle>
+              <DialogTitle>{t("addDialogTitle")}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="plate">Plate Number</Label>
+                <Label htmlFor="plate">{t("plateLabel")}</Label>
                 <Input
                   id="plate"
                   placeholder="ABC-1234"
@@ -142,16 +138,16 @@ export default function TrucksPage() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="driver">Driver (optional)</Label>
+                <Label htmlFor="driver">{t("driverLabel")}</Label>
                 <Select
                   value={selectedDriverId}
                   onValueChange={setSelectedDriverId}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select driver" />
+                    <SelectValue placeholder={t("driverPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No driver</SelectItem>
+                    <SelectItem value="none">{t("noDriver")}</SelectItem>
                     {(drivers ?? []).map((driver) => (
                       <SelectItem key={driver.id} value={driver.id}>
                         {fullName(driver) || driver.email}
@@ -167,7 +163,7 @@ export default function TrucksPage() {
                 {createTruck.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Add Truck
+                {t("addButton")}
               </Button>
             </div>
           </DialogContent>
@@ -178,7 +174,7 @@ export default function TrucksPage() {
         <div className="flex items-center justify-between gap-4">
           <TabsList>
             <TabsTrigger value="active">
-              Active
+              {t("tabActive")}
               {(trucks?.length ?? 0) > 0 && (
                 <span className="ml-1.5 rounded-full bg-muted-foreground/15 px-1.5 py-0.5 text-xs">
                   {trucks?.length}
@@ -187,7 +183,7 @@ export default function TrucksPage() {
             </TabsTrigger>
             {isManager && (
               <TabsTrigger value="deactivated">
-                Deactivated
+                {t("tabDeactivated")}
                 {(deactivatedTrucks?.length ?? 0) > 0 && (
                   <span className="ml-1.5 rounded-full bg-muted-foreground/15 px-1.5 py-0.5 text-xs">
                     {deactivatedTrucks?.length}
@@ -200,7 +196,7 @@ export default function TrucksPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by plate, driver, phone…"
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -213,12 +209,12 @@ export default function TrucksPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[130px]">Plate</TableHead>
-                  <TableHead className="w-[130px]">Status</TableHead>
-                  <TableHead className="w-[180px]">Driver</TableHead>
+                  <TableHead className="w-[130px]">{t("colPlate")}</TableHead>
+                  <TableHead className="w-[130px]">{t("colStatus")}</TableHead>
+                  <TableHead className="w-[180px]">{t("colDriver")}</TableHead>
                   <TableHead className="w-[44px]" />
                   <TableHead className="hidden md:table-cell">
-                    Last note
+                    {t("colLastNote")}
                   </TableHead>
                   <TableHead className="hidden md:table-cell w-[80px]" />
                 </TableRow>
@@ -254,7 +250,7 @@ export default function TrucksPage() {
                       colSpan={4}
                       className="text-center py-10 text-muted-foreground"
                     >
-                      No trucks found.
+                      {t("emptyActive")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -287,13 +283,19 @@ export default function TrucksPage() {
                               variant="outline"
                               className={statusColors[truck.status]}
                             >
-                              {statusLabels[truck.status]}
+                              {tStatus(truck.status)}
                             </Badge>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="AVAILABLE">Available</SelectItem>
-                            <SelectItem value="ON_TRIP">On Trip</SelectItem>
-                            <SelectItem value="REPAIR">Repair</SelectItem>
+                            <SelectItem value="AVAILABLE">
+                              {tStatus("AVAILABLE")}
+                            </SelectItem>
+                            <SelectItem value="ON_TRIP">
+                              {tStatus("ON_TRIP")}
+                            </SelectItem>
+                            <SelectItem value="REPAIR">
+                              {tStatus("REPAIR")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -345,8 +347,8 @@ export default function TrucksPage() {
                               size="icon"
                               title={
                                 truck.managerId === user?.id
-                                  ? "Release truck"
-                                  : "Take truck"
+                                  ? t("releaseTruck")
+                                  : t("takeTruck")
                               }
                               onClick={() =>
                                 updateTruck.mutate({
@@ -392,9 +394,9 @@ export default function TrucksPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Plate</TableHead>
-                    <TableHead>Driver</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{t("colPlate")}</TableHead>
+                    <TableHead>{t("colDriver")}</TableHead>
+                    <TableHead>{t("colActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -404,7 +406,7 @@ export default function TrucksPage() {
                         colSpan={3}
                         className="text-center py-10 text-muted-foreground"
                       >
-                        No deactivated trucks.
+                        {t("emptyDeactivated")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -424,7 +426,7 @@ export default function TrucksPage() {
                             disabled={activateTruck.isPending}
                           >
                             <Eye className="mr-2 h-3.5 w-3.5" />
-                            Activate
+                            {t("activate")}
                           </Button>
                         </TableCell>
                       </TableRow>
