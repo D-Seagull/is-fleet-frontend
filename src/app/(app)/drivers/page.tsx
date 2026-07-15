@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { isAxiosError } from "axios";
 import { Plus, Search, Star, Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,16 +46,16 @@ import {
 } from "@/hooks/use-drivers";
 import { useAuthStore } from "@/store/auth";
 
-const languageLabels: Record<Language, string> = {
-  UK: "Ukrainian",
-  EN: "English",
-  PL: "Polish",
-  LT: "Lithuanian",
-  UZ: "Uzbek",
-  KZ: "Kazakh",
-  HI: "Hindi",
-  RU: "Russian",
-};
+const LANGUAGE_KEYS: Language[] = [
+  "UK",
+  "EN",
+  "PL",
+  "LT",
+  "UZ",
+  "KZ",
+  "HI",
+  "RU",
+];
 
 // E.164-ish: optional `+`, 8–16 digits after stripping spaces/dashes/parens.
 const PHONE_REGEX = /^\+?\d{8,16}$/;
@@ -64,6 +65,8 @@ function normalizePhoneForCheck(raw: string): string {
 }
 
 export default function DriversPage() {
+  const t = useTranslations("drivers");
+  const tLangs = useTranslations("common.languages");
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
@@ -96,9 +99,7 @@ export default function DriversPage() {
   const cleanedPhone = normalizePhoneForCheck(phone);
   const phoneValid = PHONE_REGEX.test(cleanedPhone);
   const phoneError =
-    phone.length > 0 && !phoneValid
-      ? "Enter international format, e.g. +380501234567"
-      : null;
+    phone.length > 0 && !phoneValid ? t("phoneError") : null;
   const canSubmit =
     firstName.trim().length >= 1 && phoneValid && !createDriver.isPending;
 
@@ -133,9 +134,9 @@ export default function DriversPage() {
         const msg = Array.isArray(data?.message)
           ? data?.message?.[0]
           : data?.message;
-        setSubmitError(msg ?? "Failed to add driver. Please try again.");
+        setSubmitError(msg ?? t("createError"));
       } else {
-        setSubmitError("Failed to add driver. Please try again.");
+        setSubmitError(t("createError"));
       }
     }
   }
@@ -143,24 +144,24 @@ export default function DriversPage() {
   return (
     <div className="flex flex-col p-4 gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Drivers</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Driver
+              {t("addButton")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Driver</DialogTitle>
+              <DialogTitle>{t("addDialogTitle")}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="d-firstName">First name</Label>
+                <Label htmlFor="d-firstName">{t("firstNameLabel")}</Label>
                 <Input
                   id="d-firstName"
-                  placeholder="John"
+                  placeholder={t("firstNamePlaceholder")}
                   autoComplete="given-name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
@@ -168,17 +169,17 @@ export default function DriversPage() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="d-lastName">Last name (optional)</Label>
+                <Label htmlFor="d-lastName">{t("lastNameLabel")}</Label>
                 <Input
                   id="d-lastName"
-                  placeholder="Smith"
+                  placeholder={t("lastNamePlaceholder")}
                   autoComplete="family-name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="d-phone">Phone</Label>
+                <Label htmlFor="d-phone">{t("phoneLabel")}</Label>
                 <Input
                   id="d-phone"
                   type="tel"
@@ -194,13 +195,12 @@ export default function DriversPage() {
                   <p className="text-xs text-destructive">{phoneError}</p>
                 ) : (
                   <p className="text-xs text-muted-foreground">
-                    Driver will receive an SMS code on this number to log into the
-                    mobile app.
+                    {t("phoneHelper")}
                   </p>
                 )}
               </div>
               <div className="flex flex-col gap-2">
-                <Label>Language</Label>
+                <Label>{t("languageLabel")}</Label>
                 <Select
                   value={language}
                   onValueChange={(v) => setLanguage(v as Language)}
@@ -209,13 +209,11 @@ export default function DriversPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {(Object.entries(languageLabels) as [Language, string][]).map(
-                      ([val, label]) => (
-                        <SelectItem key={val} value={val}>
-                          {label}
-                        </SelectItem>
-                      ),
-                    )}
+                    {LANGUAGE_KEYS.map((val) => (
+                      <SelectItem key={val} value={val}>
+                        {tLangs(val)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -228,7 +226,7 @@ export default function DriversPage() {
                 {createDriver.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Add Driver
+                {t("addButton")}
               </Button>
             </div>
           </DialogContent>
@@ -239,7 +237,7 @@ export default function DriversPage() {
         <div className="flex items-center justify-between gap-4">
           <TabsList>
             <TabsTrigger value="active">
-              Active
+              {t("tabActive")}
               {(drivers?.length ?? 0) > 0 && (
                 <span className="ml-1.5 rounded-full bg-muted-foreground/15 px-1.5 py-0.5 text-xs">
                   {drivers?.length}
@@ -248,7 +246,7 @@ export default function DriversPage() {
             </TabsTrigger>
             {isManager && (
               <TabsTrigger value="deactivated">
-                Deactivated
+                {t("tabDeactivated")}
                 {(deactivatedDrivers?.length ?? 0) > 0 && (
                   <span className="ml-1.5 rounded-full bg-muted-foreground/15 px-1.5 py-0.5 text-xs">
                     {deactivatedDrivers?.length}
@@ -261,7 +259,7 @@ export default function DriversPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name, phone, manager, plate…"
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -274,12 +272,20 @@ export default function DriversPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Driver</TableHead>
-                  <TableHead className="hidden sm:table-cell">Phone</TableHead>
-                  <TableHead className="hidden md:table-cell">Language</TableHead>
-                  <TableHead className="hidden md:table-cell">Manager</TableHead>
-                  <TableHead>Truck</TableHead>
-                  <TableHead className="hidden sm:table-cell">Rating</TableHead>
+                  <TableHead>{t("colDriver")}</TableHead>
+                  <TableHead className="hidden sm:table-cell">
+                    {t("colPhone")}
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    {t("colLanguage")}
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    {t("colManager")}
+                  </TableHead>
+                  <TableHead>{t("colTruck")}</TableHead>
+                  <TableHead className="hidden sm:table-cell">
+                    {t("colRating")}
+                  </TableHead>
                   <TableHead className="hidden sm:table-cell w-[48px]" />
                 </TableRow>
               </TableHeader>
@@ -293,7 +299,7 @@ export default function DriversPage() {
                 ) : filteredDrivers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
-                      No drivers found.
+                      {t("emptyActive")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -330,7 +336,7 @@ export default function DriversPage() {
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{driver.phone ?? "—"}</TableCell>
-                      <TableCell className="hidden md:table-cell text-sm">{languageLabels[driver.language]}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm">{tLangs(driver.language)}</TableCell>
                       <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{fullName(driver.manager) || "—"}</TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()} className="text-sm">
                         {driver.currentTruck ? (
@@ -380,16 +386,16 @@ export default function DriversPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Driver</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{t("colDriver")}</TableHead>
+                    <TableHead>{t("colPhone")}</TableHead>
+                    <TableHead>{t("colActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {!deactivatedDrivers || deactivatedDrivers.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={3} className="text-center py-10 text-muted-foreground">
-                        No deactivated drivers.
+                        {t("emptyDeactivated")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -407,7 +413,7 @@ export default function DriversPage() {
                             disabled={activateDriver.isPending}
                           >
                             <Eye className="mr-2 h-3.5 w-3.5" />
-                            Activate
+                            {t("activate")}
                           </Button>
                         </TableCell>
                       </TableRow>

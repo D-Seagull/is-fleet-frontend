@@ -4,6 +4,7 @@ import { use, useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
   ArrowLeft,
@@ -47,21 +48,9 @@ import {
   useDriverRatings,
   useUpsertDriverRating,
   useUpdateDriver,
-  type Language,
 } from "@/hooks/use-drivers";
 import { useTrucks } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
-
-const languageLabels: Record<Language, string> = {
-  UK: "Ukrainian",
-  EN: "English",
-  PL: "Polish",
-  LT: "Lithuanian",
-  UZ: "Uzbek",
-  KZ: "Kazakh",
-  HI: "Hindi",
-  RU: "Russian",
-};
 
 const truckStatusColors: Record<string, string> = {
   AVAILABLE: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
@@ -104,6 +93,7 @@ function StarPicker({
 }
 
 function RatingTab({ driverId }: { driverId: string }) {
+  const t = useTranslations("drivers.rating");
   const user = useAuthStore((s) => s.user);
   const { data, isLoading } = useDriverRatings(driverId);
   const upsert = useUpsertDriverRating(driverId);
@@ -138,7 +128,7 @@ function RatingTab({ driverId }: { driverId: string }) {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Overall Rating</CardTitle>
+          <CardTitle className="text-lg">{t("overallTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {averageRating !== null ? (
@@ -164,7 +154,7 @@ function RatingTab({ driverId }: { driverId: string }) {
                     onClick={() => setShowAll((v) => !v)}
                     className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors text-left"
                   >
-                    {showAll ? "Hide" : `Show all ${ratingCount} ${ratingCount === 1 ? "rating" : "ratings"}`}
+                    {showAll ? t("hide") : t("showAll", { count: ratingCount })}
                   </button>
                 </div>
               </div>
@@ -190,7 +180,7 @@ function RatingTab({ driverId }: { driverId: string }) {
                           ))}
                         </div>
                         <span className="text-sm font-medium">
-                          {fullName(r.ratedBy) || "Unknown"}
+                          {fullName(r.ratedBy) || t("unknown")}
                         </span>
                         <span className="text-xs text-muted-foreground ml-auto">
                           {new Date(r.createdAt).toLocaleDateString()}
@@ -205,7 +195,7 @@ function RatingTab({ driverId }: { driverId: string }) {
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No ratings yet.</p>
+            <p className="text-sm text-muted-foreground">{t("noRatings")}</p>
           )}
         </CardContent>
       </Card>
@@ -213,25 +203,25 @@ function RatingTab({ driverId }: { driverId: string }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
-            {myExisting ? "Update your rating" : "Rate this driver"}
+            {myExisting ? t("updateTitle") : t("rateTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {myExisting && (
             <div className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-              Your current rating: {myExisting.score}/5
+              {t("currentRating", { score: myExisting.score })}
               {myExisting.comment && ` — "${myExisting.comment}"`}
             </div>
           )}
           <div className="flex flex-col gap-2">
-            <Label>Score</Label>
+            <Label>{t("scoreLabel")}</Label>
             <StarPicker value={score} onChange={setScore} />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="rating-comment">Comment (optional)</Label>
+            <Label htmlFor="rating-comment">{t("commentLabel")}</Label>
             <Textarea
               id="rating-comment"
-              placeholder="Add a comment..."
+              placeholder={t("commentPlaceholder")}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={2}
@@ -244,7 +234,7 @@ function RatingTab({ driverId }: { driverId: string }) {
               onCheckedChange={(v) => setAnonymous(!!v)}
             />
             <Label htmlFor="anon" className="text-sm font-normal cursor-pointer">
-              Leave anonymously
+              {t("anonymous")}
             </Label>
           </div>
 
@@ -256,7 +246,7 @@ function RatingTab({ driverId }: { driverId: string }) {
             {upsert.isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            {myExisting ? "Update" : "Submit"}
+            {myExisting ? t("update") : t("submit")}
           </Button>
         </CardContent>
       </Card>
@@ -266,6 +256,9 @@ function RatingTab({ driverId }: { driverId: string }) {
 }
 
 function DriverDetailContent({ id }: { id: string }) {
+  const t = useTranslations("drivers.detail");
+  const tLangs = useTranslations("common.languages");
+  const tTruckStatus = useTranslations("common.truckStatus");
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") ?? "info";
@@ -337,7 +330,7 @@ function DriverDetailContent({ id }: { id: string }) {
                 : "bg-gray-500/10 text-gray-500 border-gray-500/20"
             }
           >
-            {driver.isActive ? "Active" : "Inactive"}
+            {driver.isActive ? t("statusActive") : t("statusInactive")}
           </Badge>
           {driver.averageRating !== null && (
             <div className="flex items-center gap-1 ml-1">
@@ -351,7 +344,7 @@ function DriverDetailContent({ id }: { id: string }) {
         <Button variant="outline" size="sm" asChild>
           <Link href={`/chat?userId=${driver.id}`}>
             <MessageSquare className="mr-2 h-4 w-4" />
-            Chat
+            {t("chat")}
           </Link>
         </Button>
         {canToggle && (
@@ -368,14 +361,14 @@ function DriverDetailContent({ id }: { id: string }) {
                   onClick={() => deactivate.mutate(driver.id)}
                   disabled={deactivate.isPending}
                 >
-                  Deactivate
+                  {t("deactivate")}
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem
                   onClick={() => activate.mutate(driver.id)}
                   disabled={activate.isPending}
                 >
-                  Activate
+                  {t("activate")}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -385,9 +378,9 @@ function DriverDetailContent({ id }: { id: string }) {
 
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList>
-          <TabsTrigger value="info">Info</TabsTrigger>
+          <TabsTrigger value="info">{t("tabInfo")}</TabsTrigger>
           <TabsTrigger value="rating">
-            Rating
+            {t("tabRating")}
             {(ratingsData?.ratingCount ?? 0) > 0 && (
               <span className="ml-1.5 flex items-center gap-1 text-xs">
                 <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
@@ -400,14 +393,14 @@ function DriverDetailContent({ id }: { id: string }) {
             value="chat"
             onClick={() => router.push(`/chat?userId=${driver.id}`)}
           >
-            Chat
+            {t("tabChat")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle>{t("profileTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-6 md:flex-row md:items-start">
@@ -431,7 +424,7 @@ function DriverDetailContent({ id }: { id: string }) {
                           : "bg-gray-500/10 text-gray-500 border-gray-500/20"
                       }
                     >
-                      {driver.isActive ? "Active" : "Inactive"}
+                      {driver.isActive ? t("statusActive") : t("statusInactive")}
                     </Badge>
                   </div>
 
@@ -442,7 +435,7 @@ function DriverDetailContent({ id }: { id: string }) {
                         <Phone className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex flex-col gap-1 flex-1">
-                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="text-sm text-muted-foreground">{t("phoneField")}</p>
                         <div className="flex items-center gap-2">
                           <Input
                             value={phone}
@@ -482,7 +475,7 @@ function DriverDetailContent({ id }: { id: string }) {
                         </div>
                         {phoneDirty && !phoneValid && (
                           <p className="text-xs text-destructive">
-                            Format: +12345678901 (7–15 digits)
+                            {t("phoneFormatHint")}
                           </p>
                         )}
                       </div>
@@ -495,10 +488,10 @@ function DriverDetailContent({ id }: { id: string }) {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">
-                          Language
+                          {t("languageField")}
                         </p>
                         <p className="font-medium">
-                          {languageLabels[driver.language]}
+                          {tLangs(driver.language)}
                         </p>
                       </div>
                     </div>
@@ -510,7 +503,7 @@ function DriverDetailContent({ id }: { id: string }) {
                       </div>
                       <div className="flex flex-col gap-1 flex-1">
                         <p className="text-sm text-muted-foreground">
-                          Assigned Truck
+                          {t("assignedTruck")}
                         </p>
                         <Select
                           value={driver.currentTruck?.id ?? "none"}
@@ -522,16 +515,16 @@ function DriverDetailContent({ id }: { id: string }) {
                           disabled={updateDriver.isPending}
                         >
                           <SelectTrigger className="h-8 text-sm">
-                            <SelectValue placeholder="Select truck" />
+                            <SelectValue placeholder={t("selectTruck")} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">No truck</SelectItem>
+                            <SelectItem value="none">{t("noTruck")}</SelectItem>
                             {availableTrucks.map((t) => (
                               <SelectItem key={t.id} value={t.id}>
                                 {t.plate}
                                 {t.status !== "AVAILABLE" && (
                                   <span className="ml-1 text-xs text-muted-foreground">
-                                    ({t.status})
+                                    ({tTruckStatus(t.status)})
                                   </span>
                                 )}
                               </SelectItem>
@@ -548,7 +541,7 @@ function DriverDetailContent({ id }: { id: string }) {
                         <Star className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Rating</p>
+                        <p className="text-sm text-muted-foreground">{t("ratingField")}</p>
                         {driver.averageRating !== null ? (
                           <div className="flex items-center gap-1">
                             <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
@@ -558,7 +551,7 @@ function DriverDetailContent({ id }: { id: string }) {
                           </div>
                         ) : (
                           <p className="font-medium text-muted-foreground">
-                            No ratings yet
+                            {t("noRatingsInline")}
                           </p>
                         )}
                       </div>
