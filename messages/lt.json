@@ -128,5 +128,22 @@
       "title": "Sąsajos kalba",
       "description": "Kalba, kuria rodomi mygtukai, formos ir pranešimai. Netaikoma pokalbių žinučių vertimui."
     }
+  },
+  "settings": {
+    "title": "Nustatymai",
+    "accessDenied": {
+      "title": "Prieiga ribota",
+      "description": "Įmonės nustatymus gali redaguoti tik komandos vadovas. Paprašykite vadovo, jei ką nors reikia pakeisti.",
+      "home": "Į pagrindinį"
+    },
+    "company": {
+      "title": "Įmonės informacija",
+      "description": "Duomenys, kuriuos nurodėte registruojant įmonę. Šie kontaktai naudojami kaip numatytieji gavėjai HR pranešimams ir vidiniams užklausoms.",
+      "nameLabel": "Įmonės pavadinimas",
+      "nameLocked": "Įmonės pavadinimo negalima keisti po registracijos. Susisiekite su palaikymu, jei reikia jį atnaujinti.",
+      "accountingLabel": "Buhalterijos el. paštas",
+      "hrLabel": "HR el. paštas",
+      "directorLabel": "Direktoriaus el. paštas"
+    }
   }
 }

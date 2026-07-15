@@ -128,5 +128,22 @@
       "title": "Język interfejsu",
       "description": "Język używany do przycisków, formularzy i komunikatów aplikacji. Nie wpływa na tłumaczenie wiadomości czatu."
     }
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "accessDenied": {
+      "title": "Dostęp ograniczony",
+      "description": "Ustawienia firmy może edytować tylko lider zespołu. Poproś lidera, jeśli coś trzeba zmienić.",
+      "home": "Do strony głównej"
+    },
+    "company": {
+      "title": "Informacje o firmie",
+      "description": "Dane podane podczas rejestracji firmy. Te kontakty są domyślnymi odbiorcami powiadomień HR i próśb wewnętrznych.",
+      "nameLabel": "Nazwa firmy",
+      "nameLocked": "Nazwy firmy nie można zmienić po rejestracji. Skontaktuj się z pomocą, jeśli trzeba ją zaktualizować.",
+      "accountingLabel": "Email księgowości",
+      "hrLabel": "Email HR",
+      "directorLabel": "Email dyrektora"
+    }
   }
 }

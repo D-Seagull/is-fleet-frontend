@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Building2, Loader2, ShieldAlert } from "lucide-react";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ import { useAuthStore } from "@/store/auth";
 import { useCompany, useUpdateCompany } from "@/hooks/use-company";
 
 export default function SettingsPage() {
+  const t = useTranslations("settings");
+  const tForm = useTranslations("account.form");
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isTeamlead = user?.role === "TEAMLEAD";
@@ -46,13 +49,14 @@ export default function SettingsPage() {
     return (
       <div className="flex flex-col items-center justify-center p-12 gap-3 text-center">
         <ShieldAlert className="h-10 w-10 text-muted-foreground" />
-        <h1 className="text-xl font-semibold">Доступ обмежений</h1>
+        <h1 className="text-xl font-semibold">
+          {t("accessDenied.title")}
+        </h1>
         <p className="text-sm text-muted-foreground max-w-sm">
-          Налаштування компанії редагує лише тімлід. Якщо вам потрібно
-          щось змінити — попросіть тімліда.
+          {t("accessDenied.description")}
         </p>
         <Button variant="outline" onClick={() => router.push("/trucks")}>
-          На головну
+          {t("accessDenied.home")}
         </Button>
       </div>
     );
@@ -87,9 +91,9 @@ export default function SettingsPage() {
         const msg = Array.isArray(data?.message)
           ? data?.message?.[0]
           : data?.message;
-        setError(msg ?? "Не вдалось зберегти зміни.");
+        setError(msg ?? tForm("saveError"));
       } else {
-        setError("Не вдалось зберегти зміни.");
+        setError(tForm("saveError"));
       }
     }
   };
@@ -104,24 +108,20 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            <CardTitle>Інформація про компанію</CardTitle>
+            <CardTitle>{t("company.title")}</CardTitle>
           </div>
-          <CardDescription>
-            Дані, які ви вказали при реєстрації компанії. Ці контакти
-            використовуються як отримувачі за замовчуванням для авансів та
-            HR-сповіщень.
-          </CardDescription>
+          <CardDescription>{t("company.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4 max-w-2xl">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="company-name">Назва компанії</Label>
+              <Label htmlFor="company-name">{t("company.nameLabel")}</Label>
               <Input
                 id="company-name"
                 value={company.name}
@@ -130,12 +130,13 @@ export default function SettingsPage() {
                 className="cursor-not-allowed opacity-70"
               />
               <p className="text-xs text-muted-foreground">
-                Назва компанії незмінна після реєстрації. Якщо потрібно її
-                оновити — звʼяжіться з підтримкою.
+                {t("company.nameLocked")}
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="accounting-email">Email бухгалтерії</Label>
+              <Label htmlFor="accounting-email">
+                {t("company.accountingLabel")}
+              </Label>
               <Input
                 id="accounting-email"
                 type="email"
@@ -145,7 +146,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="hr-email">Email HR</Label>
+              <Label htmlFor="hr-email">{t("company.hrLabel")}</Label>
               <Input
                 id="hr-email"
                 type="email"
@@ -155,7 +156,9 @@ export default function SettingsPage() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="director-email">Email директора</Label>
+              <Label htmlFor="director-email">
+                {t("company.directorLabel")}
+              </Label>
               <Input
                 id="director-email"
                 type="email"
@@ -167,7 +170,9 @@ export default function SettingsPage() {
 
             {error && <p className="text-sm text-destructive">{error}</p>}
             {saved && (
-              <p className="text-sm text-emerald-600">Зміни збережено ✓</p>
+              <p className="text-sm text-emerald-600">
+                {tForm("saveSuccess")}
+              </p>
             )}
 
             <div>
@@ -175,7 +180,7 @@ export default function SettingsPage() {
                 {updateCompany.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Зберегти зміни
+                {tForm("submit")}
               </Button>
             </div>
           </form>

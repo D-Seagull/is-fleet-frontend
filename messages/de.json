@@ -128,5 +128,22 @@
       "title": "Oberflächensprache",
       "description": "Sprache für Schaltflächen, Formulare und Meldungen der App. Beeinflusst nicht die Übersetzung von Chat-Nachrichten."
     }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "accessDenied": {
+      "title": "Zugriff eingeschränkt",
+      "description": "Firmeneinstellungen kann nur der Teamleiter bearbeiten. Fragen Sie den Teamleiter, wenn etwas geändert werden muss.",
+      "home": "Zur Startseite"
+    },
+    "company": {
+      "title": "Firmeninformationen",
+      "description": "Die Daten, die Sie bei der Registrierung angegeben haben. Diese Kontakte sind die Standardempfänger für HR-Benachrichtigungen und interne Anfragen.",
+      "nameLabel": "Firmenname",
+      "nameLocked": "Der Firmenname kann nach der Registrierung nicht geändert werden. Wenden Sie sich an den Support, wenn er aktualisiert werden muss.",
+      "accountingLabel": "Buchhaltung E-Mail",
+      "hrLabel": "HR E-Mail",
+      "directorLabel": "Direktor E-Mail"
+    }
   }
 }

@@ -128,5 +128,22 @@
       "title": "Interface language",
       "description": "The language used for buttons, forms and app messages. Does not affect chat-message translation."
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "accessDenied": {
+      "title": "Access restricted",
+      "description": "Only the team lead can edit company settings. Ask your team lead if something needs to change.",
+      "home": "Go home"
+    },
+    "company": {
+      "title": "Company information",
+      "description": "The details you set up when registering the company. These contacts are the default recipients for HR notifications and internal requests.",
+      "nameLabel": "Company name",
+      "nameLocked": "The company name is locked after registration. Contact support if you need to update it.",
+      "accountingLabel": "Accounting email",
+      "hrLabel": "HR email",
+      "directorLabel": "Director email"
+    }
   }
 }
