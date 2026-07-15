@@ -10,6 +10,16 @@
     "validation": {
       "passwordShort": "Slaptažodis turi būti bent 6 simbolių.",
       "passwordMismatch": "Slaptažodžiai nesutampa."
+    },
+    "languages": {
+      "UK": "Ukrainiečių",
+      "EN": "Anglų",
+      "PL": "Lenkų",
+      "LT": "Lietuvių",
+      "UZ": "Uzbekų",
+      "KZ": "Kazachų",
+      "HI": "Hindi",
+      "RU": "Rusų"
     }
   },
   "auth": {
@@ -87,5 +97,36 @@
   },
   "trucks": {
     "title": "Sunkvežimiai"
+  },
+  "account": {
+    "title": "Paskyros nustatymai",
+    "profile": {
+      "title": "Profilis",
+      "description": "Jūsų vardas ir avataras matomi kolegoms pokalbiuose ir sąrašuose."
+    },
+    "avatar": {
+      "change": "Keisti nuotrauką",
+      "upload": "Įkelti nuotrauką",
+      "remove": "Pašalinti",
+      "errorType": "Palaikomi tik JPG, PNG arba WebP.",
+      "errorSize": "Failas per didelis — iki 5 MB.",
+      "errorUpload": "Nepavyko įkelti nuotraukos. Bandykite dar kartą.",
+      "errorRemove": "Nepavyko pašalinti nuotraukos."
+    },
+    "form": {
+      "firstName": "Vardas",
+      "lastName": "Pavardė (neprivaloma)",
+      "phone": "Telefonas",
+      "phonePlaceholder": "+380501234567",
+      "phoneFormatError": "Įveskite tarptautiniu formatu, pvz., +380501234567",
+      "chatLanguage": "Vartotojo kalba",
+      "saveError": "Nepavyko išsaugoti pakeitimų.",
+      "saveSuccess": "Pakeitimai išsaugoti ✓",
+      "submit": "Išsaugoti pakeitimus"
+    },
+    "uiLocale": {
+      "title": "Sąsajos kalba",
+      "description": "Kalba, kuria rodomi mygtukai, formos ir pranešimai. Netaikoma pokalbių žinučių vertimui."
+    }
   }
 }

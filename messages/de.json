@@ -10,6 +10,16 @@
     "validation": {
       "passwordShort": "Das Passwort muss mindestens 6 Zeichen lang sein.",
       "passwordMismatch": "Passwörter stimmen nicht überein."
+    },
+    "languages": {
+      "UK": "Ukrainisch",
+      "EN": "Englisch",
+      "PL": "Polnisch",
+      "LT": "Litauisch",
+      "UZ": "Usbekisch",
+      "KZ": "Kasachisch",
+      "HI": "Hindi",
+      "RU": "Russisch"
     }
   },
   "auth": {
@@ -87,5 +97,36 @@
   },
   "trucks": {
     "title": "LKW"
+  },
+  "account": {
+    "title": "Kontoeinstellungen",
+    "profile": {
+      "title": "Profil",
+      "description": "Ihr Name und Avatar sind für Kollegen in Chats und Listen sichtbar."
+    },
+    "avatar": {
+      "change": "Foto ändern",
+      "upload": "Foto hochladen",
+      "remove": "Entfernen",
+      "errorType": "Es werden nur JPG, PNG oder WebP unterstützt.",
+      "errorSize": "Datei zu groß — max. 5 MB.",
+      "errorUpload": "Foto konnte nicht hochgeladen werden. Bitte erneut versuchen.",
+      "errorRemove": "Foto konnte nicht entfernt werden."
+    },
+    "form": {
+      "firstName": "Vorname",
+      "lastName": "Nachname (optional)",
+      "phone": "Telefon",
+      "phonePlaceholder": "+380501234567",
+      "phoneFormatError": "Im internationalen Format eingeben, z. B. +380501234567",
+      "chatLanguage": "Nutzersprache",
+      "saveError": "Änderungen konnten nicht gespeichert werden.",
+      "saveSuccess": "Änderungen gespeichert ✓",
+      "submit": "Änderungen speichern"
+    },
+    "uiLocale": {
+      "title": "Oberflächensprache",
+      "description": "Sprache für Schaltflächen, Formulare und Meldungen der App. Beeinflusst nicht die Übersetzung von Chat-Nachrichten."
+    }
   }
 }

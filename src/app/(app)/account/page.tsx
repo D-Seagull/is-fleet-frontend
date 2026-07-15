@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Camera,
   Globe,
@@ -41,19 +42,19 @@ import { UiLocalePicker } from "@/components/ui-locale-picker";
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const PHONE_REGEX = /^\+?[\d\s\-()]{8,20}$/;
-
-const languageLabels: Record<Language, string> = {
-  UK: "Українська",
-  EN: "English",
-  PL: "Polski",
-  LT: "Lietuvių",
-  UZ: "O‘zbekcha",
-  KZ: "Қазақша",
-  HI: "हिन्दी",
-  RU: "Русский",
-};
+const LANGUAGE_KEYS: Language[] = [
+  "UK",
+  "EN",
+  "PL",
+  "LT",
+  "UZ",
+  "KZ",
+  "HI",
+  "RU",
+];
 
 function AvatarSection() {
+  const t = useTranslations("account.avatar");
   const user = useUser();
   const upload = useUploadAvatar();
   const remove = useDeleteAvatar();
@@ -73,11 +74,11 @@ function AvatarSection() {
     e.target.value = "";
     if (!file) return;
     if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
-      setError("Підтримуються лише JPG, PNG або WebP.");
+      setError(t("errorType"));
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
-      setError("Файл завеликий — до 5 MB.");
+      setError(t("errorSize"));
       return;
     }
     // Open the cropper instead of uploading right away — the user picks
@@ -105,7 +106,7 @@ function AvatarSection() {
       await upload.mutateAsync(file);
       closeCropper();
     } catch {
-      setError("Не вдалось завантажити фото. Спробуй знову.");
+      setError(t("errorUpload"));
     }
   };
 
@@ -114,7 +115,7 @@ function AvatarSection() {
     try {
       await remove.mutateAsync();
     } catch {
-      setError("Не вдалось видалити фото.");
+      setError(t("errorRemove"));
     }
   };
 
@@ -145,7 +146,7 @@ function AvatarSection() {
             ) : (
               <Camera className="mr-2 h-4 w-4" />
             )}
-            {user?.avatar ? "Змінити фото" : "Завантажити фото"}
+            {user?.avatar ? t("change") : t("upload")}
           </Button>
           {user?.avatar && (
             <Button
@@ -160,7 +161,7 @@ function AvatarSection() {
               ) : (
                 <Trash2 className="mr-2 h-4 w-4" />
               )}
-              Прибрати
+              {t("remove")}
             </Button>
           )}
         </div>
@@ -185,6 +186,8 @@ function AvatarSection() {
 }
 
 function ProfileForm() {
+  const t = useTranslations("account.form");
+  const tLangs = useTranslations("common.languages");
   const user = useUser();
   const updateMe = useUpdateMe();
 
@@ -239,9 +242,9 @@ function ProfileForm() {
         const msg = Array.isArray(data?.message)
           ? data?.message?.[0]
           : data?.message;
-        setError(msg ?? "Не вдалось зберегти зміни.");
+        setError(msg ?? t("saveError"));
       } else {
-        setError("Не вдалось зберегти зміни.");
+        setError(t("saveError"));
       }
     }
   };
@@ -250,7 +253,7 @@ function ProfileForm() {
     <form onSubmit={onSubmit} className="grid gap-4 max-w-2xl">
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="firstName">Імʼя</Label>
+          <Label htmlFor="firstName">{t("firstName")}</Label>
           <Input
             id="firstName"
             autoComplete="given-name"
@@ -260,7 +263,7 @@ function ProfileForm() {
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="lastName">Прізвище (необовʼязково)</Label>
+          <Label htmlFor="lastName">{t("lastName")}</Label>
           <Input
             id="lastName"
             autoComplete="family-name"
@@ -269,13 +272,13 @@ function ProfileForm() {
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="phone">Телефон</Label>
+          <Label htmlFor="phone">{t("phone")}</Label>
           <Input
             id="phone"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            placeholder="+380501234567"
+            placeholder={t("phonePlaceholder")}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             aria-invalid={!phoneValid}
@@ -283,12 +286,12 @@ function ProfileForm() {
           />
           {!phoneValid && (
             <p className="text-xs text-destructive">
-              Введи в міжнародному форматі, напр. +380501234567
+              {t("phoneFormatError")}
             </p>
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="language">Мова</Label>
+          <Label htmlFor="language">{t("chatLanguage")}</Label>
           <Select
             value={language}
             onValueChange={(v) => setLanguage(v as Language)}
@@ -297,13 +300,11 @@ function ProfileForm() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(Object.entries(languageLabels) as [Language, string][]).map(
-                ([val, label]) => (
-                  <SelectItem key={val} value={val}>
-                    {label}
-                  </SelectItem>
-                ),
-              )}
+              {LANGUAGE_KEYS.map((val) => (
+                <SelectItem key={val} value={val}>
+                  {tLangs(val)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -311,7 +312,7 @@ function ProfileForm() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
       {savedHint && (
-        <p className="text-sm text-emerald-600">Зміни збережено ✓</p>
+        <p className="text-sm text-emerald-600">{t("saveSuccess")}</p>
       )}
 
       <div>
@@ -319,7 +320,7 @@ function ProfileForm() {
           {updateMe.isPending && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
-          Зберегти зміни
+          {t("submit")}
         </Button>
       </div>
     </form>
@@ -327,19 +328,18 @@ function ProfileForm() {
 }
 
 export default function AccountSettingsPage() {
+  const t = useTranslations("account");
   return (
     <div className="flex flex-col gap-6 p-4">
-      <h1 className="text-2xl font-bold">Account Settings</h1>
+      <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <UserIcon className="h-5 w-5" />
-            <CardTitle>Profile</CardTitle>
+            <CardTitle>{t("profile.title")}</CardTitle>
           </div>
-          <CardDescription>
-            Ваше імʼя й аватар бачать колеги в чатах і списках.
-          </CardDescription>
+          <CardDescription>{t("profile.description")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-8">
           <AvatarSection />
@@ -351,12 +351,9 @@ export default function AccountSettingsPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            <CardTitle>Мова інтерфейсу</CardTitle>
+            <CardTitle>{t("uiLocale.title")}</CardTitle>
           </div>
-          <CardDescription>
-            Мова, у якій відображатимуться кнопки, форми та повідомлення
-            застосунку. Не впливає на переклад чат-повідомлень.
-          </CardDescription>
+          <CardDescription>{t("uiLocale.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <UiLocalePicker />

@@ -10,6 +10,16 @@
     "validation": {
       "passwordShort": "Hasło musi mieć co najmniej 6 znaków.",
       "passwordMismatch": "Hasła nie są zgodne."
+    },
+    "languages": {
+      "UK": "Ukraiński",
+      "EN": "Angielski",
+      "PL": "Polski",
+      "LT": "Litewski",
+      "UZ": "Uzbecki",
+      "KZ": "Kazachski",
+      "HI": "Hindi",
+      "RU": "Rosyjski"
     }
   },
   "auth": {
@@ -87,5 +97,36 @@
   },
   "trucks": {
     "title": "Ciężarówki"
+  },
+  "account": {
+    "title": "Ustawienia konta",
+    "profile": {
+      "title": "Profil",
+      "description": "Twoje imię i awatar są widoczne dla współpracowników w czatach i listach."
+    },
+    "avatar": {
+      "change": "Zmień zdjęcie",
+      "upload": "Prześlij zdjęcie",
+      "remove": "Usuń",
+      "errorType": "Obsługiwane są tylko JPG, PNG lub WebP.",
+      "errorSize": "Plik zbyt duży — maksymalnie 5 MB.",
+      "errorUpload": "Nie udało się przesłać zdjęcia. Spróbuj ponownie.",
+      "errorRemove": "Nie udało się usunąć zdjęcia."
+    },
+    "form": {
+      "firstName": "Imię",
+      "lastName": "Nazwisko (opcjonalnie)",
+      "phone": "Telefon",
+      "phonePlaceholder": "+380501234567",
+      "phoneFormatError": "Wprowadź w formacie międzynarodowym, np. +380501234567",
+      "chatLanguage": "Język użytkownika",
+      "saveError": "Nie udało się zapisać zmian.",
+      "saveSuccess": "Zmiany zapisane ✓",
+      "submit": "Zapisz zmiany"
+    },
+    "uiLocale": {
+      "title": "Język interfejsu",
+      "description": "Język używany do przycisków, formularzy i komunikatów aplikacji. Nie wpływa na tłumaczenie wiadomości czatu."
+    }
   }
 }

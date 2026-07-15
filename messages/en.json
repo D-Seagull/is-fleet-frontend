@@ -10,6 +10,16 @@
     "validation": {
       "passwordShort": "Password must be at least 6 characters.",
       "passwordMismatch": "Passwords do not match."
+    },
+    "languages": {
+      "UK": "Ukrainian",
+      "EN": "English",
+      "PL": "Polish",
+      "LT": "Lithuanian",
+      "UZ": "Uzbek",
+      "KZ": "Kazakh",
+      "HI": "Hindi",
+      "RU": "Russian"
     }
   },
   "auth": {
@@ -87,5 +97,36 @@
   },
   "trucks": {
     "title": "Trucks"
+  },
+  "account": {
+    "title": "Account Settings",
+    "profile": {
+      "title": "Profile",
+      "description": "Your name and avatar are visible to colleagues in chats and lists."
+    },
+    "avatar": {
+      "change": "Change photo",
+      "upload": "Upload photo",
+      "remove": "Remove",
+      "errorType": "Only JPG, PNG or WebP are supported.",
+      "errorSize": "File too large — max 5 MB.",
+      "errorUpload": "Could not upload the photo. Please try again.",
+      "errorRemove": "Could not remove the photo."
+    },
+    "form": {
+      "firstName": "First name",
+      "lastName": "Last name (optional)",
+      "phone": "Phone",
+      "phonePlaceholder": "+380501234567",
+      "phoneFormatError": "Enter in international format, e.g. +380501234567",
+      "chatLanguage": "User language",
+      "saveError": "Could not save the changes.",
+      "saveSuccess": "Changes saved ✓",
+      "submit": "Save changes"
+    },
+    "uiLocale": {
+      "title": "Interface language",
+      "description": "The language used for buttons, forms and app messages. Does not affect chat-message translation."
+    }
   }
 }
