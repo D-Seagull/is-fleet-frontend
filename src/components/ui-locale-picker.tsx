@@ -28,6 +28,10 @@ import { writeUiLocaleCookie, type UiLocaleDb } from "@/lib/ui-locale";
  * If the user is somehow not signed in when this renders (edge case
  * during logout), we still write the cookie so the switch behaves
  * locally — the backend sync is skipped.
+ *
+ * `variant="compact"` renders a narrow trigger showing just the locale
+ * code (UK/EN/…) — used as a temporary header switcher for quick
+ * locale testing next to the notification bell.
  */
 const LOCALES: { db: UiLocaleDb; label: string }[] = [
   { db: "UK", label: "Українська" },
@@ -38,7 +42,11 @@ const LOCALES: { db: UiLocaleDb; label: string }[] = [
   { db: "RU", label: "Русский" },
 ];
 
-export function UiLocalePicker() {
+export function UiLocalePicker({
+  variant = "full",
+}: {
+  variant?: "full" | "compact";
+}) {
   const current = useLocale();
   const user = useUser();
   const updateMe = useUpdateMe();
@@ -65,6 +73,8 @@ export function UiLocalePicker() {
     }
   };
 
+  const compact = variant === "compact";
+
   return (
     <div className="flex items-center gap-2">
       <Select
@@ -72,13 +82,16 @@ export function UiLocalePicker() {
         onValueChange={handleChange}
         disabled={pending}
       >
-        <SelectTrigger id="ui-locale" className="max-w-xs">
-          <SelectValue />
+        <SelectTrigger
+          id="ui-locale"
+          className={compact ? "h-8 w-[72px] text-xs" : "max-w-xs"}
+        >
+          {compact ? current.toUpperCase() : <SelectValue />}
         </SelectTrigger>
         <SelectContent>
           {LOCALES.map((l) => (
             <SelectItem key={l.db} value={l.db}>
-              {l.label}
+              {compact ? l.db : l.label}
             </SelectItem>
           ))}
         </SelectContent>
