@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +32,8 @@ import { cn } from "@/lib/utils";
 import {
   useUpdateTripInfo,
   useUpdateTripStatus,
-  TRIP_STATUS_LABELS,
   TRIP_STATUS_COLORS,
+  TRIP_STATUS_KEYS,
   type Trip,
   type TripStatus,
   type StopType,
@@ -52,6 +53,12 @@ export function TripInfoCard({
   docsCount?: number;
   onDocsClick?: () => void;
 }) {
+  const t = useTranslations("truckPanel.trips");
+  const tNewTrip = useTranslations("truckPanel.newTrip");
+  const tStatus = useTranslations("common.tripStatus");
+  const tStopType = useTranslations("common.stopType");
+  const tStop = useTranslations("truckPanel.stop");
+  const tActions = useTranslations("common.actions");
   const updateInfo = useUpdateTripInfo(truckId);
   const updateStatus = useUpdateTripStatus(truckId);
   const [editing, setEditing] = useState(false);
@@ -143,7 +150,7 @@ export function TripInfoCard({
             )}
             {isEdited && (
               <span className="shrink-0 text-[10px] text-muted-foreground border rounded px-1.5 py-0.5">
-                edited
+                {t("edited")}
               </span>
             )}
             {onDocsClick !== undefined && (
@@ -153,7 +160,7 @@ export function TripInfoCard({
                   e.stopPropagation();
                   onDocsClick();
                 }}
-                title="Trip documents"
+                title={t("tripDocuments")}
               >
                 <FolderOpen className="h-3.5 w-3.5" />
                 {!!docsCount && <span className="text-[10px]">{docsCount}</span>}
@@ -176,17 +183,15 @@ export function TripInfoCard({
                     variant="outline"
                     className={TRIP_STATUS_COLORS[trip.status]}
                   >
-                    {TRIP_STATUS_LABELS[trip.status]}
+                    {tStatus(trip.status)}
                   </Badge>
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(TRIP_STATUS_LABELS) as TripStatus[]).map(
-                    (s) => (
-                      <SelectItem key={s} value={s}>
-                        {TRIP_STATUS_LABELS[s]}
-                      </SelectItem>
-                    ),
-                  )}
+                  {TRIP_STATUS_KEYS.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {tStatus(s)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Button
@@ -194,7 +199,7 @@ export function TripInfoCard({
                 size="icon"
                 className="h-6 w-6"
                 onClick={startEdit}
-                title="Edit trip info"
+                title={t("editTripInfo")}
               >
                 <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
@@ -214,7 +219,7 @@ export function TripInfoCard({
                 <div key={s.id} className="flex flex-col gap-0.5">
                   <span className="flex items-center gap-1 font-medium text-emerald-600">
                     <MapPin className="h-3 w-3" />
-                    Loading {loadingStops.length > 1 ? i + 1 : ""}
+                    {tStopType("LOADING")} {loadingStops.length > 1 ? i + 1 : ""}
                   </span>
                   {s.address && <span>{s.address}</span>}
                   {s.ref && (
@@ -229,7 +234,7 @@ export function TripInfoCard({
                 <div key={s.id} className="flex flex-col gap-0.5">
                   <span className="flex items-center gap-1 font-medium text-red-500">
                     <MapPin className="h-3 w-3" />
-                    Unloading {unloadingStops.length > 1 ? i + 1 : ""}
+                    {tStopType("UNLOADING")} {unloadingStops.length > 1 ? i + 1 : ""}
                   </span>
                   {s.address && <span>{s.address}</span>}
                   {s.ref && (
@@ -253,7 +258,8 @@ export function TripInfoCard({
   }
 
   function editStopSection(
-    label: string,
+    itemLabel: string,
+    sectionTitle: string,
     color: string,
     stops: StopRowData[],
     setStops: (v: StopRowData[]) => void,
@@ -265,7 +271,7 @@ export function TripInfoCard({
             className={cn("text-xs font-medium flex items-center gap-1", color)}
           >
             <MapPin className="h-3 w-3" />
-            {label} stops
+            {sectionTitle}
           </span>
           <Button
             variant="ghost"
@@ -274,7 +280,7 @@ export function TripInfoCard({
             onClick={() => setStops([...stops, emptyStop()])}
           >
             <Plus className="mr-1 h-3 w-3" />
-            Add
+            {t("add")}
           </Button>
         </div>
         {stops.map((stop, i) => (
@@ -284,7 +290,7 @@ export function TripInfoCard({
           >
             <div className="flex items-center justify-between">
               <span className={cn("text-[11px] font-medium", color)}>
-                {label} {stops.length > 1 ? i + 1 : ""}
+                {itemLabel} {stops.length > 1 ? i + 1 : ""}
               </span>
               {stops.length > 1 && (
                 <Button
@@ -298,7 +304,7 @@ export function TripInfoCard({
               )}
             </div>
             <Textarea
-              placeholder="Company name, street, postcode, city"
+              placeholder={tStop("addressPlaceholder")}
               value={stop.address}
               onChange={(e) => {
                 const next = [...stops];
@@ -310,7 +316,7 @@ export function TripInfoCard({
             />
             <div className="flex gap-1.5">
               <Input
-                placeholder="Ref #"
+                placeholder={tStop("refShortPlaceholder")}
                 value={stop.ref}
                 className="w-28 text-xs h-7"
                 onChange={(e) => {
@@ -320,7 +326,7 @@ export function TripInfoCard({
                 }}
               />
               <Input
-                placeholder="Coordinates"
+                placeholder={tStop("coordsPlaceholder")}
                 value={stop.coords}
                 className="flex-1 text-xs h-7"
                 onChange={(e) => {
@@ -369,7 +375,7 @@ export function TripInfoCard({
           </span>
           <span className="text-muted-foreground text-sm shrink-0">·</span>
           <Input
-            placeholder="#order"
+            placeholder={t("orderShortPlaceholder")}
             value={editOrderNumber}
             onChange={(e) => setEditOrderNumber(e.target.value)}
             className="text-xs h-7 min-w-0 flex-1"
@@ -383,7 +389,7 @@ export function TripInfoCard({
             className="h-7 text-xs"
             onClick={() => setEditing(false)}
           >
-            Cancel
+            {tActions("cancel")}
           </Button>
           <Button
             size="sm"
@@ -394,26 +400,28 @@ export function TripInfoCard({
             {updateInfo.isPending && (
               <Loader2 className="mr-1 h-3 w-3 animate-spin" />
             )}
-            Save
+            {tActions("save")}
           </Button>
         </div>
       </div>
       {editStopSection(
-        "Loading",
+        tStopType("LOADING"),
+        t("loadingStops"),
         "text-emerald-600",
         editLoadingStops,
         setEditLoadingStops,
       )}
       {editStopSection(
-        "Unloading",
+        tStopType("UNLOADING"),
+        t("unloadingStops"),
         "text-red-500",
         editUnloadingStops,
         setEditUnloadingStops,
       )}
       <div className="flex flex-col gap-1 border-t pt-2">
-        <Label className="text-xs">Notes</Label>
+        <Label className="text-xs">{tNewTrip("notesLabel")}</Label>
         <Textarea
-          placeholder="Trip notes..."
+          placeholder={tNewTrip("notesPlaceholder")}
           value={editNotes}
           onChange={(e) => setEditNotes(e.target.value)}
           rows={2}

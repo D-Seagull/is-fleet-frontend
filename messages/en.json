@@ -34,8 +34,13 @@
       "LOADED": "Loaded",
       "DELIVERED": "Delivered"
     },
+    "stopType": {
+      "LOADING": "Loading",
+      "UNLOADING": "Unloading"
+    },
     "actions": {
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "save": "Save"
     }
   },
   "auth": {
@@ -316,6 +321,48 @@
       "body": "{name} is currently assigned to truck {plate}.",
       "question": "Do you want to move them to this truck?",
       "move": "Move driver"
+    },
+    "trips": {
+      "searchPlaceholder": "Search by route, order #, driver...",
+      "empty": "No trips yet.",
+      "nothingFound": "Nothing found.",
+      "noStops": "No stops.",
+      "selectTrip": "Select trip...",
+      "searchTrip": "Search trip...",
+      "noTripsFound": "No trips found.",
+      "edited": "edited",
+      "tripDocuments": "Trip documents",
+      "editTripInfo": "Edit trip info",
+      "add": "Add",
+      "loadingStops": "Loading stops",
+      "unloadingStops": "Unloading stops",
+      "orderShortPlaceholder": "#order"
+    },
+    "newTrip": {
+      "button": "New Trip",
+      "title": "New Trip",
+      "driverLabel": "Driver",
+      "selectDriver": "Select driver",
+      "tripNameLabel": "Trip name",
+      "tripNameHint": "auto-filled from addresses · edit to override",
+      "tripNamePlaceholder": "e.g. CB6 3NW Ely → 56727 Mayen",
+      "orderNumberLabel": "Order number",
+      "orderNumberPlaceholder": "e.g. ORD-2024-001",
+      "loadingStops": "Loading stops",
+      "unloadingStops": "Unloading stops",
+      "addStop": "Add stop",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Trip notes...",
+      "createButton": "Create Trip",
+      "tripFallbackName": "Trip {date}"
+    },
+    "stop": {
+      "addressPlaceholder": "Company name, street, postcode, city",
+      "refPlaceholder": "Reference #",
+      "refShortPlaceholder": "Ref #",
+      "coordsPlaceholder": "Coordinates",
+      "copyCoords": "Copy coordinates",
+      "openInMaps": "Open in Google Maps"
     }
   },
   "account": {

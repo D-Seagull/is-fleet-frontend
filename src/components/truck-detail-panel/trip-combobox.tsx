@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { TRIP_STATUS_LABELS, type Trip } from "@/hooks/use-trips";
+import { type Trip } from "@/hooks/use-trips";
 import { ACTIVE_STATUSES } from "./constants";
 import { shortenTripTitle } from "./utils";
 
@@ -33,8 +34,10 @@ export function TripCombobox({
   onChange: (id: string) => void;
   className?: string;
 }) {
+  const t = useTranslations("truckPanel.trips");
+  const tStatus = useTranslations("common.tripStatus");
   const [open, setOpen] = useState(false);
-  const selected = trips.find((t) => t.id === value);
+  const selected = trips.find((tr) => tr.id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -66,7 +69,7 @@ export function TripCombobox({
               </span>
             </span>
           ) : (
-            <span className="text-muted-foreground text-sm">Select trip...</span>
+            <span className="text-muted-foreground text-sm">{t("selectTrip")}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
         </Button>
@@ -76,43 +79,43 @@ export function TripCombobox({
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search trip..." className="h-9" />
+          <CommandInput placeholder={t("searchTrip")} className="h-9" />
           <CommandList>
-            <CommandEmpty>No trips found.</CommandEmpty>
+            <CommandEmpty>{t("noTripsFound")}</CommandEmpty>
             <CommandGroup>
-              {trips.map((t) => (
+              {trips.map((tr) => (
                 <CommandItem
-                  key={t.id}
-                  value={`${t.title} ${t.orderNumber ?? ""} ${fullName(t.driver) || ""}`}
+                  key={tr.id}
+                  value={`${tr.title} ${tr.orderNumber ?? ""} ${fullName(tr.driver) || ""}`}
                   onSelect={() => {
-                    onChange(t.id);
+                    onChange(tr.id);
                     setOpen(false);
                   }}
                 >
                   <span
                     className={cn(
                       "h-2 w-2 rounded-full shrink-0 mr-2",
-                      ACTIVE_STATUSES.includes(t.status)
+                      ACTIVE_STATUSES.includes(tr.status)
                         ? "bg-emerald-500"
                         : "bg-muted-foreground/40",
                     )}
                   />
                   <span className="flex-1 truncate">
-                    {shortenTripTitle(t.title)}
-                    {t.orderNumber && (
+                    {shortenTripTitle(tr.title)}
+                    {tr.orderNumber && (
                       <span className="text-muted-foreground">
                         {" "}
-                        · #{t.orderNumber}
+                        · #{tr.orderNumber}
                       </span>
                     )}
                   </span>
                   <span className="text-xs text-muted-foreground ml-2 shrink-0">
-                    {TRIP_STATUS_LABELS[t.status]}
+                    {tStatus(tr.status)}
                   </span>
                   <Check
                     className={cn(
                       "ml-2 h-4 w-4 shrink-0",
-                      value === t.id ? "opacity-100" : "opacity-0",
+                      value === tr.id ? "opacity-100" : "opacity-0",
                     )}
                   />
                 </CommandItem>

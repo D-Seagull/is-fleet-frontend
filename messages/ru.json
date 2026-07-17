@@ -34,8 +34,13 @@
       "LOADED": "Загружен",
       "DELIVERED": "Доставлен"
     },
+    "stopType": {
+      "LOADING": "Погрузка",
+      "UNLOADING": "Разгрузка"
+    },
     "actions": {
-      "cancel": "Отмена"
+      "cancel": "Отмена",
+      "save": "Сохранить"
     }
   },
   "auth": {
@@ -316,6 +321,48 @@
       "body": "{name} сейчас закреплён за грузовиком {plate}.",
       "question": "Перевести его на этот грузовик?",
       "move": "Перевести водителя"
+    },
+    "trips": {
+      "searchPlaceholder": "Поиск по маршруту, № заказа, водителю…",
+      "empty": "Рейсов пока нет.",
+      "nothingFound": "Ничего не найдено.",
+      "noStops": "Нет остановок.",
+      "selectTrip": "Выберите рейс…",
+      "searchTrip": "Поиск рейса…",
+      "noTripsFound": "Рейсов не найдено.",
+      "edited": "изменено",
+      "tripDocuments": "Документы рейса",
+      "editTripInfo": "Редактировать рейс",
+      "add": "Добавить",
+      "loadingStops": "Точки погрузки",
+      "unloadingStops": "Точки разгрузки",
+      "orderShortPlaceholder": "#заказ"
+    },
+    "newTrip": {
+      "button": "Новый рейс",
+      "title": "Новый рейс",
+      "driverLabel": "Водитель",
+      "selectDriver": "Выберите водителя",
+      "tripNameLabel": "Название рейса",
+      "tripNameHint": "автозаполнение из адресов · измените вручную",
+      "tripNamePlaceholder": "напр. CB6 3NW Ely → 56727 Mayen",
+      "orderNumberLabel": "Номер заказа",
+      "orderNumberPlaceholder": "напр. ORD-2024-001",
+      "loadingStops": "Точки погрузки",
+      "unloadingStops": "Точки разгрузки",
+      "addStop": "Добавить остановку",
+      "notesLabel": "Заметки",
+      "notesPlaceholder": "Заметки к рейсу…",
+      "createButton": "Создать рейс",
+      "tripFallbackName": "Рейс {date}"
+    },
+    "stop": {
+      "addressPlaceholder": "Название компании, улица, индекс, город",
+      "refPlaceholder": "Референс #",
+      "refShortPlaceholder": "Реф. #",
+      "coordsPlaceholder": "Координаты",
+      "copyCoords": "Скопировать координаты",
+      "openInMaps": "Открыть в Google Maps"
     }
   },
   "account": {

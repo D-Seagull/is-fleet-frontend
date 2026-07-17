@@ -7,6 +7,7 @@ import {
   Loader2,
   Search,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,8 +23,8 @@ import { cn } from "@/lib/utils";
 import {
   useTripsByTruck,
   useUpdateTripStatus,
-  TRIP_STATUS_LABELS,
   TRIP_STATUS_COLORS,
+  TRIP_STATUS_KEYS,
   type Trip,
   type TripStatus,
 } from "@/hooks/use-trips";
@@ -43,6 +44,8 @@ function TripCard({
   onOpenTrip: (id: string) => void;
   unreadCount?: number;
 }) {
+  const t = useTranslations("truckPanel.trips");
+  const tStatus = useTranslations("common.tripStatus");
   const updateStatus = useUpdateTripStatus(truckId);
   const [section, setSection] = useState<"stops" | "attachments" | null>(null);
   const allDocs = trip.documents;
@@ -132,13 +135,13 @@ function TripCard({
                 variant="outline"
                 className={TRIP_STATUS_COLORS[trip.status]}
               >
-                {TRIP_STATUS_LABELS[trip.status]}
+                {tStatus(trip.status)}
               </Badge>
             </SelectTrigger>
             <SelectContent>
-              {(Object.keys(TRIP_STATUS_LABELS) as TripStatus[]).map((s) => (
+              {TRIP_STATUS_KEYS.map((s) => (
                 <SelectItem key={s} value={s}>
-                  {TRIP_STATUS_LABELS[s]}
+                  {tStatus(s)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -149,7 +152,7 @@ function TripCard({
       {section === "stops" && (
         <div className="border-t px-4 py-3">
           {trip.stops.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No stops.</p>
+            <p className="text-xs text-muted-foreground">{t("noStops")}</p>
           ) : (
             <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground">
               {trip.stops
@@ -197,15 +200,16 @@ export function TripsTab({
   onOpenTrip: (tripId: string) => void;
   tripUnread?: Record<string, number>;
 }) {
+  const t = useTranslations("truckPanel.trips");
   const { data: trips, isLoading } = useTripsByTruck(truckId);
   const [search, setSearch] = useState("");
 
-  const filtered = trips?.filter((t) => {
+  const filtered = trips?.filter((trip) => {
     const q = search.toLowerCase();
     return (
-      t.title.toLowerCase().includes(q) ||
-      (t.orderNumber ?? "").toLowerCase().includes(q) ||
-      (fullName(t.driver) || "").toLowerCase().includes(q)
+      trip.title.toLowerCase().includes(q) ||
+      (trip.orderNumber ?? "").toLowerCase().includes(q) ||
+      (fullName(trip.driver) || "").toLowerCase().includes(q)
     );
   });
 
@@ -215,7 +219,7 @@ export function TripsTab({
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Search by route, order #, driver..."
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-8 h-8 text-xs"
@@ -234,11 +238,11 @@ export function TripsTab({
         </div>
       ) : !trips || trips.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-10">
-          No trips yet.
+          {t("empty")}
         </p>
       ) : filtered?.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-10">
-          Nothing found.
+          {t("nothingFound")}
         </p>
       ) : (
         <div className="flex flex-col gap-3">

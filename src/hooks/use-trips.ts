@@ -34,6 +34,17 @@ export const TRIP_STATUS_LABELS: Record<TripStatus, string> = {
   DELIVERED: "Delivered",
 };
 
+/** Ordered status keys — iterate this for selects instead of Object.keys
+ *  (avoids depending on the label record once labels move to i18n). */
+export const TRIP_STATUS_KEYS: TripStatus[] = [
+  "ASSIGNED",
+  "ACCEPTED",
+  "ON_WAY",
+  "ON_SITE",
+  "LOADED",
+  "DELIVERED",
+];
+
 export const TRIP_STATUS_COLORS: Record<TripStatus, string> = {
   ASSIGNED: "bg-gray-500/10 text-gray-600 border-gray-500/20",
   ACCEPTED: "bg-blue-500/10 text-blue-600 border-blue-500/20",

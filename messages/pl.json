@@ -34,8 +34,13 @@
       "LOADED": "Załadowany",
       "DELIVERED": "Dostarczony"
     },
+    "stopType": {
+      "LOADING": "Załadunek",
+      "UNLOADING": "Rozładunek"
+    },
     "actions": {
-      "cancel": "Anuluj"
+      "cancel": "Anuluj",
+      "save": "Zapisz"
     }
   },
   "auth": {
@@ -316,6 +321,48 @@
       "body": "{name} jest obecnie przypisany do ciężarówki {plate}.",
       "question": "Czy chcesz przenieść go do tej ciężarówki?",
       "move": "Przenieś kierowcę"
+    },
+    "trips": {
+      "searchPlaceholder": "Szukaj po trasie, nr zamówienia, kierowcy…",
+      "empty": "Brak tras.",
+      "nothingFound": "Nic nie znaleziono.",
+      "noStops": "Brak przystanków.",
+      "selectTrip": "Wybierz trasę…",
+      "searchTrip": "Szukaj trasy…",
+      "noTripsFound": "Nie znaleziono tras.",
+      "edited": "edytowano",
+      "tripDocuments": "Dokumenty trasy",
+      "editTripInfo": "Edytuj trasę",
+      "add": "Dodaj",
+      "loadingStops": "Punkty załadunku",
+      "unloadingStops": "Punkty rozładunku",
+      "orderShortPlaceholder": "#zamówienie"
+    },
+    "newTrip": {
+      "button": "Nowa trasa",
+      "title": "Nowa trasa",
+      "driverLabel": "Kierowca",
+      "selectDriver": "Wybierz kierowcę",
+      "tripNameLabel": "Nazwa trasy",
+      "tripNameHint": "auto-uzupełniane z adresów · edytuj, aby zmienić",
+      "tripNamePlaceholder": "np. CB6 3NW Ely → 56727 Mayen",
+      "orderNumberLabel": "Numer zamówienia",
+      "orderNumberPlaceholder": "np. ORD-2024-001",
+      "loadingStops": "Punkty załadunku",
+      "unloadingStops": "Punkty rozładunku",
+      "addStop": "Dodaj przystanek",
+      "notesLabel": "Notatki",
+      "notesPlaceholder": "Notatki do trasy…",
+      "createButton": "Utwórz trasę",
+      "tripFallbackName": "Trasa {date}"
+    },
+    "stop": {
+      "addressPlaceholder": "Nazwa firmy, ulica, kod pocztowy, miasto",
+      "refPlaceholder": "Numer referencyjny",
+      "refShortPlaceholder": "Ref #",
+      "coordsPlaceholder": "Współrzędne",
+      "copyCoords": "Kopiuj współrzędne",
+      "openInMaps": "Otwórz w Mapach Google"
     }
   },
   "account": {

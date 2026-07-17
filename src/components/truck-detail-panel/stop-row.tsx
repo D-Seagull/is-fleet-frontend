@@ -1,6 +1,7 @@
 "use client";
 
 import { MapPin, X, Copy, ExternalLink } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +35,8 @@ export function StopRow({
   onRemove: () => void;
   canRemove: boolean;
 }) {
+  const t = useTranslations("truckPanel.stop");
+  const tStopType = useTranslations("common.stopType");
   const color = type === "LOADING" ? "text-emerald-500" : "text-red-500";
 
   function set(field: keyof StopRowData, val: string) {
@@ -47,7 +50,7 @@ export function StopRow({
           className={cn("text-xs font-medium flex items-center gap-1", color)}
         >
           <MapPin className="h-3.5 w-3.5" />
-          {type === "LOADING" ? "Loading" : "Unloading"} {index + 1}
+          {tStopType(type)} {index + 1}
         </span>
         {canRemove && (
           <Button
@@ -61,7 +64,7 @@ export function StopRow({
         )}
       </div>
       <Textarea
-        placeholder="Company name, street, postcode, city"
+        placeholder={t("addressPlaceholder")}
         value={value.address}
         onChange={(e) => set("address", e.target.value)}
         rows={2}
@@ -69,13 +72,13 @@ export function StopRow({
       />
       <div className="flex items-center gap-2">
         <Input
-          placeholder="Reference #"
+          placeholder={t("refPlaceholder")}
           value={value.ref}
           onChange={(e) => set("ref", e.target.value)}
           className="w-36"
         />
         <Input
-          placeholder="Coordinates"
+          placeholder={t("coordsPlaceholder")}
           value={value.coords}
           onChange={(e) => set("coords", e.target.value)}
           className="flex-1"
@@ -86,7 +89,7 @@ export function StopRow({
           className="h-9 w-9 shrink-0"
           disabled={!value.coords}
           onClick={() => navigator.clipboard.writeText(value.coords)}
-          title="Copy coordinates"
+          title={t("copyCoords")}
         >
           <Copy className="h-3.5 w-3.5" />
         </Button>
@@ -101,7 +104,7 @@ export function StopRow({
               "_blank",
             )
           }
-          title="Open in Google Maps"
+          title={t("openInMaps")}
         >
           <ExternalLink className="h-3.5 w-3.5" />
         </Button>

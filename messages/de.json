@@ -34,8 +34,13 @@
       "LOADED": "Beladen",
       "DELIVERED": "Zugestellt"
     },
+    "stopType": {
+      "LOADING": "Beladung",
+      "UNLOADING": "Entladung"
+    },
     "actions": {
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "save": "Speichern"
     }
   },
   "auth": {
@@ -316,6 +321,48 @@
       "body": "{name} ist derzeit dem LKW {plate} zugewiesen.",
       "question": "Möchten Sie ihn zu diesem LKW verschieben?",
       "move": "Fahrer verschieben"
+    },
+    "trips": {
+      "searchPlaceholder": "Nach Route, Bestell-Nr., Fahrer suchen…",
+      "empty": "Noch keine Fahrten.",
+      "nothingFound": "Nichts gefunden.",
+      "noStops": "Keine Stopps.",
+      "selectTrip": "Fahrt auswählen…",
+      "searchTrip": "Fahrt suchen…",
+      "noTripsFound": "Keine Fahrten gefunden.",
+      "edited": "bearbeitet",
+      "tripDocuments": "Fahrtdokumente",
+      "editTripInfo": "Fahrt bearbeiten",
+      "add": "Hinzufügen",
+      "loadingStops": "Beladestellen",
+      "unloadingStops": "Entladestellen",
+      "orderShortPlaceholder": "#Bestellung"
+    },
+    "newTrip": {
+      "button": "Neue Fahrt",
+      "title": "Neue Fahrt",
+      "driverLabel": "Fahrer",
+      "selectDriver": "Fahrer auswählen",
+      "tripNameLabel": "Fahrtname",
+      "tripNameHint": "automatisch aus Adressen · zum Ändern bearbeiten",
+      "tripNamePlaceholder": "z. B. CB6 3NW Ely → 56727 Mayen",
+      "orderNumberLabel": "Bestellnummer",
+      "orderNumberPlaceholder": "z. B. ORD-2024-001",
+      "loadingStops": "Beladestellen",
+      "unloadingStops": "Entladestellen",
+      "addStop": "Stopp hinzufügen",
+      "notesLabel": "Notizen",
+      "notesPlaceholder": "Fahrtnotizen…",
+      "createButton": "Fahrt erstellen",
+      "tripFallbackName": "Fahrt {date}"
+    },
+    "stop": {
+      "addressPlaceholder": "Firmenname, Straße, PLZ, Stadt",
+      "refPlaceholder": "Referenznummer",
+      "refShortPlaceholder": "Ref. #",
+      "coordsPlaceholder": "Koordinaten",
+      "copyCoords": "Koordinaten kopieren",
+      "openInMaps": "In Google Maps öffnen"
     }
   },
   "account": {

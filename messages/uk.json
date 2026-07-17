@@ -34,8 +34,13 @@
       "LOADED": "Завантажено",
       "DELIVERED": "Доставлено"
     },
+    "stopType": {
+      "LOADING": "Завантаження",
+      "UNLOADING": "Розвантаження"
+    },
     "actions": {
-      "cancel": "Скасувати"
+      "cancel": "Скасувати",
+      "save": "Зберегти"
     }
   },
   "auth": {
@@ -316,6 +321,48 @@
       "body": "{name} зараз закріплений за вантажівкою {plate}.",
       "question": "Перевести його на цю вантажівку?",
       "move": "Перевести водія"
+    },
+    "trips": {
+      "searchPlaceholder": "Пошук за маршрутом, № замовлення, водієм…",
+      "empty": "Рейсів ще немає.",
+      "nothingFound": "Нічого не знайдено.",
+      "noStops": "Немає зупинок.",
+      "selectTrip": "Оберіть рейс…",
+      "searchTrip": "Пошук рейсу…",
+      "noTripsFound": "Рейсів не знайдено.",
+      "edited": "редаговано",
+      "tripDocuments": "Документи рейсу",
+      "editTripInfo": "Редагувати рейс",
+      "add": "Додати",
+      "loadingStops": "Точки завантаження",
+      "unloadingStops": "Точки розвантаження",
+      "orderShortPlaceholder": "#замовлення"
+    },
+    "newTrip": {
+      "button": "Новий рейс",
+      "title": "Новий рейс",
+      "driverLabel": "Водій",
+      "selectDriver": "Оберіть водія",
+      "tripNameLabel": "Назва рейсу",
+      "tripNameHint": "автозаповнення з адрес · редагуйте вручну",
+      "tripNamePlaceholder": "напр. CB6 3NW Ely → 56727 Mayen",
+      "orderNumberLabel": "Номер замовлення",
+      "orderNumberPlaceholder": "напр. ORD-2024-001",
+      "loadingStops": "Точки завантаження",
+      "unloadingStops": "Точки розвантаження",
+      "addStop": "Додати зупинку",
+      "notesLabel": "Нотатки",
+      "notesPlaceholder": "Нотатки до рейсу…",
+      "createButton": "Створити рейс",
+      "tripFallbackName": "Рейс {date}"
+    },
+    "stop": {
+      "addressPlaceholder": "Назва компанії, вулиця, індекс, місто",
+      "refPlaceholder": "Референс #",
+      "refShortPlaceholder": "Реф. #",
+      "coordsPlaceholder": "Координати",
+      "copyCoords": "Копіювати координати",
+      "openInMaps": "Відкрити в Google Maps"
     }
   },
   "account": {

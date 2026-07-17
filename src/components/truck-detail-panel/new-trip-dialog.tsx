@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Plus, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ export function NewTripDialog({
   defaultDriverId?: string | null;
   onCreated?: (trip: Trip) => void;
 }) {
+  const t = useTranslations("truckPanel.newTrip");
   const [open, setOpen] = useState(false);
   const { data: drivers } = useDrivers();
   const createTrip = useCreateTrip();
@@ -142,7 +144,9 @@ export function NewTripDialog({
 
   async function handleCreate() {
     if (!driverId) return;
-    const title = tripName.trim() || `Trip ${new Date().toLocaleDateString()}`;
+    const title =
+      tripName.trim() ||
+      t("tripFallbackName", { date: new Date().toLocaleDateString() });
 
     const stops: StopFormData[] = [
       ...loadingStops.map((s, i) => ({
@@ -179,19 +183,19 @@ export function NewTripDialog({
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="mr-2 h-4 w-4" />
-          New Trip
+          {t("button")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Trip</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-5 py-2">
           <div className="flex flex-col gap-2">
-            <Label>Driver</Label>
+            <Label>{t("driverLabel")}</Label>
             <Select value={driverId} onValueChange={setDriverId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select driver" />
+                <SelectValue placeholder={t("selectDriver")} />
               </SelectTrigger>
               <SelectContent>
                 {(drivers ?? []).map((d) => (
@@ -205,13 +209,13 @@ export function NewTripDialog({
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <Label>Trip name</Label>
+              <Label>{t("tripNameLabel")}</Label>
               <span className="text-[11px] text-muted-foreground">
-                auto-filled from addresses · edit to override
+                {t("tripNameHint")}
               </span>
             </div>
             <Input
-              placeholder="e.g. CB6 3NW Ely → 56727 Mayen"
+              placeholder={t("tripNamePlaceholder")}
               value={tripName}
               onChange={(e) => {
                 isNameEdited.current = true;
@@ -221,9 +225,9 @@ export function NewTripDialog({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Order number</Label>
+            <Label>{t("orderNumberLabel")}</Label>
             <Input
-              placeholder="e.g. ORD-2024-001"
+              placeholder={t("orderNumberPlaceholder")}
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
             />
@@ -231,14 +235,14 @@ export function NewTripDialog({
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <Label className="text-emerald-600">Loading stops</Label>
+              <Label className="text-emerald-600">{t("loadingStops")}</Label>
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs"
                 onClick={() => setLoadingStops([...loadingStops, emptyStop()])}
               >
-                <Plus className="mr-1 h-3.5 w-3.5" /> Add stop
+                <Plus className="mr-1 h-3.5 w-3.5" /> {t("addStop")}
               </Button>
             </div>
             {loadingStops.map((stop, i) => (
@@ -258,7 +262,7 @@ export function NewTripDialog({
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <Label className="text-red-600">Unloading stops</Label>
+              <Label className="text-red-600">{t("unloadingStops")}</Label>
               <Button
                 variant="ghost"
                 size="sm"
@@ -267,7 +271,7 @@ export function NewTripDialog({
                   setUnloadingStops([...unloadingStops, emptyStop()])
                 }
               >
-                <Plus className="mr-1 h-3.5 w-3.5" /> Add stop
+                <Plus className="mr-1 h-3.5 w-3.5" /> {t("addStop")}
               </Button>
             </div>
             {unloadingStops.map((stop, i) => (
@@ -288,9 +292,9 @@ export function NewTripDialog({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Notes</Label>
+            <Label>{t("notesLabel")}</Label>
             <Textarea
-              placeholder="Trip notes..."
+              placeholder={t("notesPlaceholder")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -304,7 +308,7 @@ export function NewTripDialog({
             {createTrip.isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Create Trip
+            {t("createButton")}
           </Button>
         </div>
       </DialogContent>

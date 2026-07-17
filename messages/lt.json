@@ -34,8 +34,13 @@
       "LOADED": "Pakrautas",
       "DELIVERED": "Pristatytas"
     },
+    "stopType": {
+      "LOADING": "Pakrovimas",
+      "UNLOADING": "Iškrovimas"
+    },
     "actions": {
-      "cancel": "Atšaukti"
+      "cancel": "Atšaukti",
+      "save": "Išsaugoti"
     }
   },
   "auth": {
@@ -316,6 +321,48 @@
       "body": "{name} šiuo metu priskirtas sunkvežimiui {plate}.",
       "question": "Ar norite perkelti jį į šį sunkvežimį?",
       "move": "Perkelti vairuotoją"
+    },
+    "trips": {
+      "searchPlaceholder": "Ieškoti pagal maršrutą, užsakymo nr., vairuotoją…",
+      "empty": "Reisų dar nėra.",
+      "nothingFound": "Nieko nerasta.",
+      "noStops": "Nėra sustojimų.",
+      "selectTrip": "Pasirinkite reisą…",
+      "searchTrip": "Ieškoti reiso…",
+      "noTripsFound": "Reisų nerasta.",
+      "edited": "redaguota",
+      "tripDocuments": "Reiso dokumentai",
+      "editTripInfo": "Redaguoti reisą",
+      "add": "Pridėti",
+      "loadingStops": "Pakrovimo taškai",
+      "unloadingStops": "Iškrovimo taškai",
+      "orderShortPlaceholder": "#užsakymas"
+    },
+    "newTrip": {
+      "button": "Naujas reisas",
+      "title": "Naujas reisas",
+      "driverLabel": "Vairuotojas",
+      "selectDriver": "Pasirinkite vairuotoją",
+      "tripNameLabel": "Reiso pavadinimas",
+      "tripNameHint": "užpildoma automatiškai iš adresų · redaguokite, kad pakeistumėte",
+      "tripNamePlaceholder": "pvz. CB6 3NW Ely → 56727 Mayen",
+      "orderNumberLabel": "Užsakymo numeris",
+      "orderNumberPlaceholder": "pvz. ORD-2024-001",
+      "loadingStops": "Pakrovimo taškai",
+      "unloadingStops": "Iškrovimo taškai",
+      "addStop": "Pridėti sustojimą",
+      "notesLabel": "Pastabos",
+      "notesPlaceholder": "Reiso pastabos…",
+      "createButton": "Sukurti reisą",
+      "tripFallbackName": "Reisas {date}"
+    },
+    "stop": {
+      "addressPlaceholder": "Įmonės pavadinimas, gatvė, pašto kodas, miestas",
+      "refPlaceholder": "Nuorodos numeris",
+      "refShortPlaceholder": "Nuor. #",
+      "coordsPlaceholder": "Koordinatės",
+      "copyCoords": "Kopijuoti koordinates",
+      "openInMaps": "Atidaryti Google Maps"
     }
   },
   "account": {
