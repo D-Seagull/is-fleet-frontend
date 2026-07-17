@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { fullName, initials } from "@/lib/format";
 import {
   ArrowLeft,
@@ -58,16 +59,16 @@ import {
 import { useAuthStore } from "@/store/auth";
 import { type Language } from "@/hooks/use-drivers";
 
-const languageLabels: Record<Language, string> = {
-  UK: "Ukrainian",
-  EN: "English",
-  PL: "Polish",
-  LT: "Lithuanian",
-  UZ: "Uzbek",
-  KZ: "Kazakh",
-  HI: "Hindi",
-  RU: "Russian",
-};
+const LANGUAGE_KEYS: Language[] = [
+  "UK",
+  "EN",
+  "PL",
+  "LT",
+  "UZ",
+  "KZ",
+  "HI",
+  "RU",
+];
 
 const PHONE_REGEX = /^\+\d{7,15}$/;
 
@@ -77,6 +78,9 @@ export default function ManagerDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("managers.detail");
+  const tLangs = useTranslations("common.languages");
+  const tTruckStatus = useTranslations("common.truckStatus");
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") ?? "info";
 
@@ -143,7 +147,7 @@ export default function ManagerDetailPage({
                 : "bg-gray-500/10 text-gray-500 border-gray-500/20"
             }
           >
-            {manager.isActive ? "Active" : "Inactive"}
+            {manager.isActive ? t("statusActive") : t("statusInactive")}
           </Badge>
           {avg !== null && (
             <div className="flex items-center gap-1">
@@ -155,7 +159,7 @@ export default function ManagerDetailPage({
         <Button variant="outline" size="sm" asChild>
           <Link href={`/chat?userId=${manager.id}`}>
             <MessageSquare className="mr-2 h-4 w-4" />
-            Chat
+            {t("chat")}
           </Link>
         </Button>
         {isAdminOrTeamlead && (
@@ -172,14 +176,14 @@ export default function ManagerDetailPage({
                   onClick={() => deactivate.mutate(manager.id)}
                   disabled={deactivate.isPending}
                 >
-                  Deactivate
+                  {t("deactivate")}
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem
                   onClick={() => activate.mutate(manager.id)}
                   disabled={activate.isPending}
                 >
-                  Activate
+                  {t("activate")}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -190,21 +194,21 @@ export default function ManagerDetailPage({
       {/* ── Tabs ────────────────────────────────────────────────────────── */}
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList>
-          <TabsTrigger value="info">Info</TabsTrigger>
+          <TabsTrigger value="info">{t("tabInfo")}</TabsTrigger>
           <TabsTrigger value="trucks">
-            Trucks{" "}
+            {t("tabTrucks")}{" "}
             <span className="ml-1.5 text-xs text-muted-foreground">
               {trucks.length}
             </span>
           </TabsTrigger>
           <TabsTrigger value="drivers">
-            Drivers{" "}
+            {t("tabDrivers")}{" "}
             <span className="ml-1.5 text-xs text-muted-foreground">
               {drivers.length}
             </span>
           </TabsTrigger>
           <TabsTrigger value="rating">
-            Rating
+            {t("tabRating")}
             {ratingCount > 0 && (
               <span className="ml-1.5 flex items-center gap-1 text-xs">
                 <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
@@ -219,7 +223,7 @@ export default function ManagerDetailPage({
         <TabsContent value="info" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle>{t("profileTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-6 md:flex-row md:items-start">
@@ -239,7 +243,7 @@ export default function ManagerDetailPage({
                         setName(e.target.value);
                         setNameDirty(e.target.value !== (fullName(manager) || ""));
                       }}
-                      placeholder="Name"
+                      placeholder={t("namePlaceholder")}
                       className="text-xl font-semibold h-9"
                     />
                     {nameDirty && (
@@ -282,7 +286,7 @@ export default function ManagerDetailPage({
                     {/* Email — read-only (used as login) */}
                     <InfoField
                       icon={<Mail className="h-5 w-5 text-muted-foreground" />}
-                      label="Email"
+                      label={t("emailField")}
                       value={manager.email}
                     />
 
@@ -292,7 +296,7 @@ export default function ManagerDetailPage({
                         <Phone className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex flex-col gap-1 flex-1">
-                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="text-sm text-muted-foreground">{t("phoneField")}</p>
                         <div className="flex items-center gap-2">
                           <Input
                             value={phone}
@@ -343,7 +347,7 @@ export default function ManagerDetailPage({
                         </div>
                         {phoneDirty && !phoneValid && (
                           <p className="text-xs text-destructive">
-                            Format: +12345678901 (7–15 digits)
+                            {t("phoneFormatHint")}
                           </p>
                         )}
                       </div>
@@ -356,7 +360,7 @@ export default function ManagerDetailPage({
                       </div>
                       <div className="flex flex-col gap-1 flex-1">
                         <p className="text-sm text-muted-foreground">
-                          Language
+                          {t("languageField")}
                         </p>
                         <Select
                           value={(manager.language as Language) ?? "EN"}
@@ -369,13 +373,11 @@ export default function ManagerDetailPage({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {(Object.keys(languageLabels) as Language[]).map(
-                              (l) => (
-                                <SelectItem key={l} value={l}>
-                                  {languageLabels[l]}
-                                </SelectItem>
-                              ),
-                            )}
+                            {LANGUAGE_KEYS.map((l) => (
+                              <SelectItem key={l} value={l}>
+                                {tLangs(l)}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -388,7 +390,7 @@ export default function ManagerDetailPage({
                       </div>
                       <div className="flex flex-col gap-1 flex-1">
                         <p className="text-sm text-muted-foreground">
-                          Teamlead
+                          {t("teamleadField")}
                         </p>
                         {canEditTeamlead ? (
                           <Select
@@ -401,13 +403,15 @@ export default function ManagerDetailPage({
                             disabled={update.isPending}
                           >
                             <SelectTrigger className="h-8 text-sm">
-                              <SelectValue placeholder="No teamlead" />
+                              <SelectValue placeholder={t("noTeamlead")} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="none">No teamlead</SelectItem>
-                              {teamleads.map((t) => (
-                                <SelectItem key={t.id} value={t.id}>
-                                  {fullName(t) || t.email}
+                              <SelectItem value="none">
+                                {t("noTeamlead")}
+                              </SelectItem>
+                              {teamleads.map((tl) => (
+                                <SelectItem key={tl.id} value={tl.id}>
+                                  {fullName(tl) || tl.email}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -417,7 +421,7 @@ export default function ManagerDetailPage({
                             {fullName(manager.teamlead) ??
                               manager.teamlead?.email ?? (
                                 <span className="italic text-muted-foreground">
-                                  not assigned
+                                  {t("notAssigned")}
                                 </span>
                               )}
                           </p>
@@ -434,20 +438,21 @@ export default function ManagerDetailPage({
         {/* ── Trucks ────────────────────────────────────────────────────── */}
         <TabsContent value="trucks" className="mt-4">
           {trucks.length === 0 ? (
-            <EmptyState text="No trucks assigned to this manager." />
+            <EmptyState text={t("trucksEmpty")} />
           ) : (
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {trucks.map((t) => (
+              {trucks.map((truck) => (
                 <Link
-                  key={t.id}
-                  href={`/trucks/${t.id}`}
+                  key={truck.id}
+                  href={`/trucks/${truck.id}`}
                   className="border rounded-md p-3 hover:bg-accent transition-colors flex items-center gap-3"
                 >
                   <TruckIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium">{t.plate}</div>
+                    <div className="font-medium">{truck.plate}</div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {fullName(t.currentDriver) || "no driver"} · {t.status}
+                      {fullName(truck.currentDriver) || t("noDriver")} ·{" "}
+                      {tTruckStatus(truck.status)}
                     </div>
                   </div>
                 </Link>
@@ -459,7 +464,7 @@ export default function ManagerDetailPage({
         {/* ── Drivers ───────────────────────────────────────────────────── */}
         <TabsContent value="drivers" className="mt-4">
           {drivers.length === 0 ? (
-            <EmptyState text="No drivers reporting to this manager." />
+            <EmptyState text={t("driversEmpty")} />
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
               {drivers.map((d) => (
@@ -491,7 +496,7 @@ export default function ManagerDetailPage({
         <TabsContent value="rating" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Overall Rating</CardTitle>
+              <CardTitle className="text-lg">{t("overallTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               {avg !== null ? (
@@ -512,8 +517,7 @@ export default function ManagerDetailPage({
                         ))}
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {ratingCount} {ratingCount === 1 ? "rating" : "ratings"}{" "}
-                        from drivers
+                        {t("ratingsFromDrivers", { count: ratingCount })}
                       </span>
                     </div>
                   </div>
@@ -538,7 +542,7 @@ export default function ManagerDetailPage({
                             ))}
                           </div>
                           <span className="text-sm font-medium">
-                            {fullName(r.ratedBy) || "Unknown"}
+                            {fullName(r.ratedBy) || t("unknown")}
                           </span>
                           <span className="text-xs text-muted-foreground ml-auto">
                             {new Date(r.createdAt).toLocaleDateString()}
@@ -555,8 +559,7 @@ export default function ManagerDetailPage({
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No ratings yet. Drivers rate their manager from the mobile
-                  app.
+                  {t("noRatings")}
                 </p>
               )}
             </CardContent>

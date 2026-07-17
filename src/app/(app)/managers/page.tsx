@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { fullName, initials } from "@/lib/format";
 import {
   Search,
@@ -48,6 +49,7 @@ import {
 import { useAuthStore } from "@/store/auth";
 
 export default function ManagersPage() {
+  const t = useTranslations("managers");
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const [tab, setTab] = useState<"team" | "all">("team");
@@ -111,7 +113,7 @@ export default function ManagersPage() {
       const firstName = newFirstName.trim();
       const lastName = newLastName.trim() || null;
       if (!firstName) {
-        setCreateError("Ім'я обов'язкове");
+        setCreateError(t("firstNameRequired"));
         return;
       }
       await createManager.mutateAsync({
@@ -130,60 +132,60 @@ export default function ManagersPage() {
       const msg = e.response?.data?.message;
       if (Array.isArray(msg)) setCreateError(msg.join(", "));
       else if (typeof msg === "string") setCreateError(msg);
-      else setCreateError("Помилка створення менеджера");
+      else setCreateError(t("createError"));
     }
   };
 
   return (
     <div className="flex flex-col gap-6 p-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold">Managers</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Manager
+              {t("addButton")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Manager</DialogTitle>
+              <DialogTitle>{t("addDialogTitle")}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="firstName">Ім&apos;я</Label>
+                <Label htmlFor="firstName">{t("firstNameLabel")}</Label>
                 <Input
                   id="firstName"
                   type="text"
-                  placeholder="Іван"
+                  placeholder={t("firstNamePlaceholder")}
                   value={newFirstName}
                   onChange={(e) => setNewFirstName(e.target.value)}
                   required
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="lastName">Прізвище (необов&apos;язково)</Label>
+                <Label htmlFor="lastName">{t("lastNameLabel")}</Label>
                 <Input
                   id="lastName"
                   type="text"
-                  placeholder="Петренко"
+                  placeholder={t("lastNamePlaceholder")}
                   value={newLastName}
                   onChange={(e) => setNewLastName(e.target.value)}
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("emailLabel")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="manager@company.com"
+                  placeholder={t("emailPlaceholder")}
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   required
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="phone">Телефон</Label>
+                <Label htmlFor="phone">{t("phoneLabel")}</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -202,10 +204,10 @@ export default function ManagersPage() {
                 {createManager.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Відправка...
+                    {t("submitLoading")}
                   </>
                 ) : (
-                  "Відправити запрошення"
+                  t("submitButton")
                 )}
               </Button>
             </form>
@@ -216,7 +218,7 @@ export default function ManagersPage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search by name, phone, email…"
+          placeholder={t("searchPlaceholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
@@ -225,8 +227,8 @@ export default function ManagersPage() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "team" | "all")}>
         <TabsList>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="all">All managers</TabsTrigger>
+          <TabsTrigger value="team">{t("tabTeam")}</TabsTrigger>
+          <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>
         </TabsList>
 
         {/* ── Team ─────────────────────────────────────────────────────────── */}
@@ -234,26 +236,28 @@ export default function ManagersPage() {
           {isLoading ? (
             <LoadingRow />
           ) : !myTeamleadId ? (
-            <EmptyState text="Only managers and team leads have a team view. Switch to “All managers”." />
+            <EmptyState text={t("teamEmptyView")} />
           ) : (
             <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Manager</TableHead>
+                    <TableHead>{t("colManager")}</TableHead>
                     <TableHead className="hidden sm:table-cell">
-                      Email
+                      {t("colEmail")}
                     </TableHead>
                     <TableHead className="hidden sm:table-cell">
-                      Phone
+                      {t("colPhone")}
                     </TableHead>
                     <TableHead className="hidden md:table-cell">
-                      Trucks
+                      {t("colTrucks")}
                     </TableHead>
                     <TableHead className="hidden md:table-cell">
-                      Rating
+                      {t("colRating")}
                     </TableHead>
-                    <TableHead className="w-[60px] text-center">Chat</TableHead>
+                    <TableHead className="w-[60px] text-center">
+                      {t("colChat")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -263,7 +267,7 @@ export default function ManagersPage() {
                         colSpan={6}
                         className="text-center py-10 text-muted-foreground"
                       >
-                        No team members yet.
+                        {t("teamEmpty")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -294,7 +298,7 @@ export default function ManagersPage() {
                             </Link>
                             {!m.isActive && (
                               <Badge variant="outline" className="text-xs">
-                                Inactive
+                                {t("statusInactive")}
                               </Badge>
                             )}
                           </div>
@@ -359,14 +363,16 @@ export default function ManagersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Manager</TableHead>
+                    <TableHead>{t("colManager")}</TableHead>
                     <TableHead className="hidden sm:table-cell">
-                      Email
+                      {t("colEmail")}
                     </TableHead>
                     <TableHead className="hidden md:table-cell">
-                      Teamlead
+                      {t("colTeamlead")}
                     </TableHead>
-                    <TableHead className="w-[60px] text-center">Chat</TableHead>
+                    <TableHead className="w-[60px] text-center">
+                      {t("colChat")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -376,7 +382,7 @@ export default function ManagersPage() {
                         colSpan={4}
                         className="text-center py-10 text-muted-foreground"
                       >
-                        No managers found.
+                        {t("allEmpty")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -407,7 +413,7 @@ export default function ManagersPage() {
                             </Link>
                             {!m.isActive && (
                               <Badge variant="outline" className="text-xs">
-                                Inactive
+                                {t("statusInactive")}
                               </Badge>
                             )}
                           </div>
