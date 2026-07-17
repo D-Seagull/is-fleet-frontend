@@ -33,6 +33,9 @@
       "ON_SITE": "Na miejscu",
       "LOADED": "Załadowany",
       "DELIVERED": "Dostarczony"
+    },
+    "actions": {
+      "cancel": "Anuluj"
     }
   },
   "auth": {
@@ -280,6 +283,39 @@
       "saveTemplate": "+ Zapisz jako szablon",
       "sendButton": "Wyślij do wszystkich",
       "defaultTemplateName": "Szablon"
+    }
+  },
+  "truckPanel": {
+    "tabs": {
+      "chat": "Czat",
+      "trips": "Trasy",
+      "documents": "Dokumenty",
+      "alarm": "Alarm",
+      "info": "Informacje"
+    },
+    "header": {
+      "driverLabel": "Kierowca: {name}",
+      "toggleNav": "Przełącz nawigację"
+    },
+    "info": {
+      "status": "Status",
+      "driver": "Kierowca",
+      "noDriver": "Bez kierowcy",
+      "activeTrip": "aktywna trasa",
+      "manager": "Menedżer",
+      "noManager": "Bez menedżera",
+      "notes": "Notatki",
+      "addNotePlaceholder": "Dodaj notatkę…",
+      "noNotes": "Brak notatek.",
+      "unknown": "Nieznany",
+      "deleteNoteConfirm": "Usunąć tę notatkę?",
+      "driverFallback": "Kierowca"
+    },
+    "reassign": {
+      "title": "Przypisać kierowcę ponownie?",
+      "body": "{name} jest obecnie przypisany do ciężarówki {plate}.",
+      "question": "Czy chcesz przenieść go do tej ciężarówki?",
+      "move": "Przenieś kierowcę"
     }
   },
   "account": {

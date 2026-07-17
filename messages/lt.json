@@ -33,6 +33,9 @@
       "ON_SITE": "Vietoje",
       "LOADED": "Pakrautas",
       "DELIVERED": "Pristatytas"
+    },
+    "actions": {
+      "cancel": "Atšaukti"
     }
   },
   "auth": {
@@ -280,6 +283,39 @@
       "saveTemplate": "+ Išsaugoti kaip šabloną",
       "sendButton": "Siųsti visiems",
       "defaultTemplateName": "Šablonas"
+    }
+  },
+  "truckPanel": {
+    "tabs": {
+      "chat": "Pokalbis",
+      "trips": "Reisai",
+      "documents": "Dokumentai",
+      "alarm": "Žadintuvas",
+      "info": "Informacija"
+    },
+    "header": {
+      "driverLabel": "Vairuotojas: {name}",
+      "toggleNav": "Perjungti navigaciją"
+    },
+    "info": {
+      "status": "Būsena",
+      "driver": "Vairuotojas",
+      "noDriver": "Be vairuotojo",
+      "activeTrip": "aktyvus reisas",
+      "manager": "Vadybininkas",
+      "noManager": "Be vadybininko",
+      "notes": "Pastabos",
+      "addNotePlaceholder": "Pridėti pastabą…",
+      "noNotes": "Kol kas nėra pastabų.",
+      "unknown": "Nežinomas",
+      "deleteNoteConfirm": "Ištrinti šią pastabą?",
+      "driverFallback": "Vairuotojas"
+    },
+    "reassign": {
+      "title": "Priskirti vairuotoją iš naujo?",
+      "body": "{name} šiuo metu priskirtas sunkvežimiui {plate}.",
+      "question": "Ar norite perkelti jį į šį sunkvežimį?",
+      "move": "Perkelti vairuotoją"
     }
   },
   "account": {

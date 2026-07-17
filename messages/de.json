@@ -33,6 +33,9 @@
       "ON_SITE": "Vor Ort",
       "LOADED": "Beladen",
       "DELIVERED": "Zugestellt"
+    },
+    "actions": {
+      "cancel": "Abbrechen"
     }
   },
   "auth": {
@@ -280,6 +283,39 @@
       "saveTemplate": "+ Als Vorlage speichern",
       "sendButton": "An alle senden",
       "defaultTemplateName": "Vorlage"
+    }
+  },
+  "truckPanel": {
+    "tabs": {
+      "chat": "Chat",
+      "trips": "Fahrten",
+      "documents": "Dokumente",
+      "alarm": "Wecker",
+      "info": "Info"
+    },
+    "header": {
+      "driverLabel": "Fahrer: {name}",
+      "toggleNav": "Navigation umschalten"
+    },
+    "info": {
+      "status": "Status",
+      "driver": "Fahrer",
+      "noDriver": "Kein Fahrer",
+      "activeTrip": "aktive Fahrt",
+      "manager": "Manager",
+      "noManager": "Kein Manager",
+      "notes": "Notizen",
+      "addNotePlaceholder": "Notiz hinzufügen…",
+      "noNotes": "Noch keine Notizen.",
+      "unknown": "Unbekannt",
+      "deleteNoteConfirm": "Diese Notiz löschen?",
+      "driverFallback": "Fahrer"
+    },
+    "reassign": {
+      "title": "Fahrer neu zuweisen?",
+      "body": "{name} ist derzeit dem LKW {plate} zugewiesen.",
+      "question": "Möchten Sie ihn zu diesem LKW verschieben?",
+      "move": "Fahrer verschieben"
     }
   },
   "account": {

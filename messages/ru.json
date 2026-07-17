@@ -33,6 +33,9 @@
       "ON_SITE": "На месте",
       "LOADED": "Загружен",
       "DELIVERED": "Доставлен"
+    },
+    "actions": {
+      "cancel": "Отмена"
     }
   },
   "auth": {
@@ -280,6 +283,39 @@
       "saveTemplate": "+ Сохранить как шаблон",
       "sendButton": "Отправить всем",
       "defaultTemplateName": "Шаблон"
+    }
+  },
+  "truckPanel": {
+    "tabs": {
+      "chat": "Чат",
+      "trips": "Рейсы",
+      "documents": "Документы",
+      "alarm": "Будильник",
+      "info": "Инфо"
+    },
+    "header": {
+      "driverLabel": "Водитель: {name}",
+      "toggleNav": "Переключить навигацию"
+    },
+    "info": {
+      "status": "Статус",
+      "driver": "Водитель",
+      "noDriver": "Без водителя",
+      "activeTrip": "активный рейс",
+      "manager": "Менеджер",
+      "noManager": "Без менеджера",
+      "notes": "Заметки",
+      "addNotePlaceholder": "Добавить заметку…",
+      "noNotes": "Пока нет заметок.",
+      "unknown": "Неизвестно",
+      "deleteNoteConfirm": "Удалить эту заметку?",
+      "driverFallback": "Водитель"
+    },
+    "reassign": {
+      "title": "Переназначить водителя?",
+      "body": "{name} сейчас закреплён за грузовиком {plate}.",
+      "question": "Перевести его на этот грузовик?",
+      "move": "Перевести водителя"
     }
   },
   "account": {

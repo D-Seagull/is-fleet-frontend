@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Loader2,
@@ -103,6 +104,9 @@ export function TruckDetailPanel({
   showBackButton = false,
   backHref = "/trucks",
 }: TruckDetailPanelProps) {
+  const t = useTranslations("truckPanel");
+  const tStatus = useTranslations("common.truckStatus");
+  const tCancel = useTranslations("common.actions");
   const user = useAuthStore((s) => s.user);
   const [chatTripId, setChatTripId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("chat");
@@ -180,7 +184,7 @@ export function TruckDetailPanel({
   }
 
   async function handleDeleteNote(noteId: string) {
-    if (!confirm("Delete this note?")) return;
+    if (!confirm(t("info.deleteNoteConfirm"))) return;
     await deleteNote.mutateAsync({ noteId, truckId });
   }
 
@@ -208,7 +212,7 @@ export function TruckDetailPanel({
     if (occupiedTruck && occupiedTruck.id !== truckId) {
       setPendingDriver({
         driverId: newDriverId,
-        driverName: fullName(selectedDriver) || selectedDriver?.email || "Driver",
+        driverName: fullName(selectedDriver) || selectedDriver?.email || t("info.driverFallback"),
         fromTruck: { id: occupiedTruck.id, plate: occupiedTruck.plate },
       });
       return;
@@ -242,7 +246,7 @@ export function TruckDetailPanel({
             variant="outline"
             className={cn("text-xs md:text-sm shrink-0", TRUCK_STATUS_COLORS[truck.status])}
           >
-            {TRUCK_STATUS_LABELS[truck.status]}
+            {tStatus(truck.status)}
           </Badge>
           {truck.currentDriver && (
             <Link
@@ -250,13 +254,13 @@ export function TruckDetailPanel({
               className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors inline-flex items-center gap-1.5"
             >
               <StatusDot user={truck.currentDriver} size="xs" />
-              Driver: {fullName(truck.currentDriver)}
+              {t("header.driverLabel", { name: fullName(truck.currentDriver) })}
             </Link>
           )}
           <button
             className="md:hidden ml-auto shrink-0 flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-primary hover:bg-primary/20 transition-colors"
             onClick={() => setNavOpen((v) => !v)}
-            aria-label="Toggle navigation"
+            aria-label={t("header.toggleNav")}
           >
             {navOpen
               ? <ChevronUp className="h-3.5 w-3.5" />
@@ -272,7 +276,7 @@ export function TruckDetailPanel({
       >
         <TabsList className={cn("shrink-0", !navOpen && "hidden md:flex")}>
           <TabsTrigger value="chat" disabled={!isChatEnabled} className="gap-1.5">
-            Chat
+            {t("tabs.chat")}
             {(truckUnread?.activeTripUnread ?? 0) > 0 && (
               <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none">
                 {truckUnread!.activeTripUnread}
@@ -280,16 +284,16 @@ export function TruckDetailPanel({
             )}
           </TabsTrigger>
           <TabsTrigger value="trips" className="gap-1.5">
-            Trips
+            {t("tabs.trips")}
             {(truckUnread?.pastTripsUnread ?? 0) > 0 && (
               <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-muted text-muted-foreground text-[10px] font-bold px-1 leading-none">
                 {truckUnread!.pastTripsUnread}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="alarm">Alarm</TabsTrigger>
-          <TabsTrigger value="info">Info</TabsTrigger>
+          <TabsTrigger value="documents">{t("tabs.documents")}</TabsTrigger>
+          <TabsTrigger value="alarm">{t("tabs.alarm")}</TabsTrigger>
+          <TabsTrigger value="info">{t("tabs.info")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat" className="mt-4 flex flex-col flex-1 min-h-0">
@@ -339,7 +343,7 @@ export function TruckDetailPanel({
               {/* Status */}
               <div className="flex items-center gap-3 px-3 py-2">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  Status
+                  {t("info.status")}
                 </span>
                 <Select
                   value={truck.status}
@@ -351,13 +355,13 @@ export function TruckDetailPanel({
                       variant="outline"
                       className={TRUCK_STATUS_COLORS[truck.status]}
                     >
-                      {TRUCK_STATUS_LABELS[truck.status]}
+                      {tStatus(truck.status)}
                     </Badge>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="AVAILABLE">Available</SelectItem>
-                    <SelectItem value="ON_TRIP">On Trip</SelectItem>
-                    <SelectItem value="REPAIR">Repair</SelectItem>
+                    <SelectItem value="AVAILABLE">{tStatus("AVAILABLE")}</SelectItem>
+                    <SelectItem value="ON_TRIP">{tStatus("ON_TRIP")}</SelectItem>
+                    <SelectItem value="REPAIR">{tStatus("REPAIR")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -365,7 +369,7 @@ export function TruckDetailPanel({
               {/* Driver */}
               <div className="flex items-center gap-3 px-3 py-2">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  Driver
+                  {t("info.driver")}
                 </span>
                 <Select
                   value={truck.currentDriverId ?? "none"}
@@ -373,10 +377,10 @@ export function TruckDetailPanel({
                   disabled={updateTruck.isPending || reassignTrip.isPending}
                 >
                   <SelectTrigger className="h-7 flex-1 text-xs">
-                    <SelectValue placeholder="No driver" />
+                    <SelectValue placeholder={t("info.noDriver")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No driver</SelectItem>
+                    <SelectItem value="none">{t("info.noDriver")}</SelectItem>
                     {(drivers ?? []).map((d) => (
                       <SelectItem key={d.id} value={d.id}>
                         {fullName(d) || d.email}
@@ -396,7 +400,7 @@ export function TruckDetailPanel({
                 )}
                 {activeTrip && (
                   <span className="text-[10px] text-muted-foreground shrink-0 border rounded px-1.5 py-0.5">
-                    active trip
+                    {t("info.activeTrip")}
                   </span>
                 )}
               </div>
@@ -408,17 +412,19 @@ export function TruckDetailPanel({
               >
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Reassign driver?</AlertDialogTitle>
+                    <AlertDialogTitle>{t("reassign.title")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      <strong>{pendingDriver?.driverName}</strong> is currently assigned to truck{" "}
-                      <strong>{pendingDriver?.fromTruck.plate}</strong>.
+                      {t("reassign.body", {
+                        name: pendingDriver?.driverName ?? "",
+                        plate: pendingDriver?.fromTruck.plate ?? "",
+                      })}
                       <br />
-                      Do you want to move them to this truck?
+                      {t("reassign.question")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel onClick={() => setPendingDriver(null)}>
-                      Cancel
+                      {tCancel("cancel")}
                     </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => {
@@ -427,7 +433,7 @@ export function TruckDetailPanel({
                         setPendingDriver(null);
                       }}
                     >
-                      Move driver
+                      {t("reassign.move")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -436,7 +442,7 @@ export function TruckDetailPanel({
               {/* Manager */}
               <div className="flex items-center gap-3 px-3 py-2">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  Manager
+                  {t("info.manager")}
                 </span>
                 <Select
                   value={truck.managerId ?? "none"}
@@ -449,10 +455,10 @@ export function TruckDetailPanel({
                   disabled={updateTruck.isPending}
                 >
                   <SelectTrigger className="h-7 flex-1 text-xs">
-                    <SelectValue placeholder="No manager" />
+                    <SelectValue placeholder={t("info.noManager")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No manager</SelectItem>
+                    <SelectItem value="none">{t("info.noManager")}</SelectItem>
                     {(assignableManagers ?? []).map((d) => (
                       <SelectItem key={d.id} value={d.id}>
                         {fullName(d) || d.email}
@@ -467,11 +473,11 @@ export function TruckDetailPanel({
             <div className="rounded-lg border flex flex-col gap-0 divide-y">
               <div className="px-3 py-2">
                 <p className="text-xs font-medium text-muted-foreground mb-2">
-                  Notes
+                  {t("info.notes")}
                 </p>
                 <div className="flex gap-2">
                   <Textarea
-                    placeholder="Add a note..."
+                    placeholder={t("info.addNotePlaceholder")}
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
                     rows={2}
@@ -498,7 +504,7 @@ export function TruckDetailPanel({
                 </div>
               ) : !notes || notes.length === 0 ? (
                 <p className="px-3 py-2 text-xs text-muted-foreground">
-                  No notes yet.
+                  {t("info.noNotes")}
                 </p>
               ) : (
                 notes.map((note) => (
@@ -509,7 +515,7 @@ export function TruckDetailPanel({
                     <div className="flex flex-col gap-0.5 flex-1">
                       <p className="text-sm">{note.content}</p>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <span>{fullName(note.user) || "Unknown"}</span>
+                        <span>{fullName(note.user) || t("info.unknown")}</span>
                         <span>·</span>
                         <span>
                           {new Date(note.createdAt).toLocaleString([], {

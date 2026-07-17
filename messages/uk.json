@@ -33,6 +33,9 @@
       "ON_SITE": "На місці",
       "LOADED": "Завантажено",
       "DELIVERED": "Доставлено"
+    },
+    "actions": {
+      "cancel": "Скасувати"
     }
   },
   "auth": {
@@ -280,6 +283,39 @@
       "saveTemplate": "+ Зберегти як шаблон",
       "sendButton": "Надіслати всім",
       "defaultTemplateName": "Шаблон"
+    }
+  },
+  "truckPanel": {
+    "tabs": {
+      "chat": "Чат",
+      "trips": "Рейси",
+      "documents": "Документи",
+      "alarm": "Будильник",
+      "info": "Інфо"
+    },
+    "header": {
+      "driverLabel": "Водій: {name}",
+      "toggleNav": "Перемкнути навігацію"
+    },
+    "info": {
+      "status": "Статус",
+      "driver": "Водій",
+      "noDriver": "Без водія",
+      "activeTrip": "активний рейс",
+      "manager": "Менеджер",
+      "noManager": "Без менеджера",
+      "notes": "Нотатки",
+      "addNotePlaceholder": "Додати нотатку…",
+      "noNotes": "Ще немає нотаток.",
+      "unknown": "Невідомо",
+      "deleteNoteConfirm": "Видалити цю нотатку?",
+      "driverFallback": "Водій"
+    },
+    "reassign": {
+      "title": "Перепризначити водія?",
+      "body": "{name} зараз закріплений за вантажівкою {plate}.",
+      "question": "Перевести його на цю вантажівку?",
+      "move": "Перевести водія"
     }
   },
   "account": {
