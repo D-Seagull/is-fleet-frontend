@@ -1,6 +1,7 @@
 "use client";
 
 import { X, Download } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { downloadDoc } from "@/lib/doc-helpers";
 
 // Full-screen photo overlay for previewing an inline chat attachment.
@@ -13,6 +14,7 @@ export function ChatLightbox({
   item: { id: string; signedUrl: string } | null;
   onClose: () => void;
 }) {
+  const tActions = useTranslations("common.actions");
   if (!item) return null;
   return (
     <div
@@ -40,7 +42,7 @@ export function ChatLightbox({
             downloadDoc(item.id);
           }}
         >
-          <Download className="h-4 w-4" /> Download
+          <Download className="h-4 w-4" /> {tActions("download")}
         </button>
       </div>
     </div>

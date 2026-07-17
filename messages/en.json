@@ -43,7 +43,9 @@
       "save": "Save",
       "view": "View",
       "download": "Download",
-      "delete": "Delete"
+      "delete": "Delete",
+      "copy": "Copy",
+      "remove": "Remove"
     }
   },
   "auth": {
@@ -118,6 +120,35 @@
       "errorMissingToken": "Reset link is missing a token.",
       "errorInvalidOrExpired": "Reset link is invalid or expired. Request a new one."
     }
+  },
+  "chat": {
+    "selectPrompt": "Select or create a trip to start chatting",
+    "readOnly": "You're no longer a participant in this chat — read-only view.",
+    "editingMessage": "Editing message",
+    "cancelEditing": "Cancel editing",
+    "replyTo": "Reply to {name}",
+    "unknown": "Unknown",
+    "someone": "Someone",
+    "fileDeleted": "File deleted",
+    "messageDeleted": "Message deleted",
+    "cancelReply": "Cancel reply",
+    "removeFile": "Remove",
+    "attachFile": "Attach file",
+    "emoji": "Emoji",
+    "messagePlaceholder": "Type a message...",
+    "editPlaceholder": "Edit the message…",
+    "send": "Send",
+    "messageUser": "Message {name}",
+    "userFallback": "user",
+    "editedAtTitle": "Edited at {time}",
+    "editedMark": "(edited)",
+    "tripDocumentsTitle": "Trip Documents",
+    "orderLabel": "Order #{number}",
+    "viewArchive": "View archive",
+    "emptyChat": "No messages yet. Start the conversation.",
+    "previousChats": "{count, plural, one {# previous chat} other {# previous chats}} on this trip",
+    "newMessages": "{count} new",
+    "typing": "{count, plural, one {is typing} other {are typing}}"
   },
   "trucks": {
     "title": "Trucks",

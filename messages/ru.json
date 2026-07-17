@@ -43,7 +43,9 @@
       "save": "Сохранить",
       "view": "Просмотр",
       "download": "Скачать",
-      "delete": "Удалить"
+      "delete": "Удалить",
+      "copy": "Копировать",
+      "remove": "Убрать"
     }
   },
   "auth": {
@@ -118,6 +120,35 @@
       "errorMissingToken": "В ссылке отсутствует токен.",
       "errorInvalidOrExpired": "Ссылка недействительна или истекла. Запросите новую."
     }
+  },
+  "chat": {
+    "selectPrompt": "Выберите или создайте рейс, чтобы начать общение",
+    "readOnly": "Вы больше не участник этого чата — просмотр только для чтения.",
+    "editingMessage": "Редактирование сообщения",
+    "cancelEditing": "Отменить редактирование",
+    "replyTo": "Ответ для {name}",
+    "unknown": "Неизвестно",
+    "someone": "Кто-то",
+    "fileDeleted": "Файл удалён",
+    "messageDeleted": "Сообщение удалено",
+    "cancelReply": "Отменить ответ",
+    "removeFile": "Убрать",
+    "attachFile": "Прикрепить файл",
+    "emoji": "Эмодзи",
+    "messagePlaceholder": "Введите сообщение…",
+    "editPlaceholder": "Редактируйте сообщение…",
+    "send": "Отправить",
+    "messageUser": "Написать {name}",
+    "userFallback": "пользователь",
+    "editedAtTitle": "Изменено в {time}",
+    "editedMark": "(изм.)",
+    "tripDocumentsTitle": "Документы рейса",
+    "orderLabel": "Заказ #{number}",
+    "viewArchive": "Открыть архив",
+    "emptyChat": "Пока нет сообщений. Начните разговор.",
+    "previousChats": "{count, plural, one {# предыдущий чат} few {# предыдущих чата} many {# предыдущих чатов} other {# предыдущих чата}} в этом рейсе",
+    "newMessages": "{count, plural, one {# новое} few {# новых} many {# новых} other {# новых}}",
+    "typing": "{count, plural, one {печатает} other {печатают}}"
   },
   "trucks": {
     "title": "Грузовики",

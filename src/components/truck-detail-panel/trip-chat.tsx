@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { Loader2, ChevronDown, FolderOpen, History } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
   appendInfiniteMessage,
@@ -56,6 +57,7 @@ export function TripChat({
   currentUserId: string;
   truckManagerId?: string | null;
 }) {
+  const t = useTranslations("chat");
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === "ADMIN" || user?.role === "TEAMLEAD";
@@ -360,13 +362,13 @@ export function TripChat({
       if (payload.user.id === currentUserIdRef.current) return;
       setTypers((prev) => {
         const next = new Map(prev);
-        next.set(payload.user.id, fullName(payload.user) || "Someone");
+        next.set(payload.user.id, fullName(payload.user) || t("someone"));
         return next;
       });
       // Reset auto-clear timeout
       const prev = typerTimeoutsRef.current.get(payload.user.id);
       if (prev) clearTimeout(prev);
-      const t = setTimeout(() => {
+      const timer = setTimeout(() => {
         setTypers((p) => {
           const n = new Map(p);
           n.delete(payload.user.id);
@@ -374,7 +376,7 @@ export function TripChat({
         });
         typerTimeoutsRef.current.delete(payload.user.id);
       }, 4000);
-      typerTimeoutsRef.current.set(payload.user.id, t);
+      typerTimeoutsRef.current.set(payload.user.id, timer);
     };
     const onStopTyping = (payload: { tripId: string; userId: string }) => {
       if (payload.tripId !== trip.id) return;
@@ -630,11 +632,11 @@ export function TripChat({
           <SheetHeader className="px-4 pt-4 pb-3 border-b">
             <SheetTitle className="flex items-center gap-2">
               <FolderOpen className="h-4 w-4" />
-              Trip Documents
+              {t("tripDocumentsTitle")}
             </SheetTitle>
             {trip.orderNumber && (
               <p className="text-xs text-muted-foreground">
-                Order #{trip.orderNumber}
+                {t("orderLabel", { number: trip.orderNumber })}
               </p>
             )}
           </SheetHeader>
@@ -659,8 +661,7 @@ export function TripChat({
           <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
             <History className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">
-              {archiveSessions.length} previous chat
-              {archiveSessions.length === 1 ? "" : "s"} on this trip
+              {t("previousChats", { count: archiveSessions.length })}
             </span>
           </div>
           <Button
@@ -669,7 +670,7 @@ export function TripChat({
             className="h-7 text-xs shrink-0"
             onClick={() => setShowArchive(true)}
           >
-            View archive
+            {t("viewArchive")}
           </Button>
         </div>
       )}
@@ -704,7 +705,7 @@ export function TripChat({
             </div>
           ) : timeline.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-10">
-              No messages yet. Start the conversation.
+              {t("emptyChat")}
             </p>
           ) : (
             <>
@@ -766,7 +767,7 @@ export function TripChat({
             }}
           >
             <ChevronDown className="h-3.5 w-3.5" />
-            {newMsgCount} new
+            {t("newMessages", { count: newMsgCount })}
           </button>
         )}
       </div>
@@ -775,7 +776,7 @@ export function TripChat({
         <div className="shrink-0 px-4 py-1 text-xs text-muted-foreground flex items-center gap-1">
           <span>
             {Array.from(typers.values()).join(", ")}{" "}
-            {typers.size === 1 ? "набирає" : "набирають"}
+            {t("typing", { count: typers.size })}
           </span>
           <span className="flex gap-0.5">
             <span className="animate-bounce delay-0">.</span>

@@ -43,7 +43,9 @@
       "save": "Išsaugoti",
       "view": "Peržiūrėti",
       "download": "Atsisiųsti",
-      "delete": "Ištrinti"
+      "delete": "Ištrinti",
+      "copy": "Kopijuoti",
+      "remove": "Pašalinti"
     }
   },
   "auth": {
@@ -118,6 +120,35 @@
       "errorMissingToken": "Nuorodoje trūksta žetono.",
       "errorInvalidOrExpired": "Nuoroda negalioja arba pasibaigusi. Užklausykite naujos."
     }
+  },
+  "chat": {
+    "selectPrompt": "Pasirinkite arba sukurkite reisą, kad pradėtumėte pokalbį",
+    "readOnly": "Jūs nebesate šio pokalbio dalyvis — tik skaitymo režimas.",
+    "editingMessage": "Žinutės redagavimas",
+    "cancelEditing": "Atšaukti redagavimą",
+    "replyTo": "Atsakymas {name}",
+    "unknown": "Nežinomas",
+    "someone": "Kažkas",
+    "fileDeleted": "Failas ištrintas",
+    "messageDeleted": "Žinutė ištrinta",
+    "cancelReply": "Atšaukti atsakymą",
+    "removeFile": "Pašalinti",
+    "attachFile": "Prisegti failą",
+    "emoji": "Jaustukas",
+    "messagePlaceholder": "Įveskite žinutę…",
+    "editPlaceholder": "Redaguokite žinutę…",
+    "send": "Siųsti",
+    "messageUser": "Rašyti {name}",
+    "userFallback": "vartotojas",
+    "editedAtTitle": "Redaguota {time}",
+    "editedMark": "(red.)",
+    "tripDocumentsTitle": "Reiso dokumentai",
+    "orderLabel": "Užsakymas #{number}",
+    "viewArchive": "Peržiūrėti archyvą",
+    "emptyChat": "Kol kas nėra žinučių. Pradėkite pokalbį.",
+    "previousChats": "{count, plural, one {# ankstesnis pokalbis} few {# ankstesni pokalbiai} many {# ankstesnių pokalbių} other {# ankstesnio pokalbio}} šiame reise",
+    "newMessages": "{count, plural, one {# nauja} few {# naujos} many {# naujų} other {# naujos}}",
+    "typing": "{count, plural, one {rašo} other {rašo}}"
   },
   "trucks": {
     "title": "Sunkvežimiai",

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FileText, Download } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
@@ -39,6 +40,7 @@ function MessageBubble({
   onEdit,
   onDelete,
 }: MessageBubbleProps) {
+  const t = useTranslations("chat");
   const router = useRouter();
 
   // System messages render as a centred grey label (Telegram-style
@@ -96,7 +98,9 @@ function MessageBubble({
           type="button"
           onClick={() => router.push(`/chat?userId=${msg.senderId}`)}
           className="shrink-0"
-          title={`Message ${fullName(msg.sender) || "user"}`}
+          title={t("messageUser", {
+            name: fullName(msg.sender) || t("userFallback"),
+          })}
         >
           <Avatar className="h-8 w-8">
             <AvatarFallback className="text-xs bg-primary/10 text-primary">
@@ -117,7 +121,7 @@ function MessageBubble({
             onClick={() => router.push(`/chat?userId=${msg.senderId}`)}
             className="text-xs text-muted-foreground px-1 hover:underline cursor-pointer text-left"
           >
-            {fullName(msg.sender) || "Unknown"}
+            {fullName(msg.sender) || t("unknown")}
           </button>
         )}
         <MessageActionsContext
@@ -160,7 +164,7 @@ function MessageBubble({
               />
             )}
             {isDeleted
-              ? "Повідомлення видалено"
+              ? t("messageDeleted")
               : (() => {
                   const [subject, ...rest] = msg.content.split("\n");
                   return rest.length > 0 ? (
@@ -177,10 +181,15 @@ function MessageBubble({
         <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
           {msg.editedAt && !isDeleted && (
             <span
-              title={`Редаговано о ${new Date(msg.editedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+              title={t("editedAtTitle", {
+                time: new Date(msg.editedAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              })}
               className="italic"
             >
-              (ред.)
+              {t("editedMark")}
             </span>
           )}
           {new Date(msg.createdAt).toLocaleTimeString([], {
@@ -224,6 +233,8 @@ function FileBubble({
   onImageClick,
   onImageLoaded,
 }: FileBubbleProps) {
+  const t = useTranslations("chat");
+  const tActions = useTranslations("common.actions");
   const isMine = doc.uploadedBy === currentUserId;
   const isDeletedDoc = !!doc.deletedAt;
   const isPhoto =
@@ -271,7 +282,7 @@ function FileBubble({
         )}
       >
         <span className="text-xs text-muted-foreground px-1">
-          {fullName(doc.uploader) || "Unknown"}
+          {fullName(doc.uploader) || t("unknown")}
         </span>
         <MessageActionsContext
           actions={docActions}
@@ -301,7 +312,7 @@ function FileBubble({
             )}
             {isDeletedDoc ? (
               <div className="rounded-2xl bg-muted/40 text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
-                Файл видалено
+                {t("fileDeleted")}
               </div>
             ) : isPhoto ? (
               <div
@@ -364,7 +375,7 @@ function FileBubble({
                     </span>
                   </div>
                   <button
-                    title="Download"
+                    title={tActions("download")}
                     onClick={(e) => {
                       e.stopPropagation();
                       downloadDoc(doc.id);

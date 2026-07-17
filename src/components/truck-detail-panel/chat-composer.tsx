@@ -11,6 +11,7 @@ import {
   Send,
 } from "lucide-react";
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -67,6 +68,8 @@ export function ChatComposer({
   notifyTyping: () => void;
   notifyStopTyping: () => void;
 }) {
+  const t = useTranslations("chat");
+  const tActions = useTranslations("common.actions");
   const onEmojiClick = (data: EmojiClickData) => {
     setText(text + data.emoji);
     setShowEmoji(false);
@@ -76,7 +79,7 @@ export function ChatComposer({
     <div className="shrink-0 border-t pt-3 relative">
       {!isActiveParticipant ? (
         <div className="px-3 py-3 text-center text-xs text-muted-foreground">
-          Ви більше не учасник цього чату — перегляд тільки для читання.
+          {t("readOnly")}
         </div>
       ) : (
         <>
@@ -97,7 +100,7 @@ export function ChatComposer({
               <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
                 <p className="text-[11px] font-semibold text-primary leading-tight flex items-center gap-1">
                   <Pencil className="h-3 w-3" />
-                  Редагування повідомлення
+                  {t("editingMessage")}
                 </p>
                 <p className="text-[11px] text-muted-foreground leading-tight truncate">
                   {editing.original}
@@ -109,7 +112,7 @@ export function ChatComposer({
                   setEditing(null);
                   setText("");
                 }}
-                title="Скасувати редагування"
+                title={t("cancelEditing")}
                 className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
               >
                 <X className="h-3.5 w-3.5" />
@@ -121,7 +124,9 @@ export function ChatComposer({
             <div className="mb-2 flex items-start gap-2">
               <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
                 <p className="text-[11px] font-semibold text-primary leading-tight">
-                  Reply to {replyingTo.senderName ?? "Unknown"}
+                  {t("replyTo", {
+                    name: replyingTo.senderName ?? t("unknown"),
+                  })}
                 </p>
                 <p
                   className={cn(
@@ -136,8 +141,8 @@ export function ChatComposer({
                   <span className="truncate">
                     {replyingTo.isDeleted
                       ? replyingTo.targetType === "doc"
-                        ? "Файл видалено"
-                        : "Повідомлення видалено"
+                        ? t("fileDeleted")
+                        : t("messageDeleted")
                       : replyingTo.content}
                   </span>
                 </p>
@@ -145,7 +150,7 @@ export function ChatComposer({
               <button
                 type="button"
                 onClick={() => setReplyingTo(null)}
-                title="Cancel reply"
+                title={t("cancelReply")}
                 className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
               >
                 <X className="h-3.5 w-3.5" />
@@ -165,7 +170,7 @@ export function ChatComposer({
                   <button
                     type="button"
                     onClick={() => removePendingFile(i)}
-                    title="Remove"
+                    title={t("removeFile")}
                     className="shrink-0 text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-3 w-3" />
@@ -180,7 +185,7 @@ export function ChatComposer({
               size="icon"
               variant="ghost"
               className="h-9 w-9 shrink-0"
-              title="Attach file"
+              title={t("attachFile")}
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
             >
@@ -203,7 +208,7 @@ export function ChatComposer({
               size="icon"
               variant="ghost"
               className="h-9 w-9 shrink-0"
-              title="Emoji"
+              title={t("emoji")}
               onClick={() => setShowEmoji((v) => !v)}
             >
               <Smile className="h-4 w-4 text-muted-foreground" />
@@ -211,7 +216,7 @@ export function ChatComposer({
 
             <Input
               placeholder={
-                editing ? "Редагуйте повідомлення…" : "Type a message..."
+                editing ? t("editPlaceholder") : t("messagePlaceholder")
               }
               value={text}
               onChange={(e) => {
@@ -237,7 +242,7 @@ export function ChatComposer({
               size="icon"
               onClick={handleSend}
               disabled={!text.trim() && pendingFiles.length === 0}
-              title={editing ? "Зберегти" : "Send"}
+              title={editing ? tActions("save") : t("send")}
               className="h-9 w-9 shrink-0"
             >
               {editing ? (

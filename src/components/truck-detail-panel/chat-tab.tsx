@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { useTripsByTruck } from "@/hooks/use-trips";
@@ -24,6 +25,8 @@ export function ChatTab({
   truckManagerId?: string | null;
   navOpen?: boolean;
 }) {
+  const t = useTranslations("chat");
+  const tTrips = useTranslations("truckPanel.trips");
   const user = useAuthStore((s) => s.user);
   const { data: trips, isLoading } = useTripsByTruck(truckId);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(
@@ -59,7 +62,7 @@ export function ChatTab({
           <span className="truncate flex-1 text-muted-foreground">
             {selectedTrip
               ? shortenTripTitle(selectedTrip.title)
-              : "Select trip..."}
+              : tTrips("selectTrip")}
           </span>
           {selectorOpen ? (
             <ChevronUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -113,7 +116,7 @@ export function ChatTab({
         />
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
-          <p className="text-sm">Select or create a trip to start chatting</p>
+          <p className="text-sm">{t("selectPrompt")}</p>
         </div>
       )}
     </div>

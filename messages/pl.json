@@ -43,7 +43,9 @@
       "save": "Zapisz",
       "view": "Podgląd",
       "download": "Pobierz",
-      "delete": "Usuń"
+      "delete": "Usuń",
+      "copy": "Kopiuj",
+      "remove": "Usuń"
     }
   },
   "auth": {
@@ -118,6 +120,35 @@
       "errorMissingToken": "W linku brakuje tokenu.",
       "errorInvalidOrExpired": "Link jest nieważny lub wygasł. Poproś o nowy."
     }
+  },
+  "chat": {
+    "selectPrompt": "Wybierz lub utwórz trasę, aby rozpocząć czat",
+    "readOnly": "Nie jesteś już uczestnikiem tego czatu — widok tylko do odczytu.",
+    "editingMessage": "Edycja wiadomości",
+    "cancelEditing": "Anuluj edycję",
+    "replyTo": "Odpowiedź do {name}",
+    "unknown": "Nieznany",
+    "someone": "Ktoś",
+    "fileDeleted": "Plik usunięty",
+    "messageDeleted": "Wiadomość usunięta",
+    "cancelReply": "Anuluj odpowiedź",
+    "removeFile": "Usuń",
+    "attachFile": "Załącz plik",
+    "emoji": "Emoji",
+    "messagePlaceholder": "Wpisz wiadomość…",
+    "editPlaceholder": "Edytuj wiadomość…",
+    "send": "Wyślij",
+    "messageUser": "Napisz do {name}",
+    "userFallback": "użytkownik",
+    "editedAtTitle": "Edytowano o {time}",
+    "editedMark": "(edyt.)",
+    "tripDocumentsTitle": "Dokumenty trasy",
+    "orderLabel": "Zamówienie #{number}",
+    "viewArchive": "Zobacz archiwum",
+    "emptyChat": "Brak wiadomości. Rozpocznij rozmowę.",
+    "previousChats": "{count, plural, one {# poprzedni czat} few {# poprzednie czaty} many {# poprzednich czatów} other {# poprzednich czatu}} na tej trasie",
+    "newMessages": "{count, plural, one {# nowa} few {# nowe} many {# nowych} other {# nowych}}",
+    "typing": "{count, plural, one {pisze} other {piszą}}"
   },
   "trucks": {
     "title": "Ciężarówki",

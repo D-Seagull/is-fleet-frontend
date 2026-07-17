@@ -43,7 +43,9 @@
       "save": "Speichern",
       "view": "Ansehen",
       "download": "Herunterladen",
-      "delete": "Löschen"
+      "delete": "Löschen",
+      "copy": "Kopieren",
+      "remove": "Entfernen"
     }
   },
   "auth": {
@@ -118,6 +120,35 @@
       "errorMissingToken": "Im Link fehlt das Token.",
       "errorInvalidOrExpired": "Link ungültig oder abgelaufen. Fordern Sie einen neuen an."
     }
+  },
+  "chat": {
+    "selectPrompt": "Wählen oder erstellen Sie eine Fahrt, um zu chatten",
+    "readOnly": "Sie sind kein Teilnehmer dieses Chats mehr — schreibgeschützte Ansicht.",
+    "editingMessage": "Nachricht bearbeiten",
+    "cancelEditing": "Bearbeitung abbrechen",
+    "replyTo": "Antwort an {name}",
+    "unknown": "Unbekannt",
+    "someone": "Jemand",
+    "fileDeleted": "Datei gelöscht",
+    "messageDeleted": "Nachricht gelöscht",
+    "cancelReply": "Antwort abbrechen",
+    "removeFile": "Entfernen",
+    "attachFile": "Datei anhängen",
+    "emoji": "Emoji",
+    "messagePlaceholder": "Nachricht eingeben…",
+    "editPlaceholder": "Nachricht bearbeiten…",
+    "send": "Senden",
+    "messageUser": "{name} schreiben",
+    "userFallback": "Benutzer",
+    "editedAtTitle": "Bearbeitet um {time}",
+    "editedMark": "(bearb.)",
+    "tripDocumentsTitle": "Fahrtdokumente",
+    "orderLabel": "Bestellung #{number}",
+    "viewArchive": "Archiv ansehen",
+    "emptyChat": "Noch keine Nachrichten. Beginnen Sie das Gespräch.",
+    "previousChats": "{count, plural, one {# vorheriger Chat} other {# vorherige Chats}} auf dieser Fahrt",
+    "newMessages": "{count} neu",
+    "typing": "{count, plural, one {schreibt} other {schreiben}}"
   },
   "trucks": {
     "title": "LKW",

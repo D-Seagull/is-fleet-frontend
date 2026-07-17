@@ -43,7 +43,9 @@
       "save": "Зберегти",
       "view": "Переглянути",
       "download": "Скачати",
-      "delete": "Видалити"
+      "delete": "Видалити",
+      "copy": "Копіювати",
+      "remove": "Прибрати"
     }
   },
   "auth": {
@@ -118,6 +120,35 @@
       "errorMissingToken": "У посиланні відсутній токен.",
       "errorInvalidOrExpired": "Посилання недійсне або прострочене. Запросіть нове."
     }
+  },
+  "chat": {
+    "selectPrompt": "Оберіть або створіть рейс, щоб почати спілкування",
+    "readOnly": "Ви більше не учасник цього чату — перегляд тільки для читання.",
+    "editingMessage": "Редагування повідомлення",
+    "cancelEditing": "Скасувати редагування",
+    "replyTo": "Відповідь для {name}",
+    "unknown": "Невідомо",
+    "someone": "Хтось",
+    "fileDeleted": "Файл видалено",
+    "messageDeleted": "Повідомлення видалено",
+    "cancelReply": "Скасувати відповідь",
+    "removeFile": "Прибрати",
+    "attachFile": "Прикріпити файл",
+    "emoji": "Емодзі",
+    "messagePlaceholder": "Введіть повідомлення…",
+    "editPlaceholder": "Редагуйте повідомлення…",
+    "send": "Надіслати",
+    "messageUser": "Написати {name}",
+    "userFallback": "користувач",
+    "editedAtTitle": "Редаговано о {time}",
+    "editedMark": "(ред.)",
+    "tripDocumentsTitle": "Документи рейсу",
+    "orderLabel": "Замовлення #{number}",
+    "viewArchive": "Переглянути архів",
+    "emptyChat": "Ще немає повідомлень. Почніть розмову.",
+    "previousChats": "{count, plural, one {# попередній чат} few {# попередні чати} many {# попередніх чатів} other {# попередніх чату}} у цьому рейсі",
+    "newMessages": "{count, plural, one {# нове} few {# нові} many {# нових} other {# нових}}",
+    "typing": "{count, plural, one {набирає} other {набирають}}"
   },
   "trucks": {
     "title": "Вантажівки",
