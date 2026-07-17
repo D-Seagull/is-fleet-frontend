@@ -148,7 +148,22 @@
     "emptyChat": "No messages yet. Start the conversation.",
     "previousChats": "{count, plural, one {# previous chat} other {# previous chats}} on this trip",
     "newMessages": "{count} new",
-    "typing": "{count, plural, one {is typing} other {are typing}}"
+    "typing": "{count, plural, one {is typing} other {are typing}}",
+    "archive": {
+      "title": "Chat archive",
+      "titleSession": "Archived chat",
+      "description": "Previous chat sessions for this trip. Read-only.",
+      "noSessions": "No archived sessions for this trip.",
+      "noMessages": "No messages in this session.",
+      "unknownDriver": "Unknown driver",
+      "unknownManager": "Unknown manager",
+      "reason": {
+        "DRIVER_CHANGED": "Driver changed",
+        "MANAGER_CHANGED": "Manager changed",
+        "TRIP_COMPLETED": "Trip completed",
+        "LEGACY_RESET": "Chat reset (legacy)"
+      }
+    }
   },
   "trucks": {
     "title": "Trucks",

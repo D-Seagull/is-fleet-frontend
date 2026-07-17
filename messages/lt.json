@@ -148,7 +148,22 @@
     "emptyChat": "Kol kas nėra žinučių. Pradėkite pokalbį.",
     "previousChats": "{count, plural, one {# ankstesnis pokalbis} few {# ankstesni pokalbiai} many {# ankstesnių pokalbių} other {# ankstesnio pokalbio}} šiame reise",
     "newMessages": "{count, plural, one {# nauja} few {# naujos} many {# naujų} other {# naujos}}",
-    "typing": "{count, plural, one {rašo} other {rašo}}"
+    "typing": "{count, plural, one {rašo} other {rašo}}",
+    "archive": {
+      "title": "Pokalbių archyvas",
+      "titleSession": "Archyvuotas pokalbis",
+      "description": "Ankstesnės šio reiso pokalbių sesijos. Tik skaitymui.",
+      "noSessions": "Šiam reisui nėra archyvuotų sesijų.",
+      "noMessages": "Šioje sesijoje nėra žinučių.",
+      "unknownDriver": "Nežinomas vairuotojas",
+      "unknownManager": "Nežinomas vadybininkas",
+      "reason": {
+        "DRIVER_CHANGED": "Pakeistas vairuotojas",
+        "MANAGER_CHANGED": "Pakeistas vadybininkas",
+        "TRIP_COMPLETED": "Reisas baigtas",
+        "LEGACY_RESET": "Pokalbio atstatymas (senas)"
+      }
+    }
   },
   "trucks": {
     "title": "Sunkvežimiai",

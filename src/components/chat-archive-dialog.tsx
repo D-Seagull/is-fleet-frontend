@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowLeft, History } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
   Dialog,
@@ -15,17 +16,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   type ChatArchiveSession,
-  type SessionEndReason,
   useArchivedSessionMessages,
   useTripChatArchive,
 } from "@/hooks/use-trips";
-
-const REASON_LABEL: Record<SessionEndReason, string> = {
-  DRIVER_CHANGED: "Driver changed",
-  MANAGER_CHANGED: "Manager changed",
-  TRIP_COMPLETED: "Trip completed",
-  LEGACY_RESET: "Chat reset (legacy)",
-};
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString();
@@ -42,6 +35,7 @@ export function ChatArchiveDialog({
   tripId: string;
   currentUserId: string;
 }) {
+  const t = useTranslations("chat.archive");
   const [selected, setSelected] = useState<ChatArchiveSession | null>(null);
   const { data: sessions = [], isLoading } = useTripChatArchive(tripId);
 
@@ -67,12 +61,12 @@ export function ChatArchiveDialog({
             ) : (
               <History className="h-4 w-4" />
             )}
-            {selected ? "Archived chat" : "Chat archive"}
+            {selected ? t("titleSession") : t("title")}
           </DialogTitle>
           <DialogDescription>
             {selected
-              ? `${fullName(selected.driver) || "Unknown driver"} ↔ ${fullName(selected.manager) || "Unknown manager"} · ${fmtDate(selected.startedAt)} – ${selected.endedAt ? fmtDate(selected.endedAt) : "?"}`
-              : "Previous chat sessions for this trip. Read-only."}
+              ? `${fullName(selected.driver) || t("unknownDriver")} ↔ ${fullName(selected.manager) || t("unknownManager")} · ${fmtDate(selected.startedAt)} – ${selected.endedAt ? fmtDate(selected.endedAt) : "?"}`
+              : t("description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -89,7 +83,7 @@ export function ChatArchiveDialog({
           </div>
         ) : sessions.length === 0 ? (
           <p className="text-muted-foreground text-sm py-8 text-center">
-            No archived sessions for this trip.
+            {t("noSessions")}
           </p>
         ) : (
           <ScrollArea className="max-h-[60vh] pr-3">
@@ -108,7 +102,7 @@ export function ChatArchiveDialog({
                       </div>
                       {s.endReason && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                          {REASON_LABEL[s.endReason]}
+                          {t(`reason.${s.endReason}`)}
                         </span>
                       )}
                     </div>
@@ -136,6 +130,7 @@ function ArchivedMessages({
   sessionId: string;
   currentUserId: string;
 }) {
+  const t = useTranslations("chat.archive");
   const { data: messages = [], isLoading } = useArchivedSessionMessages(
     tripId,
     sessionId,
@@ -154,7 +149,7 @@ function ArchivedMessages({
   if (messages.length === 0) {
     return (
       <p className="text-muted-foreground text-sm py-8 text-center">
-        No messages in this session.
+        {t("noMessages")}
       </p>
     );
   }

@@ -148,7 +148,22 @@
     "emptyChat": "Ще немає повідомлень. Почніть розмову.",
     "previousChats": "{count, plural, one {# попередній чат} few {# попередні чати} many {# попередніх чатів} other {# попередніх чату}} у цьому рейсі",
     "newMessages": "{count, plural, one {# нове} few {# нові} many {# нових} other {# нових}}",
-    "typing": "{count, plural, one {набирає} other {набирають}}"
+    "typing": "{count, plural, one {набирає} other {набирають}}",
+    "archive": {
+      "title": "Архів чату",
+      "titleSession": "Архівний чат",
+      "description": "Попередні сесії чату цього рейсу. Тільки для читання.",
+      "noSessions": "Немає архівних сесій для цього рейсу.",
+      "noMessages": "У цій сесії немає повідомлень.",
+      "unknownDriver": "Невідомий водій",
+      "unknownManager": "Невідомий менеджер",
+      "reason": {
+        "DRIVER_CHANGED": "Змінено водія",
+        "MANAGER_CHANGED": "Змінено менеджера",
+        "TRIP_COMPLETED": "Рейс завершено",
+        "LEGACY_RESET": "Скидання чату (застаріле)"
+      }
+    }
   },
   "trucks": {
     "title": "Вантажівки",

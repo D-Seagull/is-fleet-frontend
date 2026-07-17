@@ -148,7 +148,22 @@
     "emptyChat": "Brak wiadomości. Rozpocznij rozmowę.",
     "previousChats": "{count, plural, one {# poprzedni czat} few {# poprzednie czaty} many {# poprzednich czatów} other {# poprzednich czatu}} na tej trasie",
     "newMessages": "{count, plural, one {# nowa} few {# nowe} many {# nowych} other {# nowych}}",
-    "typing": "{count, plural, one {pisze} other {piszą}}"
+    "typing": "{count, plural, one {pisze} other {piszą}}",
+    "archive": {
+      "title": "Archiwum czatu",
+      "titleSession": "Zarchiwizowany czat",
+      "description": "Poprzednie sesje czatu dla tej trasy. Tylko do odczytu.",
+      "noSessions": "Brak zarchiwizowanych sesji dla tej trasy.",
+      "noMessages": "Brak wiadomości w tej sesji.",
+      "unknownDriver": "Nieznany kierowca",
+      "unknownManager": "Nieznany menedżer",
+      "reason": {
+        "DRIVER_CHANGED": "Zmieniono kierowcę",
+        "MANAGER_CHANGED": "Zmieniono menedżera",
+        "TRIP_COMPLETED": "Trasa zakończona",
+        "LEGACY_RESET": "Reset czatu (starsza wersja)"
+      }
+    }
   },
   "trucks": {
     "title": "Ciężarówki",

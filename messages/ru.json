@@ -148,7 +148,22 @@
     "emptyChat": "Пока нет сообщений. Начните разговор.",
     "previousChats": "{count, plural, one {# предыдущий чат} few {# предыдущих чата} many {# предыдущих чатов} other {# предыдущих чата}} в этом рейсе",
     "newMessages": "{count, plural, one {# новое} few {# новых} many {# новых} other {# новых}}",
-    "typing": "{count, plural, one {печатает} other {печатают}}"
+    "typing": "{count, plural, one {печатает} other {печатают}}",
+    "archive": {
+      "title": "Архив чата",
+      "titleSession": "Архивный чат",
+      "description": "Предыдущие сессии чата этого рейса. Только для чтения.",
+      "noSessions": "Нет архивных сессий для этого рейса.",
+      "noMessages": "В этой сессии нет сообщений.",
+      "unknownDriver": "Неизвестный водитель",
+      "unknownManager": "Неизвестный менеджер",
+      "reason": {
+        "DRIVER_CHANGED": "Изменён водитель",
+        "MANAGER_CHANGED": "Изменён менеджер",
+        "TRIP_COMPLETED": "Рейс завершён",
+        "LEGACY_RESET": "Сброс чата (устаревший)"
+      }
+    }
   },
   "trucks": {
     "title": "Грузовики",

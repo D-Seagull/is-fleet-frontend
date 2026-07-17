@@ -148,7 +148,22 @@
     "emptyChat": "Noch keine Nachrichten. Beginnen Sie das Gespräch.",
     "previousChats": "{count, plural, one {# vorheriger Chat} other {# vorherige Chats}} auf dieser Fahrt",
     "newMessages": "{count} neu",
-    "typing": "{count, plural, one {schreibt} other {schreiben}}"
+    "typing": "{count, plural, one {schreibt} other {schreiben}}",
+    "archive": {
+      "title": "Chat-Archiv",
+      "titleSession": "Archivierter Chat",
+      "description": "Frühere Chat-Sitzungen für diese Fahrt. Schreibgeschützt.",
+      "noSessions": "Keine archivierten Sitzungen für diese Fahrt.",
+      "noMessages": "Keine Nachrichten in dieser Sitzung.",
+      "unknownDriver": "Unbekannter Fahrer",
+      "unknownManager": "Unbekannter Manager",
+      "reason": {
+        "DRIVER_CHANGED": "Fahrer geändert",
+        "MANAGER_CHANGED": "Manager geändert",
+        "TRIP_COMPLETED": "Fahrt abgeschlossen",
+        "LEGACY_RESET": "Chat zurückgesetzt (Legacy)"
+      }
+    }
   },
   "trucks": {
     "title": "LKW",
