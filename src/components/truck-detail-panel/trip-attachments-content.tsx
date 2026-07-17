@@ -9,6 +9,7 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
@@ -30,6 +31,8 @@ export function TripAttachmentsContent({
   canDelete?: boolean;
   canUpload?: boolean;
 }) {
+  const t = useTranslations("truckPanel.documents");
+  const tActions = useTranslations("common.actions");
   const { data: docs = [], isLoading } = useDocumentsByTrip(tripId);
   const deleteDoc = useDeleteDocument(truckId);
   const upload = useUploadDocuments(truckId);
@@ -85,14 +88,14 @@ export function TripAttachmentsContent({
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             onClick={() => openDoc(doc.id)}
-            title="View"
+            title={tActions("view")}
             className="p-1 rounded hover:bg-muted"
           >
             <Eye className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
           <button
             onClick={() => downloadDoc(doc.id)}
-            title="Download"
+            title={tActions("download")}
             className="p-1 rounded hover:bg-muted"
           >
             <Download className="h-3.5 w-3.5 text-muted-foreground" />
@@ -100,7 +103,7 @@ export function TripAttachmentsContent({
           {canDelete && (
             <button
               onClick={() => deleteDoc.mutate(doc.id)}
-              title="Delete"
+              title={tActions("delete")}
               className="p-1 rounded hover:bg-muted"
             >
               <Trash2 className="h-3.5 w-3.5 text-red-500" />
@@ -126,7 +129,7 @@ export function TripAttachmentsContent({
             ) : (
               <Plus className="h-3 w-3" />
             )}
-            Upload
+            {t("upload")}
           </Button>
           <input
             ref={fileInputRef}
@@ -140,19 +143,19 @@ export function TripAttachmentsContent({
       )}
       {docs.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-6">
-          No attachments yet.
+          {t("noAttachments")}.
         </p>
       ) : (
         <Tabs defaultValue="ALL">
           <TabsList className="grid grid-cols-3 mb-2">
             <TabsTrigger value="ALL" className="text-xs">
-              All ({docs.length})
+              {t("tabAll", { count: docs.length })}
             </TabsTrigger>
             <TabsTrigger value="PHOTO" className="text-xs">
-              Photos ({photos.length})
+              {t("tabPhotos", { count: photos.length })}
             </TabsTrigger>
             <TabsTrigger value="DOCUMENT" className="text-xs">
-              Documents ({documents.length})
+              {t("tabDocuments", { count: documents.length })}
             </TabsTrigger>
           </TabsList>
           <TabsContent value="ALL" className="flex flex-col gap-1.5 mt-0">
@@ -161,7 +164,7 @@ export function TripAttachmentsContent({
           <TabsContent value="PHOTO" className="flex flex-col gap-1.5 mt-0">
             {photos.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-6">
-                No photos.
+                {t("noPhotos")}
               </p>
             ) : (
               photos.map(renderRow)
@@ -170,7 +173,7 @@ export function TripAttachmentsContent({
           <TabsContent value="DOCUMENT" className="flex flex-col gap-1.5 mt-0">
             {documents.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-6">
-                No documents.
+                {t("noDocuments")}
               </p>
             ) : (
               documents.map(renderRow)

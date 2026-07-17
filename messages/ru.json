@@ -40,7 +40,10 @@
     },
     "actions": {
       "cancel": "Отмена",
-      "save": "Сохранить"
+      "save": "Сохранить",
+      "view": "Просмотр",
+      "download": "Скачать",
+      "delete": "Удалить"
     }
   },
   "auth": {
@@ -363,6 +366,22 @@
       "coordsPlaceholder": "Координаты",
       "copyCoords": "Скопировать координаты",
       "openInMaps": "Открыть в Google Maps"
+    },
+    "documents": {
+      "allTrips": "Все рейсы ({count})",
+      "tripPlaceholder": "Рейс…",
+      "noAttachments": "Пока нет вложений",
+      "colFile": "Файл",
+      "colDate": "Дата",
+      "colOrder": "№ заказа",
+      "colDriver": "Водитель",
+      "colActions": "Действия",
+      "upload": "Загрузить",
+      "tabAll": "Все ({count})",
+      "tabPhotos": "Фото ({count})",
+      "tabDocuments": "Документы ({count})",
+      "noPhotos": "Нет фото.",
+      "noDocuments": "Нет документов."
     }
   },
   "account": {

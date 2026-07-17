@@ -40,7 +40,10 @@
     },
     "actions": {
       "cancel": "Abbrechen",
-      "save": "Speichern"
+      "save": "Speichern",
+      "view": "Ansehen",
+      "download": "Herunterladen",
+      "delete": "Löschen"
     }
   },
   "auth": {
@@ -363,6 +366,22 @@
       "coordsPlaceholder": "Koordinaten",
       "copyCoords": "Koordinaten kopieren",
       "openInMaps": "In Google Maps öffnen"
+    },
+    "documents": {
+      "allTrips": "Alle Fahrten ({count})",
+      "tripPlaceholder": "Fahrt…",
+      "noAttachments": "Noch keine Anhänge",
+      "colFile": "Datei",
+      "colDate": "Datum",
+      "colOrder": "Bestell-Nr.",
+      "colDriver": "Fahrer",
+      "colActions": "Aktionen",
+      "upload": "Hochladen",
+      "tabAll": "Alle ({count})",
+      "tabPhotos": "Fotos ({count})",
+      "tabDocuments": "Dokumente ({count})",
+      "noPhotos": "Keine Fotos.",
+      "noDocuments": "Keine Dokumente."
     }
   },
   "account": {

@@ -40,7 +40,10 @@
     },
     "actions": {
       "cancel": "Скасувати",
-      "save": "Зберегти"
+      "save": "Зберегти",
+      "view": "Переглянути",
+      "download": "Скачати",
+      "delete": "Видалити"
     }
   },
   "auth": {
@@ -363,6 +366,22 @@
       "coordsPlaceholder": "Координати",
       "copyCoords": "Копіювати координати",
       "openInMaps": "Відкрити в Google Maps"
+    },
+    "documents": {
+      "allTrips": "Усі рейси ({count})",
+      "tripPlaceholder": "Рейс…",
+      "noAttachments": "Ще немає вкладень",
+      "colFile": "Файл",
+      "colDate": "Дата",
+      "colOrder": "№ замовлення",
+      "colDriver": "Водій",
+      "colActions": "Дії",
+      "upload": "Завантажити",
+      "tabAll": "Усі ({count})",
+      "tabPhotos": "Фото ({count})",
+      "tabDocuments": "Документи ({count})",
+      "noPhotos": "Немає фото.",
+      "noDocuments": "Немає документів."
     }
   },
   "account": {

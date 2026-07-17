@@ -40,7 +40,10 @@
     },
     "actions": {
       "cancel": "Atšaukti",
-      "save": "Išsaugoti"
+      "save": "Išsaugoti",
+      "view": "Peržiūrėti",
+      "download": "Atsisiųsti",
+      "delete": "Ištrinti"
     }
   },
   "auth": {
@@ -363,6 +366,22 @@
       "coordsPlaceholder": "Koordinatės",
       "copyCoords": "Kopijuoti koordinates",
       "openInMaps": "Atidaryti Google Maps"
+    },
+    "documents": {
+      "allTrips": "Visi reisai ({count})",
+      "tripPlaceholder": "Reisas…",
+      "noAttachments": "Kol kas nėra priedų",
+      "colFile": "Failas",
+      "colDate": "Data",
+      "colOrder": "Užsakymo nr.",
+      "colDriver": "Vairuotojas",
+      "colActions": "Veiksmai",
+      "upload": "Įkelti",
+      "tabAll": "Visi ({count})",
+      "tabPhotos": "Nuotraukos ({count})",
+      "tabDocuments": "Dokumentai ({count})",
+      "noPhotos": "Nuotraukų nėra.",
+      "noDocuments": "Dokumentų nėra."
     }
   },
   "account": {

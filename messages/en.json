@@ -40,7 +40,10 @@
     },
     "actions": {
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "view": "View",
+      "download": "Download",
+      "delete": "Delete"
     }
   },
   "auth": {
@@ -363,6 +366,22 @@
       "coordsPlaceholder": "Coordinates",
       "copyCoords": "Copy coordinates",
       "openInMaps": "Open in Google Maps"
+    },
+    "documents": {
+      "allTrips": "All trips ({count})",
+      "tripPlaceholder": "Trip…",
+      "noAttachments": "No attachments yet",
+      "colFile": "File",
+      "colDate": "Date",
+      "colOrder": "Order #",
+      "colDriver": "Driver",
+      "colActions": "Actions",
+      "upload": "Upload",
+      "tabAll": "All ({count})",
+      "tabPhotos": "Photos ({count})",
+      "tabDocuments": "Documents ({count})",
+      "noPhotos": "No photos.",
+      "noDocuments": "No documents."
     }
   },
   "account": {

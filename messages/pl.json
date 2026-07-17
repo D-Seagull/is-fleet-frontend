@@ -40,7 +40,10 @@
     },
     "actions": {
       "cancel": "Anuluj",
-      "save": "Zapisz"
+      "save": "Zapisz",
+      "view": "Podgląd",
+      "download": "Pobierz",
+      "delete": "Usuń"
     }
   },
   "auth": {
@@ -363,6 +366,22 @@
       "coordsPlaceholder": "Współrzędne",
       "copyCoords": "Kopiuj współrzędne",
       "openInMaps": "Otwórz w Mapach Google"
+    },
+    "documents": {
+      "allTrips": "Wszystkie trasy ({count})",
+      "tripPlaceholder": "Trasa…",
+      "noAttachments": "Brak załączników",
+      "colFile": "Plik",
+      "colDate": "Data",
+      "colOrder": "Nr zamówienia",
+      "colDriver": "Kierowca",
+      "colActions": "Akcje",
+      "upload": "Prześlij",
+      "tabAll": "Wszystkie ({count})",
+      "tabPhotos": "Zdjęcia ({count})",
+      "tabDocuments": "Dokumenty ({count})",
+      "noPhotos": "Brak zdjęć.",
+      "noDocuments": "Brak dokumentów."
     }
   },
   "account": {
