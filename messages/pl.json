@@ -265,6 +265,23 @@
       "noRatings": "Brak ocen. Kierowcy oceniają menedżera z aplikacji mobilnej."
     }
   },
+  "myTrucks": {
+    "title": "Moje ciężarówki",
+    "empty": "Nie przypisano Ci jeszcze żadnych ciężarówek.",
+    "selectPrompt": "Wybierz ciężarówkę, aby rozpocząć pracę",
+    "broadcast": {
+      "triggerTitle": "Wyślij do wszystkich moich ciężarówek",
+      "dialogTitle": "Wyślij do wszystkich ciężarówek",
+      "subtitle": "Wysyłane do wszystkich aktywnych tras Twoich ciężarówek.",
+      "subjectPlaceholder": "Temat (opcjonalnie)",
+      "messagePlaceholder": "Wiadomość…",
+      "templates": "Szablony",
+      "noTemplates": "Brak szablonów.",
+      "saveTemplate": "+ Zapisz jako szablon",
+      "sendButton": "Wyślij do wszystkich",
+      "defaultTemplateName": "Szablon"
+    }
+  },
   "account": {
     "title": "Ustawienia konta",
     "profile": {

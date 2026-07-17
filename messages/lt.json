@@ -265,6 +265,23 @@
       "noRatings": "Kol kas nėra įvertinimų. Vairuotojai vertina vadybininką iš mobiliosios programėlės."
     }
   },
+  "myTrucks": {
+    "title": "Mano sunkvežimiai",
+    "empty": "Jums dar nepriskirta sunkvežimių.",
+    "selectPrompt": "Pasirinkite sunkvežimį, kad pradėtumėte darbą",
+    "broadcast": {
+      "triggerTitle": "Siųsti visiems mano sunkvežimiams",
+      "dialogTitle": "Siųsti visiems sunkvežimiams",
+      "subtitle": "Siunčiama į visus aktyvius jūsų sunkvežimių reisus.",
+      "subjectPlaceholder": "Tema (neprivaloma)",
+      "messagePlaceholder": "Žinutė…",
+      "templates": "Šablonai",
+      "noTemplates": "Kol kas nėra šablonų.",
+      "saveTemplate": "+ Išsaugoti kaip šabloną",
+      "sendButton": "Siųsti visiems",
+      "defaultTemplateName": "Šablonas"
+    }
+  },
   "account": {
     "title": "Paskyros nustatymai",
     "profile": {

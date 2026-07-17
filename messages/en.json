@@ -265,6 +265,23 @@
       "noRatings": "No ratings yet. Drivers rate their manager from the mobile app."
     }
   },
+  "myTrucks": {
+    "title": "My Trucks",
+    "empty": "No trucks assigned to you yet.",
+    "selectPrompt": "Select a truck to start working",
+    "broadcast": {
+      "triggerTitle": "Broadcast to all my trucks",
+      "dialogTitle": "Broadcast to all trucks",
+      "subtitle": "Sent to all active trips of your trucks.",
+      "subjectPlaceholder": "Subject (optional)",
+      "messagePlaceholder": "Message...",
+      "templates": "Templates",
+      "noTemplates": "No templates yet.",
+      "saveTemplate": "+ Save current as template",
+      "sendButton": "Send to all",
+      "defaultTemplateName": "Template"
+    }
+  },
   "account": {
     "title": "Account Settings",
     "profile": {

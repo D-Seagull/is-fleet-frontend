@@ -265,6 +265,23 @@
       "noRatings": "Noch keine Bewertungen. Fahrer bewerten ihren Manager über die mobile App."
     }
   },
+  "myTrucks": {
+    "title": "Meine LKW",
+    "empty": "Ihnen sind noch keine LKW zugewiesen.",
+    "selectPrompt": "Wählen Sie einen LKW, um zu beginnen",
+    "broadcast": {
+      "triggerTitle": "An alle meine LKW senden",
+      "dialogTitle": "An alle LKW senden",
+      "subtitle": "Wird an alle aktiven Fahrten Ihrer LKW gesendet.",
+      "subjectPlaceholder": "Betreff (optional)",
+      "messagePlaceholder": "Nachricht…",
+      "templates": "Vorlagen",
+      "noTemplates": "Noch keine Vorlagen.",
+      "saveTemplate": "+ Als Vorlage speichern",
+      "sendButton": "An alle senden",
+      "defaultTemplateName": "Vorlage"
+    }
+  },
   "account": {
     "title": "Kontoeinstellungen",
     "profile": {

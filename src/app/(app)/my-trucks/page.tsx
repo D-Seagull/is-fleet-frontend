@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2, Truck, ChevronRight, Megaphone, BookTemplate, Trash2, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMyTrucks, type Truck as TruckType } from "@/hooks/use-trucks";
-import { TruckDetailPanel, TRUCK_STATUS_COLORS, TRUCK_STATUS_LABELS } from "@/components/truck-detail-panel";
+import { TruckDetailPanel, TRUCK_STATUS_COLORS } from "@/components/truck-detail-panel";
 import { useBroadcastToMyTrucks } from "@/hooks/use-trips";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUnreadSummary, type UnreadSummaryItem } from "@/hooks/use-unread";
@@ -44,6 +45,7 @@ function TruckListItem({
   unread?: UnreadSummaryItem;
   onClick: () => void;
 }) {
+  const tStatus = useTranslations("common.truckStatus");
   const lastNote = truck.truckNotes?.[0];
   const hasUnread = (unread?.totalUnread ?? 0) > 0;
 
@@ -70,7 +72,7 @@ function TruckListItem({
             </span>
           )}
           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-5 shrink-0", TRUCK_STATUS_COLORS[truck.status])}>
-            {TRUCK_STATUS_LABELS[truck.status]}
+            {tStatus(truck.status)}
           </Badge>
         </div>
         {truck.currentDriver && (
@@ -130,6 +132,7 @@ function useBroadcastTemplates() {
 // ─── Broadcast Dialog ─────────────────────────────────────────────────────────
 
 function BroadcastDialog() {
+  const t = useTranslations("myTrucks.broadcast");
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
@@ -152,18 +155,18 @@ function BroadcastDialog() {
 
   async function handleSaveTemplate() {
     if (!text.trim()) return;
-    await tpl.save(title.trim() || "Template", text.trim());
+    await tpl.save(title.trim() || t("defaultTemplateName"), text.trim());
   }
 
-  function applyTemplate(t: BroadcastTemplate) {
-    setTitle(t.title);
-    setText(t.content);
+  function applyTemplate(tplItem: BroadcastTemplate) {
+    setTitle(tplItem.title);
+    setText(tplItem.content);
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-7 w-7" title="Broadcast to all my trucks">
+        <Button variant="ghost" size="icon" className="h-7 w-7" title={t("triggerTitle")}>
           <Megaphone className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -171,23 +174,23 @@ function BroadcastDialog() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Megaphone className="h-4 w-4" />
-            Broadcast to all trucks
+            {t("dialogTitle")}
           </DialogTitle>
         </DialogHeader>
 
         <p className="text-xs text-muted-foreground -mt-1">
-          Sent to all active trips of your trucks.
+          {t("subtitle")}
         </p>
 
         <div className="flex flex-col gap-3">
           <Input
-            placeholder="Subject (optional)"
+            placeholder={t("subjectPlaceholder")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="text-sm"
           />
           <Textarea
-            placeholder="Message..."
+            placeholder={t("messagePlaceholder")}
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={5}
@@ -202,7 +205,7 @@ function BroadcastDialog() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5">
                   <BookTemplate className="h-3.5 w-3.5" />
-                  Templates
+                  {t("templates")}
                   <ChevronDown className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
@@ -212,18 +215,18 @@ function BroadcastDialog() {
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 ) : tpl.templates.length === 0 ? (
-                  <p className="px-3 py-2 text-xs text-muted-foreground">No templates yet.</p>
+                  <p className="px-3 py-2 text-xs text-muted-foreground">{t("noTemplates")}</p>
                 ) : (
-                  tpl.templates.map((t) => (
+                  tpl.templates.map((item) => (
                     <DropdownMenuItem
-                      key={t.id}
+                      key={item.id}
                       className="flex items-center justify-between gap-2 cursor-pointer"
-                      onSelect={(e) => { e.preventDefault(); applyTemplate(t); }}
+                      onSelect={(e) => { e.preventDefault(); applyTemplate(item); }}
                     >
-                      <span className="truncate text-sm">{t.title}</span>
+                      <span className="truncate text-sm">{item.title}</span>
                       <button
                         className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-                        onClick={(e) => { e.stopPropagation(); tpl.remove(t.id); }}
+                        onClick={(e) => { e.stopPropagation(); tpl.remove(item.id); }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -236,7 +239,7 @@ function BroadcastDialog() {
                   onSelect={(e) => { e.preventDefault(); handleSaveTemplate(); }}
                   disabled={!text.trim()}
                 >
-                  + Save current as template
+                  {t("saveTemplate")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -251,7 +254,7 @@ function BroadcastDialog() {
               ) : (
                 <Megaphone className="mr-2 h-4 w-4" />
               )}
-              Send to all
+              {t("sendButton")}
             </Button>
           </div>
         </div>
@@ -263,6 +266,7 @@ function BroadcastDialog() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MyTrucksPage() {
+  const t = useTranslations("myTrucks");
   const router = useRouter();
   const { setOpen, isMobile } = useSidebar();
   const { data: trucks, isLoading } = useMyTrucks();
@@ -302,7 +306,7 @@ export default function MyTrucksPage() {
         </div>
       ) : !trucks || trucks.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center px-3 py-10">
-          No trucks assigned to you yet.
+          {t("empty")}
         </p>
       ) : (
         trucks.map((truck) => (
@@ -326,7 +330,7 @@ export default function MyTrucksPage() {
         <div className="px-4 py-3 border-b shrink-0 flex items-center justify-between">
           <h1 className="font-semibold flex items-center gap-2">
             <Truck className="h-4 w-4" />
-            My Trucks
+            {t("title")}
           </h1>
           <BroadcastDialog />
         </div>
@@ -342,7 +346,7 @@ export default function MyTrucksPage() {
         <div className="px-3 py-3 border-b shrink-0 flex items-center justify-between">
           <h2 className="font-semibold text-sm flex items-center gap-2">
             <Truck className="h-4 w-4" />
-            My Trucks
+            {t("title")}
           </h2>
           <BroadcastDialog />
         </div>
@@ -354,7 +358,7 @@ export default function MyTrucksPage() {
           <TruckDetailPanel key={selectedId} truckId={selectedId} />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
-            Select a truck to start working
+            {t("selectPrompt")}
           </div>
         )}
       </div>
