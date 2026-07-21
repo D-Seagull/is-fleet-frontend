@@ -46,6 +46,45 @@
       "delete": "Удалить",
       "copy": "Копировать",
       "remove": "Убрать"
+    },
+    "status": {
+      "ONLINE": "Онлайн",
+      "BUSY": "Не беспокоить",
+      "AWAY": "Не на месте",
+      "SLEEP": "Сплю",
+      "VACATION": "Отдыхаю",
+      "OFFLINE": "Не в приложении"
+    }
+  },
+  "nav": {
+    "trucks": "Грузовики",
+    "trips": "Рейсы",
+    "drivers": "Водители",
+    "managers": "Менеджеры",
+    "chat": "Чат",
+    "settings": "Настройки",
+    "myTrucks": "Мои грузовики"
+  },
+  "sidebar": {
+    "navigation": "Навигация",
+    "searchPlaceholder": "Поиск…",
+    "nothingFound": "Ничего не найдено",
+    "accountSettings": "Настройки аккаунта",
+    "logout": "Выйти",
+    "statusLabel": "Статус",
+    "statusDuration": "На сколько?",
+    "durationUnlimited": "Без ограничения",
+    "sleepPresets": {
+      "sleep1h": "1 час",
+      "sleep4h": "4 часа",
+      "sleep8h": "8 часов",
+      "sleep12h": "До завтра (12 ч)"
+    },
+    "vacationPresets": {
+      "vac1d": "1 день",
+      "vac3d": "3 дня",
+      "vac1w": "Неделя",
+      "vac2w": "2 недели"
     }
   },
   "auth": {

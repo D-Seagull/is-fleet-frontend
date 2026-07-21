@@ -46,6 +46,45 @@
       "delete": "Usuń",
       "copy": "Kopiuj",
       "remove": "Usuń"
+    },
+    "status": {
+      "ONLINE": "Online",
+      "BUSY": "Nie przeszkadzać",
+      "AWAY": "Poza biurem",
+      "SLEEP": "Śpię",
+      "VACATION": "Na urlopie",
+      "OFFLINE": "Offline"
+    }
+  },
+  "nav": {
+    "trucks": "Ciężarówki",
+    "trips": "Trasy",
+    "drivers": "Kierowcy",
+    "managers": "Menedżerowie",
+    "chat": "Czat",
+    "settings": "Ustawienia",
+    "myTrucks": "Moje ciężarówki"
+  },
+  "sidebar": {
+    "navigation": "Nawigacja",
+    "searchPlaceholder": "Szukaj…",
+    "nothingFound": "Nic nie znaleziono",
+    "accountSettings": "Ustawienia konta",
+    "logout": "Wyloguj się",
+    "statusLabel": "Status",
+    "statusDuration": "Na jak długo?",
+    "durationUnlimited": "Bez ograniczeń",
+    "sleepPresets": {
+      "sleep1h": "1 godzina",
+      "sleep4h": "4 godziny",
+      "sleep8h": "8 godzin",
+      "sleep12h": "Do jutra (12 godz.)"
+    },
+    "vacationPresets": {
+      "vac1d": "1 dzień",
+      "vac3d": "3 dni",
+      "vac1w": "Tydzień",
+      "vac2w": "2 tygodnie"
     }
   },
   "auth": {

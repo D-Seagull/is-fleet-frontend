@@ -46,6 +46,45 @@
       "delete": "Видалити",
       "copy": "Копіювати",
       "remove": "Прибрати"
+    },
+    "status": {
+      "ONLINE": "Онлайн",
+      "BUSY": "Не турбувати",
+      "AWAY": "Не на місці",
+      "SLEEP": "Сплю",
+      "VACATION": "Відпочиваю",
+      "OFFLINE": "Не в застосунку"
+    }
+  },
+  "nav": {
+    "trucks": "Вантажівки",
+    "trips": "Рейси",
+    "drivers": "Водії",
+    "managers": "Менеджери",
+    "chat": "Чат",
+    "settings": "Налаштування",
+    "myTrucks": "Мої вантажівки"
+  },
+  "sidebar": {
+    "navigation": "Навігація",
+    "searchPlaceholder": "Пошук…",
+    "nothingFound": "Нічого не знайдено",
+    "accountSettings": "Налаштування акаунту",
+    "logout": "Вийти",
+    "statusLabel": "Статус",
+    "statusDuration": "На скільки?",
+    "durationUnlimited": "Без обмеження",
+    "sleepPresets": {
+      "sleep1h": "1 година",
+      "sleep4h": "4 години",
+      "sleep8h": "8 годин",
+      "sleep12h": "До завтра (12 год)"
+    },
+    "vacationPresets": {
+      "vac1d": "1 день",
+      "vac3d": "3 дні",
+      "vac1w": "Тиждень",
+      "vac2w": "2 тижні"
     }
   },
   "auth": {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   SidebarProvider,
   SidebarInset,
@@ -51,19 +52,33 @@ import { cn } from "@/lib/utils";
 // Base nav — items visible to every signed-in role. Managers + Settings
 // land here too but get filtered out below for non-TEAMLEAD users so the
 // teamlead doesn't share a deduplicated list with every viewer.
-const BASE_NAV: NavItem[] = [
-  { title: "Trucks", href: "/trucks", icon: Truck },
-  { title: "Trips", href: "/trips", icon: Route },
-  { title: "Drivers", href: "/drivers", icon: Users },
-  { title: "Managers", href: "/managers", icon: Headset },
-  { title: "Chat", href: "/chat", icon: MessageSquare },
-  { title: "Settings", href: "/settings", icon: Settings },
+// `navKey` is a stable i18n key (translated at render); href is the stable
+// identity used for role-filtering and badge injection.
+type NavDef = {
+  navKey:
+    | "trucks"
+    | "trips"
+    | "drivers"
+    | "managers"
+    | "chat"
+    | "settings"
+    | "myTrucks";
+  href: string;
+  icon: NavItem["icon"];
+};
+const BASE_NAV: NavDef[] = [
+  { navKey: "trucks", href: "/trucks", icon: Truck },
+  { navKey: "trips", href: "/trips", icon: Route },
+  { navKey: "drivers", href: "/drivers", icon: Users },
+  { navKey: "managers", href: "/managers", icon: Headset },
+  { navKey: "chat", href: "/chat", icon: MessageSquare },
+  { navKey: "settings", href: "/settings", icon: Settings },
 ];
 
-// Items that only TEAMLEAD should see in the sidebar. Routes stay live
+// Routes that only TEAMLEAD should see in the sidebar. Routes stay live
 // for everyone (the backend already gates writes) — this is purely a
 // navigation-affordance filter.
-const TEAMLEAD_ONLY = new Set(["Managers", "Settings"]);
+const TEAMLEAD_ONLY = new Set(["/managers", "/settings"]);
 
 function UnreadBell() {
   const router = useRouter();
@@ -206,6 +221,7 @@ function UnreadBell() {
 }
 
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
+  const tNav = useTranslations("nav");
   const user = useAuthStore((s) => s.user);
   const isManagerRole = user?.role === "MANAGER";
   const isTeamlead = user?.role === "TEAMLEAD";
@@ -246,14 +262,20 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   const showMyTrucks = isManagerRole || (isTeamlead && hasMyTrucks);
 
-  const baseNav: NavItem[] = showMyTrucks
-    ? [{ title: "My Trucks", href: "/my-trucks", icon: BookMarked }, ...BASE_NAV]
+  const baseNav: NavDef[] = showMyTrucks
+    ? [
+        { navKey: "myTrucks", href: "/my-trucks", icon: BookMarked } as NavDef,
+        ...BASE_NAV,
+      ]
     : BASE_NAV;
   const navItems: NavItem[] = baseNav
-    .filter((item) => isTeamlead || !TEAMLEAD_ONLY.has(item.title))
-    .map((item) =>
-      item.title === "Chat" ? { ...item, badge: chatBadge } : item,
-    );
+    .filter((item) => isTeamlead || !TEAMLEAD_ONLY.has(item.href))
+    .map((item) => ({
+      title: tNav(item.navKey),
+      href: item.href,
+      icon: item.icon,
+      ...(item.href === "/chat" ? { badge: chatBadge } : {}),
+    }));
 
   return (
     <SidebarProvider defaultOpen={true}>

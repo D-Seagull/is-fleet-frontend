@@ -46,6 +46,45 @@
       "delete": "Ištrinti",
       "copy": "Kopijuoti",
       "remove": "Pašalinti"
+    },
+    "status": {
+      "ONLINE": "Prisijungęs",
+      "BUSY": "Netrukdyti",
+      "AWAY": "Išėjęs",
+      "SLEEP": "Miegu",
+      "VACATION": "Atostogauju",
+      "OFFLINE": "Neprisijungęs"
+    }
+  },
+  "nav": {
+    "trucks": "Sunkvežimiai",
+    "trips": "Reisai",
+    "drivers": "Vairuotojai",
+    "managers": "Vadybininkai",
+    "chat": "Pokalbis",
+    "settings": "Nustatymai",
+    "myTrucks": "Mano sunkvežimiai"
+  },
+  "sidebar": {
+    "navigation": "Navigacija",
+    "searchPlaceholder": "Ieškoti…",
+    "nothingFound": "Nieko nerasta",
+    "accountSettings": "Paskyros nustatymai",
+    "logout": "Atsijungti",
+    "statusLabel": "Būsena",
+    "statusDuration": "Kiek laiko?",
+    "durationUnlimited": "Be apribojimų",
+    "sleepPresets": {
+      "sleep1h": "1 valanda",
+      "sleep4h": "4 valandos",
+      "sleep8h": "8 valandos",
+      "sleep12h": "Iki rytojaus (12 val.)"
+    },
+    "vacationPresets": {
+      "vac1d": "1 diena",
+      "vac3d": "3 dienos",
+      "vac1w": "Savaitė",
+      "vac2w": "2 savaitės"
     }
   },
   "auth": {

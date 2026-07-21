@@ -46,6 +46,45 @@
       "delete": "Delete",
       "copy": "Copy",
       "remove": "Remove"
+    },
+    "status": {
+      "ONLINE": "Online",
+      "BUSY": "Do not disturb",
+      "AWAY": "Away",
+      "SLEEP": "Sleeping",
+      "VACATION": "On vacation",
+      "OFFLINE": "Offline"
+    }
+  },
+  "nav": {
+    "trucks": "Trucks",
+    "trips": "Trips",
+    "drivers": "Drivers",
+    "managers": "Managers",
+    "chat": "Chat",
+    "settings": "Settings",
+    "myTrucks": "My Trucks"
+  },
+  "sidebar": {
+    "navigation": "Navigation",
+    "searchPlaceholder": "Search...",
+    "nothingFound": "Nothing found",
+    "accountSettings": "Account Settings",
+    "logout": "Log out",
+    "statusLabel": "Status",
+    "statusDuration": "For how long?",
+    "durationUnlimited": "No limit",
+    "sleepPresets": {
+      "sleep1h": "1 hour",
+      "sleep4h": "4 hours",
+      "sleep8h": "8 hours",
+      "sleep12h": "Until tomorrow (12h)"
+    },
+    "vacationPresets": {
+      "vac1d": "1 day",
+      "vac3d": "3 days",
+      "vac1w": "Week",
+      "vac2w": "2 weeks"
     }
   },
   "auth": {

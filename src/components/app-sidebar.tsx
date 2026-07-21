@@ -41,10 +41,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusDot } from "@/components/status-dot";
 import { useUpdateMe } from "@/hooks/use-avatar";
-import { STATUS_LABEL } from "@/lib/status";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/store/auth";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export interface NavChild {
   title: string;
@@ -74,6 +74,7 @@ function CollapsibleNavItem({
   pathname: string;
   onNavClick: () => void;
 }) {
+  const t = useTranslations("sidebar");
   const [search, setSearch] = useState("");
 
   const filtered = item.children?.filter((c) =>
@@ -98,7 +99,7 @@ function CollapsibleNavItem({
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input
-                placeholder="Пошук..."
+                placeholder={t("searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-7 pl-6 text-xs"
@@ -110,7 +111,7 @@ function CollapsibleNavItem({
           <SidebarMenuSub>
             {filtered?.length === 0 && (
               <p className="px-2 py-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-                Нічого не знайдено
+                {t("nothingFound")}
               </p>
             )}
             {filtered?.map((child) => (
@@ -134,8 +135,10 @@ function CollapsibleNavItem({
 
 export function AppSidebar({
   navItems,
-  groupLabel = "Navigation",
+  groupLabel,
 }: AppSidebarProps) {
+  const t = useTranslations("sidebar");
+  const tRoles = useTranslations("common.roles");
   const pathname = usePathname();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
@@ -159,7 +162,9 @@ export function AppSidebar({
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {groupLabel ?? t("navigation")}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) =>
@@ -227,7 +232,7 @@ export function AppSidebar({
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-semibold">{fullName(user)}</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      {user?.role}
+                      {user?.role ? tRoles(user.role) : ""}
                     </span>
                   </div>
                   <ChevronUp className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden" />
@@ -252,7 +257,7 @@ export function AppSidebar({
                   }}
                 >
                   <Settings className="mr-2 h-4 w-4" />
-                  Account Settings
+                  {t("accountSettings")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -269,7 +274,7 @@ export function AppSidebar({
                   }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                  {t("logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -283,21 +288,23 @@ export function AppSidebar({
 // Duration presets per status. Sleep is hour-based (typical EU
 // rest-break convention); vacation is day-based since people usually
 // take more than one day off.
-const SLEEP_PRESETS: { label: string; hours: number }[] = [
-  { label: "1 година", hours: 1 },
-  { label: "4 години", hours: 4 },
-  { label: "8 годин", hours: 8 },
-  { label: "До завтра (12 год)", hours: 12 },
+const SLEEP_PRESETS: { key: string; hours: number }[] = [
+  { key: "sleep1h", hours: 1 },
+  { key: "sleep4h", hours: 4 },
+  { key: "sleep8h", hours: 8 },
+  { key: "sleep12h", hours: 12 },
 ];
 
-const VACATION_PRESETS: { label: string; hours: number }[] = [
-  { label: "1 день", hours: 24 },
-  { label: "3 дні", hours: 72 },
-  { label: "Тиждень", hours: 168 },
-  { label: "2 тижні", hours: 336 },
+const VACATION_PRESETS: { key: string; hours: number }[] = [
+  { key: "vac1d", hours: 24 },
+  { key: "vac3d", hours: 72 },
+  { key: "vac1w", hours: 168 },
+  { key: "vac2w", hours: 336 },
 ];
 
 function StatusSubmenu() {
+  const t = useTranslations("sidebar");
+  const tStatus = useTranslations("common.status");
   const user = useAuthStore((s) => s.user);
   const updateMe = useUpdateMe();
   const currentStatus = user?.status ?? "ONLINE";
@@ -319,9 +326,9 @@ function StatusSubmenu() {
         <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
           <StatusDot user={user} isOnline size="sm" />
         </span>
-        Статус
+        {t("statusLabel")}
         <span className="ml-auto text-xs text-muted-foreground">
-          {STATUS_LABEL[currentStatus]}
+          {tStatus(currentStatus)}
         </span>
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="w-56">
@@ -329,19 +336,19 @@ function StatusSubmenu() {
           <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
           </span>
-          Online
+          {tStatus("ONLINE")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setStatus("BUSY")}>
           <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
             <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
           </span>
-          Не турбувати
+          {tStatus("BUSY")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setStatus("AWAY")}>
           <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
             <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
           </span>
-          Не на місці
+          {tStatus("AWAY")}
         </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
@@ -350,22 +357,22 @@ function StatusSubmenu() {
                 <Moon className="h-2.5 w-2.5 text-white" />
               </span>
             </span>
-            Сплю
+            {tStatus("SLEEP")}
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              На скільки?
+              {t("statusDuration")}
             </DropdownMenuLabel>
             {SLEEP_PRESETS.map((p) => (
               <DropdownMenuItem
-                key={p.label}
+                key={p.key}
                 onClick={() => setStatus("SLEEP", p.hours)}
               >
-                {p.label}
+                {t(`sleepPresets.${p.key}`)}
               </DropdownMenuItem>
             ))}
             <DropdownMenuItem onClick={() => setStatus("SLEEP")}>
-              Без обмеження
+              {t("durationUnlimited")}
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
@@ -379,22 +386,22 @@ function StatusSubmenu() {
                 🌴
               </span>
             </span>
-            Відпочиваю
+            {tStatus("VACATION")}
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              На скільки?
+              {t("statusDuration")}
             </DropdownMenuLabel>
             {VACATION_PRESETS.map((p) => (
               <DropdownMenuItem
-                key={p.label}
+                key={p.key}
                 onClick={() => setStatus("VACATION", p.hours)}
               >
-                {p.label}
+                {t(`vacationPresets.${p.key}`)}
               </DropdownMenuItem>
             ))}
             <DropdownMenuItem onClick={() => setStatus("VACATION")}>
-              Без обмеження
+              {t("durationUnlimited")}
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>

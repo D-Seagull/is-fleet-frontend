@@ -46,6 +46,45 @@
       "delete": "Löschen",
       "copy": "Kopieren",
       "remove": "Entfernen"
+    },
+    "status": {
+      "ONLINE": "Online",
+      "BUSY": "Nicht stören",
+      "AWAY": "Abwesend",
+      "SLEEP": "Schlafe",
+      "VACATION": "Im Urlaub",
+      "OFFLINE": "Offline"
+    }
+  },
+  "nav": {
+    "trucks": "LKW",
+    "trips": "Fahrten",
+    "drivers": "Fahrer",
+    "managers": "Manager",
+    "chat": "Chat",
+    "settings": "Einstellungen",
+    "myTrucks": "Meine LKW"
+  },
+  "sidebar": {
+    "navigation": "Navigation",
+    "searchPlaceholder": "Suchen…",
+    "nothingFound": "Nichts gefunden",
+    "accountSettings": "Kontoeinstellungen",
+    "logout": "Abmelden",
+    "statusLabel": "Status",
+    "statusDuration": "Für wie lange?",
+    "durationUnlimited": "Unbegrenzt",
+    "sleepPresets": {
+      "sleep1h": "1 Stunde",
+      "sleep4h": "4 Stunden",
+      "sleep8h": "8 Stunden",
+      "sleep12h": "Bis morgen (12 Std.)"
+    },
+    "vacationPresets": {
+      "vac1d": "1 Tag",
+      "vac3d": "3 Tage",
+      "vac1w": "Woche",
+      "vac2w": "2 Wochen"
     }
   },
   "auth": {
