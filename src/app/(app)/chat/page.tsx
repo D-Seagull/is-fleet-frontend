@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { fullName, initials } from "@/lib/format";
 import {
   Loader2,
@@ -159,6 +160,7 @@ function RowKebab({
   confirmDescription: string;
   onConfirm: () => void;
 }) {
+  const tActions = useTranslations("common.actions");
   return (
     <AlertDialog>
       <DropdownMenu>
@@ -192,7 +194,7 @@ function RowKebab({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{tActions("cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -206,6 +208,11 @@ function RowKebab({
 }
 
 function ChatPageContent() {
+  const t = useTranslations("chatPage");
+  const tChat = useTranslations("chat");
+  const tActions = useTranslations("common.actions");
+  const tNav = useTranslations("nav");
+  const tRoles = useTranslations("common.roles");
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
   const groupIdFromUrl = searchParams.get("groupId");
@@ -470,7 +477,7 @@ function ChatPageContent() {
                   hasUnread ? "font-bold" : "font-medium",
                 )}
               >
-                {fullName(conv.user) || conv.user.role}
+                {fullName(conv.user) || tRoles(conv.user.role)}
               </p>
               {hasUnread && (
                 <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
@@ -484,10 +491,12 @@ function ChatPageContent() {
           </div>
         </button>
         <RowKebab
-          label="Delete for me"
+          label={t("deleteForMe")}
           icon={<Trash2 className="h-4 w-4" />}
-          confirmTitle="Delete conversation?"
-          confirmDescription={`Remove your chat with ${fullName(conv.user) || conv.user.role}. If they message you again the chat will reappear.`}
+          confirmTitle={t("deleteConvTitle")}
+          confirmDescription={t("deleteConvDesc", {
+            name: fullName(conv.user) || tRoles(conv.user.role),
+          })}
           onConfirm={() => hideConversation.mutate(conv.user.id)}
         />
       </div>
@@ -535,23 +544,23 @@ function ChatPageContent() {
               )}
             </div>
             <p className="text-sm text-muted-foreground truncate">
-              {group.managers.length} members
+              {t("membersCount", { count: group.managers.length })}
             </p>
           </div>
         </button>
         {group.createdBy === user?.id && (
           <RowKebab
-            label="Delete"
+            label={tActions("delete")}
             icon={<Trash2 className="h-4 w-4" />}
-            confirmTitle={`Delete "${group.name}"?`}
-            confirmDescription="This will delete the group for everyone. This cannot be undone."
+            confirmTitle={t("deleteGroupTitle", { name: group.name })}
+            confirmDescription={t("deleteGroupDesc")}
             onConfirm={() =>
               deleteGroup.mutate(group.id, {
                 onError: (err) => {
                   const msg =
                     (err as { response?: { data?: { message?: string } } })
                       ?.response?.data?.message ?? err.message;
-                  window.alert(`Cannot delete group: ${msg}`);
+                  window.alert(t("cannotDeleteGroup", { msg }));
                 },
               })
             }
@@ -1104,11 +1113,11 @@ function ChatPageContent() {
         )}
       >
         <div className="p-4 border-b shrink-0 space-y-3">
-          <h2 className="font-semibold">Messages</h2>
+          <h2 className="font-semibold">{t("messagesTitle")}</h2>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search…"
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 pr-8 h-9"
@@ -1118,7 +1127,7 @@ function ChatPageContent() {
                 type="button"
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted text-muted-foreground"
-                aria-label="Clear search"
+                aria-label={t("clearSearch")}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -1130,14 +1139,14 @@ function ChatPageContent() {
             {/* ── Groups ───────────────────────────────────────────── */}
             <div className="px-4 pt-3 pb-1 flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Groups
+                {t("groups")}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
                 onClick={() => setGroupDialogOpen(true)}
-                title="Create group"
+                title={t("createGroup")}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -1146,7 +1155,7 @@ function ChatPageContent() {
               filteredGroups.map((group) => renderGroupButton(group))
             ) : (
               <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
-                No matching groups
+                {t("noMatchingGroups")}
               </p>
             )}
 
@@ -1163,11 +1172,11 @@ function ChatPageContent() {
               return (
                 <>
                   <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
-                    Direct Messages
+                    {t("directMessages")}
                   </div>
                   {combinedConvs.length === 0 ? (
                     <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
-                      No matching conversations
+                      {t("noMatchingConversations")}
                     </p>
                   ) : (
                     combinedConvs.map((conv) => renderConvButton(conv))
@@ -1180,7 +1189,7 @@ function ChatPageContent() {
             {(extraTeamMembers.length > 0 || extraDrivers.length > 0) && (
               <>
                 <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
-                  Find people
+                  {t("findPeople")}
                 </div>
                 {extraTeamMembers.map((m) => renderUserButton(m))}
                 {extraDrivers.map((d) => renderUserButton(d))}
@@ -1195,13 +1204,13 @@ function ChatPageContent() {
         >
           <TabsList className="mx-4 mt-2 grid grid-cols-2 shrink-0">
             <TabsTrigger value="managers" className="relative">
-              Managers
+              {tNav("managers")}
               {managerConvs.some((c) => c.unreadCount > 0) && (
                 <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-destructive" />
               )}
             </TabsTrigger>
             <TabsTrigger value="drivers" className="relative">
-              Drivers
+              {tNav("drivers")}
               {driverConvs.some((c) => c.unreadCount > 0) && (
                 <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-destructive" />
               )}
@@ -1215,14 +1224,14 @@ function ChatPageContent() {
             {/* Заголовок Groups з кнопкою "+" (заглушка — Dialog буде в Етапі 4) */}
             <div className="px-4 pt-3 pb-1 flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Groups
+                {t("groups")}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6"
                 onClick={() => setGroupDialogOpen(true)}
-                title="Create group"
+                title={t("createGroup")}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -1231,11 +1240,11 @@ function ChatPageContent() {
               filteredGroups.map((group) => renderGroupButton(group))
             ) : searchQ ? (
               <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
-                No matching groups
+                {t("noMatchingGroups")}
               </p>
             ) : (
               <p className="text-center text-muted-foreground/70 px-4 py-2 text-xs">
-                No groups yet
+                {t("noGroupsYet")}
               </p>
             )}
 
@@ -1244,14 +1253,14 @@ function ChatPageContent() {
             ) : filteredManagerConvs.length === 0 &&
               extraTeamMembers.length === 0 ? (
               <p className="text-center text-muted-foreground p-4 text-sm">
-                {searchQ ? "No matches" : "No team members in the company yet"}
+                {searchQ ? t("noMatches") : t("noTeamMembers")}
               </p>
             ) : (
               <>
                 {filteredManagerConvs.length > 0 && (
                   <>
                     <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
-                      Recent
+                      {t("recent")}
                     </div>
                     {filteredManagerConvs.map((conv) => renderConvButton(conv))}
                   </>
@@ -1259,7 +1268,7 @@ function ChatPageContent() {
                 {extraTeamMembers.length > 0 && (
                   <>
                     <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
-                      All team ({extraTeamMembers.length})
+                      {t("allTeam", { count: extraTeamMembers.length })}
                     </div>
                     {extraTeamMembers.map((m) => renderUserButton(m))}
                   </>
@@ -1277,14 +1286,14 @@ function ChatPageContent() {
             ) : filteredDriverConvs.length === 0 &&
               extraDrivers.length === 0 ? (
               <p className="text-center text-muted-foreground p-4 text-sm">
-                {searchQ ? "No matches" : "No drivers in the company yet"}
+                {searchQ ? t("noMatches") : t("noDrivers")}
               </p>
             ) : (
               <>
                 {filteredDriverConvs.length > 0 && (
                   <>
                     <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Recent
+                      {t("recent")}
                     </div>
                     {filteredDriverConvs.map((conv) => renderConvButton(conv))}
                   </>
@@ -1292,7 +1301,7 @@ function ChatPageContent() {
                 {extraDrivers.length > 0 && (
                   <>
                     <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">
-                      All drivers ({extraDrivers.length})
+                      {t("allDrivers", { count: extraDrivers.length })}
                     </div>
                     {extraDrivers.map((d) => renderUserButton(d))}
                   </>
@@ -1333,13 +1342,15 @@ function ChatPageContent() {
                       {selectedGroup.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {selectedGroup.managers.length} members
+                      {t("membersCount", {
+                        count: selectedGroup.managers.length,
+                      })}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    title="Attachments"
+                    title={t("attachments")}
                     onClick={() => setAttachmentsOpen(true)}
                   >
                     <Folder className="h-4 w-4" />
@@ -1349,7 +1360,7 @@ function ChatPageContent() {
                     onOpenChange={setMembersSheetOpen}
                   >
                     <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon" title="Members">
+                      <Button variant="ghost" size="icon" title={t("members")}>
                         <Users className="h-4 w-4" />
                       </Button>
                     </SheetTrigger>
@@ -1360,7 +1371,9 @@ function ChatPageContent() {
                       <div className="px-4 space-y-4 mt-4">
                         <div>
                           <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
-                            Members ({selectedGroup.managers.length})
+                            {t("membersHeading", {
+                              count: selectedGroup.managers.length,
+                            })}
                           </p>
                           <div className="space-y-1">
                             {selectedGroup.managers.map((gm) => {
@@ -1391,7 +1404,7 @@ function ChatPageContent() {
                                       {gm.manager.role === "TEAMLEAD" && (
                                         <Shield
                                           className="h-3.5 w-3.5 text-amber-500 shrink-0"
-                                          aria-label="Team lead"
+                                          aria-label={tRoles("TEAMLEAD")}
                                         />
                                       )}
                                       <span className="truncate">
@@ -1399,7 +1412,7 @@ function ChatPageContent() {
                                       </span>
                                       {isSelf && (
                                         <span className="text-xs text-muted-foreground shrink-0">
-                                          (you)
+                                          {t("you")}
                                         </span>
                                       )}
                                     </span>
@@ -1427,7 +1440,7 @@ function ChatPageContent() {
                                             }
                                           >
                                             <Trash2 className="h-4 w-4 mr-2" />
-                                            Remove
+                                            {tActions("remove")}
                                           </DropdownMenuItem>
                                         </DropdownMenuContent>
                                       </DropdownMenu>
@@ -1441,7 +1454,7 @@ function ChatPageContent() {
                         {selectedGroup.createdBy === user?.id && (
                           <div>
                             <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
-                              Add member
+                              {t("addMember")}
                             </p>
                             <div className="flex gap-2">
                               <select
@@ -1451,7 +1464,7 @@ function ChatPageContent() {
                                 }
                                 className="flex-1 h-9 rounded-md border bg-background px-2 text-sm"
                               >
-                                <option value="">Select member…</option>
+                                <option value="">{t("selectMember")}</option>
                                 {(teamMembers ?? [])
                                   .filter(
                                     (m) =>
@@ -1513,16 +1526,16 @@ function ChatPageContent() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold truncate">
-                      {fullName(selectedUser) || "No name"}
+                      {fullName(selectedUser) || t("noName")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {selectedUser.role}
+                      {tRoles(selectedUser.role)}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    title="Attachments"
+                    title={t("attachments")}
                     onClick={() => setAttachmentsOpen(true)}
                   >
                     <Folder className="h-4 w-4" />
@@ -1610,7 +1623,9 @@ function ChatPageContent() {
                               type="button"
                               onClick={() => handleSelectUser(msg.senderId)}
                               className="relative shrink-0"
-                              title={`Message ${senderName ?? "user"}`}
+                              title={tChat("messageUser", {
+                                name: senderName ?? tChat("userFallback"),
+                              })}
                             >
                               <Avatar className="h-8 w-8">
                                 <AvatarImage
@@ -1988,7 +2003,7 @@ function ChatPageContent() {
                                       </span>
                                     </div>
                                     <button
-                                      title="Download"
+                                      title={tActions("download")}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         window.open(doc.signedUrl, "_blank");
@@ -2056,7 +2071,11 @@ function ChatPageContent() {
 
             {!selectedGroupId && isTyping && (
               <div className="px-4 py-1 shrink-0 text-xs text-muted-foreground flex items-center gap-1">
-                <span>{fullName(selectedUser) || "Someone"} is typing</span>
+                <span>
+                  {tChat("userTyping", {
+                    name: fullName(selectedUser) || tChat("someone"),
+                  })}
+                </span>
                 <span className="flex gap-0.5">
                   <span className="animate-bounce delay-0">.</span>
                   <span className="animate-bounce delay-100">.</span>
@@ -2066,7 +2085,11 @@ function ChatPageContent() {
             )}
             {selectedGroupId && isGroupTyping && (
               <div className="px-4 py-1 shrink-0 text-xs text-muted-foreground flex items-center gap-1">
-                <span>{groupTypingName ?? "Someone"} is typing</span>
+                <span>
+                  {tChat("userTyping", {
+                    name: groupTypingName ?? tChat("someone"),
+                  })}
+                </span>
                 <span className="flex gap-0.5">
                   <span className="animate-bounce delay-0">.</span>
                   <span className="animate-bounce delay-100">.</span>
@@ -2080,7 +2103,7 @@ function ChatPageContent() {
                 <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
                   <p className="text-[11px] font-semibold text-primary leading-tight flex items-center gap-1">
                     <Pencil className="h-3 w-3" />
-                    Редагування повідомлення
+                    {tChat("editingMessage")}
                   </p>
                   <p className="text-[11px] text-muted-foreground leading-tight truncate">
                     {editing.original}
@@ -2092,7 +2115,7 @@ function ChatPageContent() {
                     setEditing(null);
                     setNewMessage("");
                   }}
-                  title="Скасувати редагування"
+                  title={tChat("cancelEditing")}
                   className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -2104,7 +2127,9 @@ function ChatPageContent() {
               <div className="px-4 pt-2 shrink-0 border-t flex items-start gap-2">
                 <div className="flex-1 border-l-2 border-primary pl-2 py-1 bg-primary/5 rounded-r">
                   <p className="text-[11px] font-semibold text-primary leading-tight">
-                    Reply to {replyingTo.senderName ?? "Unknown"}
+                    {tChat("replyTo", {
+                      name: replyingTo.senderName ?? tChat("unknown"),
+                    })}
                   </p>
                   <p
                     className={cn(
@@ -2119,8 +2144,8 @@ function ChatPageContent() {
                     <span className="truncate">
                       {replyingTo.isDeleted
                         ? replyingTo.targetType === "doc"
-                          ? "Файл видалено"
-                          : "Повідомлення видалено"
+                          ? tChat("fileDeleted")
+                          : tChat("messageDeleted")
                         : replyingTo.content}
                     </span>
                   </p>
@@ -2128,7 +2153,7 @@ function ChatPageContent() {
                 <button
                   type="button"
                   onClick={() => setReplyingTo(null)}
-                  title="Cancel reply"
+                  title={tChat("cancelReply")}
                   className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center text-muted-foreground shrink-0"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -2148,7 +2173,7 @@ function ChatPageContent() {
                     <button
                       type="button"
                       onClick={() => removePendingFile(i)}
-                      title="Remove"
+                      title={tChat("removeFile")}
                       className="shrink-0 text-muted-foreground hover:text-foreground"
                     >
                       <X className="h-3 w-3" />
@@ -2174,7 +2199,7 @@ function ChatPageContent() {
                 size="icon"
                 onClick={() => attachInputRef.current?.click()}
                 disabled={attachUploading}
-                title="Attach file"
+                title={tChat("attachFile")}
               >
                 {attachUploading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -2218,13 +2243,17 @@ function ChatPageContent() {
                     setNewMessage("");
                   }
                 }}
-                placeholder={editing ? "Редагуйте повідомлення…" : "Type a message..."}
+                placeholder={
+                  editing
+                    ? tChat("editPlaceholder")
+                    : tChat("messagePlaceholder")
+                }
                 className="flex-1"
               />
               <Button
                 type="submit"
                 size="icon"
-                title={editing ? "Зберегти" : "Send"}
+                title={editing ? tActions("save") : tChat("send")}
                 disabled={
                   editing
                     ? !newMessage.trim()
@@ -2241,7 +2270,7 @@ function ChatPageContent() {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            Select a conversation to start chatting
+            {t("emptyState")}
           </div>
         )}
       </div>
@@ -2249,23 +2278,23 @@ function ChatPageContent() {
       <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create group</DialogTitle>
-            <DialogDescription>
-              Enter a name and pick managers to add to the group.
-            </DialogDescription>
+            <DialogTitle>{t("createGroup")}</DialogTitle>
+            <DialogDescription>{t("createGroupDesc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="group-name">Group name</Label>
+              <Label htmlFor="group-name">{t("groupNameLabel")}</Label>
               <Input
                 id="group-name"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder="e.g. Morning Shift"
+                placeholder={t("groupNamePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Members ({selectedMemberIds.size} selected)</Label>
+              <Label>
+                {t("membersSelected", { count: selectedMemberIds.size })}
+              </Label>
               <ScrollArea className="h-60 rounded border">
                 <div className="p-2">
                   {(teamMembers ?? [])
@@ -2298,7 +2327,7 @@ function ChatPageContent() {
               variant="outline"
               onClick={() => setGroupDialogOpen(false)}
             >
-              Cancel
+              {tActions("cancel")}
             </Button>
             <Button
               onClick={handleCreateGroup}
@@ -2310,8 +2339,8 @@ function ChatPageContent() {
               }
             >
               {createGroup.isPending || addMember.isPending
-                ? "Creating..."
-                : "Create"}
+                ? t("creating")
+                : t("create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2324,8 +2353,8 @@ function ChatPageContent() {
         targetId={selectedGroupId ?? selectedUserId ?? ""}
         title={
           selectedGroupId
-            ? (selectedGroup?.name ?? "Group")
-            : (fullName(selectedUser) || "Conversation")
+            ? (selectedGroup?.name ?? t("groupTitleFallback"))
+            : (fullName(selectedUser) || t("conversationFallback"))
         }
       />
     </div>
