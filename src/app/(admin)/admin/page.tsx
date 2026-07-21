@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Building2,
   Users,
@@ -17,64 +18,70 @@ import { Badge } from "@/components/ui/badge";
 import { useAdminStats } from "@/hooks/use-admin-stats";
 
 export default function AdminDashboardPage() {
+  const t = useTranslations("admin.dashboard");
   const { data, isLoading, isError } = useAdminStats();
 
   return (
     <div className="p-6 w-full max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Огляд</h1>
-        <p className="text-sm text-muted-foreground">
-          Ключові показники по всіх компаніях
-        </p>
+        <h1 className="text-2xl font-semibold">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {isError && (
-        <div className="text-destructive text-sm">
-          Помилка завантаження статистики
-        </div>
+        <div className="text-destructive text-sm">{t("errorStats")}</div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          title="Компаній"
+          title={t("kpiCompanies")}
           icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
           value={data?.companies.total}
           subline={
             data
-              ? `${data.companies.active} активних · ${data.companies.deactivated} деактивованих`
+              ? t("kpiCompaniesSub", {
+                  active: data.companies.active,
+                  deactivated: data.companies.deactivated,
+                })
               : undefined
           }
           isLoading={isLoading}
         />
         <KpiCard
-          title="Юзерів усього"
+          title={t("kpiUsers")}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
           value={data?.users.total}
           subline={
             data
-              ? `${data.users.byRole.DRIVER} водіїв · ${data.users.byRole.MANAGER} менеджерів`
+              ? t("kpiUsersSub", {
+                  drivers: data.users.byRole.DRIVER,
+                  managers: data.users.byRole.MANAGER,
+                })
               : undefined
           }
           isLoading={isLoading}
         />
         <KpiCard
-          title="Онлайн"
+          title={t("kpiOnline")}
           icon={<Wifi className="h-4 w-4 text-emerald-500" />}
           value={
             data ? data.onlineNow.drivers + data.onlineNow.managers : undefined
           }
           subline={
             data
-              ? `${data.onlineNow.drivers} водіїв · ${data.onlineNow.managers} менеджерів`
+              ? t("kpiOnlineSub", {
+                  drivers: data.onlineNow.drivers,
+                  managers: data.onlineNow.managers,
+                })
               : undefined
           }
           isLoading={isLoading}
         />
         <KpiCard
-          title="Активних поїздок"
+          title={t("kpiActiveTrips")}
           icon={<TruckIcon className="h-4 w-4 text-muted-foreground" />}
           value={data?.activeTrips}
-          subline="У процесі виконання"
+          subline={t("kpiActiveTripsSub")}
           isLoading={isLoading}
         />
       </div>
@@ -83,14 +90,14 @@ export default function AdminDashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Clock className="h-4 w-4" />
-            Останні реєстрації
+            {t("recentTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Завантаження...
+              {t("loading")}
             </div>
           ) : data && data.recentCompanies.length > 0 ? (
             <ul className="divide-y">
@@ -113,8 +120,7 @@ export default function AdminDashboardPage() {
                             year: "numeric",
                           })}
                           {" · "}
-                          {c.usersCount}{" "}
-                          {c.usersCount === 1 ? "юзер" : "юзерів"}
+                          {t("usersCount", { count: c.usersCount })}
                         </div>
                       </div>
                     </div>
@@ -122,15 +128,17 @@ export default function AdminDashboardPage() {
                       {c.awaitingInvite ? (
                         <Badge variant="secondary" className="gap-1">
                           <MailWarning className="h-3 w-3" />
-                          Чекає TeamLead-а
+                          {t("awaitingTeamlead")}
                         </Badge>
                       ) : c.isActive ? (
                         <Badge className="gap-1 bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/30">
                           <CheckCircle2 className="h-3 w-3" />
-                          Активна
+                          {t("statusActive")}
                         </Badge>
                       ) : (
-                        <Badge variant="destructive">Деактивована</Badge>
+                        <Badge variant="destructive">
+                          {t("statusDeactivated")}
+                        </Badge>
                       )}
                     </div>
                   </Link>
@@ -139,7 +147,7 @@ export default function AdminDashboardPage() {
             </ul>
           ) : (
             <div className="text-sm text-muted-foreground py-6 text-center">
-              Компаній ще немає
+              {t("empty")}
             </div>
           )}
         </CardContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Loader2, Plus } from "lucide-react";
 import {
   Dialog,
@@ -19,6 +20,7 @@ import { useCreateCompany } from "@/hooks/use-companies";
 const initialForm = { name: "", email: "" };
 
 export function NewCompanyDialog() {
+  const t = useTranslations("admin.newCompany");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
@@ -40,7 +42,7 @@ export function NewCompanyDialog() {
       const e = err as { response?: { data?: { message?: string | { message?: string } } } };
       const msg = e.response?.data?.message;
       setError(
-        (typeof msg === "string" ? msg : msg?.message) ?? "Помилка створення",
+        (typeof msg === "string" ? msg : msg?.message) ?? t("error"),
       );
     }
   };
@@ -61,20 +63,17 @@ export function NewCompanyDialog() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Нова компанія
+          {t("button")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Реєстрація компанії</DialogTitle>
-          <DialogDescription>
-            Ми надішлемо запрошення на email — TeamLead завершить реєстрацію за
-            посиланням.
-          </DialogDescription>
+          <DialogTitle>{t("dialogTitle")}</DialogTitle>
+          <DialogDescription>{t("dialogDescription")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Компанія</Label>
+            <Label htmlFor="name">{t("companyLabel")}</Label>
             <Input
               id="name"
               name="name"
@@ -86,7 +85,7 @@ export function NewCompanyDialog() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email TeamLead-а</Label>
+            <Label htmlFor="email">{t("emailLabel")}</Label>
             <Input
               id="email"
               name="email"
@@ -107,10 +106,10 @@ export function NewCompanyDialog() {
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Реєстрація...
+                  {t("submitLoading")}
                 </>
               ) : (
-                "Зареєструвати"
+                t("submit")
               )}
             </Button>
           </DialogFooter>

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Building2, Loader2 } from "lucide-react";
 import {
   SidebarProvider,
@@ -19,6 +20,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations("admin");
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
 
@@ -42,7 +44,7 @@ export default function AdminLayout({
 
   const adminNavItems: NavItem[] = [
     {
-      title: "Companies",
+      title: t("companies.title"),
       href: "/admin/companies",
       icon: Building2,
       children: companies.map((c) => ({
@@ -55,7 +57,7 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <AppSidebar navItems={adminNavItems} groupLabel="Admin Panel" />
+        <AppSidebar navItems={adminNavItems} groupLabel={t("panelLabel")} />
         <SidebarInset className="flex flex-1 flex-col min-w-0">
           <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
             <SidebarTrigger />

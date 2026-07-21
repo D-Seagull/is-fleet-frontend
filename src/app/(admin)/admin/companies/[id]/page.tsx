@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Building2,
@@ -50,16 +51,10 @@ import {
   useDeactivateCompany,
   useResendCompanyInvite,
 } from "@/hooks/use-admin-company";
-import type { AdminCompanyUser, Role } from "@/hooks/use-admin-company";
-
-const ROLE_LABEL: Record<Role, string> = {
-  ADMIN: "Адмін",
-  TEAMLEAD: "TeamLead",
-  MANAGER: "Менеджер",
-  DRIVER: "Водій",
-};
+import type { AdminCompanyUser } from "@/hooks/use-admin-company";
 
 export default function AdminCompanyDetailPage() {
+  const t = useTranslations("admin.detail");
   const params = useParams<{ id: string }>();
   const id = params?.id;
   const { data, isLoading, isError } = useAdminCompany(id);
@@ -70,14 +65,12 @@ export default function AdminCompanyDetailPage() {
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
           <Link href="/admin">
             <ArrowLeft className="h-4 w-4 mr-1" />
-            До дашборду
+            {t("back")}
           </Link>
         </Button>
 
         {isError && (
-          <div className="text-destructive text-sm">
-            Помилка завантаження компанії
-          </div>
+          <div className="text-destructive text-sm">{t("errorLoad")}</div>
         )}
 
         <CompanyHeader data={data} isLoading={isLoading} />
@@ -85,18 +78,22 @@ export default function AdminCompanyDetailPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          title="Юзерів"
+          title={t("kpiUsers")}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
           value={data?.counts.usersTotal}
           subline={
             data
-              ? `${data.counts.usersByRole.DRIVER} водіїв · ${data.counts.usersByRole.MANAGER} менеджерів · ${data.counts.usersByRole.TEAMLEAD} TeamLead`
+              ? t("kpiUsersSub", {
+                  drivers: data.counts.usersByRole.DRIVER,
+                  managers: data.counts.usersByRole.MANAGER,
+                  teamleads: data.counts.usersByRole.TEAMLEAD,
+                })
               : undefined
           }
           isLoading={isLoading}
         />
         <KpiCard
-          title="Онлайн"
+          title={t("kpiOnline")}
           icon={<Wifi className="h-4 w-4 text-emerald-500" />}
           value={
             data
@@ -105,27 +102,32 @@ export default function AdminCompanyDetailPage() {
           }
           subline={
             data
-              ? `${data.counts.onlineNow.drivers} водіїв · ${data.counts.onlineNow.managers} менеджерів`
+              ? t("kpiOnlineSub", {
+                  drivers: data.counts.onlineNow.drivers,
+                  managers: data.counts.onlineNow.managers,
+                })
               : undefined
           }
           isLoading={isLoading}
         />
         <KpiCard
-          title="Вантажівок"
+          title={t("kpiTrucks")}
           icon={<TruckIcon className="h-4 w-4 text-muted-foreground" />}
           value={data?.counts.trucks.total}
           subline={
-            data ? `${data.counts.trucks.active} активних` : undefined
+            data
+              ? t("kpiTrucksSub", { active: data.counts.trucks.active })
+              : undefined
           }
           isLoading={isLoading}
         />
         <KpiCard
-          title="Поїздки"
+          title={t("kpiTrips")}
           icon={<Route className="h-4 w-4 text-muted-foreground" />}
           value={data?.counts.trips.active}
           subline={
             data
-              ? `${data.counts.trips.thisMonth} за останні 30 днів`
+              ? t("kpiTripsSub", { count: data.counts.trips.thisMonth })
               : undefined
           }
           isLoading={isLoading}
@@ -149,6 +151,8 @@ function CompanyHeader({
   data: ReturnType<typeof useAdminCompany>["data"];
   isLoading: boolean;
 }) {
+  const t = useTranslations("admin.detail");
+  const tActions = useTranslations("common.actions");
   const { toast } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const deactivate = useDeactivateCompany();
@@ -170,15 +174,15 @@ function CompanyHeader({
   void teamlead;
 
   const handleResend = async () => {
-    const email = window.prompt("На яку пошту переслати запрошення?");
+    const email = window.prompt(t("resendPrompt"));
     if (!email) return;
     try {
       await resend.mutateAsync({ id: data.id, email });
-      toast({ title: "Invite надіслано", description: email });
+      toast({ title: t("resendSuccess"), description: email });
     } catch {
       toast({
-        title: "Не вдалося надіслати",
-        description: "Спробуйте ще раз",
+        title: t("resendFail"),
+        description: t("resendFailDesc"),
         variant: "destructive",
       });
     }
@@ -187,10 +191,10 @@ function CompanyHeader({
   const handleDeactivate = async () => {
     try {
       await deactivate.mutateAsync(data.id);
-      toast({ title: "Компанію деактивовано" });
+      toast({ title: t("deactivateSuccess") });
       setConfirmOpen(false);
     } catch {
-      toast({ title: "Помилка", variant: "destructive" });
+      toast({ title: t("deactivateError"), variant: "destructive" });
     }
   };
 
@@ -208,20 +212,21 @@ function CompanyHeader({
             <h1 className="text-2xl font-semibold">{data.name}</h1>
             {data.isActive ? (
               <Badge className="gap-1 bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/30">
-                <CheckCircle2 className="h-3 w-3" /> Активна
+                <CheckCircle2 className="h-3 w-3" /> {t("statusActive")}
               </Badge>
             ) : (
               <Badge variant="destructive" className="gap-1">
-                <XCircle className="h-3 w-3" /> Деактивована
+                <XCircle className="h-3 w-3" /> {t("statusDeactivated")}
               </Badge>
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            Зареєстрована{" "}
-            {new Date(data.createdAt).toLocaleDateString("uk-UA", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
+            {t("registered", {
+              date: new Date(data.createdAt).toLocaleDateString(undefined, {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }),
             })}
           </p>
         </div>
@@ -239,26 +244,27 @@ function CompanyHeader({
           ) : (
             <MailPlus className="mr-2 h-4 w-4" />
           )}
-          Переслати invite
+          {t("resendInvite")}
         </Button>
         {data.isActive && (
           <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm">
                 <Power className="mr-2 h-4 w-4" />
-                Деактивувати
+                {t("deactivate")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Деактивувати компанію?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {t("deactivateConfirmTitle")}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Юзери {data.name} втратять доступ. Це можна повернути через
-                  БД.
+                  {t("deactivateConfirmBody", { name: data.name })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                <AlertDialogCancel>{tActions("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDeactivate}
                   disabled={deactivate.isPending}
@@ -267,7 +273,7 @@ function CompanyHeader({
                   {deactivate.isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Деактивувати
+                  {t("deactivate")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -285,12 +291,13 @@ function ContactsCard({
   data: ReturnType<typeof useAdminCompany>["data"];
   isLoading: boolean;
 }) {
+  const t = useTranslations("admin.detail");
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Mail className="h-4 w-4" />
-          Контакти
+          {t("contactsTitle")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -302,11 +309,14 @@ function ContactsCard({
           </>
         ) : (
           <>
-            <ContactRow label="Директор" value={data.directorEmail} />
+            <ContactRow label={t("contactDirector")} value={data.directorEmail} />
             <Separator />
-            <ContactRow label="Бухгалтерія" value={data.accountingEmail} />
+            <ContactRow
+              label={t("contactAccounting")}
+              value={data.accountingEmail}
+            />
             <Separator />
-            <ContactRow label="HR" value={data.hrEmail} />
+            <ContactRow label={t("contactHr")} value={data.hrEmail} />
           </>
         )}
       </CardContent>
@@ -315,6 +325,7 @@ function ContactsCard({
 }
 
 function ContactRow({ label, value }: { label: string; value: string | null }) {
+  const t = useTranslations("admin.detail");
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground">{label}</span>
@@ -326,7 +337,7 @@ function ContactRow({ label, value }: { label: string; value: string | null }) {
           {value}
         </a>
       ) : (
-        <span className="text-muted-foreground italic">не вказано</span>
+        <span className="text-muted-foreground italic">{t("notSpecified")}</span>
       )}
     </div>
   );
@@ -339,12 +350,13 @@ function PushCoverageCard({
   data: ReturnType<typeof useAdminCompany>["data"];
   isLoading: boolean;
 }) {
+  const t = useTranslations("admin.detail");
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Bell className="h-4 w-4" />
-          Push-нотифікації
+          {t("pushTitle")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -366,8 +378,10 @@ function PushCoverageCard({
                     ) + "%"}
               </span>
               <span className="text-sm text-muted-foreground">
-                {data.counts.pushCoverage.withToken} з{" "}
-                {data.counts.pushCoverage.outOf}
+                {t("pushOutOf", {
+                  withToken: data.counts.pushCoverage.withToken,
+                  outOf: data.counts.pushCoverage.outOf,
+                })}
               </span>
             </div>
             <Progress
@@ -380,7 +394,7 @@ function PushCoverageCard({
               }
             />
             <p className="text-xs text-muted-foreground mt-2">
-              Юзери з активним push-токеном
+              {t("pushCaption")}
             </p>
           </>
         )}
@@ -396,32 +410,36 @@ function UsersCard({
   users: AdminCompanyUser[] | undefined;
   isLoading: boolean;
 }) {
+  const t = useTranslations("admin.detail");
+  const tRoles = useTranslations("common.roles");
+  const tStatus = useTranslations("common.status");
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Users className="h-4 w-4" />
-          Юзери{users ? ` (${users.length})` : ""}
+          {t("usersTitle")}
+          {users ? ` (${users.length})` : ""}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading || !users ? (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Завантаження...
+            {t("usersLoading")}
           </div>
         ) : users.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-6">
-            Юзерів ще немає — TeamLead не завершив реєстрацію
+            {t("usersEmpty")}
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Юзер</TableHead>
-                <TableHead>Роль</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Контакт</TableHead>
+                <TableHead>{t("colUser")}</TableHead>
+                <TableHead>{t("colRole")}</TableHead>
+                <TableHead>{t("colStatus")}</TableHead>
+                <TableHead>{t("colContact")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -442,7 +460,7 @@ function UsersCard({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{ROLE_LABEL[u.role]}</Badge>
+                    <Badge variant="outline">{tRoles(u.role)}</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
@@ -455,7 +473,7 @@ function UsersCard({
                         }
                       />
                       <span className="text-sm text-muted-foreground">
-                        {u.status === "ONLINE" ? "Онлайн" : u.status}
+                        {tStatus(u.status)}
                       </span>
                     </div>
                   </TableCell>
