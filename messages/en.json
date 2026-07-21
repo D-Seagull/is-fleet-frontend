@@ -56,6 +56,38 @@
       "OFFLINE": "Offline"
     }
   },
+  "alarm": {
+    "title": "Alarms",
+    "new": "New",
+    "targetPlaceholder": "To whom",
+    "self": "Myself",
+    "driverNone": "Driver (none)",
+    "titlePlaceholder": "Subject *",
+    "notePlaceholder": "Comment",
+    "noDriverAlert": "This truck has no driver right now",
+    "tzWarning": "⏱ Time uses driver {name}'s timezone. “{time}” means {time} on their clock.",
+    "linkToTrip": "Link to the active trip",
+    "creating": "Creating…",
+    "create": "Create",
+    "empty": "No alarms.",
+    "toMe": "→ me",
+    "toUser": "→ {name}",
+    "repeat": "Repeat",
+    "restartIn": "Restart in…",
+    "deleteConfirm": "Delete this alarm?",
+    "recurrence": {
+      "NONE": "Once",
+      "DAILY": "Daily",
+      "WEEKLY": "Weekly"
+    },
+    "offsets": {
+      "off5": "+5 min",
+      "off15": "+15 min",
+      "off30": "+30 min",
+      "off60": "+1 h",
+      "off120": "+2 h"
+    }
+  },
   "errors": {
     "notFound": {
       "title": "Wrong turn",

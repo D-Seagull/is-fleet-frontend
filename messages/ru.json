@@ -56,6 +56,38 @@
       "OFFLINE": "Не в приложении"
     }
   },
+  "alarm": {
+    "title": "Будильники",
+    "new": "Новый",
+    "targetPlaceholder": "Кому",
+    "self": "Себе",
+    "driverNone": "Водителю (нет)",
+    "titlePlaceholder": "Тема *",
+    "notePlaceholder": "Комментарий",
+    "noDriverAlert": "На этой машине сейчас нет водителя",
+    "tzWarning": "⏱ Время по часовому поясу водителя {name}. «{time}» означает {time} на его часах.",
+    "linkToTrip": "Привязать к активному рейсу",
+    "creating": "Создание…",
+    "create": "Создать",
+    "empty": "Нет будильников.",
+    "toMe": "→ мне",
+    "toUser": "→ {name}",
+    "repeat": "Повторить",
+    "restartIn": "Перезапустить через…",
+    "deleteConfirm": "Удалить будильник?",
+    "recurrence": {
+      "NONE": "Один раз",
+      "DAILY": "Ежедневно",
+      "WEEKLY": "Еженедельно"
+    },
+    "offsets": {
+      "off5": "+5 мин",
+      "off15": "+15 мин",
+      "off30": "+30 мин",
+      "off60": "+1 ч",
+      "off120": "+2 ч"
+    }
+  },
   "errors": {
     "notFound": {
       "title": "Не туда свернули",

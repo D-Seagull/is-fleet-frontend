@@ -56,6 +56,38 @@
       "OFFLINE": "Не в застосунку"
     }
   },
+  "alarm": {
+    "title": "Будильники",
+    "new": "Новий",
+    "targetPlaceholder": "Кому",
+    "self": "Собі",
+    "driverNone": "Водію (немає)",
+    "titlePlaceholder": "Тема *",
+    "notePlaceholder": "Коментар",
+    "noDriverAlert": "На цій машині зараз немає водія",
+    "tzWarning": "⏱ Час буде по часовій зоні водія {name}. «{time}» означає {time} на його годиннику.",
+    "linkToTrip": "Прив'язати до активного рейсу",
+    "creating": "Створення…",
+    "create": "Створити",
+    "empty": "Немає будильників.",
+    "toMe": "→ мені",
+    "toUser": "→ {name}",
+    "repeat": "Повторити",
+    "restartIn": "Перезапустити через…",
+    "deleteConfirm": "Видалити будильник?",
+    "recurrence": {
+      "NONE": "Один раз",
+      "DAILY": "Щодня",
+      "WEEKLY": "Щотижня"
+    },
+    "offsets": {
+      "off5": "+5 хв",
+      "off15": "+15 хв",
+      "off30": "+30 хв",
+      "off60": "+1 год",
+      "off120": "+2 год"
+    }
+  },
   "errors": {
     "notFound": {
       "title": "Не туди звернули",

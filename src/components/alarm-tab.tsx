@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Bell, Plus, Trash2, Clock, RotateCw, X, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,13 +30,14 @@ import {
 } from "@/hooks/use-alarms";
 import type { Truck } from "@/hooks/use-trucks";
 
-/** Quick "fire X minutes from now" presets used for both create and reuse. */
-const QUICK_OFFSETS: { label: string; minutes: number }[] = [
-  { label: "+5 хв", minutes: 5 },
-  { label: "+15 хв", minutes: 15 },
-  { label: "+30 хв", minutes: 30 },
-  { label: "+1 год", minutes: 60 },
-  { label: "+2 год", minutes: 120 },
+/** Quick "fire X minutes from now" presets used for both create and reuse.
+ *  `key` indexes into alarm.offsets.* for the localised label. */
+const QUICK_OFFSETS: { key: string; minutes: number }[] = [
+  { key: "off5", minutes: 5 },
+  { key: "off15", minutes: 15 },
+  { key: "off30", minutes: 30 },
+  { key: "off60", minutes: 60 },
+  { key: "off120", minutes: 120 },
 ];
 
 function offsetToLocalInput(minutes: number): string {
@@ -49,12 +51,6 @@ function offsetToIso(minutes: number): string {
   d.setMinutes(d.getMinutes() + minutes, 0, 0);
   return d.toISOString();
 }
-
-const RECURRENCE_LABEL: Record<AlarmRecurrence, string> = {
-  NONE: "Один раз",
-  DAILY: "Щодня",
-  WEEKLY: "Щотижня",
-};
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString([], {
@@ -79,6 +75,8 @@ export function AlarmTab({
   truck: Truck;
   activeTripId?: string | null;
 }) {
+  const t = useTranslations("alarm");
+  const tActions = useTranslations("common.actions");
   const user = useAuthStore((s) => s.user);
   const { data: alarms = [], isLoading } = useAlarmsByTruck(truck.id);
   const createAlarm = useCreateAlarm(truck.id);
@@ -116,7 +114,7 @@ export function AlarmTab({
     else if (target === "driver") {
       targetUserId = truck.currentDriver?.id;
       if (!targetUserId) {
-        alert("На цій машині зараз немає водія");
+        alert(t("noDriverAlert"));
         return;
       }
     }
@@ -144,7 +142,7 @@ export function AlarmTab({
       <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1.5">
           <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-semibold text-sm">Будильники</span>
+          <span className="font-semibold text-sm">{t("title")}</span>
           <span className="text-muted-foreground">({alarms.length})</span>
         </div>
         <Button
@@ -155,11 +153,11 @@ export function AlarmTab({
         >
           {showForm ? (
             <>
-              <X className="h-3 w-3 mr-1" /> Скасувати
+              <X className="h-3 w-3 mr-1" /> {tActions("cancel")}
             </>
           ) : (
             <>
-              <Plus className="h-3 w-3 mr-1" /> Новий
+              <Plus className="h-3 w-3 mr-1" /> {t("new")}
             </>
           )}
         </Button>
@@ -171,12 +169,12 @@ export function AlarmTab({
           <div className="grid grid-cols-2 gap-1.5">
             <Select value={target} onValueChange={(v) => setTarget(v as "self" | "driver")}>
               <SelectTrigger className="h-7 text-xs">
-                <SelectValue placeholder="Кому" />
+                <SelectValue placeholder={t("targetPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="self">Собі</SelectItem>
+                <SelectItem value="self">{t("self")}</SelectItem>
                 <SelectItem value="driver" disabled={!truck.currentDriver}>
-                  {fullName(truck.currentDriver) || "Водію (немає)"}
+                  {fullName(truck.currentDriver) || t("driverNone")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -185,9 +183,9 @@ export function AlarmTab({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="NONE">Один раз</SelectItem>
-                <SelectItem value="DAILY">Щодня</SelectItem>
-                <SelectItem value="WEEKLY">Щотижня</SelectItem>
+                <SelectItem value="NONE">{t("recurrence.NONE")}</SelectItem>
+                <SelectItem value="DAILY">{t("recurrence.DAILY")}</SelectItem>
+                <SelectItem value="WEEKLY">{t("recurrence.WEEKLY")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -195,7 +193,7 @@ export function AlarmTab({
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Тема *"
+            placeholder={t("titlePlaceholder")}
             className="h-7 text-xs"
             maxLength={120}
           />
@@ -203,7 +201,7 @@ export function AlarmTab({
           <Textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Коментар"
+            placeholder={t("notePlaceholder")}
             rows={2}
             className="text-xs resize-none min-h-0 py-1.5"
             maxLength={500}
@@ -225,17 +223,17 @@ export function AlarmTab({
                 className="px-2 py-0.5 text-[10px] rounded border hover:bg-accent transition-colors"
                 onClick={() => setTime(offsetToLocalInput(q.minutes))}
               >
-                {q.label}
+                {t(`offsets.${q.key}`)}
               </button>
             ))}
           </div>
 
           {target === "driver" && truck.currentDriver && (
             <div className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-300/40 rounded px-2 py-1">
-              ⏱ Час буде по часовій зоні водія{" "}
-              <strong>{fullName(truck.currentDriver) || "—"}</strong>. Тобто &laquo;
-              {time.slice(11)}&raquo; означає {time.slice(11)} на його
-              годиннику.
+              {t("tzWarning", {
+                name: fullName(truck.currentDriver) || "—",
+                time: time.slice(11),
+              })}
             </div>
           )}
 
@@ -247,7 +245,7 @@ export function AlarmTab({
                 onChange={(e) => setLinkToTrip(e.target.checked)}
                 className="h-3 w-3"
               />
-              Прив'язати до активного тріпа
+              {t("linkToTrip")}
             </label>
           )}
 
@@ -257,7 +255,7 @@ export function AlarmTab({
             onClick={handleCreate}
             disabled={createAlarm.isPending || !title.trim()}
           >
-            {createAlarm.isPending ? "Створення…" : "Створити"}
+            {createAlarm.isPending ? t("creating") : t("create")}
           </Button>
         </div>
       )}
@@ -271,7 +269,7 @@ export function AlarmTab({
           </>
         ) : alarms.length === 0 ? (
           <p className="text-muted-foreground text-center py-4 text-xs">
-            Немає будильників.
+            {t("empty")}
           </p>
         ) : (
           alarms.map((a) => {
@@ -298,11 +296,13 @@ export function AlarmTab({
                     {a.recurrence !== "NONE" && (
                       <span className="flex items-center gap-0.5">
                         <RotateCw className="h-2.5 w-2.5" />
-                        {RECURRENCE_LABEL[a.recurrence]}
+                        {t(`recurrence.${a.recurrence}`)}
                       </span>
                     )}
                     <span>
-                      {isMine ? "→ мені" : `→ ${fullName(a.target) || "—"}`}
+                      {isMine
+                        ? t("toMe")
+                        : t("toUser", { name: fullName(a.target) || "—" })}
                     </span>
                   </div>
                 </div>
@@ -315,14 +315,14 @@ export function AlarmTab({
                         size="icon"
                         variant="ghost"
                         className="h-6 w-6 shrink-0"
-                        title="Повторити"
+                        title={t("repeat")}
                       >
                         <Repeat className="h-3 w-3" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-2" align="end">
                       <div className="text-[10px] text-muted-foreground mb-1">
-                        Перезапустити через…
+                        {t("restartIn")}
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {QUICK_OFFSETS.map((q) => (
@@ -336,7 +336,7 @@ export function AlarmTab({
                               })
                             }
                           >
-                            {q.label}
+                            {t(`offsets.${q.key}`)}
                           </button>
                         ))}
                       </div>
@@ -350,7 +350,7 @@ export function AlarmTab({
                     variant="ghost"
                     className="h-6 w-6 shrink-0"
                     onClick={() => {
-                      if (confirm("Видалити будильник?"))
+                      if (confirm(t("deleteConfirm")))
                         deleteAlarm.mutate(a.id);
                     }}
                   >

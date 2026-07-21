@@ -56,6 +56,38 @@
       "OFFLINE": "Neprisijungęs"
     }
   },
+  "alarm": {
+    "title": "Žadintuvai",
+    "new": "Naujas",
+    "targetPlaceholder": "Kam",
+    "self": "Sau",
+    "driverNone": "Vairuotojui (nėra)",
+    "titlePlaceholder": "Tema *",
+    "notePlaceholder": "Komentaras",
+    "noDriverAlert": "Šiame sunkvežimyje šiuo metu nėra vairuotojo",
+    "tzWarning": "⏱ Laikas pagal vairuotojo {name} laiko juostą. „{time}“ reiškia {time} jo laikrodyje.",
+    "linkToTrip": "Susieti su aktyviu reisu",
+    "creating": "Kuriama…",
+    "create": "Sukurti",
+    "empty": "Žadintuvų nėra.",
+    "toMe": "→ man",
+    "toUser": "→ {name}",
+    "repeat": "Kartoti",
+    "restartIn": "Paleisti iš naujo po…",
+    "deleteConfirm": "Ištrinti žadintuvą?",
+    "recurrence": {
+      "NONE": "Vieną kartą",
+      "DAILY": "Kasdien",
+      "WEEKLY": "Kas savaitę"
+    },
+    "offsets": {
+      "off5": "+5 min",
+      "off15": "+15 min",
+      "off30": "+30 min",
+      "off60": "+1 val.",
+      "off120": "+2 val."
+    }
+  },
   "errors": {
     "notFound": {
       "title": "Ne ta kryptis",

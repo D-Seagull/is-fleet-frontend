@@ -56,6 +56,38 @@
       "OFFLINE": "Offline"
     }
   },
+  "alarm": {
+    "title": "Alarmy",
+    "new": "Nowy",
+    "targetPlaceholder": "Do kogo",
+    "self": "Do siebie",
+    "driverNone": "Kierowca (brak)",
+    "titlePlaceholder": "Temat *",
+    "notePlaceholder": "Komentarz",
+    "noDriverAlert": "Ta ciężarówka nie ma teraz kierowcy",
+    "tzWarning": "⏱ Czas według strefy czasowej kierowcy {name}. „{time}” oznacza {time} na jego zegarze.",
+    "linkToTrip": "Powiąż z aktywną trasą",
+    "creating": "Tworzenie…",
+    "create": "Utwórz",
+    "empty": "Brak alarmów.",
+    "toMe": "→ do mnie",
+    "toUser": "→ {name}",
+    "repeat": "Powtórz",
+    "restartIn": "Uruchom ponownie za…",
+    "deleteConfirm": "Usunąć alarm?",
+    "recurrence": {
+      "NONE": "Raz",
+      "DAILY": "Codziennie",
+      "WEEKLY": "Co tydzień"
+    },
+    "offsets": {
+      "off5": "+5 min",
+      "off15": "+15 min",
+      "off30": "+30 min",
+      "off60": "+1 godz.",
+      "off120": "+2 godz."
+    }
+  },
   "errors": {
     "notFound": {
       "title": "Zły zjazd",

@@ -56,6 +56,38 @@
       "OFFLINE": "Offline"
     }
   },
+  "alarm": {
+    "title": "Wecker",
+    "new": "Neu",
+    "targetPlaceholder": "An wen",
+    "self": "An mich",
+    "driverNone": "Fahrer (keiner)",
+    "titlePlaceholder": "Betreff *",
+    "notePlaceholder": "Kommentar",
+    "noDriverAlert": "Dieser LKW hat derzeit keinen Fahrer",
+    "tzWarning": "⏱ Zeit in der Zeitzone von Fahrer {name}. „{time}“ bedeutet {time} auf seiner Uhr.",
+    "linkToTrip": "Mit der aktiven Fahrt verknüpfen",
+    "creating": "Wird erstellt…",
+    "create": "Erstellen",
+    "empty": "Keine Wecker.",
+    "toMe": "→ an mich",
+    "toUser": "→ {name}",
+    "repeat": "Wiederholen",
+    "restartIn": "Neu starten in…",
+    "deleteConfirm": "Wecker löschen?",
+    "recurrence": {
+      "NONE": "Einmal",
+      "DAILY": "Täglich",
+      "WEEKLY": "Wöchentlich"
+    },
+    "offsets": {
+      "off5": "+5 Min",
+      "off15": "+15 Min",
+      "off30": "+30 Min",
+      "off60": "+1 Std",
+      "off120": "+2 Std"
+    }
+  },
   "errors": {
     "notFound": {
       "title": "Falsch abgebogen",
