@@ -56,6 +56,18 @@
       "OFFLINE": "Offline"
     }
   },
+  "errors": {
+    "notFound": {
+      "title": "Wrong turn",
+      "message": "This road doesn't lead anywhere. The page you're looking for took a detour or never existed.",
+      "action": "Back on track"
+    },
+    "serverError": {
+      "title": "Road closed",
+      "message": "Something broke down on our end. The route is blocked, but you can try again.",
+      "action": "Try again"
+    }
+  },
   "nav": {
     "trucks": "Trucks",
     "trips": "Trips",

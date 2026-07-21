@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { ErrorPage } from "@/components/error-page";
 
 export default function Error({
@@ -10,6 +11,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("errors.serverError");
+
   useEffect(() => {
     console.error("[error boundary]", error);
   }, [error]);
@@ -17,9 +20,9 @@ export default function Error({
   return (
     <ErrorPage
       code="500"
-      title="Road closed"
-      message="Something broke down on our end. The route is blocked, but you can try again."
-      action={{ label: "Try again", onClick: () => reset() }}
+      title={t("title")}
+      message={t("message")}
+      action={{ label: t("action"), onClick: () => reset() }}
     />
   );
 }

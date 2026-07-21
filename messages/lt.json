@@ -56,6 +56,18 @@
       "OFFLINE": "Neprisijungęs"
     }
   },
+  "errors": {
+    "notFound": {
+      "title": "Ne ta kryptis",
+      "message": "Šis kelias niekur neveda. Ieškomas puslapis pasuko aplinkkeliu arba niekada neegzistavo.",
+      "action": "Grįžti į maršrutą"
+    },
+    "serverError": {
+      "title": "Kelias uždarytas",
+      "message": "Kažkas sugedo mūsų pusėje. Maršrutas užblokuotas, bet galite bandyti dar kartą.",
+      "action": "Bandyti dar kartą"
+    }
+  },
   "nav": {
     "trucks": "Sunkvežimiai",
     "trips": "Reisai",

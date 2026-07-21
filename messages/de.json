@@ -56,6 +56,18 @@
       "OFFLINE": "Offline"
     }
   },
+  "errors": {
+    "notFound": {
+      "title": "Falsch abgebogen",
+      "message": "Diese Straße führt nirgendwohin. Die gesuchte Seite hat einen Umweg genommen oder gab es nie.",
+      "action": "Zurück auf die Route"
+    },
+    "serverError": {
+      "title": "Straße gesperrt",
+      "message": "Auf unserer Seite ist etwas kaputtgegangen. Die Route ist blockiert, aber Sie können es erneut versuchen.",
+      "action": "Erneut versuchen"
+    }
+  },
   "nav": {
     "trucks": "LKW",
     "trips": "Fahrten",

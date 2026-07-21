@@ -56,6 +56,18 @@
       "OFFLINE": "Offline"
     }
   },
+  "errors": {
+    "notFound": {
+      "title": "Zły zjazd",
+      "message": "Ta droga donikąd nie prowadzi. Strona, której szukasz, pojechała objazdem lub nigdy nie istniała.",
+      "action": "Wróć na trasę"
+    },
+    "serverError": {
+      "title": "Droga zamknięta",
+      "message": "Coś się zepsuło po naszej stronie. Trasa jest zablokowana, ale możesz spróbować ponownie.",
+      "action": "Spróbuj ponownie"
+    }
+  },
   "nav": {
     "trucks": "Ciężarówki",
     "trips": "Trasy",

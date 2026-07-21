@@ -1,12 +1,14 @@
+import { getTranslations } from "next-intl/server";
 import { ErrorPage } from "@/components/error-page";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const t = await getTranslations("errors.notFound");
   return (
     <ErrorPage
       code="404"
-      title="Wrong turn"
-      message="This road doesn't lead anywhere. The page you're looking for took a detour or never existed."
-      action={{ label: "Back on track", href: "/" }}
+      title={t("title")}
+      message={t("message")}
+      action={{ label: t("action"), href: "/" }}
     />
   );
 }
