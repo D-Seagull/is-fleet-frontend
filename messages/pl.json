@@ -204,6 +204,18 @@
       }
     }
   },
+  "documents": {
+    "title": "Dokumenty",
+    "filesCount": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# pliku}}",
+    "searchPlaceholder": "Szukaj po trasie, zamówieniu, numerze…",
+    "empty": "Brak dokumentów.",
+    "tripFallback": "Trasa",
+    "tabAll": "Wszystkie ({count})",
+    "tabPhotos": "Zdjęcia ({count})",
+    "tabDocuments": "Dokumenty ({count})",
+    "nothingHere": "Tu jeszcze pusto.",
+    "deleteConfirm": "Usunąć {fileName}?"
+  },
   "trucks": {
     "title": "Ciężarówki",
     "addButton": "Dodaj ciężarówkę",

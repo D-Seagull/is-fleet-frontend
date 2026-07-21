@@ -204,6 +204,18 @@
       }
     }
   },
+  "documents": {
+    "title": "Dokumente",
+    "filesCount": "{count, plural, one {# Datei} other {# Dateien}}",
+    "searchPlaceholder": "Nach Fahrt, Bestellung, Kennzeichen suchen…",
+    "empty": "Noch keine Dokumente.",
+    "tripFallback": "Fahrt",
+    "tabAll": "Alle ({count})",
+    "tabPhotos": "Fotos ({count})",
+    "tabDocuments": "Dokumente ({count})",
+    "nothingHere": "Hier ist noch nichts.",
+    "deleteConfirm": "{fileName} löschen?"
+  },
   "trucks": {
     "title": "LKW",
     "addButton": "LKW hinzufügen",

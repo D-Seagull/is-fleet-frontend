@@ -204,6 +204,18 @@
       }
     }
   },
+  "documents": {
+    "title": "Документи",
+    "filesCount": "{count, plural, one {# файл} few {# файли} many {# файлів} other {# файлу}}",
+    "searchPlaceholder": "Пошук за рейсом, замовленням, номером…",
+    "empty": "Ще немає документів.",
+    "tripFallback": "Рейс",
+    "tabAll": "Усі ({count})",
+    "tabPhotos": "Фото ({count})",
+    "tabDocuments": "Документи ({count})",
+    "nothingHere": "Тут поки порожньо.",
+    "deleteConfirm": "Видалити {fileName}?"
+  },
   "trucks": {
     "title": "Вантажівки",
     "addButton": "Додати вантажівку",

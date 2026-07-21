@@ -204,6 +204,18 @@
       }
     }
   },
+  "documents": {
+    "title": "Documents",
+    "filesCount": "{count, plural, one {# file} other {# files}}",
+    "searchPlaceholder": "Search by trip, order, plate…",
+    "empty": "No documents yet.",
+    "tripFallback": "Trip",
+    "tabAll": "All ({count})",
+    "tabPhotos": "Photos ({count})",
+    "tabDocuments": "Documents ({count})",
+    "nothingHere": "Nothing here yet.",
+    "deleteConfirm": "Delete {fileName}?"
+  },
   "trucks": {
     "title": "Trucks",
     "addButton": "Add Truck",

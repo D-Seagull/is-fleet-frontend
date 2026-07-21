@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
   Search,
@@ -39,6 +40,7 @@ interface FolderGroup {
 }
 
 export default function DocumentsPage() {
+  const t = useTranslations("documents");
   const { data: docs = [], isLoading } = useAllDocuments();
   const [search, setSearch] = useState("");
   const [openFolder, setOpenFolder] = useState<FolderGroup | null>(null);
@@ -47,23 +49,23 @@ export default function DocumentsPage() {
     const map = new Map<string, FolderGroup>();
     for (const d of docs) {
       const tripId = d.tripId;
-      const t = new Date(d.createdAt).getTime();
+      const ts = new Date(d.createdAt).getTime();
       const existing = map.get(tripId);
       if (existing) {
         existing.docs.push(d);
         if (d.fileType === "PHOTO") existing.photos++;
         else existing.documents++;
-        if (t > existing.latest) existing.latest = t;
+        if (ts > existing.latest) existing.latest = ts;
       } else {
         map.set(tripId, {
           tripId,
-          tripTitle: d.trip?.title ?? "Trip",
+          tripTitle: d.trip?.title ?? t("tripFallback"),
           orderNumber: d.trip?.orderNumber ?? null,
           truckPlate: d.trip?.truck?.plate ?? null,
           docs: [d],
           photos: d.fileType === "PHOTO" ? 1 : 0,
           documents: d.fileType === "DOCUMENT" ? 1 : 0,
-          latest: t,
+          latest: ts,
         });
       }
     }
@@ -76,19 +78,21 @@ export default function DocumentsPage() {
         (f.orderNumber ?? "").toLowerCase().includes(q) ||
         (f.truckPlate ?? "").toLowerCase().includes(q),
     );
-  }, [docs, search]);
+  }, [docs, search, t]);
 
   return (
     <div className="flex flex-col gap-6 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Documents</h1>
-        <Badge variant="secondary">{docs.length} files</Badge>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <Badge variant="secondary">
+          {t("filesCount", { count: docs.length })}
+        </Badge>
       </div>
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search by trip, order, plate…"
+          placeholder={t("searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -101,7 +105,7 @@ export default function DocumentsPage() {
         </div>
       ) : folders.length === 0 ? (
         <div className="rounded-lg border py-16 text-center text-muted-foreground">
-          No documents yet.
+          {t("empty")}
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -165,6 +169,7 @@ function FolderModal({
   folder: FolderGroup | null;
   onClose: () => void;
 }) {
+  const t = useTranslations("documents");
   const [tab, setTab] = useState<Tab>("ALL");
   const [lightbox, setLightbox] = useState<TripDocumentFull | null>(null);
 
@@ -190,7 +195,7 @@ function FolderModal({
   };
 
   const handleDelete = async (doc: TripDocumentFull) => {
-    if (!confirm(`Delete ${doc.fileName}?`)) return;
+    if (!confirm(t("deleteConfirm", { fileName: doc.fileName }))) return;
     await api.delete(`/documents/${doc.id}`);
     // Triggers a refetch via the hook's invalidation chain on next render
     window.location.reload();
@@ -212,15 +217,21 @@ function FolderModal({
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="flex-1 flex flex-col min-h-0">
           <TabsList className="mx-4 mt-3 grid grid-cols-3">
-            <TabsTrigger value="ALL">All ({counts.ALL})</TabsTrigger>
-            <TabsTrigger value="PHOTO">Photos ({counts.PHOTO})</TabsTrigger>
-            <TabsTrigger value="DOCUMENT">Documents ({counts.DOCUMENT})</TabsTrigger>
+            <TabsTrigger value="ALL">
+              {t("tabAll", { count: counts.ALL })}
+            </TabsTrigger>
+            <TabsTrigger value="PHOTO">
+              {t("tabPhotos", { count: counts.PHOTO })}
+            </TabsTrigger>
+            <TabsTrigger value="DOCUMENT">
+              {t("tabDocuments", { count: counts.DOCUMENT })}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value={tab} className="flex-1 overflow-y-auto px-4 py-3">
             {filtered.length === 0 ? (
               <div className="text-center text-muted-foreground py-12 text-sm">
-                Nothing here yet.
+                {t("nothingHere")}
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
