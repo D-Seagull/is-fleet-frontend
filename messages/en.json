@@ -100,6 +100,24 @@
       "action": "Try again"
     }
   },
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "groupActions": {
+    "more": "More",
+    "changePhoto": "Change photo",
+    "uploadPhoto": "Upload photo",
+    "removePhoto": "Remove photo",
+    "renameGroup": "Rename group",
+    "renameDesc": "Members will see the new name right after saving.",
+    "nameLabel": "Name",
+    "changeGroupPhoto": "Change group photo",
+    "errorType": "Only JPG, PNG or WebP.",
+    "errorSize": "File too large — max 5 MB.",
+    "errorUpload": "Could not upload the photo.",
+    "renameEmpty": "The name can't be empty.",
+    "saveError": "Could not save."
+  },
   "nav": {
     "trucks": "Trucks",
     "trips": "Trips",
@@ -232,6 +250,19 @@
     "previousChats": "{count, plural, one {# previous chat} other {# previous chats}} on this trip",
     "newMessages": "{count} new",
     "typing": "{count, plural, one {is typing} other {are typing}}",
+    "react": "React",
+    "attachments": {
+      "upload": "Upload",
+      "noAttachments": "No attachments yet.",
+      "tabAll": "All ({count})",
+      "tabPhotos": "Photos ({count})",
+      "tabDocuments": "Documents ({count})",
+      "noPhotos": "No photos.",
+      "noDocuments": "No documents.",
+      "dmSubtitle": "Direct message attachments",
+      "groupSubtitle": "Group attachments",
+      "deleteConfirm": "Delete this attachment?"
+    },
     "archive": {
       "title": "Chat archive",
       "titleSession": "Archived chat",

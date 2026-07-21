@@ -100,6 +100,24 @@
       "action": "Спробувати ще раз"
     }
   },
+  "theme": {
+    "toggle": "Перемкнути тему"
+  },
+  "groupActions": {
+    "more": "Меню",
+    "changePhoto": "Змінити фото",
+    "uploadPhoto": "Завантажити фото",
+    "removePhoto": "Прибрати фото",
+    "renameGroup": "Перейменувати групу",
+    "renameDesc": "Учасники побачать нову назву одразу після збереження.",
+    "nameLabel": "Назва",
+    "changeGroupPhoto": "Змінити фото групи",
+    "errorType": "Лише JPG, PNG або WebP.",
+    "errorSize": "Файл завеликий — до 5 MB.",
+    "errorUpload": "Не вдалось завантажити фото.",
+    "renameEmpty": "Назва не може бути порожньою.",
+    "saveError": "Не вдалось зберегти."
+  },
   "nav": {
     "trucks": "Вантажівки",
     "trips": "Рейси",
@@ -232,6 +250,19 @@
     "previousChats": "{count, plural, one {# попередній чат} few {# попередні чати} many {# попередніх чатів} other {# попередніх чату}} у цьому рейсі",
     "newMessages": "{count, plural, one {# нове} few {# нові} many {# нових} other {# нових}}",
     "typing": "{count, plural, one {набирає} other {набирають}}",
+    "react": "Реагувати",
+    "attachments": {
+      "upload": "Завантажити",
+      "noAttachments": "Ще немає вкладень.",
+      "tabAll": "Усі ({count})",
+      "tabPhotos": "Фото ({count})",
+      "tabDocuments": "Документи ({count})",
+      "noPhotos": "Немає фото.",
+      "noDocuments": "Немає документів.",
+      "dmSubtitle": "Вкладення особистого чату",
+      "groupSubtitle": "Вкладення групи",
+      "deleteConfirm": "Видалити це вкладення?"
+    },
     "archive": {
       "title": "Архів чату",
       "titleSession": "Архівний чат",

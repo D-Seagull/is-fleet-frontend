@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Loader2, Plus, FileText, Eye, Download, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -51,6 +52,8 @@ export function MessageAttachmentsSheet({
   targetId,
   title,
 }: Props) {
+  const t = useTranslations("chat.attachments");
+  const tActions = useTranslations("common.actions");
   const user = useAuthStore((s) => s.user);
   const isDm = source === "dm";
 
@@ -106,7 +109,7 @@ export function MessageAttachmentsSheet({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this attachment?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     if (isDm) await dmDelete.mutateAsync(id);
     else await groupDelete.mutateAsync(id);
   }
@@ -139,14 +142,14 @@ export function MessageAttachmentsSheet({
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             onClick={() => openDoc(doc.id)}
-            title="View"
+            title={tActions("view")}
             className="p-1 rounded hover:bg-muted"
           >
             <Eye className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
           <button
             onClick={() => downloadDoc(doc.id)}
-            title="Download"
+            title={tActions("download")}
             className="p-1 rounded hover:bg-muted"
           >
             <Download className="h-3.5 w-3.5 text-muted-foreground" />
@@ -154,7 +157,7 @@ export function MessageAttachmentsSheet({
           {canDelete && (
             <button
               onClick={() => handleDelete(doc.id)}
-              title="Delete"
+              title={tActions("delete")}
               className="p-1 rounded hover:bg-muted"
             >
               <Trash2 className="h-3.5 w-3.5 text-red-500" />
@@ -171,7 +174,7 @@ export function MessageAttachmentsSheet({
         <SheetHeader className="px-4 pt-4 pb-3 border-b">
           <SheetTitle className="truncate">{title}</SheetTitle>
           <p className="text-xs text-muted-foreground">
-            {isDm ? "Direct message attachments" : "Group attachments"}
+            {isDm ? t("dmSubtitle") : t("groupSubtitle")}
           </p>
         </SheetHeader>
 
@@ -189,7 +192,7 @@ export function MessageAttachmentsSheet({
                 ) : (
                   <Plus className="h-3 w-3" />
                 )}
-                Upload
+                {t("upload")}
               </Button>
               <input
                 ref={fileInputRef}
@@ -207,19 +210,19 @@ export function MessageAttachmentsSheet({
               </div>
             ) : docs.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-6">
-                No attachments yet.
+                {t("noAttachments")}
               </p>
             ) : (
               <Tabs defaultValue="ALL">
                 <TabsList className="grid grid-cols-3 mb-2">
                   <TabsTrigger value="ALL" className="text-xs">
-                    All ({docs.length})
+                    {t("tabAll", { count: docs.length })}
                   </TabsTrigger>
                   <TabsTrigger value="PHOTO" className="text-xs">
-                    Photos ({photos.length})
+                    {t("tabPhotos", { count: photos.length })}
                   </TabsTrigger>
                   <TabsTrigger value="DOCUMENT" className="text-xs">
-                    Documents ({documents.length})
+                    {t("tabDocuments", { count: documents.length })}
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="ALL" className="flex flex-col gap-1.5 mt-0">
@@ -231,7 +234,7 @@ export function MessageAttachmentsSheet({
                 >
                   {photos.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-6">
-                      No photos.
+                      {t("noPhotos")}
                     </p>
                   ) : (
                     photos.map(renderRow)
@@ -243,7 +246,7 @@ export function MessageAttachmentsSheet({
                 >
                   {documents.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-6">
-                      No documents.
+                      {t("noDocuments")}
                     </p>
                   ) : (
                     documents.map(renderRow)

@@ -100,6 +100,24 @@
       "action": "Попробовать ещё раз"
     }
   },
+  "theme": {
+    "toggle": "Переключить тему"
+  },
+  "groupActions": {
+    "more": "Ещё",
+    "changePhoto": "Изменить фото",
+    "uploadPhoto": "Загрузить фото",
+    "removePhoto": "Убрать фото",
+    "renameGroup": "Переименовать группу",
+    "renameDesc": "Участники увидят новое название сразу после сохранения.",
+    "nameLabel": "Название",
+    "changeGroupPhoto": "Изменить фото группы",
+    "errorType": "Только JPG, PNG или WebP.",
+    "errorSize": "Файл слишком большой — до 5 MB.",
+    "errorUpload": "Не удалось загрузить фото.",
+    "renameEmpty": "Название не может быть пустым.",
+    "saveError": "Не удалось сохранить."
+  },
   "nav": {
     "trucks": "Грузовики",
     "trips": "Рейсы",
@@ -232,6 +250,19 @@
     "previousChats": "{count, plural, one {# предыдущий чат} few {# предыдущих чата} many {# предыдущих чатов} other {# предыдущих чата}} в этом рейсе",
     "newMessages": "{count, plural, one {# новое} few {# новых} many {# новых} other {# новых}}",
     "typing": "{count, plural, one {печатает} other {печатают}}",
+    "react": "Реакция",
+    "attachments": {
+      "upload": "Загрузить",
+      "noAttachments": "Пока нет вложений.",
+      "tabAll": "Все ({count})",
+      "tabPhotos": "Фото ({count})",
+      "tabDocuments": "Документы ({count})",
+      "noPhotos": "Нет фото.",
+      "noDocuments": "Нет документов.",
+      "dmSubtitle": "Вложения личного чата",
+      "groupSubtitle": "Вложения группы",
+      "deleteConfirm": "Удалить это вложение?"
+    },
     "archive": {
       "title": "Архив чата",
       "titleSession": "Архивный чат",

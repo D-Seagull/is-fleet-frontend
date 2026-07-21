@@ -1,6 +1,7 @@
 "use client";
 
 import { Paperclip } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -34,8 +35,9 @@ export function MessageQuote({
   onClick,
   variant = "default",
 }: Props) {
+  const t = useTranslations("chat");
   const isDoc = kind === "doc";
-  const tombstone = isDoc ? "Файл видалено" : "Повідомлення видалено";
+  const tombstone = isDoc ? t("fileDeleted") : t("messageDeleted");
 
   return (
     <button
@@ -58,7 +60,7 @@ export function MessageQuote({
             : "text-primary",
         )}
       >
-        {senderName ?? "Unknown"}
+        {senderName ?? t("unknown")}
       </p>
       <p
         className={cn(

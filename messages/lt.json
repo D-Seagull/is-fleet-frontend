@@ -100,6 +100,24 @@
       "action": "Bandyti dar kartą"
     }
   },
+  "theme": {
+    "toggle": "Perjungti temą"
+  },
+  "groupActions": {
+    "more": "Daugiau",
+    "changePhoto": "Keisti nuotrauką",
+    "uploadPhoto": "Įkelti nuotrauką",
+    "removePhoto": "Pašalinti nuotrauką",
+    "renameGroup": "Pervadinti grupę",
+    "renameDesc": "Nariai pamatys naują pavadinimą iškart po išsaugojimo.",
+    "nameLabel": "Pavadinimas",
+    "changeGroupPhoto": "Keisti grupės nuotrauką",
+    "errorType": "Tik JPG, PNG arba WebP.",
+    "errorSize": "Failas per didelis — iki 5 MB.",
+    "errorUpload": "Nepavyko įkelti nuotraukos.",
+    "renameEmpty": "Pavadinimas negali būti tuščias.",
+    "saveError": "Nepavyko išsaugoti."
+  },
   "nav": {
     "trucks": "Sunkvežimiai",
     "trips": "Reisai",
@@ -232,6 +250,19 @@
     "previousChats": "{count, plural, one {# ankstesnis pokalbis} few {# ankstesni pokalbiai} many {# ankstesnių pokalbių} other {# ankstesnio pokalbio}} šiame reise",
     "newMessages": "{count, plural, one {# nauja} few {# naujos} many {# naujų} other {# naujos}}",
     "typing": "{count, plural, one {rašo} other {rašo}}",
+    "react": "Reaguoti",
+    "attachments": {
+      "upload": "Įkelti",
+      "noAttachments": "Priedų dar nėra.",
+      "tabAll": "Visi ({count})",
+      "tabPhotos": "Nuotraukos ({count})",
+      "tabDocuments": "Dokumentai ({count})",
+      "noPhotos": "Nuotraukų nėra.",
+      "noDocuments": "Dokumentų nėra.",
+      "dmSubtitle": "Asmeninio pokalbio priedai",
+      "groupSubtitle": "Grupės priedai",
+      "deleteConfirm": "Ištrinti šį priedą?"
+    },
     "archive": {
       "title": "Pokalbių archyvas",
       "titleSession": "Archyvuotas pokalbis",

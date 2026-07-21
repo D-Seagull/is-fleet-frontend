@@ -100,6 +100,24 @@
       "action": "Spróbuj ponownie"
     }
   },
+  "theme": {
+    "toggle": "Przełącz motyw"
+  },
+  "groupActions": {
+    "more": "Więcej",
+    "changePhoto": "Zmień zdjęcie",
+    "uploadPhoto": "Prześlij zdjęcie",
+    "removePhoto": "Usuń zdjęcie",
+    "renameGroup": "Zmień nazwę grupy",
+    "renameDesc": "Członkowie zobaczą nową nazwę zaraz po zapisaniu.",
+    "nameLabel": "Nazwa",
+    "changeGroupPhoto": "Zmień zdjęcie grupy",
+    "errorType": "Tylko JPG, PNG lub WebP.",
+    "errorSize": "Plik za duży — maks. 5 MB.",
+    "errorUpload": "Nie udało się przesłać zdjęcia.",
+    "renameEmpty": "Nazwa nie może być pusta.",
+    "saveError": "Nie udało się zapisać."
+  },
   "nav": {
     "trucks": "Ciężarówki",
     "trips": "Trasy",
@@ -232,6 +250,19 @@
     "previousChats": "{count, plural, one {# poprzedni czat} few {# poprzednie czaty} many {# poprzednich czatów} other {# poprzednich czatu}} na tej trasie",
     "newMessages": "{count, plural, one {# nowa} few {# nowe} many {# nowych} other {# nowych}}",
     "typing": "{count, plural, one {pisze} other {piszą}}",
+    "react": "Zareaguj",
+    "attachments": {
+      "upload": "Prześlij",
+      "noAttachments": "Brak załączników.",
+      "tabAll": "Wszystkie ({count})",
+      "tabPhotos": "Zdjęcia ({count})",
+      "tabDocuments": "Dokumenty ({count})",
+      "noPhotos": "Brak zdjęć.",
+      "noDocuments": "Brak dokumentów.",
+      "dmSubtitle": "Załączniki wiadomości prywatnej",
+      "groupSubtitle": "Załączniki grupy",
+      "deleteConfirm": "Usunąć ten załącznik?"
+    },
     "archive": {
       "title": "Archiwum czatu",
       "titleSession": "Zarchiwizowany czat",

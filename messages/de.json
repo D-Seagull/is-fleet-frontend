@@ -100,6 +100,24 @@
       "action": "Erneut versuchen"
     }
   },
+  "theme": {
+    "toggle": "Design umschalten"
+  },
+  "groupActions": {
+    "more": "Mehr",
+    "changePhoto": "Foto ändern",
+    "uploadPhoto": "Foto hochladen",
+    "removePhoto": "Foto entfernen",
+    "renameGroup": "Gruppe umbenennen",
+    "renameDesc": "Mitglieder sehen den neuen Namen direkt nach dem Speichern.",
+    "nameLabel": "Name",
+    "changeGroupPhoto": "Gruppenfoto ändern",
+    "errorType": "Nur JPG, PNG oder WebP.",
+    "errorSize": "Datei zu groß — max. 5 MB.",
+    "errorUpload": "Foto konnte nicht hochgeladen werden.",
+    "renameEmpty": "Der Name darf nicht leer sein.",
+    "saveError": "Speichern fehlgeschlagen."
+  },
   "nav": {
     "trucks": "LKW",
     "trips": "Fahrten",
@@ -232,6 +250,19 @@
     "previousChats": "{count, plural, one {# vorheriger Chat} other {# vorherige Chats}} auf dieser Fahrt",
     "newMessages": "{count} neu",
     "typing": "{count, plural, one {schreibt} other {schreiben}}",
+    "react": "Reagieren",
+    "attachments": {
+      "upload": "Hochladen",
+      "noAttachments": "Noch keine Anhänge.",
+      "tabAll": "Alle ({count})",
+      "tabPhotos": "Fotos ({count})",
+      "tabDocuments": "Dokumente ({count})",
+      "noPhotos": "Keine Fotos.",
+      "noDocuments": "Keine Dokumente.",
+      "dmSubtitle": "Anhänge der Direktnachricht",
+      "groupSubtitle": "Gruppenanhänge",
+      "deleteConfirm": "Diesen Anhang löschen?"
+    },
     "archive": {
       "title": "Chat-Archiv",
       "titleSession": "Archivierter Chat",

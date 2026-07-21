@@ -9,6 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { isAxiosError } from "axios";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -50,6 +51,8 @@ export function GroupActionsMenu({
   group: { id: string; name: string; avatar: string | null };
   canEdit: boolean;
 }) {
+  const t = useTranslations("groupActions");
+  const tActions = useTranslations("common.actions");
   const upload = useUploadGroupAvatar(group.id);
   const remove = useDeleteGroupAvatar(group.id);
   const rename = useUpdateGroup();
@@ -77,11 +80,11 @@ export function GroupActionsMenu({
     e.target.value = "";
     if (!file) return;
     if (!ACCEPTED_GROUP_AVATAR_TYPES.includes(file.type)) {
-      setPickerError("Лише JPG, PNG або WebP.");
+      setPickerError(t("errorType"));
       return;
     }
     if (file.size > MAX_GROUP_AVATAR_BYTES) {
-      setPickerError("Файл завеликий — до 5 MB.");
+      setPickerError(t("errorSize"));
       return;
     }
     const url = URL.createObjectURL(file);
@@ -107,7 +110,7 @@ export function GroupActionsMenu({
       await upload.mutateAsync(file);
       closeCropper();
     } catch {
-      setPickerError("Не вдалось завантажити фото.");
+      setPickerError(t("errorUpload"));
     }
   };
 
@@ -121,7 +124,7 @@ export function GroupActionsMenu({
   const handleRename = async () => {
     const trimmed = draftName.trim();
     if (!trimmed) {
-      setRenameError("Назва не може бути порожньою.");
+      setRenameError(t("renameEmpty"));
       return;
     }
     if (trimmed === group.name) {
@@ -139,9 +142,9 @@ export function GroupActionsMenu({
         const msg = Array.isArray(data?.message)
           ? data?.message?.[0]
           : data?.message;
-        setRenameError(msg ?? "Не вдалось зберегти.");
+        setRenameError(msg ?? t("saveError"));
       } else {
-        setRenameError("Не вдалось зберегти.");
+        setRenameError(t("saveError"));
       }
     }
   };
@@ -150,7 +153,7 @@ export function GroupActionsMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" title="More">
+          <Button variant="ghost" size="icon" title={t("more")}>
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -164,7 +167,7 @@ export function GroupActionsMenu({
             ) : (
               <Camera className="mr-2 h-4 w-4" />
             )}
-            {group.avatar ? "Змінити фото" : "Завантажити фото"}
+            {group.avatar ? t("changePhoto") : t("uploadPhoto")}
           </DropdownMenuItem>
           {group.avatar && (
             <DropdownMenuItem
@@ -177,13 +180,13 @@ export function GroupActionsMenu({
               ) : (
                 <Trash2 className="mr-2 h-4 w-4" />
               )}
-              Прибрати фото
+              {t("removePhoto")}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={openRename}>
             <Pencil className="mr-2 h-4 w-4" />
-            Перейменувати групу
+            {t("renameGroup")}
           </DropdownMenuItem>
           {pickerError && (
             <p className="text-xs text-destructive px-3 py-2">{pickerError}</p>
@@ -213,13 +216,11 @@ export function GroupActionsMenu({
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Перейменувати групу</DialogTitle>
-            <DialogDescription>
-              Учасники побачать нову назву одразу після збереження.
-            </DialogDescription>
+            <DialogTitle>{t("renameGroup")}</DialogTitle>
+            <DialogDescription>{t("renameDesc")}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="group-name">Назва</Label>
+            <Label htmlFor="group-name">{t("nameLabel")}</Label>
             <Input
               id="group-name"
               value={draftName}
@@ -243,7 +244,7 @@ export function GroupActionsMenu({
               onClick={() => setRenameOpen(false)}
               disabled={rename.isPending}
             >
-              Скасувати
+              {tActions("cancel")}
             </Button>
             <Button
               type="button"
@@ -253,7 +254,7 @@ export function GroupActionsMenu({
               {rename.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Зберегти
+              {tActions("save")}
             </Button>
           </DialogFooter>
         </DialogContent>

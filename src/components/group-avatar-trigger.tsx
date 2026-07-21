@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Camera, Loader2, Pencil, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Popover,
@@ -40,6 +41,8 @@ export function GroupAvatarTrigger({
   canEdit: boolean;
   className?: string;
 }) {
+  const t = useTranslations("groupActions");
+  const tActions = useTranslations("common.actions");
   const upload = useUploadGroupAvatar(group.id);
   const remove = useDeleteGroupAvatar(group.id);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,11 +76,11 @@ export function GroupAvatarTrigger({
     e.target.value = "";
     if (!file) return;
     if (!ACCEPTED_GROUP_AVATAR_TYPES.includes(file.type)) {
-      setError("Лише JPG, PNG або WebP.");
+      setError(t("errorType"));
       return;
     }
     if (file.size > MAX_GROUP_AVATAR_BYTES) {
-      setError("Файл завеликий — до 5 MB.");
+      setError(t("errorSize"));
       return;
     }
     const url = URL.createObjectURL(file);
@@ -103,7 +106,7 @@ export function GroupAvatarTrigger({
       await upload.mutateAsync(file);
       closeCropper();
     } catch {
-      setError("Не вдалось завантажити фото.");
+      setError(t("errorUpload"));
     }
   };
 
@@ -114,7 +117,7 @@ export function GroupAvatarTrigger({
           <button
             type="button"
             className="relative rounded-full hover:opacity-80 transition-opacity"
-            title="Change group photo"
+            title={t("changeGroupPhoto")}
           >
             {avatarNode}
             <span
@@ -137,7 +140,7 @@ export function GroupAvatarTrigger({
             ) : (
               <Camera className="h-4 w-4" />
             )}
-            {group.avatar ? "Змінити фото" : "Завантажити фото"}
+            {group.avatar ? t("changePhoto") : t("uploadPhoto")}
           </button>
           {group.avatar && (
             <button
@@ -151,7 +154,7 @@ export function GroupAvatarTrigger({
               ) : (
                 <Trash2 className="h-4 w-4" />
               )}
-              Прибрати
+              {tActions("remove")}
             </button>
           )}
           {error && (

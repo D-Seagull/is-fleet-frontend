@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
   QUICK_REACTION_EMOJIS,
@@ -31,6 +32,7 @@ export function MessageReactionsTrigger({
   currentUserId,
   hideWhenReacted = false,
 }: CommonProps & { hideWhenReacted?: boolean }) {
+  const t = useTranslations("chat");
   const toggle = useToggleReaction(type);
   const myEmoji =
     reactions.find((r) => r.userId === currentUserId)?.emoji ?? null;
@@ -111,7 +113,7 @@ export function MessageReactionsTrigger({
             ? "text-base opacity-100"
             : "text-xs opacity-40 grayscale hover:text-base hover:opacity-100 hover:grayscale-0",
         )}
-        title="React"
+        title={t("react")}
       >
         {display}
       </button>

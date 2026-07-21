@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
@@ -23,6 +24,7 @@ interface Props {
  *  - Save is disabled while the trimmed text is empty or unchanged.
  */
 export function MessageEditForm({ initial, onSave, onCancel, variant = "default" }: Props) {
+  const t = useTranslations("common.actions");
   const [value, setValue] = useState(initial);
   const [saving, setSaving] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -84,7 +86,7 @@ export function MessageEditForm({ initial, onSave, onCancel, variant = "default"
           }
         >
           <X className="h-3.5 w-3.5 mr-1" />
-          Скасувати
+          {t("cancel")}
         </Button>
         <Button
           type="button"
@@ -98,7 +100,7 @@ export function MessageEditForm({ initial, onSave, onCancel, variant = "default"
           }
         >
           <Check className="h-3.5 w-3.5 mr-1" />
-          Зберегти
+          {t("save")}
         </Button>
       </div>
     </div>
