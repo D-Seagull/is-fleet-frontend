@@ -204,18 +204,6 @@
       }
     }
   },
-  "documents": {
-    "title": "Dokumentai",
-    "filesCount": "{count, plural, one {# failas} few {# failai} many {# failų} other {# failo}}",
-    "searchPlaceholder": "Ieškoti pagal reisą, užsakymą, numerį…",
-    "empty": "Dokumentų dar nėra.",
-    "tripFallback": "Reisas",
-    "tabAll": "Visi ({count})",
-    "tabPhotos": "Nuotraukos ({count})",
-    "tabDocuments": "Dokumentai ({count})",
-    "nothingHere": "Čia dar tuščia.",
-    "deleteConfirm": "Ištrinti {fileName}?"
-  },
   "trucks": {
     "title": "Sunkvežimiai",
     "addButton": "Pridėti sunkvežimį",

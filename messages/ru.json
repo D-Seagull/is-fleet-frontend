@@ -204,18 +204,6 @@
       }
     }
   },
-  "documents": {
-    "title": "Документы",
-    "filesCount": "{count, plural, one {# файл} few {# файла} many {# файлов} other {# файла}}",
-    "searchPlaceholder": "Поиск по рейсу, заказу, номеру…",
-    "empty": "Документов пока нет.",
-    "tripFallback": "Рейс",
-    "tabAll": "Все ({count})",
-    "tabPhotos": "Фото ({count})",
-    "tabDocuments": "Документы ({count})",
-    "nothingHere": "Здесь пока пусто.",
-    "deleteConfirm": "Удалить {fileName}?"
-  },
   "trucks": {
     "title": "Грузовики",
     "addButton": "Добавить грузовик",
