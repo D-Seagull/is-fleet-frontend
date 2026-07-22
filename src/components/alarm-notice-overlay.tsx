@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Bell } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -32,6 +33,7 @@ interface FiredAlarm {
  */
 export function AlarmNoticeOverlay() {
   const queryClient = useQueryClient();
+  const tActions = useTranslations("common.actions");
   const [fired, setFired] = useState<FiredAlarm | null>(null);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export function AlarmNoticeOverlay() {
         </DialogHeader>
         <DialogFooter>
           <Button onClick={() => setFired(null)} className="w-full sm:w-auto">
-            OK
+            {tActions("ok")}
           </Button>
         </DialogFooter>
       </DialogContent>

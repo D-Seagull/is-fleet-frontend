@@ -45,7 +45,10 @@
       "download": "Atsisiųsti",
       "delete": "Ištrinti",
       "copy": "Kopijuoti",
-      "remove": "Pašalinti"
+      "remove": "Pašalinti",
+      "edit": "Redaguoti",
+      "reply": "Atsakyti",
+      "ok": "Gerai"
     },
     "status": {
       "ONLINE": "Prisijungęs",
@@ -319,7 +322,8 @@
         "TRIP_COMPLETED": "Reisas baigtas",
         "LEGACY_RESET": "Pokalbio atstatymas (senas)"
       }
-    }
+    },
+    "loadOlder": "Įkelti senesnes žinutes"
   },
   "trucks": {
     "title": "Sunkvežimiai",
@@ -716,5 +720,22 @@
       "colStatus": "Būsena",
       "colContact": "Kontaktas"
     }
+  },
+  "avatarCropper": {
+    "cropPhoto": "Apkarpyti nuotrauką",
+    "zoom": "Mastelis",
+    "savePhoto": "Išsaugoti nuotrauką",
+    "errorCrop": "Nepavyko apkarpyti nuotraukos."
+  },
+  "invalidInvite": {
+    "title": "Netinkama nuoroda",
+    "description": "Registracijai reikia administratoriaus kvietimo",
+    "goToLogin": "Eiti į prisijungimą"
+  },
+  "notifications": {
+    "unreadMessages": "Neperskaitytos žinutės",
+    "unreadCount": "{count, plural, one {# neperskaityta žinutė} few {# neperskaitytos žinutės} many {# neperskaitytos žinutės} other {# neperskaitytų žinučių}}",
+    "allCaughtUp": "Viskas perskaityta",
+    "noUnread": "Nėra neperskaitytų žinučių"
   }
 }

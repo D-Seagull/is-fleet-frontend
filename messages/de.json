@@ -45,7 +45,10 @@
       "download": "Herunterladen",
       "delete": "Löschen",
       "copy": "Kopieren",
-      "remove": "Entfernen"
+      "remove": "Entfernen",
+      "edit": "Bearbeiten",
+      "reply": "Antworten",
+      "ok": "OK"
     },
     "status": {
       "ONLINE": "Online",
@@ -319,7 +322,8 @@
         "TRIP_COMPLETED": "Fahrt abgeschlossen",
         "LEGACY_RESET": "Chat zurückgesetzt (Legacy)"
       }
-    }
+    },
+    "loadOlder": "Ältere Nachrichten laden"
   },
   "trucks": {
     "title": "LKW",
@@ -716,5 +720,22 @@
       "colStatus": "Status",
       "colContact": "Kontakt"
     }
+  },
+  "avatarCropper": {
+    "cropPhoto": "Foto zuschneiden",
+    "zoom": "Zoom",
+    "savePhoto": "Foto speichern",
+    "errorCrop": "Foto konnte nicht zugeschnitten werden."
+  },
+  "invalidInvite": {
+    "title": "Ungültiger Link",
+    "description": "Für die Registrierung ist eine Einladung eines Administrators erforderlich",
+    "goToLogin": "Zur Anmeldung"
+  },
+  "notifications": {
+    "unreadMessages": "Ungelesene Nachrichten",
+    "unreadCount": "{count, plural, one {# ungelesene Nachricht} other {# ungelesene Nachrichten}}",
+    "allCaughtUp": "Alles gelesen",
+    "noUnread": "Keine ungelesenen Nachrichten"
   }
 }

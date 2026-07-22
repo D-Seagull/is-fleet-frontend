@@ -82,6 +82,8 @@ const TEAMLEAD_ONLY = new Set(["/managers", "/settings"]);
 
 function UnreadBell() {
   const router = useRouter();
+  const t = useTranslations("notifications");
+  const tRoles = useTranslations("common.roles");
   const { data } = useUnreadSummary();
   useUnreadSocketSync();
   useTruckChangedSync();
@@ -100,7 +102,7 @@ function UnreadBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="relative p-1.5 rounded-md hover:bg-accent transition-colors" aria-label="Unread messages">
+        <button className="relative p-1.5 rounded-md hover:bg-accent transition-colors" aria-label={t("unreadMessages")}>
           <Bell className="h-5 w-5 text-muted-foreground" />
           {total > 0 && (
             <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-0.5 leading-none">
@@ -112,11 +114,11 @@ function UnreadBell() {
       <PopoverContent align="end" className="w-80 p-0">
         <div className="px-3 py-2.5 border-b">
           <p className="text-sm font-semibold">
-            {total > 0 ? `${total} unread message${total === 1 ? "" : "s"}` : "All caught up"}
+            {total > 0 ? t("unreadCount", { count: total }) : t("allCaughtUp")}
           </p>
         </div>
         {total === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">No unread messages</p>
+          <p className="text-sm text-muted-foreground text-center py-6">{t("noUnread")}</p>
         ) : (
           <ul className="max-h-80 overflow-y-auto divide-y">
             {items.map((item) => (
@@ -163,7 +165,7 @@ function UnreadBell() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium text-sm truncate">
-                      {fullName(conv.user) || conv.user.role}
+                      {fullName(conv.user) || tRoles(conv.user.role)}
                     </span>
                     <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">
                       {conv.unreadCount}

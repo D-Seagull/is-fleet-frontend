@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Reply, Copy, Pencil, Trash2 } from "lucide-react";
 import {
   ContextMenu,
@@ -42,6 +43,7 @@ export function MessageActionsContext({
   isDeleted = false,
   children,
 }: Props) {
+  const tActions = useTranslations("common.actions");
   const canEdit = isOwn && !isDeleted && !!actions.onEdit;
   const canDelete = isOwn && !isDeleted && !!actions.onDelete;
   const canReply = !isDeleted && !!actions.onReply;
@@ -100,17 +102,17 @@ export function MessageActionsContext({
         {canReply && (
           <ContextMenuItem onClick={actions.onReply}>
             <Reply className="h-4 w-4 mr-2" />
-            Reply
+            {tActions("reply")}
           </ContextMenuItem>
         )}
         <ContextMenuItem onClick={actions.onCopy}>
           <Copy className="h-4 w-4 mr-2" />
-          Copy
+          {tActions("copy")}
         </ContextMenuItem>
         {canEdit && (
           <ContextMenuItem onClick={actions.onEdit}>
             <Pencil className="h-4 w-4 mr-2" />
-            Edit
+            {tActions("edit")}
           </ContextMenuItem>
         )}
         {canDelete && (
@@ -121,7 +123,7 @@ export function MessageActionsContext({
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {tActions("delete")}
             </ContextMenuItem>
           </>
         )}

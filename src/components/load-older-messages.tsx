@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +23,7 @@ export function LoadOlderMessages({
   onLoadOlder,
   className,
 }: LoadOlderMessagesProps) {
+  const t = useTranslations("chat");
   if (!hasOlder && !isFetchingOlder) return null;
 
   return (
@@ -37,7 +39,7 @@ export function LoadOlderMessages({
           onClick={onLoadOlder}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
-          Load older messages
+          {t("loadOlder")}
         </Button>
       )}
     </div>

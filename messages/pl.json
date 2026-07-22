@@ -45,7 +45,10 @@
       "download": "Pobierz",
       "delete": "Usuń",
       "copy": "Kopiuj",
-      "remove": "Usuń"
+      "remove": "Usuń",
+      "edit": "Edytuj",
+      "reply": "Odpowiedz",
+      "ok": "OK"
     },
     "status": {
       "ONLINE": "Online",
@@ -319,7 +322,8 @@
         "TRIP_COMPLETED": "Trasa zakończona",
         "LEGACY_RESET": "Reset czatu (starsza wersja)"
       }
-    }
+    },
+    "loadOlder": "Wczytaj starsze wiadomości"
   },
   "trucks": {
     "title": "Ciężarówki",
@@ -716,5 +720,22 @@
       "colStatus": "Status",
       "colContact": "Kontakt"
     }
+  },
+  "avatarCropper": {
+    "cropPhoto": "Przytnij zdjęcie",
+    "zoom": "Powiększenie",
+    "savePhoto": "Zapisz zdjęcie",
+    "errorCrop": "Nie udało się przyciąć zdjęcia."
+  },
+  "invalidInvite": {
+    "title": "Nieprawidłowy link",
+    "description": "Rejestracja wymaga zaproszenia od administratora",
+    "goToLogin": "Przejdź do logowania"
+  },
+  "notifications": {
+    "unreadMessages": "Nieprzeczytane wiadomości",
+    "unreadCount": "{count, plural, one {# nieprzeczytana wiadomość} few {# nieprzeczytane wiadomości} many {# nieprzeczytanych wiadomości} other {# nieprzeczytanej wiadomości}}",
+    "allCaughtUp": "Wszystko przeczytane",
+    "noUnread": "Brak nieprzeczytanych wiadomości"
   }
 }

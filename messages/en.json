@@ -45,7 +45,10 @@
       "download": "Download",
       "delete": "Delete",
       "copy": "Copy",
-      "remove": "Remove"
+      "remove": "Remove",
+      "edit": "Edit",
+      "reply": "Reply",
+      "ok": "OK"
     },
     "status": {
       "ONLINE": "Online",
@@ -319,7 +322,8 @@
         "TRIP_COMPLETED": "Trip completed",
         "LEGACY_RESET": "Chat reset (legacy)"
       }
-    }
+    },
+    "loadOlder": "Load older messages"
   },
   "trucks": {
     "title": "Trucks",
@@ -716,5 +720,22 @@
       "colStatus": "Status",
       "colContact": "Contact"
     }
+  },
+  "avatarCropper": {
+    "cropPhoto": "Crop photo",
+    "zoom": "Zoom",
+    "savePhoto": "Save photo",
+    "errorCrop": "Couldn't crop the photo."
+  },
+  "invalidInvite": {
+    "title": "Invalid link",
+    "description": "Registration requires an invitation from an administrator",
+    "goToLogin": "Go to login"
+  },
+  "notifications": {
+    "unreadMessages": "Unread messages",
+    "unreadCount": "{count, plural, one {# unread message} other {# unread messages}}",
+    "allCaughtUp": "All caught up",
+    "noUnread": "No unread messages"
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
 import { Loader2 } from "lucide-react";
@@ -78,6 +79,8 @@ export function AvatarCropperDialog({
   onCancel,
   onConfirm,
 }: AvatarCropperDialogProps) {
+  const t = useTranslations("avatarCropper");
+  const tActions = useTranslations("common.actions");
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -109,10 +112,8 @@ export function AvatarCropperDialog({
           : "image/jpeg";
       const blob = await getCroppedBlob(imageSrc, croppedAreaPixels, mime);
       await onConfirm(blob);
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Не вдалось обрізати фото.",
-      );
+    } catch {
+      setError(t("errorCrop"));
     } finally {
       setSubmitting(false);
     }
@@ -122,7 +123,7 @@ export function AvatarCropperDialog({
     <Dialog open={open} onOpenChange={(o) => !o && !submitting && onCancel()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Обріж фото</DialogTitle>
+          <DialogTitle>{t("cropPhoto")}</DialogTitle>
         </DialogHeader>
         <div className="relative h-64 w-full overflow-hidden rounded-md bg-muted">
           {imageSrc && (
@@ -140,7 +141,7 @@ export function AvatarCropperDialog({
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <label className="text-xs text-muted-foreground">Масштаб</label>
+          <label className="text-xs text-muted-foreground">{t("zoom")}</label>
           <Slider
             value={[zoom]}
             min={1}
@@ -157,11 +158,11 @@ export function AvatarCropperDialog({
             onClick={onCancel}
             disabled={submitting}
           >
-            Скасувати
+            {tActions("cancel")}
           </Button>
           <Button type="button" onClick={handleConfirm} disabled={submitting || !croppedAreaPixels}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Зберегти фото
+            {t("savePhoto")}
           </Button>
         </DialogFooter>
       </DialogContent>
