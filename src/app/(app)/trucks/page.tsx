@@ -326,7 +326,7 @@ export default function TrucksPage() {
                       {/* last note — hidden on mobile */}
                       <TableCell className="hidden md:table-cell max-w-[220px]">
                         {truck.truckNotes[0] ? (
-                          <span className="text-xs text-muted-foreground truncate block">
+                          <span className="text-xs text-destructive truncate block">
                             {truck.truckNotes[0].content}
                           </span>
                         ) : (

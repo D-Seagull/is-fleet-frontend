@@ -84,7 +84,7 @@ function TruckListItem({
             {unread.latestMessage.content}
           </span>
         ) : lastNote ? (
-          <span className="text-xs text-muted-foreground/70 truncate italic">{lastNote.content}</span>
+          <span className="text-xs text-destructive truncate italic">{lastNote.content}</span>
         ) : null}
       </div>
       {isMobile && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
@@ -187,7 +187,7 @@ function BroadcastDialog() {
             placeholder={t("subjectPlaceholder")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="text-sm"
+            className="text-sm font-semibold"
           />
           <Textarea
             placeholder={t("messagePlaceholder")}
