@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   MapPin,
   Paperclip,
@@ -8,6 +9,7 @@ import {
   Search,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { getSocket } from "@/lib/socket";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,21 +30,24 @@ import {
   type Trip,
   type TripStatus,
 } from "@/hooks/use-trips";
-import { ACTIVE_STATUSES } from "./constants";
 import { shortenTripTitle } from "./utils";
 import { NewTripDialog } from "./new-trip-dialog";
 import { TripAttachmentsContent } from "./trip-attachments-content";
+
+type TripVariant = "active" | "queued" | "done";
 
 function TripCard({
   trip,
   truckId,
   onOpenTrip,
   unreadCount = 0,
+  variant,
 }: {
   trip: Trip;
   truckId: string;
   onOpenTrip: (id: string) => void;
   unreadCount?: number;
+  variant: TripVariant;
 }) {
   const t = useTranslations("truckPanel.trips");
   const tStatus = useTranslations("common.tripStatus");
@@ -54,6 +59,8 @@ function TripCard({
     <div
       className={cn(
         "rounded-lg border bg-card flex flex-col overflow-hidden",
+        variant === "active" && "border-emerald-500/40 bg-emerald-500/5",
+        variant === "done" && "opacity-60",
         unreadCount > 0 && "border-blue-500/30 bg-blue-500/5",
       )}
     >
@@ -64,9 +71,11 @@ function TripCard({
         <span
           className={cn(
             "h-2 w-2 rounded-full shrink-0",
-            ACTIVE_STATUSES.includes(trip.status)
+            variant === "active"
               ? "bg-emerald-500"
-              : "bg-muted-foreground/30",
+              : variant === "queued"
+                ? "bg-amber-500"
+                : "bg-muted-foreground/30",
           )}
         />
         <div className="flex-1 min-w-0">
@@ -203,6 +212,19 @@ export function TripsTab({
   const t = useTranslations("truckPanel.trips");
   const { data: trips, isLoading } = useTripsByTruck(truckId);
   const [search, setSearch] = useState("");
+  const queryClient = useQueryClient();
+
+  // Live-refresh the list when a driver (or another manager) changes a trip:
+  // the backend emits `tripUpdated` to the company room this manager is in.
+  useEffect(() => {
+    const socket = getSocket();
+    const invalidate = () =>
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
+    socket.on("tripUpdated", invalidate);
+    return () => {
+      socket.off("tripUpdated", invalidate);
+    };
+  }, [queryClient, truckId]);
 
   const filtered = trips?.filter((trip) => {
     const q = search.toLowerCase();
@@ -212,6 +234,24 @@ export function TripsTab({
       (fullName(trip.driver) || "").toLowerCase().includes(q)
     );
   });
+
+  // Group by status so a pre-assigned upcoming trip reads as clearly separate
+  // from the one in progress. Managers move a trip between sections just by
+  // changing its status in the per-card dropdown. Section order is preserved.
+  const IN_PROGRESS: TripStatus[] = ["ON_WAY", "ON_SITE", "LOADED"];
+  const active: Trip[] = [];
+  const queued: Trip[] = [];
+  const done: Trip[] = [];
+  for (const trip of filtered ?? []) {
+    if (trip.status === "DELIVERED") done.push(trip);
+    else if (IN_PROGRESS.includes(trip.status)) active.push(trip);
+    else queued.push(trip);
+  }
+  const sections: { key: string; label: string; list: Trip[]; variant: TripVariant }[] = [
+    { key: "active", label: t("sectionActive"), list: active, variant: "active" },
+    { key: "queued", label: t("sectionQueued"), list: queued, variant: "queued" },
+    { key: "done", label: t("sectionDone"), list: done, variant: "done" },
+  ];
 
   return (
     <div className="flex flex-col gap-3">
@@ -245,16 +285,31 @@ export function TripsTab({
           {t("nothingFound")}
         </p>
       ) : (
-        <div className="flex flex-col gap-3">
-          {filtered?.map((trip) => (
-            <TripCard
-              key={trip.id}
-              trip={trip}
-              truckId={truckId}
-              onOpenTrip={onOpenTrip}
-              unreadCount={tripUnread[trip.id] ?? 0}
-            />
-          ))}
+        <div className="flex flex-col gap-4">
+          {sections
+            .filter((s) => s.list.length > 0)
+            .map((s) => (
+              <div key={s.key} className="flex flex-col gap-2">
+                <div className="flex items-center gap-2 px-0.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {s.label}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground/60">
+                    {s.list.length}
+                  </span>
+                </div>
+                {s.list.map((trip) => (
+                  <TripCard
+                    key={trip.id}
+                    trip={trip}
+                    truckId={truckId}
+                    onOpenTrip={onOpenTrip}
+                    unreadCount={tripUnread[trip.id] ?? 0}
+                    variant={s.variant}
+                  />
+                ))}
+              </div>
+            ))}
         </div>
       )}
     </div>

@@ -46,12 +46,12 @@ export const TRIP_STATUS_KEYS: TripStatus[] = [
 ];
 
 export const TRIP_STATUS_COLORS: Record<TripStatus, string> = {
-  ASSIGNED: "bg-gray-500/10 text-gray-600 border-gray-500/20",
-  ACCEPTED: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  ASSIGNED: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  ACCEPTED: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   ON_WAY: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
   ON_SITE: "bg-orange-500/10 text-orange-600 border-orange-500/20",
   LOADED: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-  DELIVERED: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  DELIVERED: "bg-gray-500/10 text-gray-600 border-gray-500/20",
 };
 
 export interface TripStop {
@@ -326,13 +326,27 @@ export function useCreateTrip() {
 
 export function useUpdateTripStatus(truckId: string) {
   const queryClient = useQueryClient();
+  const key = ["trips-by-truck", truckId];
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: TripStatus }) => {
       const res = await api.patch(`/trips/${id}/status`, { status });
       return res.data as Trip;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
+    // Optimistic — the badge re-colours and re-sections instantly instead of
+    // waiting for the server round-trip.
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const prev = queryClient.getQueryData<Trip[]>(key);
+      queryClient.setQueryData<Trip[]>(key, (old) =>
+        old?.map((t) => (t.id === id ? { ...t, status } : t)),
+      );
+      return { prev };
+    },
+    onError: (_e, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(key, ctx.prev);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: key });
     },
   });
 }

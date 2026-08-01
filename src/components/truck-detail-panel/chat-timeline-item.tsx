@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageReactionsCluster } from "@/components/message-reactions";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
+import { systemMessageText } from "@/lib/system-message";
 import type { TripMessage } from "@/hooks/use-trips";
 import type { TripDocumentFull } from "@/hooks/use-documents";
 import type { ReplyTarget } from "./chat-composer";
@@ -48,7 +49,7 @@ function MessageBubble({
   if (msg.isSystem) {
     return (
       <div className="self-center text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
-        {msg.content}
+        {systemMessageText(msg.content, t)}
       </div>
     );
   }

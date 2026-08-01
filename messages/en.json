@@ -267,6 +267,10 @@
     }
   },
   "chat": {
+    "sys": {
+      "driverAssigned": "Driver {name} assigned to truck {plate}",
+      "managerAssigned": "Manager {name} assigned to truck {plate}"
+    },
     "selectPrompt": "Select or create a trip to start chatting",
     "readOnly": "You're no longer a participant in this chat — read-only view.",
     "editingMessage": "Editing message",
@@ -535,6 +539,9 @@
       "searchPlaceholder": "Search by route, order #, driver...",
       "empty": "No trips yet.",
       "nothingFound": "Nothing found.",
+      "sectionActive": "Active",
+      "sectionQueued": "Queued",
+      "sectionDone": "Completed",
       "noStops": "No stops.",
       "selectTrip": "Select trip...",
       "searchTrip": "Search trip...",

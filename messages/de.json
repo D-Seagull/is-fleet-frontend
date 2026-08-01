@@ -267,6 +267,10 @@
     }
   },
   "chat": {
+    "sys": {
+      "driverAssigned": "Fahrer {name} dem Lkw {plate} zugewiesen",
+      "managerAssigned": "Manager {name} dem Lkw {plate} zugewiesen"
+    },
     "selectPrompt": "Wählen oder erstellen Sie eine Fahrt, um zu chatten",
     "readOnly": "Sie sind kein Teilnehmer dieses Chats mehr — schreibgeschützte Ansicht.",
     "editingMessage": "Nachricht bearbeiten",
@@ -535,6 +539,9 @@
       "searchPlaceholder": "Nach Route, Bestell-Nr., Fahrer suchen…",
       "empty": "Noch keine Fahrten.",
       "nothingFound": "Nichts gefunden.",
+      "sectionActive": "Aktiv",
+      "sectionQueued": "In Warteschlange",
+      "sectionDone": "Abgeschlossen",
       "noStops": "Keine Stopps.",
       "selectTrip": "Fahrt auswählen…",
       "searchTrip": "Fahrt suchen…",

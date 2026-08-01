@@ -267,6 +267,10 @@
     }
   },
   "chat": {
+    "sys": {
+      "driverAssigned": "Vairuotojas {name} priskirtas vilkikui {plate}",
+      "managerAssigned": "Vadovas {name} priskirtas vilkikui {plate}"
+    },
     "selectPrompt": "Pasirinkite arba sukurkite reisą, kad pradėtumėte pokalbį",
     "readOnly": "Jūs nebesate šio pokalbio dalyvis — tik skaitymo režimas.",
     "editingMessage": "Žinutės redagavimas",
@@ -535,6 +539,9 @@
       "searchPlaceholder": "Ieškoti pagal maršrutą, užsakymo nr., vairuotoją…",
       "empty": "Reisų dar nėra.",
       "nothingFound": "Nieko nerasta.",
+      "sectionActive": "Aktyvūs",
+      "sectionQueued": "Eilėje",
+      "sectionDone": "Užbaigti",
       "noStops": "Nėra sustojimų.",
       "selectTrip": "Pasirinkite reisą…",
       "searchTrip": "Ieškoti reiso…",

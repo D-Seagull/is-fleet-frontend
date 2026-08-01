@@ -267,6 +267,10 @@
     }
   },
   "chat": {
+    "sys": {
+      "driverAssigned": "Kierowca {name} przydzielony do ciężarówki {plate}",
+      "managerAssigned": "Menedżer {name} przydzielony do ciężarówki {plate}"
+    },
     "selectPrompt": "Wybierz lub utwórz trasę, aby rozpocząć czat",
     "readOnly": "Nie jesteś już uczestnikiem tego czatu — widok tylko do odczytu.",
     "editingMessage": "Edycja wiadomości",
@@ -535,6 +539,9 @@
       "searchPlaceholder": "Szukaj po trasie, nr zamówienia, kierowcy…",
       "empty": "Brak tras.",
       "nothingFound": "Nic nie znaleziono.",
+      "sectionActive": "Aktywne",
+      "sectionQueued": "W kolejce",
+      "sectionDone": "Zakończone",
       "noStops": "Brak przystanków.",
       "selectTrip": "Wybierz trasę…",
       "searchTrip": "Szukaj trasy…",
