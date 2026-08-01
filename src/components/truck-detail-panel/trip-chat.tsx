@@ -599,13 +599,31 @@ export function TripChat({
     setReplyingTo(null);
   }
 
-  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    if (!files.length) return;
-    // Stage only — the actual upload runs from handleSend so a caption + reply
-    // target can travel with the file in a single user action.
-    setPendingFiles((prev) => [...prev, ...files]);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (!files.length) return;
+    // Send immediately on selection — no staging / extra Send click. Any
+    // active reply target still travels with the upload.
+    nearBottomRef.current = true;
+    setNewMsgCount(0);
+    const replyMsgId = replyingTo?.targetType === "msg" ? replyingTo.id : null;
+    const replyDocId = replyingTo?.targetType === "doc" ? replyingTo.id : null;
+    setUploading(true);
+    try {
+      await upload.mutateAsync({
+        tripId: trip.id,
+        files,
+        replyToMessageId: replyMsgId,
+        replyToDocumentId: replyDocId,
+        caption: null,
+      });
+      setReplyingTo(null);
+    } catch (err) {
+      console.error("[trip-chat] file upload failed", err);
+    } finally {
+      setUploading(false);
+    }
   }
 
   function removePendingFile(idx: number) {

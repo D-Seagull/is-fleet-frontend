@@ -62,7 +62,8 @@ import {
 import { LoadOlderMessages } from "@/components/load-older-messages";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
-import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
+import { useTheme } from "next-themes";
 import { Smile } from "lucide-react";
 import {
   Popover,
@@ -231,6 +232,8 @@ function ChatPageContent() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const pickerTheme = resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT;
   const [activeTab, setActiveTab] = useState<"managers" | "drivers">(
     "managers",
   );
@@ -1073,15 +1076,40 @@ function ChatPageContent() {
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setNewMessage((prev) => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
   };
 
-  function handleAttach(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleAttach(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    if (!files.length) return;
-    // Stage only — real upload fires from handleSend so the reply target and
-    // optional caption text are bundled with the same call.
-    setPendingFiles((prev) => [...prev, ...files]);
     if (attachInputRef.current) attachInputRef.current.value = "";
+    if (!files.length) return;
+    // Send immediately on selection — no staging / extra Send click. Any
+    // active reply target still travels with the upload.
+    const replyMsgId = replyingTo?.targetType === "msg" ? replyingTo.id : null;
+    const replyDocId = replyingTo?.targetType === "doc" ? replyingTo.id : null;
+    setAttachUploading(true);
+    try {
+      if (selectedGroupId) {
+        await groupDocUpload.mutateAsync({
+          files,
+          replyToMessageId: replyMsgId,
+          replyToDocumentId: replyDocId,
+          caption: null,
+        });
+      } else if (selectedUserId) {
+        await dmDocUpload.mutateAsync({
+          files,
+          replyToMessageId: replyMsgId,
+          replyToDocumentId: replyDocId,
+          caption: null,
+        });
+      }
+      setReplyingTo(null);
+    } catch (err) {
+      console.error("[chat] file upload failed", err);
+    } finally {
+      setAttachUploading(false);
+    }
   }
 
   function removePendingFile(idx: number) {
@@ -2225,9 +2253,12 @@ function ChatPageContent() {
                   className="w-auto p-0 border-none"
                   side="top"
                   align="start"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                  onInteractOutside={(e) => e.preventDefault()}
                 >
                   <EmojiPicker
                     onEmojiClick={handleEmojiClick}
+                    theme={pickerTheme}
                     skinTonesDisabled
                     searchDisabled={false}
                   />

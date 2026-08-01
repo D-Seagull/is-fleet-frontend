@@ -11,6 +11,7 @@ import {
   Send,
 } from "lucide-react";
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
+import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,8 @@ export function ChatComposer({
 }) {
   const t = useTranslations("chat");
   const tActions = useTranslations("common.actions");
+  const { resolvedTheme } = useTheme();
+  const pickerTheme = resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT;
   const onEmojiClick = (data: EmojiClickData) => {
     setText(text + data.emoji);
     setShowEmoji(false);
@@ -83,12 +86,12 @@ export function ChatComposer({
         </div>
       ) : (
         <>
-          {/* Emoji picker */}
+          {/* Emoji picker — anchored near the emoji button (left cluster) */}
           {showEmoji && (
-            <div className="absolute bottom-full right-0 mb-2 z-50">
+            <div className="absolute bottom-full left-0 mb-2 z-50">
               <EmojiPicker
                 onEmojiClick={onEmojiClick}
-                theme={Theme.AUTO}
+                theme={pickerTheme}
                 width={300}
                 height={380}
               />
