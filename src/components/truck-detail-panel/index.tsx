@@ -17,7 +17,6 @@ import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "@/components/status-dot";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -44,7 +43,6 @@ import {
   useCreateTruckNote,
   useDeleteTruckNote,
   useDrivers,
-  type TruckStatus,
 } from "@/hooks/use-trucks";
 import { useAssignableManagers } from "@/hooks/use-managers";
 import { useTripsByTruck, useReassignTrip } from "@/hooks/use-trips";
@@ -105,7 +103,6 @@ export function TruckDetailPanel({
   backHref = "/trucks",
 }: TruckDetailPanelProps) {
   const t = useTranslations("truckPanel");
-  const tStatus = useTranslations("common.truckStatus");
   const tCancel = useTranslations("common.actions");
   const user = useAuthStore((s) => s.user);
   const [chatTripId, setChatTripId] = useState<string | null>(null);
@@ -173,10 +170,6 @@ export function TruckDetailPanel({
     setActiveTab("chat");
   }
 
-  async function handleStatusChange(status: TruckStatus) {
-    await updateTruck.mutateAsync({ id: truckId, data: { status } });
-  }
-
   async function handleAddNote() {
     if (!noteText.trim()) return;
     await createNote.mutateAsync({ truckId, content: noteText.trim() });
@@ -242,12 +235,6 @@ export function TruckDetailPanel({
         )}
         <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
           <h1 className="text-base md:text-2xl font-bold shrink-0">{truck.plate}</h1>
-          <Badge
-            variant="outline"
-            className={cn("text-xs md:text-sm shrink-0", TRUCK_STATUS_COLORS[truck.status])}
-          >
-            {tStatus(truck.status)}
-          </Badge>
           {truck.currentDriver && (
             <Link
               href={`/drivers/${truck.currentDriver.id}`}
@@ -340,34 +327,8 @@ export function TruckDetailPanel({
           <div className="flex flex-col gap-3">
             {/* ── Assignments ── */}
             <div className="rounded-lg border divide-y">
-              {/* Status */}
-              <div className="flex items-center gap-3 px-3 py-2">
-                <span className="text-sm text-muted-foreground w-24 shrink-0">
-                  {t("info.status")}
-                </span>
-                <Select
-                  value={truck.status}
-                  onValueChange={(v) => handleStatusChange(v as TruckStatus)}
-                  disabled={updateTruck.isPending}
-                >
-                  <SelectTrigger className="h-7 w-[120px] text-xs border-0 shadow-none px-1 focus:ring-0">
-                    <Badge
-                      variant="outline"
-                      className={TRUCK_STATUS_COLORS[truck.status]}
-                    >
-                      {tStatus(truck.status)}
-                    </Badge>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="AVAILABLE">{tStatus("AVAILABLE")}</SelectItem>
-                    <SelectItem value="ON_TRIP">{tStatus("ON_TRIP")}</SelectItem>
-                    <SelectItem value="REPAIR">{tStatus("REPAIR")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Driver */}
-              <div className="flex items-center gap-3 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">
                   {t("info.driver")}
                 </span>
@@ -376,7 +337,7 @@ export function TruckDetailPanel({
                   onValueChange={handleDriverSelect}
                   disabled={updateTruck.isPending || reassignTrip.isPending}
                 >
-                  <SelectTrigger className="h-7 flex-1 text-xs">
+                  <SelectTrigger className="h-7 flex-1 min-w-[140px] text-xs">
                     <SelectValue placeholder={t("info.noDriver")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -512,8 +473,8 @@ export function TruckDetailPanel({
                     key={note.id}
                     className="flex items-start justify-between gap-2 px-3 py-2"
                   >
-                    <div className="flex flex-col gap-0.5 flex-1">
-                      <p className="text-sm">{note.content}</p>
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <p className="text-sm break-words">{note.content}</p>
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <span>{fullName(note.user) || t("info.unknown")}</span>
                         <span>·</span>

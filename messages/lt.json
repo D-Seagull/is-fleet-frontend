@@ -32,7 +32,8 @@
       "ON_WAY": "Kelyje",
       "ON_SITE": "Vietoje",
       "LOADED": "Pakrautas",
-      "DELIVERED": "Pristatytas"
+      "DELIVERED": "Pristatytas",
+      "NONE": "Nėra reiso"
     },
     "stopType": {
       "LOADING": "Pakrovimas",

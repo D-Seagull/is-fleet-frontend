@@ -32,7 +32,8 @@
       "ON_WAY": "Unterwegs",
       "ON_SITE": "Vor Ort",
       "LOADED": "Beladen",
-      "DELIVERED": "Zugestellt"
+      "DELIVERED": "Zugestellt",
+      "NONE": "Keine Fahrt"
     },
     "stopType": {
       "LOADING": "Beladung",

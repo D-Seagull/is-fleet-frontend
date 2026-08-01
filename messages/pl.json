@@ -32,7 +32,8 @@
       "ON_WAY": "W drodze",
       "ON_SITE": "Na miejscu",
       "LOADED": "Załadowany",
-      "DELIVERED": "Dostarczony"
+      "DELIVERED": "Dostarczony",
+      "NONE": "Brak trasy"
     },
     "stopType": {
       "LOADING": "Załadunek",

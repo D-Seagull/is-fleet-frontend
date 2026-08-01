@@ -138,13 +138,13 @@ export default function ManagersPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("addButton")}
+            <Button className="shrink-0">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t("addButton")}</span>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -278,7 +278,7 @@ export default function ManagersPage() {
                         onClick={() => router.push(`/managers/${m.id}`)}
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 min-w-0 max-w-[150px] sm:max-w-[240px]">
                             <span className="relative shrink-0">
                               <Avatar className="h-8 w-8">
                                 <AvatarImage src={m.avatar ?? undefined} />
@@ -292,12 +292,12 @@ export default function ManagersPage() {
                             </span>
                             <Link
                               href={`/managers/${m.id}`}
-                              className="font-medium hover:underline"
+                              className="font-medium hover:underline truncate min-w-0"
                             >
                               {fullName(m) || m.email}
                             </Link>
                             {!m.isActive && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs shrink-0">
                                 {t("statusInactive")}
                               </Badge>
                             )}
@@ -393,7 +393,7 @@ export default function ManagersPage() {
                         onClick={() => router.push(`/managers/${m.id}`)}
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 min-w-0 max-w-[150px] sm:max-w-[240px]">
                             <span className="relative shrink-0">
                               <Avatar className="h-8 w-8">
                                 <AvatarImage src={m.avatar ?? undefined} />
@@ -407,12 +407,12 @@ export default function ManagersPage() {
                             </span>
                             <Link
                               href={`/managers/${m.id}`}
-                              className="font-medium hover:underline"
+                              className="font-medium hover:underline truncate min-w-0"
                             >
                               {fullName(m) || m.email}
                             </Link>
                             {!m.isActive && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs shrink-0">
                                 {t("statusInactive")}
                               </Badge>
                             )}

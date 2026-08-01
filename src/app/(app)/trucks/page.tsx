@@ -37,6 +37,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -54,7 +59,6 @@ import {
   type TruckStatus,
 } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
-import { cn } from "@/lib/utils";
 
 const statusColors: Record<TruckStatus, string> = {
   AVAILABLE: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
@@ -114,13 +118,13 @@ export default function TrucksPage() {
 
   return (
     <div className="flex flex-col p-4 gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("addButton")}
+            <Button className="shrink-0">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t("addButton")}</span>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -211,9 +215,9 @@ export default function TrucksPage() {
                 <TableRow>
                   <TableHead className="w-[130px]">{t("colPlate")}</TableHead>
                   <TableHead className="w-[130px]">{t("colStatus")}</TableHead>
-                  <TableHead className="w-[180px]">{t("colDriver")}</TableHead>
+                  <TableHead className="w-[240px]">{t("colDriver")}</TableHead>
                   <TableHead className="w-[44px]" />
-                  <TableHead className="hidden md:table-cell">
+                  <TableHead className="hidden md:table-cell w-[200px]">
                     {t("colLastNote")}
                   </TableHead>
                   <TableHead className="hidden md:table-cell w-[80px]" />
@@ -304,7 +308,7 @@ export default function TrucksPage() {
                         {truck.currentDriver ? (
                           <Link
                             href={`/drivers/${truck.currentDriver.id}`}
-                            className="hover:underline"
+                            className="hover:underline block truncate max-w-[160px] sm:max-w-[220px]"
                           >
                             {fullName(truck.currentDriver)}
                           </Link>
@@ -324,11 +328,22 @@ export default function TrucksPage() {
                         </Button>
                       </TableCell>
                       {/* last note — hidden on mobile */}
-                      <TableCell className="hidden md:table-cell max-w-[220px]">
+                      <TableCell className="hidden md:table-cell max-w-[200px]">
                         {truck.truckNotes[0] ? (
-                          <span className="text-xs text-destructive truncate block">
-                            {truck.truckNotes[0].content}
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-xs text-destructive truncate block cursor-help">
+                                {truck.truckNotes[0].content}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              align="start"
+                              className="max-w-[260px] whitespace-normal break-words"
+                            >
+                              {truck.truckNotes[0].content}
+                            </TooltipContent>
+                          </Tooltip>
                         ) : (
                           <span className="text-xs text-muted-foreground/40">
                             —

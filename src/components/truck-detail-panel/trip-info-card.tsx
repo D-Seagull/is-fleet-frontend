@@ -143,13 +143,13 @@ export function TripInfoCard({
               )}
             </span>
             {fullName(trip.driver) && (
-              <span className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground max-[373px]:hidden">
                 <StatusDot user={trip.driver} size="xs" />
                 {fullName(trip.driver)}
               </span>
             )}
             {isEdited && (
-              <span className="shrink-0 text-[10px] text-muted-foreground border rounded px-1.5 py-0.5">
+              <span className="shrink-0 text-[10px] text-muted-foreground border rounded px-1.5 py-0.5 max-[373px]:hidden">
                 {t("edited")}
               </span>
             )}

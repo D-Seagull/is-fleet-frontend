@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { api } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 import { UNREAD_QUERY_KEY } from "@/hooks/use-unread";
+import type { TripStatus } from "@/hooks/use-trips";
 
 export type TruckStatus = "AVAILABLE" | "ON_TRIP" | "REPAIR";
 
@@ -31,6 +32,8 @@ export interface Truck {
     statusUntil?: string | null;
   } | null;
   truckNotes: { content: string; createdAt: string }[];
+  /** Активний тріп (не DELIVERED), якщо є. Повертається лише з /trucks/my. */
+  trips?: { id: string; status: TripStatus }[];
 }
 
 export interface TruckNote {

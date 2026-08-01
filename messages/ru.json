@@ -32,7 +32,8 @@
       "ON_WAY": "В пути",
       "ON_SITE": "На месте",
       "LOADED": "Загружен",
-      "DELIVERED": "Доставлен"
+      "DELIVERED": "Доставлен",
+      "NONE": "Без рейса"
     },
     "stopType": {
       "LOADING": "Погрузка",

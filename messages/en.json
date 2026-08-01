@@ -32,7 +32,8 @@
       "ON_WAY": "On Way",
       "ON_SITE": "On Site",
       "LOADED": "Loaded",
-      "DELIVERED": "Delivered"
+      "DELIVERED": "Delivered",
+      "NONE": "No trip"
     },
     "stopType": {
       "LOADING": "Loading",

@@ -23,9 +23,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useMyTrucks, type Truck as TruckType } from "@/hooks/use-trucks";
-import { TruckDetailPanel, TRUCK_STATUS_COLORS } from "@/components/truck-detail-panel";
-import { useBroadcastToMyTrucks } from "@/hooks/use-trips";
+import { TruckDetailPanel } from "@/components/truck-detail-panel";
+import { useBroadcastToMyTrucks, TRIP_STATUS_COLORS } from "@/hooks/use-trips";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUnreadSummary, type UnreadSummaryItem } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
@@ -45,9 +50,10 @@ function TruckListItem({
   unread?: UnreadSummaryItem;
   onClick: () => void;
 }) {
-  const tStatus = useTranslations("common.truckStatus");
+  const tTripStatus = useTranslations("common.tripStatus");
   const lastNote = truck.truckNotes?.[0];
   const hasUnread = (unread?.totalUnread ?? 0) > 0;
+  const activeTrip = truck.trips?.[0];
 
   return (
     <button
@@ -71,9 +77,15 @@ function TruckListItem({
               {unread!.totalUnread}
             </span>
           )}
-          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-5 shrink-0", TRUCK_STATUS_COLORS[truck.status])}>
-            {tStatus(truck.status)}
-          </Badge>
+          {activeTrip ? (
+            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-5 shrink-0", TRIP_STATUS_COLORS[activeTrip.status])}>
+              {tTripStatus(activeTrip.status)}
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 shrink-0 bg-muted text-muted-foreground border-border">
+              {tTripStatus("NONE")}
+            </Badge>
+          )}
         </div>
         {truck.currentDriver && (
           <span className="text-xs text-muted-foreground truncate">{fullName(truck.currentDriver)}</span>
@@ -84,7 +96,20 @@ function TruckListItem({
             {unread.latestMessage.content}
           </span>
         ) : lastNote ? (
-          <span className="text-xs text-destructive truncate italic">{lastNote.content}</span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-xs text-destructive truncate italic cursor-help">
+                {lastNote.content}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              align="start"
+              className="max-w-[260px] whitespace-normal break-words"
+            >
+              {lastNote.content}
+            </TooltipContent>
+          </Tooltip>
         ) : null}
       </div>
       {isMobile && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}

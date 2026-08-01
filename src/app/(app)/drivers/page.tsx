@@ -8,7 +8,6 @@ import { isAxiosError } from "axios";
 import { Plus, Search, Star, Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fullName, initials } from "@/lib/format";
 import {
@@ -143,13 +142,13 @@ export default function DriversPage() {
 
   return (
     <div className="flex flex-col p-4 gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
         <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("addButton")}
+            <Button className="shrink-0">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t("addButton")}</span>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -310,7 +309,7 @@ export default function DriversPage() {
                       onClick={() => router.push(`/drivers/${driver.id}`)}
                     >
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-3 max-w-[200px]">
+                        <div className="flex items-center gap-2 min-w-0 max-w-[150px] sm:max-w-[240px]">
                           <span className="relative shrink-0">
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={driver.avatar ?? undefined} />
@@ -322,13 +321,13 @@ export default function DriversPage() {
                               className="absolute -bottom-0.5 -right-0.5"
                             />
                           </span>
-                          <Link href={`/drivers/${driver.id}`} className="font-medium hover:underline">
+                          <Link href={`/drivers/${driver.id}`} className="font-medium hover:underline truncate min-w-0 flex-1">
                             {fullName(driver) || "—"}
                           </Link>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="ml-auto h-7 w-7"
+                            className="h-7 w-7 shrink-0"
                             onClick={() => router.push(`/chat?userId=${driver.id}`)}
                           >
                             <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
