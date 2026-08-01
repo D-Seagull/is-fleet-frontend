@@ -584,6 +584,7 @@
       "allTrips": "Visi reisai ({count})",
       "tripPlaceholder": "Reisas…",
       "noAttachments": "Kol kas nėra priedų",
+      "searchPlaceholder": "Ieškoti pagal datą ar užsakymo nr…",
       "colFile": "Failas",
       "colDate": "Data",
       "colOrder": "Užsakymo nr.",

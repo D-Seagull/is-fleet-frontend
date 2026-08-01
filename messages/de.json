@@ -584,6 +584,7 @@
       "allTrips": "Alle Fahrten ({count})",
       "tripPlaceholder": "Fahrt…",
       "noAttachments": "Noch keine Anhänge",
+      "searchPlaceholder": "Nach Datum oder Bestell-Nr suchen…",
       "colFile": "Datei",
       "colDate": "Datum",
       "colOrder": "Bestell-Nr.",

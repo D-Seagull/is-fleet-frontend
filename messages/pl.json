@@ -584,6 +584,7 @@
       "allTrips": "Wszystkie trasy ({count})",
       "tripPlaceholder": "Trasa…",
       "noAttachments": "Brak załączników",
+      "searchPlaceholder": "Szukaj po dacie lub nr zamówienia…",
       "colFile": "Plik",
       "colDate": "Data",
       "colOrder": "Nr zamówienia",

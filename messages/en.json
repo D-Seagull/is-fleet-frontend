@@ -584,6 +584,7 @@
       "allTrips": "All trips ({count})",
       "tripPlaceholder": "Trip…",
       "noAttachments": "No attachments yet",
+      "searchPlaceholder": "Search by date or order #…",
       "colFile": "File",
       "colDate": "Date",
       "colOrder": "Order #",

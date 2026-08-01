@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Bell, Plus, Trash2, Clock, RotateCw, X, Repeat } from "lucide-react";
+import { Bell, Plus, Trash2, Clock, RotateCw, X, Repeat, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,28 +83,35 @@ export function AlarmTab({
   const updateAlarm = useUpdateAlarm(truck.id);
   const deleteAlarm = useDeleteAlarm(truck.id);
 
+  // Start at "right now" — the manager picks the target time from there.
   const defaultTime = useMemo(() => {
     const d = new Date();
-    d.setMinutes(d.getMinutes() + 30);
     d.setSeconds(0, 0);
     return toLocalInputValue(d);
   }, []);
 
   const [showForm, setShowForm] = useState(false);
   const [target, setTarget] = useState<"self" | "driver">("self");
-  const [title, setTitle] = useState("");
+  // Prefill the title with the truck's plate so it's clear which vehicle the
+  // alarm belongs to.
+  const [title, setTitle] = useState(truck.plate ?? "");
   const [note, setNote] = useState("");
   const [time, setTime] = useState(defaultTime);
   const [recurrence, setRecurrence] = useState<AlarmRecurrence>("NONE");
   const [linkToTrip, setLinkToTrip] = useState(false);
 
   function resetForm() {
-    setTitle("");
+    setTitle(truck.plate ?? "");
     setNote("");
     setTime(defaultTime);
     setRecurrence("NONE");
     setTarget("self");
     setLinkToTrip(false);
+  }
+
+  function toggleForm() {
+    if (!showForm && !title.trim() && truck.plate) setTitle(truck.plate);
+    setShowForm((v) => !v);
   }
 
   async function handleCreate() {
@@ -149,7 +156,7 @@ export function AlarmTab({
           size="sm"
           variant={showForm ? "ghost" : "default"}
           className="h-7 text-xs px-2"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={toggleForm}
         >
           {showForm ? (
             <>
@@ -276,13 +283,25 @@ export function AlarmTab({
             const canEdit = user?.id === a.createdById;
             const canDelete = canEdit || user?.id === a.targetUserId;
             const isMine = a.targetUserId === user?.id;
+            // Dim alarms that have already passed (fired, or their time is in
+            // the past) so upcoming ones stand out.
+            const passed =
+              a.isSent || new Date(a.time).getTime() < Date.now();
             return (
               <div
                 key={a.id}
-                className={`rounded border px-2 py-1.5 flex items-start gap-1 ${a.isSent ? "opacity-60" : ""}`}
+                className={`rounded border px-2 py-1.5 flex items-start gap-1 ${passed ? "opacity-50" : ""}`}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-xs truncate">{a.title}</div>
+                  <div className="flex items-center gap-1 min-w-0">
+                    {isMine && (
+                      <span className="inline-flex items-center gap-0.5 shrink-0 rounded bg-primary/15 text-primary text-[9px] leading-none px-1 py-0.5">
+                        <User className="h-2.5 w-2.5" />
+                        {t("toMe")}
+                      </span>
+                    )}
+                    <span className="font-medium text-xs truncate">{a.title}</span>
+                  </div>
                   {a.note && (
                     <div className="text-[11px] text-muted-foreground truncate">
                       {a.note}

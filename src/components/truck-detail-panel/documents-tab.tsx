@@ -10,10 +10,12 @@ import {
   FileText,
   Eye,
   Trash2,
+  Search,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -43,6 +45,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
   const tActions = useTranslations("common.actions");
   const { data: trips = [] } = useTripsByTruck(truckId);
   const [tripFilter, setTripFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
   const [uploadTripId, setUploadTripId] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -55,8 +58,19 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
   const upload = useUploadDocuments(truckId);
   const deleteDoc = useDeleteDocument(truckId);
 
-  const filtered =
-    tripFilter === "all" ? docs : docs.filter((d) => d.tripId === tripFilter);
+  const q = search.trim().toLowerCase();
+  const filtered = docs.filter((d) => {
+    if (tripFilter !== "all" && d.tripId !== tripFilter) return false;
+    if (!q) return true;
+    // Search by date (localized + ISO), order number and file name.
+    const dateStr = `${new Date(d.createdAt).toLocaleDateString()} ${d.createdAt.slice(0, 10)}`.toLowerCase();
+    const order = (d.trip?.orderNumber ?? "").toLowerCase();
+    return (
+      dateStr.includes(q) ||
+      order.includes(q) ||
+      d.fileName.toLowerCase().includes(q)
+    );
+  });
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -104,6 +118,17 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
           </div>
         </div>
       )}
+
+      {/* Search by date / order # / file name */}
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <Input
+          placeholder={t("searchPlaceholder")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-8 h-8 text-xs"
+        />
+      </div>
 
       {/* Upload row */}
       <div className="flex items-center gap-2">

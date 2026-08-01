@@ -584,6 +584,7 @@
       "allTrips": "Усі рейси ({count})",
       "tripPlaceholder": "Рейс…",
       "noAttachments": "Ще немає вкладень",
+      "searchPlaceholder": "Пошук за датою або № замовлення…",
       "colFile": "Файл",
       "colDate": "Дата",
       "colOrder": "№ замовлення",
