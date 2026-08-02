@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LucideIcon, Truck, ChevronRight, Search } from "lucide-react";
+import { LucideIcon, ChevronRight, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fullName, initials } from "@/lib/format";
 import {
@@ -151,12 +151,26 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <Truck className="h-7 w-7 shrink-0 text-accent" />
-          <span className="text-lg font-bold whitespace-nowrap transition-all duration-200 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:overflow-hidden">
-            IS Fleet
-          </span>
+      {/* h-14 + border-b matches the content header so the horizontal divider
+          is continuous and the sidebar nav starts below it. */}
+      <SidebarHeader className="h-14 justify-center border-b border-sidebar-border">
+        <div className="flex items-center px-2">
+          {/* Colored logo in light theme, white variant in dark. Plain <img>
+              on purpose — the next/image optimizer choked on these PNGs. */}
+          <div className="group-data-[collapsible=icon]:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/IS_logo.png"
+              alt="iSfleet"
+              className="h-10 w-auto object-contain dark:hidden"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/is_logo__white.png"
+              alt="iSfleet"
+              className="hidden h-10 w-auto object-contain dark:block"
+            />
+          </div>
         </div>
       </SidebarHeader>
 
