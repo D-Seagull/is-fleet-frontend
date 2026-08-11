@@ -151,28 +151,11 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon">
-      {/* h-14 + border-b matches the content header so the horizontal divider
-          is continuous and the sidebar nav starts below it. */}
-      <SidebarHeader className="h-14 justify-center border-b border-sidebar-border">
-        <div className="flex items-center px-2">
-          {/* Colored logo in light theme, white variant in dark. Plain <img>
-              on purpose — the next/image optimizer choked on these PNGs. */}
-          <div className="group-data-[collapsible=icon]:hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/IS_logo.png"
-              alt="iSfleet"
-              className="h-10 w-auto object-contain dark:hidden"
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/is_logo__white.png"
-              alt="iSfleet"
-              className="hidden h-10 w-auto object-contain dark:block"
-            />
-          </div>
-        </div>
-      </SidebarHeader>
+      {/* Empty h-14 spacer so the nav starts below the full-width app header
+          (which now carries the logo). The app header paints on top of this
+          region, so the sidebar no longer owns the logo and doesn't collapse
+          it. */}
+      <SidebarHeader className="h-14" />
 
       <SidebarContent>
         <SidebarGroup>

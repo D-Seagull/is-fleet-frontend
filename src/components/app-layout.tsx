@@ -102,7 +102,10 @@ function UnreadBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="relative p-1.5 rounded-md hover:bg-accent transition-colors" aria-label={t("unreadMessages")}>
+        <button
+          className="relative p-1.5 rounded-md hover:bg-accent transition-colors"
+          aria-label={t("unreadMessages")}
+        >
           <Bell className="h-5 w-5 text-muted-foreground" />
           {total > 0 && (
             <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-0.5 leading-none">
@@ -118,7 +121,9 @@ function UnreadBell() {
           </p>
         </div>
         {total === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">{t("noUnread")}</p>
+          <p className="text-sm text-muted-foreground text-center py-6">
+            {t("noUnread")}
+          </p>
         ) : (
           <ul className="max-h-80 overflow-y-auto divide-y">
             {items.map((item) => (
@@ -132,12 +137,14 @@ function UnreadBell() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium text-sm">{item.plate}</span>
-                    <span className={cn(
-                      "text-xs font-bold px-1.5 py-0.5 rounded-full",
-                      item.activeTripUnread > 0
-                        ? "bg-destructive/10 text-destructive"
-                        : "bg-muted text-muted-foreground"
-                    )}>
+                    <span
+                      className={cn(
+                        "text-xs font-bold px-1.5 py-0.5 rounded-full",
+                        item.activeTripUnread > 0
+                          ? "bg-destructive/10 text-destructive"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
                       {item.totalUnread}
                     </span>
                   </div>
@@ -151,7 +158,10 @@ function UnreadBell() {
                   )}
                   {item.latestMessage && (
                     <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                      {formatDistanceToNow(new Date(item.latestMessage.createdAt), { addSuffix: true })}
+                      {formatDistanceToNow(
+                        new Date(item.latestMessage.createdAt),
+                        { addSuffix: true },
+                      )}
                     </p>
                   )}
                 </button>
@@ -281,21 +291,47 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full">
-        <AppSidebar navItems={navItems} />
-        <SidebarInset className="flex flex-1 flex-col min-w-0 overflow-hidden">
-          <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
+      <div className="flex h-screen w-full flex-col">
+        {/* Full-width top header. The logo lives here (not in the sidebar) so
+            it stays put and never collapses with the sidebar. `relative z-30`
+            makes it paint above the fixed sidebar, so it reads as one
+            continuous bar with no vertical divider. */}
+        <header className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
+          <div className="flex items-center gap-2">
+            {/* Colored logo in light theme, white variant in dark. Plain <img>
+                on purpose — the next/image optimizer choked on these PNGs. */}
+            <span className="flex items-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/IS_logo.png"
+                alt="iSfleet"
+                className="h-13 w-auto object-contain dark:hidden"
+              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/is_logo__white.png"
+                alt="iSfleet"
+                className="hidden h-13 w-auto object-contain dark:block"
+              />
+            </span>
             <SidebarTrigger />
-            <div className="flex items-center gap-2">
-              {isManager && <UnreadBell />}
-              {/* TEMP: quick locale switch for i18n testing — remove once
-                  translation pass is done (the real one lives on /account). */}
-              <UiLocalePicker variant="compact" />
-              <ThemeToggle />
-            </div>
-          </header>
-          <main className="flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
-        </SidebarInset>
+          </div>
+          <div className="flex items-center gap-2">
+            {isManager && <UnreadBell />}
+            {/* TEMP: quick locale switch for i18n testing — remove once
+                translation pass is done (the real one lives on /account). */}
+            <UiLocalePicker variant="compact" />
+            <ThemeToggle />
+          </div>
+        </header>
+        <div className="flex flex-1 min-h-0">
+          <AppSidebar navItems={navItems} />
+          <SidebarInset className="flex flex-1 flex-col min-w-0 overflow-hidden">
+            <main className="flex-1 overflow-y-auto overflow-x-hidden">
+              {children}
+            </main>
+          </SidebarInset>
+        </div>
       </div>
       {/* Fires when one of the user's alarms is due (cron → socket). */}
       <AlarmNoticeOverlay />
