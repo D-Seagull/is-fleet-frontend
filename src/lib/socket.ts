@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { useAuthStore } from "@/store/auth";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -6,15 +7,12 @@ let socket: Socket | null = null;
 
 export function getSocket(): Socket {
   if (!socket) {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("access_token")
-        : null;
-
     socket = io(SOCKET_URL, {
-      // Send token both ways so the gateway can pick whichever it reads.
-      auth: { token },
-      query: { userId: token ?? "" },
+      // Function form → socket.io calls it before EVERY (re)connect, so the
+      // handshake always carries the CURRENT in-memory access token (a silent
+      // refresh may have rotated it since login). The token is no longer in
+      // localStorage; the gateway reads handshake.auth.token.
+      auth: (cb) => cb({ token: useAuthStore.getState().token ?? "" }),
       // Websocket first → fallback to long-polling if WS is blocked.
       // WS gives near-instant delivery; polling adds ~1-2s per cycle.
       transports: ["websocket", "polling"],
