@@ -141,6 +141,16 @@ export const useAuthStore = create<AuthState>()(
       name: "auth-storage",
       // Завжди localStorage — стабільно і передбачувано
       storage: createJSONStorage(() => localStorage),
+      version: 1,
+      // v0 (pre access+refresh migration) persisted the access token in
+      // localStorage. Strip it on upgrade so a stale token from an old session
+      // isn't loaded into the now in-memory-only store.
+      migrate: (persisted) => {
+        if (persisted && typeof persisted === "object") {
+          delete (persisted as { token?: string }).token;
+        }
+        return persisted as { user: AuthUser | null };
+      },
       // Persist ONLY the (non-sensitive) user for a flash-free reload. The
       // access token is intentionally never persisted — it lives in memory and
       // is restored from the httpOnly refresh cookie on load.
