@@ -26,24 +26,27 @@ interface AuthState {
   isLoading: boolean;
   login: (user: AuthUser, token: string, remember: boolean) => void;
   logout: () => void;
+  /** Silently restore the access token from the httpOnly refresh cookie. */
+  refresh: () => Promise<string | null>;
   fetchMe: (tokenOverride?: string) => Promise<void>;
   setUser: (user: AuthUser) => void;
   setLoading: (v: boolean) => void;
 }
 
-const TOKEN_KEY = "access_token";
+// Non-sensitive gate marker for the Next.js middleware (proxy.ts). The real
+// auth is the in-memory access token (validated by the backend on every
+// request) + the httpOnly refresh cookie on the backend domain. This first-
+// party cookie only tells the edge "there is a session" so it can redirect
+// unauthenticated users to /login. It is NOT a credential.
+const AUTHED_COOKIE = "fleet_authed";
 
-function setCookie(token: string, remember: boolean) {
-  if (remember) {
-    document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=${7 * 24 * 60 * 60}`;
-  } else {
-    // Session cookie — видаляється при закритті браузера
-    document.cookie = `${TOKEN_KEY}=${token}; path=/`;
-  }
+function setAuthedCookie(remember: boolean) {
+  const maxAge = remember ? `; max-age=${30 * 24 * 60 * 60}` : "";
+  document.cookie = `${AUTHED_COOKIE}=1; path=/; samesite=lax${maxAge}`;
 }
 
-function clearCookie() {
-  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`;
+function clearAuthedCookie() {
+  document.cookie = `${AUTHED_COOKIE}=; path=/; max-age=0`;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -64,8 +67,10 @@ export const useAuthStore = create<AuthState>()(
         // from a previous session — or one created with no auth before
         // login — keeps the backend thinking we're nobody.
         disconnectSocket();
-        localStorage.setItem(TOKEN_KEY, token);
-        setCookie(token, remember);
+        // Access token stays in memory only (no localStorage, no JS cookie).
+        // The backend already set the httpOnly refresh cookie on the login
+        // response (axios withCredentials).
+        setAuthedCookie(remember);
         set({ user, token, isLoading: false });
         // The /auth/login response only carries the bare-minimum
         // fields used by the token (id, role, firstName, lastName).
@@ -81,13 +86,30 @@ export const useAuthStore = create<AuthState>()(
         // teammates keep seeing the leaving user's stored status instead
         // of OFFLINE until the socket times out on its own.
         disconnectSocket();
-        localStorage.removeItem(TOKEN_KEY);
-        clearCookie();
+        // Best-effort server-side revoke + clear of the httpOnly refresh cookie.
+        void api.post("/auth/logout").catch(() => {});
+        clearAuthedCookie();
         set({ user: null, token: null, isLoading: false });
       },
 
+      refresh: async () => {
+        try {
+          // withCredentials sends the httpOnly refresh cookie; the backend
+          // rotates it and returns a fresh access token (+ user).
+          const res = await api.post("/auth/refresh");
+          const { access_token, user } = res.data;
+          setAuthedCookie(true);
+          set({ user, token: access_token, isLoading: false });
+          return access_token as string;
+        } catch {
+          clearAuthedCookie();
+          set({ user: null, token: null, isLoading: false });
+          return null;
+        }
+      },
+
       fetchMe: async (tokenOverride?: string) => {
-        const token = tokenOverride || localStorage.getItem(TOKEN_KEY);
+        const token = tokenOverride || get().token;
 
         if (!token) {
           set({ isLoading: false });
@@ -98,12 +120,10 @@ export const useAuthStore = create<AuthState>()(
           const res = await api.get("/auth/me", {
             headers: { Authorization: `Bearer ${token}` },
           });
-          localStorage.setItem(TOKEN_KEY, token);
           set({ user: res.data, token, isLoading: false });
         } catch {
-          // Токен не валідний — чистимо все
-          localStorage.removeItem(TOKEN_KEY);
-          clearCookie();
+          // If the access token was expired, the api interceptor already
+          // tried to refresh + retry; landing here means the session is gone.
           set({ user: null, token: null, isLoading: false });
         }
       },
@@ -112,10 +132,11 @@ export const useAuthStore = create<AuthState>()(
       name: "auth-storage",
       // Завжди localStorage — стабільно і передбачувано
       storage: createJSONStorage(() => localStorage),
-      // isLoading НЕ зберігаємо — завжди починає з true (потрібна перевірка)
+      // Persist ONLY the (non-sensitive) user for a flash-free reload. The
+      // access token is intentionally never persisted — it lives in memory and
+      // is restored from the httpOnly refresh cookie on load.
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
       }),
     },
   ),

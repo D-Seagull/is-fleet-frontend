@@ -6,14 +6,6 @@ import { useAuthStore } from "@/store/auth";
 
 const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
 
-function getCookieToken(): string | null {
-  if (typeof document === "undefined") return null;
-  const row = document.cookie
-    .split("; ")
-    .find((r) => r.startsWith("access_token="));
-  return row ? row.split("=")[1] : null;
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { fetchMe, token, isLoading, setLoading } = useAuthStore();
   const router = useRouter();
@@ -21,19 +13,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isPublic = PUBLIC_ROUTES.includes(pathname);
 
-  // Крок 1 — при завантаженні перевіряємо токен
+  // Крок 1 — при завантаженні відновлюємо сесію
   useEffect(() => {
     const storeToken = useAuthStore.getState().token;
-    const cookieToken = getCookieToken();
-
     if (storeToken) {
-      // Є токен у store (rehydrated із localStorage) — валідуємо на сервері
+      // Свіжий in-memory токен (щойно залогінились / клієнтська навігація) —
+      // валідуємо на сервері.
       fetchMe(storeToken);
-    } else if (cookieToken) {
-      // Є тільки cookie (напр. sessionStorage очистився) — відновлюємо
-      fetchMe(cookieToken);
+    } else if (!isPublic) {
+      // Холодний старт / перезавантаження захищеної сторінки: access-токен у
+      // памʼяті зник — тихо відновлюємо його з httpOnly refresh-кукі.
+      void useAuthStore.getState().refresh();
     } else {
-      // Немає нічого — прибираємо спінер
+      // Публічна сторінка без сесії — прибираємо спінер.
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -5,7 +5,10 @@ const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password", "/reset-passwo
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get("access_token")?.value;
+  // Non-sensitive gate marker set by the auth store (the httpOnly refresh
+  // cookie lives on the backend domain and isn't visible here). Real auth is
+  // still enforced by the backend on every API call.
+  const token = request.cookies.get("fleet_authed")?.value;
 
   // Якщо публічний роут
   if (PUBLIC_ROUTES.some((route) => pathname.startsWith(route))) {
