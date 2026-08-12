@@ -39,6 +39,9 @@ interface AuthState {
 // party cookie only tells the edge "there is a session" so it can redirect
 // unauthenticated users to /login. It is NOT a credential.
 const AUTHED_COOKIE = "fleet_authed";
+// Non-sensitive "remember me" preference. Persisted so silent refreshes can
+// keep the refresh cookie session-only (unchecked) vs 30-day (checked).
+const REMEMBER_KEY = "fleet_remember";
 
 function setAuthedCookie(remember: boolean) {
   const maxAge = remember ? `; max-age=${30 * 24 * 60 * 60}` : "";
@@ -70,6 +73,7 @@ export const useAuthStore = create<AuthState>()(
         // Access token stays in memory only (no localStorage, no JS cookie).
         // The backend already set the httpOnly refresh cookie on the login
         // response (axios withCredentials).
+        localStorage.setItem(REMEMBER_KEY, remember ? "1" : "0");
         setAuthedCookie(remember);
         set({ user, token, isLoading: false });
         // The /auth/login response only carries the bare-minimum
@@ -88,17 +92,22 @@ export const useAuthStore = create<AuthState>()(
         disconnectSocket();
         // Best-effort server-side revoke + clear of the httpOnly refresh cookie.
         void api.post("/auth/logout").catch(() => {});
+        localStorage.removeItem(REMEMBER_KEY);
         clearAuthedCookie();
         set({ user: null, token: null, isLoading: false });
       },
 
       refresh: async () => {
+        // Preserve the "remember me" choice across silent refreshes so an
+        // unchecked session stays session-only. Default true when unknown, to
+        // avoid accidentally downgrading a remembered session.
+        const remember = localStorage.getItem(REMEMBER_KEY) !== "0";
         try {
           // withCredentials sends the httpOnly refresh cookie; the backend
-          // rotates it and returns a fresh access token (+ user).
-          const res = await api.post("/auth/refresh");
+          // rotates it (honouring `remember`) and returns a fresh access token.
+          const res = await api.post("/auth/refresh", { remember });
           const { access_token, user } = res.data;
-          setAuthedCookie(true);
+          setAuthedCookie(remember);
           set({ user, token: access_token, isLoading: false });
           return access_token as string;
         } catch {

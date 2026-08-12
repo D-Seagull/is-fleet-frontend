@@ -40,7 +40,11 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await api.post("/auth/login", { email, password });
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+        remember: rememberMe,
+      });
       const { access_token, user } = res.data;
 
       login(user, access_token, rememberMe);
