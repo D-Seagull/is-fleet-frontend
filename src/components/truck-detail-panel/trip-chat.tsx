@@ -60,7 +60,12 @@ export function TripChat({
   const t = useTranslations("chat");
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const isManager = user?.role === "ADMIN" || user?.role === "TEAMLEAD";
+  // Only ADMIN sees every session's live messages (full oversight, matching
+  // the backend's getVisibleSessionIds). A TEAMLEAD is NOT included: the
+  // backend gives team leads no live access (archive only), and a team lead
+  // who was managing this truck must stop receiving its chat the moment they
+  // are replaced — same as any other former manager.
+  const isAdmin = user?.role === "ADMIN";
   useReactionsSocketSync({ tripId: trip.id });
   // Only the trip's current driver / manager may send messages in the
   // active session — backend enforces this too. Other roles see a notice.
@@ -142,10 +147,10 @@ export function TripChat({
   // hydrates and would otherwise re-register listeners (the old `connect`
   // listener leaked because off() got the wrong reference).
   const currentUserIdRef = useRef(currentUserId);
-  const isManagerRef = useRef(isManager);
+  const isAdminRef = useRef(isAdmin);
   useEffect(() => {
-    isManagerRef.current = isManager;
-  }, [isManager]);
+    isAdminRef.current = isAdmin;
+  }, [isAdmin]);
   useEffect(() => {
     currentUserIdRef.current = currentUserId;
   }, [currentUserId]);
@@ -196,7 +201,7 @@ export function TripChat({
       const meId = currentUserIdRef.current;
       const inSession =
         msg.session?.driverId === meId || msg.session?.managerId === meId;
-      if (!isManagerRef.current && !inSession) return;
+      if (!isAdminRef.current && !inSession) return;
 
       queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", trip.id],
