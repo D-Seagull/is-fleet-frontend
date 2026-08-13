@@ -1798,7 +1798,7 @@ function ChatPageContent() {
                                   [],
                                   { hour: "2-digit", minute: "2-digit" },
                                 )}
-                                {isOwn && isRead != null && (
+                                {isOwn && isRead != null && !msg.deletedAt && (
                                   <span
                                     className={cn(isRead && "text-primary")}
                                   >
