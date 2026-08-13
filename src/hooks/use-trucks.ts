@@ -110,6 +110,12 @@ export function useUpdateTruck() {
       queryClient.invalidateQueries({ queryKey: ["trucks"] });
       queryClient.invalidateQueries({ queryKey: ["trucks", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["trucks-my"] });
+      // A manager (or driver) change cascades to the truck's trips
+      // (Trip.managerId). Refresh the truck's trips right here so the chat
+      // panel's `isActiveParticipant` picks up the new manager immediately —
+      // otherwise it stayed stale until a socket event or a full page reload.
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
     },
   });
 }
