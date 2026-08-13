@@ -252,10 +252,16 @@ export function TripChat({
       messageId: string;
     }) => {
       if (payload.tripId !== trip.id) return;
+      // Soft-delete in place so everyone sees a "message deleted" placeholder,
+      // instead of the row silently vanishing for other participants.
       queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", trip.id],
         (prev) =>
-          filterInfinitePages(prev, (m) => m.id !== payload.messageId),
+          patchInfiniteMessage(prev, payload.messageId, (m) => ({
+            ...m,
+            content: "",
+            deletedAt: new Date().toISOString(),
+          })),
       );
     };
     const handleMsgEdited = (payload: {

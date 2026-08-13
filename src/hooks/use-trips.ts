@@ -8,7 +8,6 @@ import {
 import { useMemo } from "react";
 import { api } from "@/lib/api";
 import {
-  filterInfinitePages,
   flattenInfinitePages,
   patchInfiniteMessage,
 } from "@/lib/infinite-messages";
@@ -284,9 +283,17 @@ export function useDeleteMessage(tripId: string) {
       return id;
     },
     onSuccess: (id) => {
+      // Soft-delete in place so the author sees the same "message deleted"
+      // placeholder everyone else gets (via the socket messageDeleted event) —
+      // not a silently vanishing row.
       queryClient.setQueryData<InfiniteData<TripMessage[]>>(
         ["trip-messages", tripId],
-        (prev) => filterInfinitePages(prev, (m) => m.id !== id),
+        (prev) =>
+          patchInfiniteMessage(prev, id, (m) => ({
+            ...m,
+            content: "",
+            deletedAt: new Date().toISOString(),
+          })),
       );
     },
   });
