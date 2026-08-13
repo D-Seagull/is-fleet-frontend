@@ -197,7 +197,7 @@ function MessageBubble({
             hour: "2-digit",
             minute: "2-digit",
           })}
-          {isMine && (
+          {isMine && !isDeleted && (
             <span className={cn(msg.isRead && "text-primary")}>
               {msg.isRead ? "✓✓" : "✓"}
             </span>
