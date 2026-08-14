@@ -130,32 +130,30 @@ export function StopRow({
           <ExternalLink className="h-3.5 w-3.5" />
         </Button>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <Input
           type="date"
           value={value.windowDate}
           onChange={(e) => set("windowDate", e.target.value)}
           aria-label={t("date")}
-          className="w-40"
+          className="w-[122px] h-8 text-xs px-2"
         />
-        <div className="flex items-center gap-1">
-          <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <Input
-            type="time"
-            value={value.windowStart}
-            onChange={(e) => set("windowStart", e.target.value)}
-            aria-label={t("from")}
-            className="w-28"
-          />
-          <span className="text-muted-foreground">–</span>
-          <Input
-            type="time"
-            value={value.windowEnd}
-            onChange={(e) => set("windowEnd", e.target.value)}
-            aria-label={t("to")}
-            className="w-28"
-          />
-        </div>
+        <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <Input
+          type="time"
+          value={value.windowStart}
+          onChange={(e) => set("windowStart", e.target.value)}
+          aria-label={t("from")}
+          className="w-[84px] h-8 text-xs px-2"
+        />
+        <span className="text-muted-foreground text-xs">–</span>
+        <Input
+          type="time"
+          value={value.windowEnd}
+          onChange={(e) => set("windowEnd", e.target.value)}
+          aria-label={t("to")}
+          className="w-[84px] h-8 text-xs px-2"
+        />
       </div>
       <div className="flex flex-wrap gap-1">
         {TIME_PRESETS.map((p) => (
