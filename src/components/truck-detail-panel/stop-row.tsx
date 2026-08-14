@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, X, Copy, ExternalLink, Clock } from "lucide-react";
+import { MapPin, X, Copy, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -136,15 +136,14 @@ export function StopRow({
           value={value.windowDate}
           onChange={(e) => set("windowDate", e.target.value)}
           aria-label={t("date")}
-          className="w-[122px] h-8 text-xs px-2"
+          className="w-[132px] h-8 text-xs px-2"
         />
-        <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         <Input
           type="time"
           value={value.windowStart}
           onChange={(e) => set("windowStart", e.target.value)}
           aria-label={t("from")}
-          className="w-[84px] h-8 text-xs px-2"
+          className="w-[104px] h-8 text-xs px-2"
         />
         <span className="text-muted-foreground text-xs">–</span>
         <Input
@@ -152,7 +151,7 @@ export function StopRow({
           value={value.windowEnd}
           onChange={(e) => set("windowEnd", e.target.value)}
           aria-label={t("to")}
-          className="w-[84px] h-8 text-xs px-2"
+          className="w-[104px] h-8 text-xs px-2"
         />
       </div>
       <div className="flex flex-wrap gap-1">

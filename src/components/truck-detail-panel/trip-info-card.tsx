@@ -372,24 +372,23 @@ export function TripInfoCard({
                 <ExternalLink className="h-3 w-3" />
               </Button>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1">
               <Input
                 type="date"
                 value={stop.windowDate}
                 aria-label={tStop("date")}
-                className="w-[114px] text-xs h-7 px-2"
+                className="w-[128px] text-xs h-7 px-2"
                 onChange={(e) => {
                   const next = [...stops];
                   next[i] = { ...next[i], windowDate: e.target.value };
                   setStops(next);
                 }}
               />
-              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
               <Input
                 type="time"
                 value={stop.windowStart}
                 aria-label={tStop("from")}
-                className="w-[78px] text-xs h-7 px-1.5"
+                className="w-[100px] text-xs h-7 px-2"
                 onChange={(e) => {
                   const next = [...stops];
                   next[i] = { ...next[i], windowStart: e.target.value };
@@ -401,7 +400,7 @@ export function TripInfoCard({
                 type="time"
                 value={stop.windowEnd}
                 aria-label={tStop("to")}
-                className="w-[78px] text-xs h-7 px-1.5"
+                className="w-[100px] text-xs h-7 px-2"
                 onChange={(e) => {
                   const next = [...stops];
                   next[i] = { ...next[i], windowEnd: e.target.value };
