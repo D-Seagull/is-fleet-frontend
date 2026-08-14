@@ -579,7 +579,10 @@
       "refShortPlaceholder": "Реф. #",
       "coordsPlaceholder": "Координаты",
       "copyCoords": "Скопировать координаты",
-      "openInMaps": "Открыть в Google Maps"
+      "openInMaps": "Открыть в Google Maps",
+      "date": "Дата",
+      "from": "От",
+      "to": "До"
     },
     "documents": {
       "allTrips": "Все рейсы ({count})",

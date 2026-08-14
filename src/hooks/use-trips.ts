@@ -61,6 +61,9 @@ export interface TripStop {
   address: string | null;
   ref: string | null;
   coords: string | null;
+  windowDate: string | null; // "YYYY-MM-DD"
+  windowStart: string | null; // "HH:mm"
+  windowEnd: string | null; // "HH:mm"
 }
 
 export interface TripDocument {
@@ -143,6 +146,9 @@ export interface StopFormData {
   address?: string;
   ref?: string;
   coords?: string;
+  windowDate?: string;
+  windowStart?: string;
+  windowEnd?: string;
 }
 
 export interface CreateTripData {
@@ -364,6 +370,9 @@ export interface UpdateStopData {
   address?: string;
   ref?: string;
   coords?: string;
+  windowDate?: string;
+  windowStart?: string;
+  windowEnd?: string;
 }
 
 export function useBroadcastToMyTrucks() {

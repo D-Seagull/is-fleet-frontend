@@ -579,7 +579,10 @@
       "refShortPlaceholder": "Ref #",
       "coordsPlaceholder": "Współrzędne",
       "copyCoords": "Kopiuj współrzędne",
-      "openInMaps": "Otwórz w Mapach Google"
+      "openInMaps": "Otwórz w Mapach Google",
+      "date": "Data",
+      "from": "Od",
+      "to": "Do"
     },
     "documents": {
       "allTrips": "Wszystkie trasy ({count})",

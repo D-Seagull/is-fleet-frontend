@@ -69,11 +69,23 @@ export function NewTripDialog({
         setTripName(draft.tripName ?? "");
         setOrderNumber(draft.orderNumber ?? "");
         setNotes(draft.notes ?? "");
+        // spread over emptyStop() so drafts saved before the time-window
+        // fields existed still get windowDate/windowStart/windowEnd defaults.
         setLoadingStops(
-          draft.loadingStops?.length ? draft.loadingStops : [emptyStop()],
+          draft.loadingStops?.length
+            ? draft.loadingStops.map((s: Partial<StopRowData>) => ({
+                ...emptyStop(),
+                ...s,
+              }))
+            : [emptyStop()],
         );
         setUnloadingStops(
-          draft.unloadingStops?.length ? draft.unloadingStops : [emptyStop()],
+          draft.unloadingStops?.length
+            ? draft.unloadingStops.map((s: Partial<StopRowData>) => ({
+                ...emptyStop(),
+                ...s,
+              }))
+            : [emptyStop()],
         );
         isNameEdited.current = draft.isNameEdited ?? false;
       } else {
@@ -155,6 +167,9 @@ export function NewTripDialog({
         address: s.address || undefined,
         ref: s.ref || undefined,
         coords: s.coords || undefined,
+        windowDate: s.windowDate || undefined,
+        windowStart: s.windowStart || undefined,
+        windowEnd: s.windowEnd || undefined,
       })),
       ...unloadingStops.map((s, i) => ({
         type: "UNLOADING" as StopType,
@@ -162,6 +177,9 @@ export function NewTripDialog({
         address: s.address || undefined,
         ref: s.ref || undefined,
         coords: s.coords || undefined,
+        windowDate: s.windowDate || undefined,
+        windowStart: s.windowStart || undefined,
+        windowEnd: s.windowEnd || undefined,
       })),
     ];
 

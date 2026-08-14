@@ -579,7 +579,10 @@
       "refShortPlaceholder": "Nuor. #",
       "coordsPlaceholder": "Koordinatės",
       "copyCoords": "Kopijuoti koordinates",
-      "openInMaps": "Atidaryti Google Maps"
+      "openInMaps": "Atidaryti Google Maps",
+      "date": "Data",
+      "from": "Nuo",
+      "to": "Iki"
     },
     "documents": {
       "allTrips": "Visi reisai ({count})",

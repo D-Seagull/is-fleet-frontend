@@ -12,6 +12,7 @@ import {
   X,
   Copy,
   ExternalLink,
+  Clock,
   Loader2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -38,9 +39,9 @@ import {
   type TripStatus,
   type StopType,
 } from "@/hooks/use-trips";
-import { emptyStop, type StopRowData } from "./stop-row";
+import { emptyStop, todayLocal, TIME_PRESETS, type StopRowData } from "./stop-row";
 import { CoordsCell } from "./coords-cell";
-import { shortenTripTitle } from "./utils";
+import { shortenTripTitle, formatStopWindow } from "./utils";
 
 export function TripInfoCard({
   trip,
@@ -76,23 +77,19 @@ export function TripInfoCard({
   const unloadingStops = trip.stops.filter((s) => s.type === "UNLOADING");
 
   function startEdit() {
+    const toRow = (s: Trip["stops"][number]): StopRowData => ({
+      address: s.address ?? "",
+      ref: s.ref ?? "",
+      coords: s.coords ?? "",
+      windowDate: s.windowDate ?? todayLocal(),
+      windowStart: s.windowStart ?? "00:00",
+      windowEnd: s.windowEnd ?? "00:00",
+    });
     setEditLoadingStops(
-      trip.stops
-        .filter((s) => s.type === "LOADING")
-        .map((s) => ({
-          address: s.address ?? "",
-          ref: s.ref ?? "",
-          coords: s.coords ?? "",
-        })),
+      trip.stops.filter((s) => s.type === "LOADING").map(toRow),
     );
     setEditUnloadingStops(
-      trip.stops
-        .filter((s) => s.type === "UNLOADING")
-        .map((s) => ({
-          address: s.address ?? "",
-          ref: s.ref ?? "",
-          coords: s.coords ?? "",
-        })),
+      trip.stops.filter((s) => s.type === "UNLOADING").map(toRow),
     );
     setEditNotes(trip.notes ?? "");
     setEditOrderNumber(trip.orderNumber ?? "");
@@ -107,6 +104,9 @@ export function TripInfoCard({
         address: s.address || undefined,
         ref: s.ref || undefined,
         coords: s.coords || undefined,
+        windowDate: s.windowDate || undefined,
+        windowStart: s.windowStart || undefined,
+        windowEnd: s.windowEnd || undefined,
       })),
       ...editUnloadingStops.map((s, i) => ({
         type: "UNLOADING" as StopType,
@@ -114,6 +114,9 @@ export function TripInfoCard({
         address: s.address || undefined,
         ref: s.ref || undefined,
         coords: s.coords || undefined,
+        windowDate: s.windowDate || undefined,
+        windowStart: s.windowStart || undefined,
+        windowEnd: s.windowEnd || undefined,
       })),
     ];
     await updateInfo.mutateAsync({
@@ -228,6 +231,11 @@ export function TripInfoCard({
                     </span>
                   )}
                   {s.coords && <CoordsCell coords={s.coords} />}
+                  {formatStopWindow(s) && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> {formatStopWindow(s)}
+                    </span>
+                  )}
                 </div>
               ))}
               {unloadingStops.map((s, i) => (
@@ -243,6 +251,11 @@ export function TripInfoCard({
                     </span>
                   )}
                   {s.coords && <CoordsCell coords={s.coords} />}
+                  {formatStopWindow(s) && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> {formatStopWindow(s)}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -358,6 +371,59 @@ export function TripInfoCard({
               >
                 <ExternalLink className="h-3 w-3" />
               </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Input
+                type="date"
+                value={stop.windowDate}
+                aria-label={tStop("date")}
+                className="w-36 text-xs h-7"
+                onChange={(e) => {
+                  const next = [...stops];
+                  next[i] = { ...next[i], windowDate: e.target.value };
+                  setStops(next);
+                }}
+              />
+              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+              <Input
+                type="time"
+                value={stop.windowStart}
+                aria-label={tStop("from")}
+                className="w-24 text-xs h-7"
+                onChange={(e) => {
+                  const next = [...stops];
+                  next[i] = { ...next[i], windowStart: e.target.value };
+                  setStops(next);
+                }}
+              />
+              <span className="text-muted-foreground text-xs">–</span>
+              <Input
+                type="time"
+                value={stop.windowEnd}
+                aria-label={tStop("to")}
+                className="w-24 text-xs h-7"
+                onChange={(e) => {
+                  const next = [...stops];
+                  next[i] = { ...next[i], windowEnd: e.target.value };
+                  setStops(next);
+                }}
+              />
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {TIME_PRESETS.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  className="px-2 py-0.5 text-[11px] rounded border hover:bg-accent transition-colors"
+                  onClick={() => {
+                    const next = [...stops];
+                    next[i] = { ...next[i], windowStart: p.value };
+                    setStops(next);
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
           </div>
         ))}

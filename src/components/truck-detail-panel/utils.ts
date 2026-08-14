@@ -1,3 +1,28 @@
+/**
+ * Formats a stop's scheduled window for display, e.g. "14.08 · 08:00–10:00".
+ * Returns "" when there's no meaningful time (both ends unset or 00:00) so
+ * stops left at defaults don't render a noisy empty window.
+ */
+export function formatStopWindow(stop: {
+  windowDate: string | null;
+  windowStart: string | null;
+  windowEnd: string | null;
+}): string {
+  const start = stop.windowStart && stop.windowStart !== "00:00" ? stop.windowStart : "";
+  const endRaw = stop.windowEnd && stop.windowEnd !== "00:00" ? stop.windowEnd : "";
+  const end = endRaw && endRaw !== start ? endRaw : "";
+  if (!start && !end) return "";
+  const time = [start, end].filter(Boolean).join("–");
+  const date = stop.windowDate ? formatWindowDate(stop.windowDate) : "";
+  return date ? `${date} · ${time}` : time;
+}
+
+/** "YYYY-MM-DD" → "DD.MM" (near-term operational dates, year dropped for compactness). */
+function formatWindowDate(iso: string): string {
+  const [, m, d] = iso.split("-");
+  return m && d ? `${d}.${m}` : iso;
+}
+
 export function shortenTripTitle(title: string): string {
   const [from, to] = title.split(" → ");
   const shortFrom = from?.split(",")[0]?.trim() ?? from ?? "";

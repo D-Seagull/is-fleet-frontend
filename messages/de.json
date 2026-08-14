@@ -579,7 +579,10 @@
       "refShortPlaceholder": "Ref. #",
       "coordsPlaceholder": "Koordinaten",
       "copyCoords": "Koordinaten kopieren",
-      "openInMaps": "In Google Maps öffnen"
+      "openInMaps": "In Google Maps öffnen",
+      "date": "Datum",
+      "from": "Von",
+      "to": "Bis"
     },
     "documents": {
       "allTrips": "Alle Fahrten ({count})",

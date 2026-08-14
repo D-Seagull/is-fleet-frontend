@@ -579,7 +579,10 @@
       "refShortPlaceholder": "Реф. #",
       "coordsPlaceholder": "Координати",
       "copyCoords": "Копіювати координати",
-      "openInMaps": "Відкрити в Google Maps"
+      "openInMaps": "Відкрити в Google Maps",
+      "date": "Дата",
+      "from": "Від",
+      "to": "До"
     },
     "documents": {
       "allTrips": "Усі рейси ({count})",
