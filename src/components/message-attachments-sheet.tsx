@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Loader2, Plus, FileText, Eye, Download, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useConfirm } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -54,6 +55,7 @@ export function MessageAttachmentsSheet({
 }: Props) {
   const t = useTranslations("chat.attachments");
   const tActions = useTranslations("common.actions");
+  const confirm = useConfirm();
   const user = useAuthStore((s) => s.user);
   const isDm = source === "dm";
 
@@ -109,7 +111,12 @@ export function MessageAttachmentsSheet({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm(t("deleteConfirm"))) return;
+    const ok = await confirm({
+      title: t("deleteConfirm"),
+      confirmText: tActions("delete"),
+      destructive: true,
+    });
+    if (!ok) return;
     if (isDm) await dmDelete.mutateAsync(id);
     else await groupDelete.mutateAsync(id);
   }

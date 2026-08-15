@@ -328,7 +328,8 @@
         "LEGACY_RESET": "Reset czatu (starsza wersja)"
       }
     },
-    "loadOlder": "Wczytaj starsze wiadomości"
+    "loadOlder": "Wczytaj starsze wiadomości",
+    "fileFallback": "Plik"
   },
   "trucks": {
     "title": "Ciężarówki",
@@ -351,11 +352,12 @@
     "takeTruck": "Przejmij ciężarówkę",
     "releaseTruck": "Zwolnij ciężarówkę",
     "activate": "Aktywuj",
-    "deleteConfirm": "Dezaktywować tę ciężarówkę? Zniknie z listy."
+    "deleteConfirm": "Dezaktywować tę ciężarówkę? Zniknie z listy.",
+    "colManager": "Menedżer"
   },
   "trips": {
     "title": "Trasy",
-    "searchPlaceholder": "Szukaj po nr zamówienia, trasie, ciężarówce, kierowcy, menedżerze…",
+    "searchPlaceholder": "Szukaj po nr zamówienia, trasie, pojeździe, kierowcy, menedżerze, dacie…",
     "colOrder": "Nr zamówienia",
     "colTrip": "Trasa",
     "colStatus": "Status",
@@ -366,7 +368,11 @@
     "emptySearch": "Brak tras pasujących do wyszukiwania.",
     "empty": "Brak tras.",
     "docView": "Podgląd",
-    "docDownload": "Pobierz"
+    "docDownload": "Pobierz",
+    "deleteConfirm": "Usunąć trasę „{title}”?",
+    "deleteConfirmDesc": "Trasa, jej czat i dokumenty zostaną trwale usunięte. Nie można tego cofnąć.",
+    "deleteSuccess": "Trasa usunięta",
+    "deleteError": "Nie udało się usunąć trasy"
   },
   "drivers": {
     "title": "Kierowcy",
@@ -428,7 +434,9 @@
       "anonymous": "Zostaw anonimowo",
       "update": "Zaktualizuj",
       "submit": "Wyślij"
-    }
+    },
+    "deactivateConfirm": "Dezaktywować tego kierowcę?",
+    "deactivate": "Dezaktywuj"
   },
   "managers": {
     "title": "Menedżerowie",
@@ -600,7 +608,8 @@
       "tabDocuments": "Dokumenty ({count})",
       "noPhotos": "Brak zdjęć.",
       "noDocuments": "Brak dokumentów."
-    }
+    },
+    "deactivate": "Dezaktywuj"
   },
   "account": {
     "title": "Ustawienia konta",

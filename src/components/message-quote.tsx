@@ -73,7 +73,7 @@ export function MessageQuote({
       >
         {isDoc && !isDeleted && <Paperclip className="h-3 w-3 shrink-0" />}
         <span className="truncate">
-          {isDeleted ? tombstone : isDoc ? (fileName ?? "Файл") : content}
+          {isDeleted ? tombstone : isDoc ? (fileName ?? t("fileFallback")) : content}
         </span>
       </p>
     </button>

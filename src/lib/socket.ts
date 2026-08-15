@@ -22,12 +22,14 @@ export function getSocket(): Socket {
       reconnectionDelay: 2000,
     });
 
-    socket.on("connect", () =>
-      console.log("✅ Socket connected:", socket?.id),
-    );
-    socket.on("disconnect", (reason) =>
-      console.log("❌ Socket disconnected:", reason),
-    );
+    if (process.env.NODE_ENV !== "production") {
+      socket.on("connect", () =>
+        console.log("✅ Socket connected:", socket?.id),
+      );
+      socket.on("disconnect", (reason) =>
+        console.log("❌ Socket disconnected:", reason),
+      );
+    }
     socket.on("connect_error", (err) =>
       console.warn("⚠️ Socket error:", err.message),
     );

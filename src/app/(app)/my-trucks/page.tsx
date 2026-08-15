@@ -220,7 +220,7 @@ function BroadcastDialog() {
             onChange={(e) => setText(e.target.value)}
             rows={5}
             className="resize-none"
-            style={{ wordBreak: "break-all", overflowWrap: "break-word" }}
+            style={{ overflowWrap: "break-word" }}
             onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && handleSend()}
           />
 

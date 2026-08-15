@@ -4,7 +4,7 @@ import { use, useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
   ArrowLeft,
@@ -52,12 +52,6 @@ import {
 import { useTrucks } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
 
-const truckStatusColors: Record<string, string> = {
-  AVAILABLE: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  ON_TRIP: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  REPAIR: "bg-red-500/10 text-red-600 border-red-500/20",
-};
-
 const PHONE_REGEX = /^\+\d{7,15}$/;
 
 function StarPicker({
@@ -94,6 +88,7 @@ function StarPicker({
 
 function RatingTab({ driverId }: { driverId: string }) {
   const t = useTranslations("drivers.rating");
+  const locale = useLocale();
   const user = useAuthStore((s) => s.user);
   const { data, isLoading } = useDriverRatings(driverId);
   const upsert = useUpsertDriverRating(driverId);
@@ -183,11 +178,13 @@ function RatingTab({ driverId }: { driverId: string }) {
                           {fullName(r.ratedBy) || t("unknown")}
                         </span>
                         <span className="text-xs text-muted-foreground ml-auto">
-                          {new Date(r.createdAt).toLocaleDateString()}
+                          {new Date(r.createdAt).toLocaleDateString(locale)}
                         </span>
                       </div>
                       {r.comment && (
-                        <p className="text-sm text-muted-foreground">"{r.comment}"</p>
+                        <p className="text-sm text-muted-foreground">
+                          &ldquo;{r.comment}&rdquo;
+                        </p>
                       )}
                     </div>
                   ))}
@@ -313,7 +310,7 @@ function DriverDetailContent({ id }: { id: string }) {
   }
 
   return (
-    <div className="flex flex-col p-4 gap-6">
+    <div className="flex flex-col p-4 gap-6 max-w-5xl mx-auto">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/drivers">
@@ -341,10 +338,10 @@ function DriverDetailContent({ id }: { id: string }) {
             </div>
           )}
         </div>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" className="shrink-0" asChild>
           <Link href={`/chat?userId=${driver.id}`}>
-            <MessageSquare className="mr-2 h-4 w-4" />
-            {t("chat")}
+            <MessageSquare className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
         {canToggle && (

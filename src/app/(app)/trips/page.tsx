@@ -2,20 +2,23 @@
 
 import { useState, useMemo, Fragment } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fullName } from "@/lib/format";
 import {
   Search,
   Paperclip,
   MapPin,
-  Loader2,
   FileText,
   ImageIcon,
   Eye,
   Download,
   ChevronDown,
   ChevronUp,
+  Trash2,
+  Loader2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,10 +32,15 @@ import {
 } from "@/components/ui/table";
 import {
   useTrips,
+  useDeleteTrip,
+  tripLoadingDate,
   TRIP_STATUS_COLORS,
   type Trip,
 } from "@/hooks/use-trips";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
+import { BackButton } from "@/components/back-button";
+import { useAuthStore } from "@/store/auth";
+import { useConfirm } from "@/components/confirm-dialog";
 
 function StopsCell({ stops }: { stops: Trip["stops"] }) {
   if (stops.length === 0)
@@ -114,10 +122,35 @@ const COLS = 8;
 export default function TripsPage() {
   const t = useTranslations("trips");
   const tStatus = useTranslations("common.tripStatus");
+  const tActions = useTranslations("common.actions");
+  const locale = useLocale();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: trips, isLoading } = useTrips();
+  const user = useAuthStore((s) => s.user);
+  const canDelete =
+    user?.role === "ADMIN" ||
+    user?.role === "TEAMLEAD" ||
+    user?.role === "MANAGER";
+  const confirm = useConfirm();
+  const deleteTrip = useDeleteTrip();
+
+  async function handleDelete(trip: Trip) {
+    const ok = await confirm({
+      title: t("deleteConfirm", { title: trip.title }),
+      description: t("deleteConfirmDesc"),
+      confirmText: tActions("delete"),
+      destructive: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteTrip.mutateAsync(trip.id);
+      toast.success(t("deleteSuccess"));
+    } catch {
+      toast.error(t("deleteError"));
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -130,9 +163,20 @@ export default function TripsPage() {
       if ((fullName(t.manager) || "").toLowerCase().includes(q)) return true;
       if (t.stops.some((s) => (s.address ?? "").toLowerCase().includes(q)))
         return true;
+      // Dates: match the created date (ISO "2026-08-15" + the locale-formatted
+      // form) and each stop's scheduled window date.
+      if (t.createdAt.slice(0, 10).includes(q)) return true;
+      if (
+        new Date(t.createdAt)
+          .toLocaleDateString(locale)
+          .toLowerCase()
+          .includes(q)
+      )
+        return true;
+      if (t.stops.some((s) => (s.windowDate ?? "").includes(q))) return true;
       return false;
     });
-  }, [trips, searchQuery]);
+  }, [trips, searchQuery, locale]);
 
   function toggle(tripId: string) {
     setExpandedId((prev) => (prev === tripId ? null : tripId));
@@ -140,7 +184,10 @@ export default function TripsPage() {
 
   return (
     <div className="flex flex-col p-4 gap-6">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center gap-2">
+        <BackButton />
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -156,7 +203,9 @@ export default function TripsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">{t("colOrder")}</TableHead>
+              <TableHead className="hidden sm:table-cell w-[100px]">
+                {t("colOrder")}
+              </TableHead>
               <TableHead className="w-[160px]">{t("colTrip")}</TableHead>
               <TableHead className="hidden md:table-cell w-[110px]">
                 {t("colStatus")}
@@ -177,19 +226,22 @@ export default function TripsPage() {
               <TableHead className="w-[60px] text-center">
                 <Paperclip className="h-3.5 w-3.5 mx-auto" />
               </TableHead>
+              {canDelete && (
+                <TableHead className="hidden sm:table-cell w-[48px]" />
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={`sk-${i}`}>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <Skeleton className="h-4 w-4" />
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-6 w-24 rounded-md" />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Skeleton className="h-4 w-40" />
                   </TableCell>
                   <TableCell>
@@ -207,12 +259,17 @@ export default function TripsPage() {
                   <TableCell className="text-center">
                     <Skeleton className="h-4 w-4 mx-auto" />
                   </TableCell>
+                  {canDelete && (
+                    <TableCell className="hidden sm:table-cell">
+                      <Skeleton className="h-4 w-4" />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : filtered.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={COLS}
+                  colSpan={canDelete ? COLS + 1 : COLS}
                   className="text-center py-12 text-muted-foreground"
                 >
                   {searchQuery ? t("emptySearch") : t("empty")}
@@ -222,14 +279,15 @@ export default function TripsPage() {
               filtered.map((trip) => {
                 const isExpanded = expandedId === trip.id;
                 const hasDocs = trip.documents.length > 0;
+                const loadDate = tripLoadingDate(trip);
                 return (
                   <Fragment key={trip.id}>
                     <TableRow
                       className="align-middle cursor-pointer hover:bg-muted/40 transition-colors"
                       onClick={() => toggle(trip.id)}
                     >
-                      {/* Order # */}
-                      <TableCell className="py-2 md:py-3">
+                      {/* Order # — hidden on phones (secondary + searchable) */}
+                      <TableCell className="hidden sm:table-cell py-2 md:py-3">
                         {trip.orderNumber ? (
                           <span className="font-mono text-xs md:text-sm">
                             {trip.orderNumber}
@@ -243,12 +301,18 @@ export default function TripsPage() {
 
                       {/* Trip title + date */}
                       <TableCell className="py-2 md:py-3">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-medium text-xs md:text-sm leading-tight">
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                          <span className="font-medium text-xs md:text-sm leading-tight truncate max-w-[40vw] md:max-w-none">
                             {trip.title}
                           </span>
                           <span className="text-[11px] md:text-xs text-muted-foreground">
-                            {new Date(trip.createdAt).toLocaleDateString()}
+                            {loadDate
+                              ? new Date(
+                                  loadDate + "T00:00:00",
+                                ).toLocaleDateString(locale)
+                              : new Date(trip.createdAt).toLocaleDateString(
+                                  locale,
+                                )}
                           </span>
                         </div>
                       </TableCell>
@@ -315,6 +379,29 @@ export default function TripsPage() {
                           </span>
                         )}
                       </TableCell>
+
+                      {/* Delete — ADMIN/TEAMLEAD only, tablet+ */}
+                      {canDelete && (
+                        <TableCell
+                          className="hidden sm:table-cell py-2 text-center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            title={tActions("delete")}
+                            onClick={() => handleDelete(trip)}
+                            disabled={deleteTrip.isPending}
+                          >
+                            {deleteTrip.isPending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            )}
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
 
                     {/* Expanded docs row */}
@@ -323,7 +410,10 @@ export default function TripsPage() {
                         key={`${trip.id}-docs`}
                         className="bg-blue-50/60 dark:bg-blue-950/20 border-l-2 border-l-blue-400/60"
                       >
-                        <TableCell colSpan={COLS} className="py-0 px-4">
+                        <TableCell
+                          colSpan={canDelete ? COLS + 1 : COLS}
+                          className="py-0 px-4"
+                        >
                           <DocsDropdown trip={trip} />
                         </TableCell>
                       </TableRow>

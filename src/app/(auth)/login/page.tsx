@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Truck, Eye, EyeOff, Loader2 } from "lucide-react";
+import { isAxiosError } from "axios";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,9 +53,18 @@ export default function LoginPage() {
       const uiLocale = user.uiLocale as UiLocaleDb | undefined;
       if (uiLocale) writeUiLocaleCookie(uiLocale);
       router.push(user.role === "ADMIN" ? "/admin" : user.role === "MANAGER" ? "/my-trucks" : "/trucks");
-    } catch (err: any) {
-      console.log(err.response?.data);
-      const msg = err.response?.data?.message.message;
+    } catch (err) {
+      let msg: string | string[] | undefined;
+      if (isAxiosError(err)) {
+        const data = err.response?.data as
+          | { message?: string | string[] | { message?: string | string[] } }
+          | undefined;
+        const m = data?.message;
+        // Login errors can arrive either as `message` (string | string[])
+        // or wrapped one level deeper as `message.message`.
+        msg =
+          m && typeof m === "object" && !Array.isArray(m) ? m.message : m;
+      }
       if (Array.isArray(msg)) {
         setError(msg.join(", "));
       } else if (typeof msg === "string") {
@@ -70,8 +81,8 @@ export default function LoginPage() {
     <div className="relative w-full flex items-center justify-center px-2 sm:px-6">
       <Card className="w-full max-w-md sm:max-w-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <Truck className="h-6 w-6 text-primary-foreground" />
+          <div className="mb-4 flex justify-center">
+            <BrandLogo className="h-12" />
           </div>
           <CardTitle className="text-2xl">{t("title")}</CardTitle>
           <CardDescription>{t("subtitle")}</CardDescription>
@@ -83,6 +94,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LucideIcon, ChevronRight, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { fullName, initials } from "@/lib/format";
 import {
   Sidebar,

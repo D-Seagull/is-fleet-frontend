@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Building2,
   Users,
@@ -19,6 +19,7 @@ import { useAdminStats } from "@/hooks/use-admin-stats";
 
 export default function AdminDashboardPage() {
   const t = useTranslations("admin.dashboard");
+  const locale = useLocale();
   const { data, isLoading, isError } = useAdminStats();
 
   return (
@@ -114,7 +115,7 @@ export default function AdminDashboardPage() {
                       <div className="min-w-0">
                         <div className="font-medium truncate">{c.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(c.createdAt).toLocaleDateString("uk-UA", {
+                          {new Date(c.createdAt).toLocaleDateString(locale, {
                             day: "numeric",
                             month: "short",
                             year: "numeric",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCompanies } from "@/hooks/use-companies";
 import { Loader2, Building2, CheckCircle2, XCircle } from "lucide-react";
 import {
@@ -19,6 +19,7 @@ export default function CompaniesPage() {
   const t = useTranslations("admin.companies");
   const tNew = useTranslations("admin.newCompany");
   const tDash = useTranslations("admin.dashboard");
+  const locale = useLocale();
   const { data: companies, isLoading, isError } = useCompanies();
 
   return (
@@ -98,7 +99,7 @@ export default function CompaniesPage() {
                     href={`/admin/companies/${company.id}`}
                     className="block"
                   >
-                    {new Date(company.createdAt).toLocaleDateString("uk-UA")}
+                    {new Date(company.createdAt).toLocaleDateString(locale)}
                   </Link>
                 </TableCell>
               </TableRow>

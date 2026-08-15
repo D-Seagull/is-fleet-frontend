@@ -40,7 +40,7 @@ async function getCroppedBlob(
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Не вдалось прочитати фото."));
+    img.onerror = () => reject(new Error("Failed to read image."));
     img.src = imageSrc;
   });
 
@@ -64,7 +64,7 @@ async function getCroppedBlob(
     canvas.toBlob(
       (blob) => {
         if (blob) resolve(blob);
-        else reject(new Error("Не вдалось підготувати фото."));
+        else reject(new Error("Failed to encode image."));
       },
       mime,
       0.92,

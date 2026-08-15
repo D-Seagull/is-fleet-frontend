@@ -38,6 +38,7 @@ import {
 import { fullName, initials } from "@/lib/format";
 import { AvatarCropperDialog } from "@/components/avatar-cropper-dialog";
 import { UiLocalePicker } from "@/components/ui-locale-picker";
+import { BackButton } from "@/components/back-button";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -125,7 +126,9 @@ function AvatarSection() {
     <div className="flex items-center gap-6">
       <Avatar className="h-24 w-24">
         <AvatarImage src={user?.avatar ?? undefined} alt={fullName(user)} />
-<AvatarFallback className="text-2xl bg-primary text-primary-foreground">{initials(user)}</AvatarFallback>
+        <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+          {initials(user)}
+        </AvatarFallback>
       </Avatar>
       <div className="flex flex-col gap-2">
         <div className="text-base font-medium">
@@ -197,6 +200,15 @@ function ProfileForm() {
   const [language, setLanguage] = useState<Language>("EN");
   const [savedHint, setSavedHint] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear any pending "saved" timer if the component unmounts mid-countdown.
+  useEffect(
+    () => () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    },
+    [],
+  );
 
   // Reset form whenever the underlying user row changes (login, refetch).
   useEffect(() => {
@@ -233,7 +245,8 @@ function ProfileForm() {
         language,
       });
       setSavedHint(true);
-      setTimeout(() => setSavedHint(false), 2500);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      savedTimerRef.current = setTimeout(() => setSavedHint(false), 2500);
     } catch (err) {
       if (isAxiosError(err)) {
         const data = err.response?.data as
@@ -331,7 +344,10 @@ export default function AccountSettingsPage() {
   const t = useTranslations("account");
   return (
     <div className="flex flex-col gap-6 p-4">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center gap-2">
+        <BackButton />
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      </div>
 
       <Card>
         <CardHeader>

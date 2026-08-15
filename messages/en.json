@@ -328,7 +328,8 @@
         "LEGACY_RESET": "Chat reset (legacy)"
       }
     },
-    "loadOlder": "Load older messages"
+    "loadOlder": "Load older messages",
+    "fileFallback": "File"
   },
   "trucks": {
     "title": "Trucks",
@@ -351,11 +352,12 @@
     "takeTruck": "Take truck",
     "releaseTruck": "Release truck",
     "activate": "Activate",
-    "deleteConfirm": "Deactivate this truck? It will disappear from the list."
+    "deleteConfirm": "Deactivate this truck? It will disappear from the list.",
+    "colManager": "Manager"
   },
   "trips": {
     "title": "Trips",
-    "searchPlaceholder": "Search by order #, trip, truck, driver, manager...",
+    "searchPlaceholder": "Search by order #, trip, truck, driver, manager, date…",
     "colOrder": "Order #",
     "colTrip": "Trip",
     "colStatus": "Status",
@@ -366,7 +368,11 @@
     "emptySearch": "No trips match your search.",
     "empty": "No trips yet.",
     "docView": "View",
-    "docDownload": "Download"
+    "docDownload": "Download",
+    "deleteConfirm": "Delete trip “{title}”?",
+    "deleteConfirmDesc": "The trip, its chat and documents will be permanently deleted. This cannot be undone.",
+    "deleteSuccess": "Trip deleted",
+    "deleteError": "Couldn’t delete the trip"
   },
   "drivers": {
     "title": "Drivers",
@@ -428,7 +434,9 @@
       "anonymous": "Leave anonymously",
       "update": "Update",
       "submit": "Submit"
-    }
+    },
+    "deactivateConfirm": "Deactivate this driver?",
+    "deactivate": "Deactivate"
   },
   "managers": {
     "title": "Managers",
@@ -600,7 +608,8 @@
       "tabDocuments": "Documents ({count})",
       "noPhotos": "No photos.",
       "noDocuments": "No documents."
-    }
+    },
+    "deactivate": "Deactivate"
   },
   "account": {
     "title": "Account Settings",

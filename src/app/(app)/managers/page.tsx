@@ -47,6 +47,7 @@ import {
   type Manager,
 } from "@/hooks/use-managers";
 import { useAuthStore } from "@/store/auth";
+import { BackButton } from "@/components/back-button";
 
 export default function ManagersPage() {
   const t = useTranslations("managers");
@@ -139,7 +140,10 @@ export default function ManagersPage() {
   return (
     <div className="flex flex-col gap-6 p-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
+        <div className="flex items-center gap-2 min-w-0">
+          <BackButton />
+          <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
+        </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="shrink-0">
@@ -255,16 +259,13 @@ export default function ManagersPage() {
                     <TableHead className="hidden md:table-cell">
                       {t("colRating")}
                     </TableHead>
-                    <TableHead className="w-[60px] text-center">
-                      {t("colChat")}
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {teamManagers.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={5}
                         className="text-center py-10 text-muted-foreground"
                       >
                         {t("teamEmpty")}
@@ -292,7 +293,7 @@ export default function ManagersPage() {
                             </span>
                             <Link
                               href={`/managers/${m.id}`}
-                              className="font-medium hover:underline truncate min-w-0"
+                              className="font-medium hover:underline truncate min-w-0 flex-1"
                             >
                               {fullName(m) || m.email}
                             </Link>
@@ -301,6 +302,14 @@ export default function ManagersPage() {
                                 {t("statusInactive")}
                               </Badge>
                             )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 shrink-0"
+                              onClick={() => router.push(`/chat?userId=${m.id}`)}
+                            >
+                              <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
                           </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
@@ -330,21 +339,6 @@ export default function ManagersPage() {
                             <span className="text-muted-foreground/40">—</span>
                           )}
                         </TableCell>
-                        <TableCell
-                          className="text-center"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() =>
-                              router.push(`/chat?userId=${m.id}`)
-                            }
-                          >
-                            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                        </TableCell>
                       </TableRow>
                     ))
                   )}
@@ -370,16 +364,13 @@ export default function ManagersPage() {
                     <TableHead className="hidden md:table-cell">
                       {t("colTeamlead")}
                     </TableHead>
-                    <TableHead className="w-[60px] text-center">
-                      {t("colChat")}
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {allManagers.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={4}
+                        colSpan={3}
                         className="text-center py-10 text-muted-foreground"
                       >
                         {t("allEmpty")}
@@ -407,7 +398,7 @@ export default function ManagersPage() {
                             </span>
                             <Link
                               href={`/managers/${m.id}`}
-                              className="font-medium hover:underline truncate min-w-0"
+                              className="font-medium hover:underline truncate min-w-0 flex-1"
                             >
                               {fullName(m) || m.email}
                             </Link>
@@ -416,6 +407,14 @@ export default function ManagersPage() {
                                 {t("statusInactive")}
                               </Badge>
                             )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 shrink-0"
+                              onClick={() => router.push(`/chat?userId=${m.id}`)}
+                            >
+                              <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
                           </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
@@ -426,21 +425,6 @@ export default function ManagersPage() {
                             <UserCircle2 className="h-3.5 w-3.5" />
                             <span>{fullName(m.teamlead) || "—"}</span>
                           </div>
-                        </TableCell>
-                        <TableCell
-                          className="text-center"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() =>
-                              router.push(`/chat?userId=${m.id}`)
-                            }
-                          >
-                            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
                         </TableCell>
                       </TableRow>
                     ))

@@ -42,15 +42,9 @@ export function useToggleReaction(type: ReactionTargetType) {
       messageId: string;
       emoji: string;
     }) => {
-      const t0 = Date.now();
       const res = await api.post(
         `${REACT_ENDPOINT[type]}/${messageId}/react`,
         { emoji },
-      );
-      const dt = Date.now() - t0;
-      // eslint-disable-next-line no-console
-      console.log(
-        `[reactions web] toggle ${type} ${messageId} POST round-trip=${dt}ms`,
       );
       return res.data as MessageReactionRow[];
     },

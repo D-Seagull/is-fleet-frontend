@@ -409,6 +409,9 @@ export function TripChat({
       timers.forEach((t) => clearTimeout(t));
       timers.clear();
     };
+    // Socket subscription is scoped to the trip; `t` (translations) is stable
+    // and only used for display, so we deliberately don't re-subscribe on it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trip.id]);
 
   // Outbound: throttle "typing" emit to once per debounce window; emit
@@ -711,7 +714,7 @@ export function TripChat({
         currentUserId={currentUserId}
       />
 
-      <div className="relative flex-1 min-h-0">
+      <div className="relative flex-1 min-h-0 bg-chat-bg">
         <div
           ref={scrollContainerRef}
           className="absolute inset-0 overflow-y-auto flex flex-col gap-2 py-2 pr-1"

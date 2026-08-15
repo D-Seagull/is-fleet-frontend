@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { isAxiosError } from "axios";
-import { Plus, Search, Star, Eye, EyeOff, Loader2, MessageSquare } from "lucide-react";
+import { Plus, Search, Star, Eye, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,11 +39,11 @@ import {
   useDrivers,
   useDeactivatedDrivers,
   useCreateDriver,
-  useDeactivateDriver,
   useActivateDriver,
   type Language,
 } from "@/hooks/use-drivers";
 import { useAuthStore } from "@/store/auth";
+import { BackButton } from "@/components/back-button";
 
 const LANGUAGE_KEYS: Language[] = [
   "UK",
@@ -81,7 +81,6 @@ export default function DriversPage() {
   const { data: drivers, isLoading } = useDrivers();
   const { data: deactivatedDrivers } = useDeactivatedDrivers();
   const createDriver = useCreateDriver();
-  const deactivateDriver = useDeactivateDriver();
   const activateDriver = useActivateDriver();
 
   const filteredDrivers = (drivers ?? []).filter((d) => {
@@ -143,7 +142,10 @@ export default function DriversPage() {
   return (
     <div className="flex flex-col p-4 gap-6">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
+        <div className="flex items-center gap-2 min-w-0">
+          <BackButton />
+          <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
+        </div>
         <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
           <DialogTrigger asChild>
             <Button className="shrink-0">
@@ -285,19 +287,18 @@ export default function DriversPage() {
                   <TableHead className="hidden sm:table-cell">
                     {t("colRating")}
                   </TableHead>
-                  <TableHead className="hidden sm:table-cell w-[48px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10">
+                    <TableCell colSpan={6} className="text-center py-10">
                       <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : filteredDrivers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                       {t("emptyActive")}
                     </TableCell>
                   </TableRow>
@@ -360,16 +361,6 @@ export default function DriversPage() {
                         ) : (
                           <span className="text-xs text-muted-foreground/40">—</span>
                         )}
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deactivateDriver.mutate(driver.id)}
-                          disabled={deactivateDriver.isPending}
-                        >
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

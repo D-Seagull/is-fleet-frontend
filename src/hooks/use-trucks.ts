@@ -198,7 +198,6 @@ export function useDeleteTruckNote() {
   return useMutation({
     mutationFn: async ({
       noteId,
-      truckId,
     }: {
       noteId: string;
       truckId: string;

@@ -160,6 +160,18 @@ export interface CreateTripData {
   stops?: StopFormData[];
 }
 
+/**
+ * Scheduled loading date of a trip — the first LOADING stop's `windowDate`
+ * ("YYYY-MM-DD"), or null when no loading stop has a date set. Shown in trip
+ * lists in place of the technical `createdAt`.
+ */
+export function tripLoadingDate(trip: Pick<Trip, "stops">): string | null {
+  return (
+    trip.stops.find((s) => s.type === "LOADING" && s.windowDate)?.windowDate ??
+    null
+  );
+}
+
 // all trips for the company
 export function useTrips() {
   return useQuery<Trip[]>({
@@ -333,6 +345,25 @@ export function useCreateTrip() {
       queryClient.invalidateQueries({
         queryKey: ["trips-by-truck", trip.truckId],
       });
+    },
+  });
+}
+
+// Permanently delete a trip (backend hard-deletes; ADMIN/TEAMLEAD only).
+// Refreshes both the company-wide list and the per-truck list.
+export function useDeleteTrip() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/trips/${id}`);
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.setQueryData<Trip[]>(["trips"], (prev) =>
+        prev ? prev.filter((t) => t.id !== id) : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck"] });
     },
   });
 }

@@ -33,10 +33,6 @@ export function useUserStatusSync() {
     if (!socket) return;
 
     const onChange = (evt: UserStatusEvent) => {
-      // Temporary diagnostic log — remove once cross-session sync is
-      // confirmed working in prod. Lets us verify the event arrives at
-      // the dispatcher's socket without sprinkling logs across hooks.
-      console.log("[useUserStatusSync] event received", evt);
       // 1) Self: hydrate my auth store so the sidebar reacts even if I
       //    flipped my own status from another tab.
       if (evt.userId === myId) {

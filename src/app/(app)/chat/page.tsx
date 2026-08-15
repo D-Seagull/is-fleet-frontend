@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fullName, initials } from "@/lib/format";
 import {
   Loader2,
@@ -211,6 +212,7 @@ function RowKebab({
 function ChatPageContent() {
   const t = useTranslations("chatPage");
   const tChat = useTranslations("chat");
+  const locale = useLocale();
   const tActions = useTranslations("common.actions");
   const tNav = useTranslations("nav");
   const tRoles = useTranslations("common.roles");
@@ -432,7 +434,9 @@ function ChatPageContent() {
     >
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={u?.avatar ?? undefined} />
-<AvatarFallback className="bg-primary/10 text-primary">{initials(u)}</AvatarFallback>
+        <AvatarFallback className="bg-primary/10 text-primary">
+          {initials(u)}
+        </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{fullName(u) || u.role}</p>
@@ -563,7 +567,7 @@ function ChatPageContent() {
                   const msg =
                     (err as { response?: { data?: { message?: string } } })
                       ?.response?.data?.message ?? err.message;
-                  window.alert(t("cannotDeleteGroup", { msg }));
+                  toast.error(t("cannotDeleteGroup", { msg }));
                 },
               })
             }
@@ -1249,7 +1253,7 @@ function ChatPageContent() {
             value="managers"
             className="flex-1 overflow-y-auto m-0 data-[state=inactive]:hidden"
           >
-            {/* Заголовок Groups з кнопкою "+" (заглушка — Dialog буде в Етапі 4) */}
+            {/* Заголовок Groups з кнопкою "+" для створення нової групи */}
             <div className="px-4 pt-3 pb-1 flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t("groups")}
@@ -1572,7 +1576,7 @@ function ChatPageContent() {
               ) : null}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 bg-chat-bg">
               {loadingMessages && !selectedGroupId ? (
                 <MessageListSkeleton />
               ) : (
@@ -1774,7 +1778,7 @@ function ChatPageContent() {
                                   )}
                                 >
                                   {msg.deletedAt
-                                    ? "Повідомлення видалено"
+                                    ? tChat("messageDeleted")
                                     : msg.content}
                                 </p>
                               </div>
@@ -1788,14 +1792,21 @@ function ChatPageContent() {
                               <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1 shrink-0">
                                 {msg.editedAt && !msg.deletedAt && (
                                   <span
-                                    title={`Редаговано о ${new Date(msg.editedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                                    title={tChat("editedAtTitle", {
+                                      time: new Date(
+                                        msg.editedAt,
+                                      ).toLocaleTimeString(locale, {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      }),
+                                    })}
                                     className="italic"
                                   >
-                                    (ред.)
+                                    {tChat("editedMark")}
                                   </span>
                                 )}
                                 {new Date(msg.createdAt).toLocaleTimeString(
-                                  [],
+                                  locale,
                                   { hour: "2-digit", minute: "2-digit" },
                                 )}
                                 {isOwn && isRead != null && !msg.deletedAt && (
@@ -1966,7 +1977,7 @@ function ChatPageContent() {
                               )}
                               {isDeleted ? (
                                 <div className="rounded-lg bg-muted/40 text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
-                                  Файл видалено
+                                  {tChat("fileDeleted")}
                                 </div>
                               ) : isPhoto ? (
                                 <div
@@ -2058,7 +2069,7 @@ function ChatPageContent() {
                           >
                             <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1 shrink-0">
                               {new Date(doc.createdAt).toLocaleTimeString(
-                                [],
+                                locale,
                                 { hour: "2-digit", minute: "2-digit" },
                               )}
                               {isOwn && !selectedGroupId && !isDeleted && (

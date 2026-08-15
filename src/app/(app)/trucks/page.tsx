@@ -8,10 +8,8 @@ import { fullName } from "@/lib/format";
 import {
   Plus,
   Search,
-  EyeOff,
   Eye,
   Loader2,
-  MessageSquare,
   UserPlus,
   UserMinus,
 } from "lucide-react";
@@ -52,13 +50,13 @@ import {
   useTrucks,
   useCreateTruck,
   useUpdateTruck,
-  useDeleteTruck,
   useDeactivatedTrucks,
   useActivateTruck,
   useDrivers,
   type TruckStatus,
 } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
+import { BackButton } from "@/components/back-button";
 
 const statusColors: Record<TruckStatus, string> = {
   AVAILABLE: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
@@ -85,7 +83,6 @@ export default function TrucksPage() {
   const { data: drivers } = useDrivers();
   const createTruck = useCreateTruck();
   const updateTruck = useUpdateTruck();
-  const deleteTruck = useDeleteTruck();
   const activateTruck = useActivateTruck();
 
   const filteredTrucks = (trucks ?? []).filter((truck) => {
@@ -111,15 +108,13 @@ export default function TrucksPage() {
     setDialogOpen(false);
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm(t("deleteConfirm"))) return;
-    await deleteTruck.mutateAsync(id);
-  }
-
   return (
     <div className="flex flex-col p-4 gap-6">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
+        <div className="flex items-center gap-2 min-w-0">
+          <BackButton />
+          <h1 className="text-xl md:text-2xl font-bold truncate">{t("title")}</h1>
+        </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="shrink-0">
@@ -213,14 +208,16 @@ export default function TrucksPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[130px]">{t("colPlate")}</TableHead>
-                  <TableHead className="w-[130px]">{t("colStatus")}</TableHead>
-                  <TableHead className="w-[240px]">{t("colDriver")}</TableHead>
-                  <TableHead className="w-[44px]" />
+                  <TableHead className="w-[72px]">{t("colPlate")}</TableHead>
+                  <TableHead className="hidden md:table-cell w-[130px]">
+                    {t("colStatus")}
+                  </TableHead>
+                  <TableHead>{t("colDriver")}</TableHead>
+                  <TableHead>{t("colManager")}</TableHead>
                   <TableHead className="hidden md:table-cell w-[200px]">
                     {t("colLastNote")}
                   </TableHead>
-                  <TableHead className="hidden md:table-cell w-[80px]" />
+                  <TableHead className="w-[44px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -230,7 +227,7 @@ export default function TrucksPage() {
                       <TableCell>
                         <Skeleton className="h-4 w-16" />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <Skeleton className="h-6 w-24 rounded-md" />
                       </TableCell>
                       <TableCell>
@@ -240,18 +237,20 @@ export default function TrucksPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-4 w-4" />
+                        <Skeleton className="h-4 w-24" />
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <Skeleton className="h-4 w-40" />
                       </TableCell>
-                      <TableCell className="hidden md:table-cell" />
+                      <TableCell>
+                        <Skeleton className="h-6 w-6" />
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : filteredTrucks.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={4}
+                      colSpan={6}
                       className="text-center py-10 text-muted-foreground"
                     >
                       {t("emptyActive")}
@@ -272,7 +271,10 @@ export default function TrucksPage() {
                           {truck.plate}
                         </Link>
                       </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        className="hidden md:table-cell"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Select
                           value={truck.status}
                           onValueChange={(v) =>
@@ -308,7 +310,7 @@ export default function TrucksPage() {
                         {truck.currentDriver ? (
                           <Link
                             href={`/drivers/${truck.currentDriver.id}`}
-                            className="hover:underline block truncate max-w-[160px] sm:max-w-[220px]"
+                            className="hover:underline block truncate max-w-[84px] sm:max-w-[200px]"
                           >
                             {fullName(truck.currentDriver)}
                           </Link>
@@ -316,16 +318,18 @@ export default function TrucksPage() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      {/* chat button */}
+                      {/* manager name → manager profile */}
                       <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => router.push(`/trucks/${truck.id}`)}
-                        >
-                          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
+                        {truck.manager ? (
+                          <Link
+                            href={`/managers/${truck.manager.id}`}
+                            className="hover:underline block truncate max-w-[84px] sm:max-w-[200px]"
+                          >
+                            {fullName(truck.manager)}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
                       </TableCell>
                       {/* last note — hidden on mobile */}
                       <TableCell className="hidden md:table-cell max-w-[200px]">
@@ -350,16 +354,14 @@ export default function TrucksPage() {
                           </span>
                         )}
                       </TableCell>
-                      {/* actions — hidden on mobile */}
-                      <TableCell
-                        className="hidden md:table-cell"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      {/* take/release truck — teamlead, all breakpoints */}
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1">
                           {isTeamlead && (
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-8 w-8"
                               title={
                                 truck.managerId === user?.id
                                   ? t("releaseTruck")
@@ -385,14 +387,6 @@ export default function TrucksPage() {
                               )}
                             </Button>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(truck.id)}
-                            disabled={deleteTruck.isPending}
-                          >
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

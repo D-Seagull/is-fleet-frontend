@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FileText, Download } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
@@ -42,6 +42,7 @@ function MessageBubble({
   onDelete,
 }: MessageBubbleProps) {
   const t = useTranslations("chat");
+  const locale = useLocale();
   const router = useRouter();
 
   // System messages render as a centred grey label (Telegram-style
@@ -63,6 +64,7 @@ function MessageBubble({
     isMine &&
     !isDeleted &&
     !msg.isSystem &&
+    // eslint-disable-next-line react-hooks/purity -- 15-min edit window must be evaluated against the current time on each render
     Date.now() - new Date(msg.createdAt).getTime() < 15 * 60 * 1000;
   const actions = {
     onCopy: () => navigator.clipboard.writeText(msg.content),
@@ -183,7 +185,7 @@ function MessageBubble({
           {msg.editedAt && !isDeleted && (
             <span
               title={t("editedAtTitle", {
-                time: new Date(msg.editedAt).toLocaleTimeString([], {
+                time: new Date(msg.editedAt).toLocaleTimeString(locale, {
                   hour: "2-digit",
                   minute: "2-digit",
                 }),
@@ -193,7 +195,7 @@ function MessageBubble({
               {t("editedMark")}
             </span>
           )}
-          {new Date(msg.createdAt).toLocaleTimeString([], {
+          {new Date(msg.createdAt).toLocaleTimeString(locale, {
             hour: "2-digit",
             minute: "2-digit",
           })}
@@ -236,6 +238,7 @@ function FileBubble({
 }: FileBubbleProps) {
   const t = useTranslations("chat");
   const tActions = useTranslations("common.actions");
+  const locale = useLocale();
   const isMine = doc.uploadedBy === currentUserId;
   const isDeletedDoc = !!doc.deletedAt;
   const isPhoto =
@@ -396,7 +399,7 @@ function FileBubble({
           </div>
         </MessageActionsContext>
         <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
-          {new Date(doc.createdAt).toLocaleTimeString([], {
+          {new Date(doc.createdAt).toLocaleTimeString(locale, {
             hour: "2-digit",
             minute: "2-digit",
           })}

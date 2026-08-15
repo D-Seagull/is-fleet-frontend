@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowLeft, History } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
   Dialog,
@@ -20,8 +20,8 @@ import {
   useTripChatArchive,
 } from "@/hooks/use-trips";
 
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleString();
+function fmtDate(iso: string, locale: string) {
+  return new Date(iso).toLocaleString(locale);
 }
 
 export function ChatArchiveDialog({
@@ -36,6 +36,7 @@ export function ChatArchiveDialog({
   currentUserId: string;
 }) {
   const t = useTranslations("chat.archive");
+  const locale = useLocale();
   const [selected, setSelected] = useState<ChatArchiveSession | null>(null);
   const { data: sessions = [], isLoading } = useTripChatArchive(tripId);
 
@@ -65,7 +66,7 @@ export function ChatArchiveDialog({
           </DialogTitle>
           <DialogDescription>
             {selected
-              ? `${fullName(selected.driver) || t("unknownDriver")} ↔ ${fullName(selected.manager) || t("unknownManager")} · ${fmtDate(selected.startedAt)} – ${selected.endedAt ? fmtDate(selected.endedAt) : "?"}`
+              ? `${fullName(selected.driver) || t("unknownDriver")} ↔ ${fullName(selected.manager) || t("unknownManager")} · ${fmtDate(selected.startedAt, locale)} – ${selected.endedAt ? fmtDate(selected.endedAt, locale) : "?"}`
               : t("description")}
           </DialogDescription>
         </DialogHeader>
@@ -107,8 +108,8 @@ export function ChatArchiveDialog({
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {fmtDate(s.startedAt)}
-                      {s.endedAt ? ` – ${fmtDate(s.endedAt)}` : ""}
+                      {fmtDate(s.startedAt, locale)}
+                      {s.endedAt ? ` – ${fmtDate(s.endedAt, locale)}` : ""}
                     </div>
                   </button>
                 </li>
@@ -131,6 +132,7 @@ function ArchivedMessages({
   currentUserId: string;
 }) {
   const t = useTranslations("chat.archive");
+  const locale = useLocale();
   const { data: messages = [], isLoading } = useArchivedSessionMessages(
     tripId,
     sessionId,
@@ -170,7 +172,7 @@ function ArchivedMessages({
                 {m.content}
               </div>
               <div className="text-[10px] text-muted-foreground mt-0.5">
-                {fullName(m.sender) || "—"} · {fmtDate(m.createdAt)}
+                {fullName(m.sender) || "—"} · {fmtDate(m.createdAt, locale)}
               </div>
             </div>
           );

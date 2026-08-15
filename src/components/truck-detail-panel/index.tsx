@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useConfirm } from "@/components/confirm-dialog";
 import {
   ArrowLeft,
   Loader2,
@@ -12,7 +13,15 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
+  MoreVertical,
+  EyeOff,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "@/components/status-dot";
@@ -39,6 +48,7 @@ import {
 import {
   useTruck,
   useUpdateTruck,
+  useDeleteTruck,
   useTruckNotes,
   useCreateTruckNote,
   useDeleteTruckNote,
@@ -104,6 +114,10 @@ export function TruckDetailPanel({
 }: TruckDetailPanelProps) {
   const t = useTranslations("truckPanel");
   const tCancel = useTranslations("common.actions");
+  const tTrucks = useTranslations("trucks");
+  const locale = useLocale();
+  const confirm = useConfirm();
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const [chatTripId, setChatTripId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("chat");
@@ -117,6 +131,7 @@ export function TruckDetailPanel({
   const truckUnread = unreadSummary?.items.find((i) => i.truckId === truckId);
   const { data: truckTrips = [] } = useTripsByTruck(truckId);
   const updateTruck = useUpdateTruck();
+  const deleteTruck = useDeleteTruck();
   const reassignTrip = useReassignTrip(truckId);
   const createNote = useCreateTruckNote();
   const deleteNote = useDeleteTruckNote();
@@ -177,7 +192,12 @@ export function TruckDetailPanel({
   }
 
   async function handleDeleteNote(noteId: string) {
-    if (!confirm(t("info.deleteNoteConfirm"))) return;
+    const ok = await confirm({
+      title: t("info.deleteNoteConfirm"),
+      confirmText: tCancel("delete"),
+      destructive: true,
+    });
+    if (!ok) return;
     await deleteNote.mutateAsync({ noteId, truckId });
   }
 
@@ -222,6 +242,21 @@ export function TruckDetailPanel({
     );
   }
 
+  const canManageTruck =
+    user?.role === "TEAMLEAD" || user?.role === "ADMIN";
+
+  async function handleDeactivateTruck() {
+    const ok = await confirm({
+      title: tTrucks("deleteConfirm"),
+      confirmText: t("deactivate"),
+      destructive: true,
+    });
+    if (!ok) return;
+    await deleteTruck.mutateAsync(truckId);
+    // Truck leaves the active list — step back out of the now-stale panel.
+    router.push(backHref);
+  }
+
   return (
     <div className="flex flex-col h-full p-4 gap-4">
       {/* header */}
@@ -254,6 +289,25 @@ export function TruckDetailPanel({
               : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
         </div>
+        {canManageTruck && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="shrink-0">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={handleDeactivateTruck}
+                disabled={deleteTruck.isPending}
+              >
+                <EyeOff className="h-4 w-4 mr-2" />
+                {t("deactivate")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <Tabs
@@ -479,7 +533,7 @@ export function TruckDetailPanel({
                         <span>{fullName(note.user) || t("info.unknown")}</span>
                         <span>·</span>
                         <span>
-                          {new Date(note.createdAt).toLocaleString([], {
+                          {new Date(note.createdAt).toLocaleString(locale, {
                             dateStyle: "short",
                             timeStyle: "short",
                           })}

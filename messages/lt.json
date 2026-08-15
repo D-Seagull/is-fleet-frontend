@@ -328,7 +328,8 @@
         "LEGACY_RESET": "Pokalbio atstatymas (senas)"
       }
     },
-    "loadOlder": "Įkelti senesnes žinutes"
+    "loadOlder": "Įkelti senesnes žinutes",
+    "fileFallback": "Failas"
   },
   "trucks": {
     "title": "Sunkvežimiai",
@@ -351,11 +352,12 @@
     "takeTruck": "Paimti sunkvežimį",
     "releaseTruck": "Atleisti sunkvežimį",
     "activate": "Aktyvuoti",
-    "deleteConfirm": "Deaktyvuoti šį sunkvežimį? Jis dings iš sąrašo."
+    "deleteConfirm": "Deaktyvuoti šį sunkvežimį? Jis dings iš sąrašo.",
+    "colManager": "Vadybininkas"
   },
   "trips": {
     "title": "Reisai",
-    "searchPlaceholder": "Ieškoti pagal užsakymo nr., reisą, sunkvežimį, vairuotoją, vadybininką…",
+    "searchPlaceholder": "Ieškoti pagal užsakymo nr., reisą, vilkiką, vairuotoją, vadybininką, datą…",
     "colOrder": "Užsakymo nr.",
     "colTrip": "Reisas",
     "colStatus": "Būsena",
@@ -366,7 +368,11 @@
     "emptySearch": "Nėra reisų, atitinkančių paiešką.",
     "empty": "Reisų dar nėra.",
     "docView": "Peržiūrėti",
-    "docDownload": "Atsisiųsti"
+    "docDownload": "Atsisiųsti",
+    "deleteConfirm": "Ištrinti reisą „{title}“?",
+    "deleteConfirmDesc": "Reisas, jo pokalbis ir dokumentai bus visam laikui ištrinti. Šio veiksmo anuliuoti negalima.",
+    "deleteSuccess": "Reisas ištrintas",
+    "deleteError": "Nepavyko ištrinti reiso"
   },
   "drivers": {
     "title": "Vairuotojai",
@@ -428,7 +434,9 @@
       "anonymous": "Palikti anonimiškai",
       "update": "Atnaujinti",
       "submit": "Pateikti"
-    }
+    },
+    "deactivateConfirm": "Deaktyvuoti šį vairuotoją?",
+    "deactivate": "Deaktyvuoti"
   },
   "managers": {
     "title": "Vadybininkai",
@@ -600,7 +608,8 @@
       "tabDocuments": "Dokumentai ({count})",
       "noPhotos": "Nuotraukų nėra.",
       "noDocuments": "Dokumentų nėra."
-    }
+    },
+    "deactivate": "Deaktyvuoti"
   },
   "account": {
     "title": "Paskyros nustatymai",

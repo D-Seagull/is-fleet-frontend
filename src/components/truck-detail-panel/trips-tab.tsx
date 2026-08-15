@@ -8,7 +8,7 @@ import {
   Loader2,
   Search,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { getSocket } from "@/lib/socket";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import {
   useTripsByTruck,
   useUpdateTripStatus,
+  tripLoadingDate,
   TRIP_STATUS_COLORS,
   TRIP_STATUS_KEYS,
   type Trip,
@@ -51,6 +52,7 @@ function TripCard({
 }) {
   const t = useTranslations("truckPanel.trips");
   const tStatus = useTranslations("common.tripStatus");
+  const locale = useLocale();
   const updateStatus = useUpdateTripStatus(truckId);
   const [section, setSection] = useState<"stops" | "attachments" | null>(null);
   const allDocs = trip.documents;
@@ -98,7 +100,12 @@ function TripCard({
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <StatusDot user={trip.driver} size="xs" />
             {fullName(trip.driver)} ·{" "}
-            {new Date(trip.createdAt).toLocaleDateString()}
+            {(() => {
+              const d = tripLoadingDate(trip);
+              return d
+                ? new Date(d + "T00:00:00").toLocaleDateString(locale)
+                : new Date(trip.createdAt).toLocaleDateString(locale);
+            })()}
           </p>
         </div>
         <div

@@ -35,7 +35,11 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // The trailing `.*\\..*` skips any path with a file extension (e.g.
+  // /IS_logo.png) so public static assets aren't caught by the auth
+  // redirect — otherwise unauthenticated pages (login/register) get the
+  // login HTML back in place of the image and the logo renders broken.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.*|apple-icon.*|placeholder.*).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.*|apple-icon.*|placeholder.*|.*\\..*).*)",
   ],
 };

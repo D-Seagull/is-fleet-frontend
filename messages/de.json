@@ -328,7 +328,8 @@
         "LEGACY_RESET": "Chat zurückgesetzt (Legacy)"
       }
     },
-    "loadOlder": "Ältere Nachrichten laden"
+    "loadOlder": "Ältere Nachrichten laden",
+    "fileFallback": "Datei"
   },
   "trucks": {
     "title": "LKW",
@@ -351,11 +352,12 @@
     "takeTruck": "LKW übernehmen",
     "releaseTruck": "LKW freigeben",
     "activate": "Aktivieren",
-    "deleteConfirm": "Diesen LKW deaktivieren? Er verschwindet aus der Liste."
+    "deleteConfirm": "Diesen LKW deaktivieren? Er verschwindet aus der Liste.",
+    "colManager": "Manager"
   },
   "trips": {
     "title": "Fahrten",
-    "searchPlaceholder": "Nach Bestell-Nr., Fahrt, LKW, Fahrer, Manager suchen…",
+    "searchPlaceholder": "Suche nach Auftrags-Nr., Fahrt, Fahrzeug, Fahrer, Manager, Datum…",
     "colOrder": "Bestell-Nr.",
     "colTrip": "Fahrt",
     "colStatus": "Status",
@@ -366,7 +368,11 @@
     "emptySearch": "Keine Fahrten für Ihre Suche gefunden.",
     "empty": "Noch keine Fahrten.",
     "docView": "Ansehen",
-    "docDownload": "Herunterladen"
+    "docDownload": "Herunterladen",
+    "deleteConfirm": "Fahrt „{title}“ löschen?",
+    "deleteConfirmDesc": "Die Fahrt, ihr Chat und die Dokumente werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+    "deleteSuccess": "Fahrt gelöscht",
+    "deleteError": "Fahrt konnte nicht gelöscht werden"
   },
   "drivers": {
     "title": "Fahrer",
@@ -428,7 +434,9 @@
       "anonymous": "Anonym abgeben",
       "update": "Aktualisieren",
       "submit": "Absenden"
-    }
+    },
+    "deactivateConfirm": "Diesen Fahrer deaktivieren?",
+    "deactivate": "Deaktivieren"
   },
   "managers": {
     "title": "Manager",
@@ -600,7 +608,8 @@
       "tabDocuments": "Dokumente ({count})",
       "noPhotos": "Keine Fotos.",
       "noDocuments": "Keine Dokumente."
-    }
+    },
+    "deactivate": "Deaktivieren"
   },
   "account": {
     "title": "Kontoeinstellungen",

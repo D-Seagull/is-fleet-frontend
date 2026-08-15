@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useConfirm } from "@/components/confirm-dialog";
 import { Bell, Plus, Trash2, Clock, RotateCw, X, Repeat, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,8 +53,8 @@ function offsetToIso(minutes: number): string {
   return d.toISOString();
 }
 
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString([], {
+function formatDateTime(iso: string, locale: string) {
+  return new Date(iso).toLocaleString(locale, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",
@@ -77,6 +78,8 @@ export function AlarmTab({
 }) {
   const t = useTranslations("alarm");
   const tActions = useTranslations("common.actions");
+  const locale = useLocale();
+  const confirm = useConfirm();
   const user = useAuthStore((s) => s.user);
   const { data: alarms = [], isLoading } = useAlarmsByTruck(truck.id);
   const createAlarm = useCreateAlarm(truck.id);
@@ -286,6 +289,7 @@ export function AlarmTab({
             // Dim alarms that have already passed (fired, or their time is in
             // the past) so upcoming ones stand out.
             const passed =
+              // eslint-disable-next-line react-hooks/purity -- "is this alarm in the past" must read the current time on each render
               a.isSent || new Date(a.time).getTime() < Date.now();
             return (
               <div
@@ -310,7 +314,7 @@ export function AlarmTab({
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0 text-[10px] text-muted-foreground mt-0.5">
                     <span className="flex items-center gap-0.5">
                       <Clock className="h-2.5 w-2.5" />
-                      {formatDateTime(a.time)}
+                      {formatDateTime(a.time, locale)}
                     </span>
                     {a.recurrence !== "NONE" && (
                       <span className="flex items-center gap-0.5">
@@ -368,9 +372,13 @@ export function AlarmTab({
                     size="icon"
                     variant="ghost"
                     className="h-6 w-6 shrink-0"
-                    onClick={() => {
-                      if (confirm(t("deleteConfirm")))
-                        deleteAlarm.mutate(a.id);
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: t("deleteConfirm"),
+                        confirmText: tActions("delete"),
+                        destructive: true,
+                      });
+                      if (ok) deleteAlarm.mutate(a.id);
                     }}
                   >
                     <Trash2 className="h-3 w-3 text-destructive" />

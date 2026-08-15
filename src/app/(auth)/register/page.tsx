@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Truck, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -188,8 +189,8 @@ function RegisterInner() {
   return (
     <CenterCard>
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-          <Truck className="h-6 w-6 text-primary-foreground" />
+        <div className="mb-4 flex justify-center">
+          <BrandLogo className="h-12" />
         </div>
         <CardTitle className="text-2xl">
           {t("title", { companyName: invite.companyName })}

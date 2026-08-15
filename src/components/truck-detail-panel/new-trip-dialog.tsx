@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Plus, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,7 @@ export function NewTripDialog({
   onCreated?: (trip: Trip) => void;
 }) {
   const t = useTranslations("truckPanel.newTrip");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const { data: drivers } = useDrivers();
   const createTrip = useCreateTrip();
@@ -158,7 +159,7 @@ export function NewTripDialog({
     if (!driverId) return;
     const title =
       tripName.trim() ||
-      t("tripFallbackName", { date: new Date().toLocaleDateString() });
+      t("tripFallbackName", { date: new Date().toLocaleDateString(locale) });
 
     const stops: StopFormData[] = [
       ...loadingStops.map((s, i) => ({

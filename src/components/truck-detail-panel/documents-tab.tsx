@@ -12,7 +12,7 @@ import {
   Trash2,
   Search,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,7 @@ import { shortenTripTitle } from "./utils";
 export function DocumentsTab({ truckId }: { truckId: string }) {
   const t = useTranslations("truckPanel.documents");
   const tActions = useTranslations("common.actions");
+  const locale = useLocale();
   const { data: trips = [] } = useTripsByTruck(truckId);
   const [tripFilter, setTripFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -63,7 +64,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
     if (tripFilter !== "all" && d.tripId !== tripFilter) return false;
     if (!q) return true;
     // Search by date (localized + ISO), order number and file name.
-    const dateStr = `${new Date(d.createdAt).toLocaleDateString()} ${d.createdAt.slice(0, 10)}`.toLowerCase();
+    const dateStr = `${new Date(d.createdAt).toLocaleDateString(locale)} ${d.createdAt.slice(0, 10)}`.toLowerCase();
     const order = (d.trip?.orderNumber ?? "").toLowerCase();
     return (
       dateStr.includes(q) ||
@@ -254,7 +255,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                       </button>
                     </TableCell>
                     <TableCell className="px-2 py-1.5 text-muted-foreground hidden sm:table-cell whitespace-nowrap">
-                      {new Date(doc.createdAt).toLocaleDateString()}
+                      {new Date(doc.createdAt).toLocaleDateString(locale)}
                     </TableCell>
                     <TableCell className="px-2 py-1.5 text-muted-foreground hidden sm:table-cell font-mono">
                       {doc.trip?.orderNumber ? `#${doc.trip.orderNumber}` : "—"}

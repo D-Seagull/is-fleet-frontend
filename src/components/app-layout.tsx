@@ -5,8 +5,10 @@ import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UiLocalePicker } from "@/components/ui-locale-picker";
 import { fullName } from "@/lib/format";
@@ -232,6 +234,22 @@ function UnreadBell() {
   );
 }
 
+// Logo doubles as a sidebar toggle. Lives in its own component so it can read
+// the sidebar context (useSidebar must be called under SidebarProvider).
+function HeaderLogo() {
+  const { toggleSidebar } = useSidebar();
+  return (
+    <button
+      type="button"
+      onClick={toggleSidebar}
+      aria-label="Toggle Sidebar"
+      className="flex items-center rounded-md transition-opacity hover:opacity-80"
+    >
+      <BrandLogo className="h-13" />
+    </button>
+  );
+}
+
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const tNav = useTranslations("nav");
   const user = useAuthStore((s) => s.user);
@@ -298,22 +316,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             continuous bar with no vertical divider. */}
         <header className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
           <div className="flex items-center gap-2">
-            {/* Colored logo in light theme, white variant in dark. Plain <img>
-                on purpose — the next/image optimizer choked on these PNGs. */}
-            <span className="flex items-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/IS_logo.png"
-                alt="iSfleet"
-                className="h-13 w-auto object-contain dark:hidden"
-              />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/is_logo__white.png"
-                alt="iSfleet"
-                className="hidden h-13 w-auto object-contain dark:block"
-              />
-            </span>
+            <HeaderLogo />
             <SidebarTrigger />
           </div>
           <div className="flex items-center gap-2">

@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Building2,
@@ -45,7 +45,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   useAdminCompany,
   useDeactivateCompany,
@@ -153,7 +153,7 @@ function CompanyHeader({
 }) {
   const t = useTranslations("admin.detail");
   const tActions = useTranslations("common.actions");
-  const { toast } = useToast();
+  const locale = useLocale();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const deactivate = useDeactivateCompany();
   const resend = useResendCompanyInvite();
@@ -178,23 +178,19 @@ function CompanyHeader({
     if (!email) return;
     try {
       await resend.mutateAsync({ id: data.id, email });
-      toast({ title: t("resendSuccess"), description: email });
+      toast.success(t("resendSuccess"), { description: email });
     } catch {
-      toast({
-        title: t("resendFail"),
-        description: t("resendFailDesc"),
-        variant: "destructive",
-      });
+      toast.error(t("resendFail"), { description: t("resendFailDesc") });
     }
   };
 
   const handleDeactivate = async () => {
     try {
       await deactivate.mutateAsync(data.id);
-      toast({ title: t("deactivateSuccess") });
+      toast.success(t("deactivateSuccess"));
       setConfirmOpen(false);
     } catch {
-      toast({ title: t("deactivateError"), variant: "destructive" });
+      toast.error(t("deactivateError"));
     }
   };
 
@@ -222,7 +218,7 @@ function CompanyHeader({
           </div>
           <p className="text-sm text-muted-foreground">
             {t("registered", {
-              date: new Date(data.createdAt).toLocaleDateString(undefined, {
+              date: new Date(data.createdAt).toLocaleDateString(locale, {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

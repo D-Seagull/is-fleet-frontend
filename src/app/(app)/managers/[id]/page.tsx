@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { fullName, initials } from "@/lib/format";
 import {
   ArrowLeft,
@@ -81,6 +81,7 @@ export default function ManagerDetailPage({
   const t = useTranslations("managers.detail");
   const tLangs = useTranslations("common.languages");
   const tTruckStatus = useTranslations("common.truckStatus");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") ?? "info";
 
@@ -156,10 +157,10 @@ export default function ManagerDetailPage({
             </div>
           )}
         </div>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" className="shrink-0" asChild>
           <Link href={`/chat?userId=${manager.id}`}>
-            <MessageSquare className="mr-2 h-4 w-4" />
-            {t("chat")}
+            <MessageSquare className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
         {isAdminOrTeamlead && (
@@ -545,7 +546,7 @@ export default function ManagerDetailPage({
                             {fullName(r.ratedBy) || t("unknown")}
                           </span>
                           <span className="text-xs text-muted-foreground ml-auto">
-                            {new Date(r.createdAt).toLocaleDateString()}
+                            {new Date(r.createdAt).toLocaleDateString(locale)}
                           </span>
                         </div>
                         {r.comment && (

@@ -14,8 +14,10 @@ import {
   ExternalLink,
   Clock,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,12 +35,15 @@ import { cn } from "@/lib/utils";
 import {
   useUpdateTripInfo,
   useUpdateTripStatus,
+  useDeleteTrip,
   TRIP_STATUS_COLORS,
   TRIP_STATUS_KEYS,
   type Trip,
   type TripStatus,
   type StopType,
 } from "@/hooks/use-trips";
+import { useAuthStore } from "@/store/auth";
+import { useConfirm } from "@/components/confirm-dialog";
 import { emptyStop, todayLocal, TIME_PRESETS, type StopRowData } from "./stop-row";
 import { CoordsCell } from "./coords-cell";
 import { shortenTripTitle, formatStopWindow } from "./utils";
@@ -60,8 +65,14 @@ export function TripInfoCard({
   const tStopType = useTranslations("common.stopType");
   const tStop = useTranslations("truckPanel.stop");
   const tActions = useTranslations("common.actions");
+  const tTrips = useTranslations("trips");
   const updateInfo = useUpdateTripInfo(truckId);
   const updateStatus = useUpdateTripStatus(truckId);
+  const deleteTrip = useDeleteTrip();
+  const confirm = useConfirm();
+  const role = useAuthStore((s) => s.user?.role);
+  const canDelete =
+    role === "ADMIN" || role === "TEAMLEAD" || role === "MANAGER";
   const [editing, setEditing] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
 
@@ -126,6 +137,22 @@ export function TripInfoCard({
       stops,
     });
     setEditing(false);
+  }
+
+  async function handleDelete() {
+    const ok = await confirm({
+      title: tTrips("deleteConfirm", { title: trip.title }),
+      description: tTrips("deleteConfirmDesc"),
+      confirmText: tActions("delete"),
+      destructive: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteTrip.mutateAsync(trip.id);
+      toast.success(tTrips("deleteSuccess"));
+    } catch {
+      toast.error(tTrips("deleteError"));
+    }
   }
 
   if (!editing) {
@@ -446,8 +473,24 @@ export function TripInfoCard({
             className="text-xs h-7 min-w-0 flex-1"
           />
         </div>
-        {/* рядок 2: кнопки */}
+        {/* рядок 2: кнопки — видалити / скасувати / зберегти разом справа */}
         <div className="flex items-center justify-end gap-2">
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs text-destructive hover:text-destructive"
+              onClick={handleDelete}
+              disabled={deleteTrip.isPending}
+            >
+              {deleteTrip.isPending ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <Trash2 className="mr-1 h-3 w-3" />
+              )}
+              {tActions("delete")}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"

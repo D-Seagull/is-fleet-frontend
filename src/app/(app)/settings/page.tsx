@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Building2, Loader2, ShieldAlert } from "lucide-react";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { useAuthStore } from "@/store/auth";
 import { useCompany, useUpdateCompany } from "@/hooks/use-company";
+import { BackButton } from "@/components/back-button";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
@@ -33,6 +34,15 @@ export default function SettingsPage() {
   const [directorEmail, setDirectorEmail] = useState("");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear any pending "saved" timer if the component unmounts mid-countdown.
+  useEffect(
+    () => () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!company) return;
@@ -82,7 +92,8 @@ export default function SettingsPage() {
         directorEmail: directorEmail.trim() || null,
       });
       setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      savedTimerRef.current = setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       if (isAxiosError(err)) {
         const data = err.response?.data as
@@ -108,7 +119,10 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center gap-2">
+        <BackButton />
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      </div>
 
       <Card>
         <CardHeader>

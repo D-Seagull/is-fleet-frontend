@@ -4,7 +4,8 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Truck, Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,13 +70,15 @@ function ResetPasswordForm() {
     <div className="relative w-full flex items-center justify-center px-2 sm:px-6">
       <Card className="w-full max-w-md sm:max-w-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            {success ? (
+          {success ? (
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
               <CheckCircle2 className="h-6 w-6 text-primary-foreground" />
-            ) : (
-              <Truck className="h-6 w-6 text-primary-foreground" />
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="mb-4 flex justify-center">
+              <BrandLogo className="h-12" />
+            </div>
+          )}
           <CardTitle className="text-2xl">
             {success ? t("titleAfter") : t("titleBefore")}
           </CardTitle>
