@@ -1,24 +1,51 @@
 "use client";
 
 /**
- * Thin wrapper over the Web Notification API for chat pop-ups. Works in a
- * regular browser and inside the Tauri desktop shell (WebView2 surfaces these
- * as native Windows toasts). No-ops gracefully where notifications aren't
- * available or permission is denied.
+ * Chat pop-up notifications.
+ *
+ * - In a regular browser: the Web Notification API (native OS toast).
+ * - Inside the Tauri desktop shell: WebView2 does NOT surface web
+ *   notifications, so we route through the Tauri notification plugin instead
+ *   (exposed on `window.__TAURI__.notification` via `withGlobalTauri`).
+ *
+ * No-ops gracefully where notifications aren't available or permission is
+ * denied.
  */
+
+type TauriNotification = {
+  isPermissionGranted: () => Promise<boolean>;
+  requestPermission: () => Promise<"granted" | "denied" | "default">;
+  sendNotification: (
+    options: { title: string; body?: string; icon?: string } | string,
+  ) => void;
+};
+
+function tauriNotify(): TauriNotification | null {
+  if (typeof window === "undefined") return null;
+  const tauri = (
+    window as unknown as { __TAURI__?: { notification?: TauriNotification } }
+  ).__TAURI__;
+  return tauri?.notification ?? null;
+}
 
 let primed = false;
 
-/**
- * Ask for notification permission. Tries immediately (WebView2 / permissive
- * browsers allow it) and, if the browser still requires a user gesture, again
- * on the first pointer interaction. Safe to call repeatedly.
- */
+/** Ask for notification permission up front (browser: on first gesture). */
 export function primeNotifyPermission() {
-  if (typeof window === "undefined" || !("Notification" in window)) return;
-  if (primed || Notification.permission !== "default") return;
-  primed = true;
+  if (typeof window === "undefined") return;
 
+  const tn = tauriNotify();
+  if (tn) {
+    void tn
+      .isPermissionGranted()
+      .then((granted) => (granted ? null : tn.requestPermission()))
+      .catch(() => {});
+    return;
+  }
+
+  if (!("Notification" in window) || primed) return;
+  if (Notification.permission !== "default") return;
+  primed = true;
   const ask = () => {
     if (Notification.permission === "default") {
       void Notification.requestPermission().catch(() => {});
@@ -29,7 +56,7 @@ export function primeNotifyPermission() {
 }
 
 /**
- * Show a chat notification — but only when the app window isn't focused, so we
+ * Show a chat notification — only when the app window isn't focused, so we
  * never ping the user about a message they're already looking at.
  */
 export function showMessageNotification(opts: {
@@ -38,10 +65,28 @@ export function showMessageNotification(opts: {
   icon?: string | null;
   onClick?: () => void;
 }) {
-  if (typeof window === "undefined" || !("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
+  if (typeof window === "undefined") return;
   if (typeof document !== "undefined" && document.hasFocus()) return;
 
+  // ── Desktop shell (Tauri) ────────────────────────────────────────────
+  const tn = tauriNotify();
+  if (tn) {
+    void (async () => {
+      try {
+        let granted = await tn.isPermissionGranted();
+        if (!granted) granted = (await tn.requestPermission()) === "granted";
+        if (granted) tn.sendNotification({ title: opts.title, body: opts.body });
+      } catch {
+        /* plugin call failed — ignore */
+      }
+    })();
+    return;
+  }
+
+  // ── Browser ──────────────────────────────────────────────────────────
+  if (!("Notification" in window) || Notification.permission !== "granted") {
+    return;
+  }
   try {
     const n = new Notification(opts.title, {
       body: opts.body,
