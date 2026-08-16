@@ -108,7 +108,17 @@ export const useAuthStore = create<AuthState>()(
           const res = await api.post("/auth/refresh", { remember });
           const { access_token, user } = res.data;
           setAuthedCookie(remember);
-          set({ user, token: access_token, isLoading: false });
+          // /auth/refresh (signToken) returns a BARE user — no avatar / status /
+          // email. Merge it over the persisted row so the sidebar avatar doesn't
+          // blank out, then hydrate the authoritative full profile from
+          // /auth/me (same as login does). Without this, on a cold start the
+          // avatar only appeared after the next status change refetched it.
+          set({
+            user: { ...(get().user ?? {}), ...user },
+            token: access_token,
+            isLoading: false,
+          });
+          void get().fetchMe(access_token);
           return access_token as string;
         } catch {
           clearAuthedCookie();
