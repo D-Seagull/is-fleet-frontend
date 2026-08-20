@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   SidebarProvider,
   SidebarInset,
@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/popover";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { dateFnsLocale } from "@/lib/date-fns-locale";
 import { cn } from "@/lib/utils";
 
 // Base nav — items visible to every signed-in role. Managers + Settings
@@ -86,6 +87,7 @@ function UnreadBell() {
   const router = useRouter();
   const t = useTranslations("notifications");
   const tRoles = useTranslations("common.roles");
+  const dfLocale = dateFnsLocale(useLocale());
   const { data } = useUnreadSummary();
   useUnreadSocketSync();
   useTruckChangedSync();
@@ -162,7 +164,7 @@ function UnreadBell() {
                     <p className="text-[10px] text-muted-foreground/60 mt-0.5">
                       {formatDistanceToNow(
                         new Date(item.latestMessage.createdAt),
-                        { addSuffix: true },
+                        { addSuffix: true, locale: dfLocale },
                       )}
                     </p>
                   )}
@@ -189,6 +191,7 @@ function UnreadBell() {
                   <p className="text-[10px] text-muted-foreground/60 mt-0.5">
                     {formatDistanceToNow(new Date(conv.lastMessage.createdAt), {
                       addSuffix: true,
+                      locale: dfLocale,
                     })}
                   </p>
                 </button>
@@ -219,7 +222,7 @@ function UnreadBell() {
                       <p className="text-[10px] text-muted-foreground/60 mt-0.5">
                         {formatDistanceToNow(
                           new Date(g.latestMessage.createdAt),
-                          { addSuffix: true },
+                          { addSuffix: true, locale: dfLocale },
                         )}
                       </p>
                     </>
@@ -258,6 +261,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const isManager = isManagerRole || isTeamlead || user?.role === "ADMIN";
 
   // Foreground/background tracking — backend uses this to decide whether
+
   // chat-message push should fall through when the user isn't actually
   // looking at the tab.
   useTabVisibilityPresence();
