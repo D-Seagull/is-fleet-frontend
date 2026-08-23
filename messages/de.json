@@ -37,7 +37,13 @@
     },
     "stopType": {
       "LOADING": "Beladung",
-      "UNLOADING": "Entladung"
+      "UNLOADING": "Entladung",
+      "WAYPOINT": "Zusätzlicher Halt"
+    },
+    "waypointPreset": {
+      "customs": "Zoll",
+      "parking": "Parkplatz",
+      "fuel": "Tanken"
     },
     "actions": {
       "cancel": "Abbrechen",
@@ -576,6 +582,10 @@
       "loadingStops": "Beladestellen",
       "unloadingStops": "Entladestellen",
       "addStop": "Stopp hinzufügen",
+      "routeLabel": "Route",
+      "addLoading": "Beladung",
+      "addUnloading": "Entladung",
+      "addWaypoint": "Zwischenstopp",
       "notesLabel": "Notizen",
       "notesPlaceholder": "Fahrtnotizen…",
       "createButton": "Fahrt erstellen",
@@ -590,7 +600,12 @@
       "openInMaps": "In Google Maps öffnen",
       "date": "Datum",
       "from": "Von",
-      "to": "Bis"
+      "to": "Bis",
+      "namePlaceholder": "Punktname (z.B. Zoll)",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "remove": "Entfernen",
+      "changeType": "Typ ändern"
     },
     "documents": {
       "allTrips": "Alle Fahrten ({count})",

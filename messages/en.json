@@ -37,7 +37,13 @@
     },
     "stopType": {
       "LOADING": "Loading",
-      "UNLOADING": "Unloading"
+      "UNLOADING": "Unloading",
+      "WAYPOINT": "Additional stop"
+    },
+    "waypointPreset": {
+      "customs": "Customs",
+      "parking": "Parking",
+      "fuel": "Fuel"
     },
     "actions": {
       "cancel": "Cancel",
@@ -576,6 +582,10 @@
       "loadingStops": "Loading stops",
       "unloadingStops": "Unloading stops",
       "addStop": "Add stop",
+      "routeLabel": "Route",
+      "addLoading": "Loading",
+      "addUnloading": "Unloading",
+      "addWaypoint": "Waypoint",
       "notesLabel": "Notes",
       "notesPlaceholder": "Trip notes...",
       "createButton": "Create Trip",
@@ -590,7 +600,12 @@
       "openInMaps": "Open in Google Maps",
       "date": "Date",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "namePlaceholder": "Point name (e.g. Customs)",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "changeType": "Change type"
     },
     "documents": {
       "allTrips": "All trips ({count})",

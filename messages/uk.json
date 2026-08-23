@@ -37,7 +37,13 @@
     },
     "stopType": {
       "LOADING": "Завантаження",
-      "UNLOADING": "Розвантаження"
+      "UNLOADING": "Розвантаження",
+      "WAYPOINT": "Додаткова зупинка"
+    },
+    "waypointPreset": {
+      "customs": "Кастомс",
+      "parking": "Паркінг",
+      "fuel": "Заправка"
     },
     "actions": {
       "cancel": "Скасувати",
@@ -576,6 +582,10 @@
       "loadingStops": "Точки завантаження",
       "unloadingStops": "Точки розвантаження",
       "addStop": "Додати зупинку",
+      "routeLabel": "Маршрут",
+      "addLoading": "Завантаження",
+      "addUnloading": "Розвантаження",
+      "addWaypoint": "Проміжна точка",
       "notesLabel": "Нотатки",
       "notesPlaceholder": "Нотатки до рейсу…",
       "createButton": "Створити рейс",
@@ -590,7 +600,12 @@
       "openInMaps": "Відкрити в Google Maps",
       "date": "Дата",
       "from": "Від",
-      "to": "До"
+      "to": "До",
+      "namePlaceholder": "Назва точки (напр. Кастомс)",
+      "moveUp": "Вгору",
+      "moveDown": "Вниз",
+      "remove": "Видалити",
+      "changeType": "Змінити тип"
     },
     "documents": {
       "allTrips": "Усі рейси ({count})",

@@ -37,7 +37,13 @@
     },
     "stopType": {
       "LOADING": "Załadunek",
-      "UNLOADING": "Rozładunek"
+      "UNLOADING": "Rozładunek",
+      "WAYPOINT": "Dodatkowy przystanek"
+    },
+    "waypointPreset": {
+      "customs": "Odprawa celna",
+      "parking": "Parking",
+      "fuel": "Tankowanie"
     },
     "actions": {
       "cancel": "Anuluj",
@@ -576,6 +582,10 @@
       "loadingStops": "Punkty załadunku",
       "unloadingStops": "Punkty rozładunku",
       "addStop": "Dodaj przystanek",
+      "routeLabel": "Trasa",
+      "addLoading": "Załadunek",
+      "addUnloading": "Rozładunek",
+      "addWaypoint": "Punkt pośredni",
       "notesLabel": "Notatki",
       "notesPlaceholder": "Notatki do trasy…",
       "createButton": "Utwórz trasę",
@@ -590,7 +600,12 @@
       "openInMaps": "Otwórz w Mapach Google",
       "date": "Data",
       "from": "Od",
-      "to": "Do"
+      "to": "Do",
+      "namePlaceholder": "Nazwa punktu (np. Odprawa)",
+      "moveUp": "W górę",
+      "moveDown": "W dół",
+      "remove": "Usuń",
+      "changeType": "Zmień typ"
     },
     "documents": {
       "allTrips": "Wszystkie trasy ({count})",

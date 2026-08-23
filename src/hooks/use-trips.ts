@@ -23,7 +23,7 @@ export type TripStatus =
   | "LOADED"
   | "DELIVERED";
 
-export type StopType = "LOADING" | "UNLOADING";
+export type StopType = "LOADING" | "UNLOADING" | "WAYPOINT";
 
 export const TRIP_STATUS_LABELS: Record<TripStatus, string> = {
   ASSIGNED: "Assigned",
@@ -59,6 +59,7 @@ export interface TripStop {
   tripId: string;
   type: StopType;
   order: number;
+  name: string | null; // мітка для WAYPOINT (напр. "Кастомс")
   address: string | null;
   ref: string | null;
   coords: string | null;
@@ -144,6 +145,7 @@ export interface TripMessage {
 export interface StopFormData {
   type: StopType;
   order?: number;
+  name?: string;
   address?: string;
   ref?: string;
   coords?: string;
@@ -423,6 +425,7 @@ export function useUpdateTripStatus(truckId: string) {
 export interface UpdateStopData {
   type: StopType;
   order?: number;
+  name?: string;
   address?: string;
   ref?: string;
   coords?: string;
@@ -468,16 +471,18 @@ export function useUpdateTripInfo(truckId: string) {
   return useMutation({
     mutationFn: async ({
       id,
+      title,
       notes,
       orderNumber,
       stops,
     }: {
       id: string;
+      title?: string;
       notes?: string;
       orderNumber?: string;
       stops?: UpdateStopData[];
     }) => {
-      const res = await api.patch(`/trips/${id}/info`, { notes, orderNumber, stops });
+      const res = await api.patch(`/trips/${id}/info`, { title, notes, orderNumber, stops });
       return res.data as Trip;
     },
     onSuccess: () => {

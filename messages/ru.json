@@ -37,7 +37,13 @@
     },
     "stopType": {
       "LOADING": "Погрузка",
-      "UNLOADING": "Разгрузка"
+      "UNLOADING": "Разгрузка",
+      "WAYPOINT": "Дополнительная остановка"
+    },
+    "waypointPreset": {
+      "customs": "Таможня",
+      "parking": "Парковка",
+      "fuel": "Заправка"
     },
     "actions": {
       "cancel": "Отмена",
@@ -576,6 +582,10 @@
       "loadingStops": "Точки погрузки",
       "unloadingStops": "Точки разгрузки",
       "addStop": "Добавить остановку",
+      "routeLabel": "Маршрут",
+      "addLoading": "Погрузка",
+      "addUnloading": "Разгрузка",
+      "addWaypoint": "Промежуточная",
       "notesLabel": "Заметки",
       "notesPlaceholder": "Заметки к рейсу…",
       "createButton": "Создать рейс",
@@ -590,7 +600,12 @@
       "openInMaps": "Открыть в Google Maps",
       "date": "Дата",
       "from": "От",
-      "to": "До"
+      "to": "До",
+      "namePlaceholder": "Название точки (напр. Таможня)",
+      "moveUp": "Вверх",
+      "moveDown": "Вниз",
+      "remove": "Удалить",
+      "changeType": "Изменить тип"
     },
     "documents": {
       "allTrips": "Все рейсы ({count})",

@@ -29,8 +29,23 @@ import {
   type StopType,
   type StopFormData,
 } from "@/hooks/use-trips";
-import { StopRow, emptyStop, type StopRowData } from "./stop-row";
+import { StopRow, InsertStopButton, emptyStop, type StopRowData } from "./stop-row";
 import { extractPostcodeCity } from "./utils";
+
+/** Порядок стопів рейсу з форми у StopFormData для API (order = позиція в списку). */
+export function buildStopsPayload(stops: StopRowData[]): StopFormData[] {
+  return stops.map((s, i) => ({
+    type: s.type,
+    order: i,
+    name: s.type === "WAYPOINT" ? s.name || undefined : undefined,
+    address: s.address || undefined,
+    ref: s.ref || undefined,
+    coords: s.coords || undefined,
+    windowDate: s.windowDate || undefined,
+    windowStart: s.windowStart || undefined,
+    windowEnd: s.windowEnd || undefined,
+  }));
+}
 
 export function NewTripDialog({
   truckId,
@@ -53,9 +68,9 @@ export function NewTripDialog({
   const [tripName, setTripName] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
   const [notes, setNotes] = useState("");
-  const [loadingStops, setLoadingStops] = useState<StopRowData[]>([emptyStop()]);
-  const [unloadingStops, setUnloadingStops] = useState<StopRowData[]>([
-    emptyStop(),
+  const [stops, setStops] = useState<StopRowData[]>([
+    emptyStop("LOADING"),
+    emptyStop("UNLOADING"),
   ]);
   const isNameEdited = useRef(false);
 
@@ -70,32 +85,34 @@ export function NewTripDialog({
         setTripName(draft.tripName ?? "");
         setOrderNumber(draft.orderNumber ?? "");
         setNotes(draft.notes ?? "");
-        // spread over emptyStop() so drafts saved before the time-window
-        // fields existed still get windowDate/windowStart/windowEnd defaults.
-        setLoadingStops(
-          draft.loadingStops?.length
-            ? draft.loadingStops.map((s: Partial<StopRowData>) => ({
-                ...emptyStop(),
-                ...s,
-              }))
-            : [emptyStop()],
-        );
-        setUnloadingStops(
-          draft.unloadingStops?.length
-            ? draft.unloadingStops.map((s: Partial<StopRowData>) => ({
-                ...emptyStop(),
-                ...s,
-              }))
-            : [emptyStop()],
-        );
+        // spread over emptyStop() so старі чернетки (без type/name або з двома
+        // окремими списками) отримають дефолти нового формату.
+        const norm = (s: Partial<StopRowData>, type: StopType): StopRowData => ({
+          ...emptyStop(type),
+          ...s,
+          type: s.type ?? type,
+        });
+        if (Array.isArray(draft.stops) && draft.stops.length) {
+          setStops(draft.stops.map((s: Partial<StopRowData>) => norm(s, "LOADING")));
+        } else if (draft.loadingStops || draft.unloadingStops) {
+          setStops([
+            ...(draft.loadingStops ?? []).map((s: Partial<StopRowData>) =>
+              norm(s, "LOADING"),
+            ),
+            ...(draft.unloadingStops ?? []).map((s: Partial<StopRowData>) =>
+              norm(s, "UNLOADING"),
+            ),
+          ]);
+        } else {
+          setStops([emptyStop("LOADING"), emptyStop("UNLOADING")]);
+        }
         isNameEdited.current = draft.isNameEdited ?? false;
       } else {
         setDriverId(defaultDriverId ?? "");
         setTripName("");
         setOrderNumber("");
         setNotes("");
-        setLoadingStops([emptyStop()]);
-        setUnloadingStops([emptyStop()]);
+        setStops([emptyStop("LOADING"), emptyStop("UNLOADING")]);
         isNameEdited.current = false;
       }
     } catch {
@@ -114,19 +131,19 @@ export function NewTripDialog({
         tripName,
         orderNumber,
         notes,
-        loadingStops,
-        unloadingStops,
+        stops,
         isNameEdited: isNameEdited.current,
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [driverId, tripName, orderNumber, notes, loadingStops, unloadingStops, open]);
+  }, [driverId, tripName, orderNumber, notes, stops, open]);
 
-  // авто-заповнення Trip name з адрес (якщо користувач не редагував вручну)
+  // авто-заповнення Trip name з адрес (якщо користувач не редагував вручну):
+  // перше завантаження → останнє розвантаження.
   useEffect(() => {
     if (isNameEdited.current) return;
-    const from = loadingStops[0]?.address;
-    const to = unloadingStops[0]?.address;
+    const from = stops.find((s) => s.type === "LOADING")?.address;
+    const to = [...stops].reverse().find((s) => s.type === "UNLOADING")?.address;
     const fromShort = from ? extractPostcodeCity(from) : "";
     const toShort = to ? extractPostcodeCity(to) : "";
     if (fromShort || toShort) {
@@ -134,25 +151,32 @@ export function NewTripDialog({
     } else {
       setTripName("");
     }
-  }, [loadingStops, unloadingStops]);
+  }, [stops]);
 
-  function updateStop(
-    list: StopRowData[],
-    setList: (v: StopRowData[]) => void,
-    idx: number,
-    val: StopRowData,
-  ) {
-    const next = [...list];
-    next[idx] = val;
-    setList(next);
+  function updateStop(idx: number, val: StopRowData) {
+    setStops((prev) => prev.map((s, i) => (i === idx ? val : s)));
   }
 
-  function removeStop(
-    list: StopRowData[],
-    setList: (v: StopRowData[]) => void,
-    idx: number,
-  ) {
-    setList(list.filter((_, i) => i !== idx));
+  function removeStop(idx: number) {
+    setStops((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function insertStop(idx: number, type: StopType) {
+    setStops((prev) => {
+      const next = [...prev];
+      next.splice(idx, 0, emptyStop(type));
+      return next;
+    });
+  }
+
+  function moveStop(idx: number, dir: -1 | 1) {
+    setStops((prev) => {
+      const j = idx + dir;
+      if (j < 0 || j >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[j]] = [next[j], next[idx]];
+      return next;
+    });
   }
 
   async function handleCreate() {
@@ -161,36 +185,13 @@ export function NewTripDialog({
       tripName.trim() ||
       t("tripFallbackName", { date: new Date().toLocaleDateString(locale) });
 
-    const stops: StopFormData[] = [
-      ...loadingStops.map((s, i) => ({
-        type: "LOADING" as StopType,
-        order: i,
-        address: s.address || undefined,
-        ref: s.ref || undefined,
-        coords: s.coords || undefined,
-        windowDate: s.windowDate || undefined,
-        windowStart: s.windowStart || undefined,
-        windowEnd: s.windowEnd || undefined,
-      })),
-      ...unloadingStops.map((s, i) => ({
-        type: "UNLOADING" as StopType,
-        order: i,
-        address: s.address || undefined,
-        ref: s.ref || undefined,
-        coords: s.coords || undefined,
-        windowDate: s.windowDate || undefined,
-        windowStart: s.windowStart || undefined,
-        windowEnd: s.windowEnd || undefined,
-      })),
-    ];
-
     const trip = await createTrip.mutateAsync({
       title,
       driverId,
       truckId,
       notes: notes || undefined,
       orderNumber: orderNumber || undefined,
-      stops,
+      stops: buildStopsPayload(stops),
     });
     localStorage.removeItem(DRAFT_KEY);
     setOpen(false);
@@ -252,62 +253,26 @@ export function NewTripDialog({
             />
           </div>
 
+          {/* Маршрут — упорядкований список стопів; «+» вставляє між пунктами */}
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-emerald-600">{t("loadingStops")}</Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setLoadingStops([...loadingStops, emptyStop()])}
-              >
-                <Plus className="mr-1 h-3.5 w-3.5" /> {t("addStop")}
-              </Button>
-            </div>
-            {loadingStops.map((stop, i) => (
-              <StopRow
-                key={i}
-                index={i}
-                type="LOADING"
-                value={stop}
-                onChange={(v) =>
-                  updateStop(loadingStops, setLoadingStops, i, v)
-                }
-                onRemove={() => removeStop(loadingStops, setLoadingStops, i)}
-                canRemove={loadingStops.length > 1}
-              />
+            <Label>{t("routeLabel")}</Label>
+            {stops.map((stop, i) => (
+              <div key={i} className="flex flex-col gap-2">
+                <InsertStopButton onInsert={(type) => insertStop(i, type)} />
+                <StopRow
+                  index={i}
+                  value={stop}
+                  onChange={(v) => updateStop(i, v)}
+                  onRemove={() => removeStop(i)}
+                  canRemove={stops.length > 1}
+                  onMoveUp={() => moveStop(i, -1)}
+                  onMoveDown={() => moveStop(i, 1)}
+                  canMoveUp={i > 0}
+                  canMoveDown={i < stops.length - 1}
+                />
+              </div>
             ))}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-red-600">{t("unloadingStops")}</Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() =>
-                  setUnloadingStops([...unloadingStops, emptyStop()])
-                }
-              >
-                <Plus className="mr-1 h-3.5 w-3.5" /> {t("addStop")}
-              </Button>
-            </div>
-            {unloadingStops.map((stop, i) => (
-              <StopRow
-                key={i}
-                index={i}
-                type="UNLOADING"
-                value={stop}
-                onChange={(v) =>
-                  updateStop(unloadingStops, setUnloadingStops, i, v)
-                }
-                onRemove={() =>
-                  removeStop(unloadingStops, setUnloadingStops, i)
-                }
-                canRemove={unloadingStops.length > 1}
-              />
-            ))}
+            <InsertStopButton onInsert={(type) => insertStop(stops.length, type)} />
           </div>
 
           <div className="flex flex-col gap-2">

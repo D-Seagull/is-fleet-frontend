@@ -37,7 +37,13 @@
     },
     "stopType": {
       "LOADING": "Pakrovimas",
-      "UNLOADING": "Iškrovimas"
+      "UNLOADING": "Iškrovimas",
+      "WAYPOINT": "Papildomas sustojimas"
+    },
+    "waypointPreset": {
+      "customs": "Muitinė",
+      "parking": "Stovėjimas",
+      "fuel": "Degalinė"
     },
     "actions": {
       "cancel": "Atšaukti",
@@ -576,6 +582,10 @@
       "loadingStops": "Pakrovimo taškai",
       "unloadingStops": "Iškrovimo taškai",
       "addStop": "Pridėti sustojimą",
+      "routeLabel": "Maršrutas",
+      "addLoading": "Pakrovimas",
+      "addUnloading": "Iškrovimas",
+      "addWaypoint": "Tarpinis taškas",
       "notesLabel": "Pastabos",
       "notesPlaceholder": "Reiso pastabos…",
       "createButton": "Sukurti reisą",
@@ -590,7 +600,12 @@
       "openInMaps": "Atidaryti Google Maps",
       "date": "Data",
       "from": "Nuo",
-      "to": "Iki"
+      "to": "Iki",
+      "namePlaceholder": "Taško pavadinimas (pvz. Muitinė)",
+      "moveUp": "Aukštyn",
+      "moveDown": "Žemyn",
+      "remove": "Pašalinti",
+      "changeType": "Keisti tipą"
     },
     "documents": {
       "allTrips": "Visi reisai ({count})",

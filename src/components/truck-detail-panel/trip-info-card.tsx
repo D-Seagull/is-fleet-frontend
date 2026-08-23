@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Pencil,
   ChevronDown,
@@ -8,10 +8,6 @@ import {
   FolderOpen,
   MapPin,
   Hash,
-  Plus,
-  X,
-  Copy,
-  ExternalLink,
   Clock,
   Loader2,
   Trash2,
@@ -30,6 +26,12 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { StatusDot } from "@/components/status-dot";
 import { cn } from "@/lib/utils";
 import {
@@ -44,9 +46,26 @@ import {
 } from "@/hooks/use-trips";
 import { useAuthStore } from "@/store/auth";
 import { useConfirm } from "@/components/confirm-dialog";
-import { emptyStop, todayLocal, TIME_PRESETS, type StopRowData } from "./stop-row";
+import {
+  StopRow,
+  InsertStopButton,
+  emptyStop,
+  stopTypeColor,
+  todayLocal,
+  type StopRowData,
+} from "./stop-row";
+import { buildStopsPayload } from "./new-trip-dialog";
 import { CoordsCell } from "./coords-cell";
-import { shortenTripTitle, formatStopWindow } from "./utils";
+import { shortenTripTitle, formatStopWindow, extractPostcodeCity } from "./utils";
+
+/** Назва рейсу з адрес: перше завантаження → останнє розвантаження. */
+function deriveTripTitle(rows: StopRowData[]): string {
+  const from = rows.find((s) => s.type === "LOADING")?.address;
+  const to = [...rows].reverse().find((s) => s.type === "UNLOADING")?.address;
+  const fromShort = from ? extractPostcodeCity(from) : "";
+  const toShort = to ? extractPostcodeCity(to) : "";
+  return [fromShort, toShort].filter(Boolean).join(" → ");
+}
 
 export function TripInfoCard({
   trip,
@@ -63,7 +82,6 @@ export function TripInfoCard({
   const tNewTrip = useTranslations("truckPanel.newTrip");
   const tStatus = useTranslations("common.tripStatus");
   const tStopType = useTranslations("common.stopType");
-  const tStop = useTranslations("truckPanel.stop");
   const tActions = useTranslations("common.actions");
   const tTrips = useTranslations("trips");
   const updateInfo = useUpdateTripInfo(truckId);
@@ -76,19 +94,32 @@ export function TripInfoCard({
   const [editing, setEditing] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
 
-  const [editLoadingStops, setEditLoadingStops] = useState<StopRowData[]>([]);
-  const [editUnloadingStops, setEditUnloadingStops] = useState<StopRowData[]>(
-    [],
-  );
+  const [editStops, setEditStops] = useState<StopRowData[]>([]);
+  const [editTitle, setEditTitle] = useState(trip.title ?? "");
   const [editNotes, setEditNotes] = useState(trip.notes ?? "");
   const [editOrderNumber, setEditOrderNumber] = useState(trip.orderNumber ?? "");
+  // назва редагована вручну → не перезаписуємо автоматично з адрес
+  const isTitleEdited = useRef(false);
+
+  // автозаповнення назви з адрес поки користувач не редагував її вручну
+  useEffect(() => {
+    if (!editing || isTitleEdited.current) return;
+    setEditTitle(deriveTripTitle(editStops));
+  }, [editStops, editing]);
 
   const isEdited = trip.updatedAt !== trip.createdAt;
-  const loadingStops = trip.stops.filter((s) => s.type === "LOADING");
-  const unloadingStops = trip.stops.filter((s) => s.type === "UNLOADING");
+  // stops приходять із бекенду вже відсортовані за order (єдиний маршрут).
+  const stops = trip.stops;
+
+  function stopLabel(s: Trip["stops"][number]): string {
+    if (s.type === "WAYPOINT") return s.name || tStopType("WAYPOINT");
+    return tStopType(s.type);
+  }
 
   function startEdit() {
     const toRow = (s: Trip["stops"][number]): StopRowData => ({
+      type: s.type,
+      name: s.name ?? "",
       address: s.address ?? "",
       ref: s.ref ?? "",
       coords: s.coords ?? "",
@@ -96,47 +127,52 @@ export function TripInfoCard({
       windowStart: s.windowStart ?? "00:00",
       windowEnd: s.windowEnd ?? "00:00",
     });
-    setEditLoadingStops(
-      trip.stops.filter((s) => s.type === "LOADING").map(toRow),
-    );
-    setEditUnloadingStops(
-      trip.stops.filter((s) => s.type === "UNLOADING").map(toRow),
-    );
+    const rows = stops.length
+      ? stops.map(toRow)
+      : [emptyStop("LOADING"), emptyStop("UNLOADING")];
+    setEditStops(rows);
+    // якщо поточна назва збігається з автогенерованою — вважаємо її авто (оновлюємо
+    // при зміні адрес); якщо відрізняється — це ручна назва, зберігаємо як є.
+    isTitleEdited.current =
+      !!trip.title && trip.title !== deriveTripTitle(rows);
+    setEditTitle(trip.title ?? "");
     setEditNotes(trip.notes ?? "");
     setEditOrderNumber(trip.orderNumber ?? "");
     setEditing(true);
   }
 
   async function saveEdit() {
-    const stops = [
-      ...editLoadingStops.map((s, i) => ({
-        type: "LOADING" as StopType,
-        order: i,
-        address: s.address || undefined,
-        ref: s.ref || undefined,
-        coords: s.coords || undefined,
-        windowDate: s.windowDate || undefined,
-        windowStart: s.windowStart || undefined,
-        windowEnd: s.windowEnd || undefined,
-      })),
-      ...editUnloadingStops.map((s, i) => ({
-        type: "UNLOADING" as StopType,
-        order: i,
-        address: s.address || undefined,
-        ref: s.ref || undefined,
-        coords: s.coords || undefined,
-        windowDate: s.windowDate || undefined,
-        windowStart: s.windowStart || undefined,
-        windowEnd: s.windowEnd || undefined,
-      })),
-    ];
     await updateInfo.mutateAsync({
       id: trip.id,
+      title: editTitle.trim() || undefined,
       notes: editNotes || undefined,
       orderNumber: editOrderNumber || undefined,
-      stops,
+      stops: buildStopsPayload(editStops),
     });
     setEditing(false);
+  }
+
+  function updateStop(idx: number, val: StopRowData) {
+    setEditStops((prev) => prev.map((s, i) => (i === idx ? val : s)));
+  }
+  function removeStop(idx: number) {
+    setEditStops((prev) => prev.filter((_, i) => i !== idx));
+  }
+  function insertStop(idx: number, type: StopType) {
+    setEditStops((prev) => {
+      const next = [...prev];
+      next.splice(idx, 0, emptyStop(type));
+      return next;
+    });
+  }
+  function moveStop(idx: number, dir: -1 | 1) {
+    setEditStops((prev) => {
+      const j = idx + dir;
+      if (j < 0 || j >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[j]] = [next[j], next[idx]];
+      return next;
+    });
   }
 
   async function handleDelete() {
@@ -155,8 +191,8 @@ export function TripInfoCard({
     }
   }
 
-  if (!editing) {
-    return (
+  return (
+    <>
       <div
         className="rounded-lg border bg-muted/40 px-3 py-1.5 md:px-4 md:py-3 flex flex-col gap-2 md:gap-3 cursor-pointer select-none"
         onClick={() => setCollapsed((c) => !c)}
@@ -245,31 +281,16 @@ export function TripInfoCard({
         {!collapsed && (
           <>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-muted-foreground">
-              {loadingStops.map((s, i) => (
+              {stops.map((s) => (
                 <div key={s.id} className="flex flex-col gap-0.5">
-                  <span className="flex items-center gap-1 font-medium text-emerald-600">
+                  <span
+                    className={cn(
+                      "flex items-center gap-1 font-medium",
+                      stopTypeColor(s.type),
+                    )}
+                  >
                     <MapPin className="h-3 w-3" />
-                    {tStopType("LOADING")} {loadingStops.length > 1 ? i + 1 : ""}
-                  </span>
-                  {s.address && <span>{s.address}</span>}
-                  {s.ref && (
-                    <span className="flex items-center gap-1">
-                      <Hash className="h-3 w-3" /> {s.ref}
-                    </span>
-                  )}
-                  {s.coords && <CoordsCell coords={s.coords} />}
-                  {formatStopWindow(s) && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> {formatStopWindow(s)}
-                    </span>
-                  )}
-                </div>
-              ))}
-              {unloadingStops.map((s, i) => (
-                <div key={s.id} className="flex flex-col gap-0.5">
-                  <span className="flex items-center gap-1 font-medium text-red-500">
-                    <MapPin className="h-3 w-3" />
-                    {tStopType("UNLOADING")} {unloadingStops.length > 1 ? i + 1 : ""}
+                    {stopLabel(s)}
                   </span>
                   {s.address && <span>{s.address}</span>}
                   {s.ref && (
@@ -294,186 +315,42 @@ export function TripInfoCard({
           </>
         )}
       </div>
-    );
-  }
 
-  function editStopSection(
-    itemLabel: string,
-    sectionTitle: string,
-    color: string,
-    stops: StopRowData[],
-    setStops: (v: StopRowData[]) => void,
-  ) {
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <span
-            className={cn("text-xs font-medium flex items-center gap-1", color)}
-          >
-            <MapPin className="h-3 w-3" />
-            {sectionTitle}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 text-xs"
-            onClick={() => setStops([...stops, emptyStop()])}
-          >
-            <Plus className="mr-1 h-3 w-3" />
-            {t("add")}
-          </Button>
-        </div>
-        {stops.map((stop, i) => (
-          <div
-            key={i}
-            className="rounded-lg border bg-background px-3 py-2 flex flex-col gap-1.5"
-          >
-            <div className="flex items-center justify-between">
-              <span className={cn("text-[11px] font-medium", color)}>
-                {itemLabel} {stops.length > 1 ? i + 1 : ""}
-              </span>
-              {stops.length > 1 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-5 w-5"
-                  onClick={() => setStops(stops.filter((_, j) => j !== i))}
-                >
-                  <X className="h-3 w-3 text-muted-foreground" />
-                </Button>
-              )}
-            </div>
-            <Textarea
-              placeholder={tStop("addressPlaceholder")}
-              value={stop.address}
-              onChange={(e) => {
-                const next = [...stops];
-                next[i] = { ...next[i], address: e.target.value };
-                setStops(next);
-              }}
-              rows={2}
-              className="resize-none text-xs"
-            />
-            <div className="flex gap-1.5">
-              <Input
-                placeholder={tStop("refShortPlaceholder")}
-                value={stop.ref}
-                className="w-28 text-xs h-7"
-                onChange={(e) => {
-                  const next = [...stops];
-                  next[i] = { ...next[i], ref: e.target.value };
-                  setStops(next);
-                }}
-              />
-              <Input
-                placeholder={tStop("coordsPlaceholder")}
-                value={stop.coords}
-                className="flex-1 text-xs h-7"
-                onChange={(e) => {
-                  const next = [...stops];
-                  next[i] = { ...next[i], coords: e.target.value };
-                  setStops(next);
-                }}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0"
-                disabled={!stop.coords}
-                onClick={() => navigator.clipboard.writeText(stop.coords)}
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0"
-                disabled={!stop.coords}
-                onClick={() =>
-                  window.open(
-                    `https://www.google.com/maps?q=${stop.coords}`,
-                    "_blank",
-                  )
-                }
-              >
-                <ExternalLink className="h-3 w-3" />
-              </Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-1">
-              <Input
-                type="date"
-                value={stop.windowDate}
-                aria-label={tStop("date")}
-                className="w-[128px] text-xs h-7 px-2"
-                onChange={(e) => {
-                  const next = [...stops];
-                  next[i] = { ...next[i], windowDate: e.target.value };
-                  setStops(next);
-                }}
-              />
-              <Input
-                type="time"
-                value={stop.windowStart}
-                aria-label={tStop("from")}
-                className="w-[100px] text-xs h-7 px-2"
-                onChange={(e) => {
-                  const next = [...stops];
-                  next[i] = { ...next[i], windowStart: e.target.value };
-                  setStops(next);
-                }}
-              />
-              <span className="text-muted-foreground text-xs">–</span>
-              <Input
-                type="time"
-                value={stop.windowEnd}
-                aria-label={tStop("to")}
-                className="w-[100px] text-xs h-7 px-2"
-                onChange={(e) => {
-                  const next = [...stops];
-                  next[i] = { ...next[i], windowEnd: e.target.value };
-                  setStops(next);
-                }}
-              />
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {TIME_PRESETS.map((p) => (
-                <button
-                  key={p.value}
-                  type="button"
-                  className="px-2 py-0.5 text-[11px] rounded border hover:bg-accent transition-colors"
-                  onClick={() => {
-                    const next = [...stops];
-                    next[i] = { ...next[i], windowStart: p.value };
-                    setStops(next);
-                  }}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
+      <Dialog open={editing} onOpenChange={setEditing}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto flex flex-col gap-3">
+          <DialogHeader>
+            <DialogTitle>{t("editTripInfo")}</DialogTitle>
+          </DialogHeader>
+      <div className="flex flex-col gap-3">
+        {/* Назва рейсу (автозаповнення з адрес · редагується вручну) */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs">{tNewTrip("tripNameLabel")}</Label>
+            <span className="text-[11px] text-muted-foreground">
+              {tNewTrip("tripNameHint")}
+            </span>
           </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border bg-muted/40 px-4 py-3 flex flex-col gap-3">
-      <div className="flex flex-col gap-2">
-        {/* рядок 1: назва + поле ордера */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="font-medium text-sm truncate shrink-0 max-w-[45%]">
-            {shortenTripTitle(trip.title)}
-          </span>
-          <span className="text-muted-foreground text-sm shrink-0">·</span>
+          <Input
+            placeholder={tNewTrip("tripNamePlaceholder")}
+            value={editTitle}
+            onChange={(e) => {
+              isTitleEdited.current = true;
+              setEditTitle(e.target.value);
+            }}
+            className="h-8 text-sm"
+          />
+        </div>
+        {/* № замовлення */}
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs">{tNewTrip("orderNumberLabel")}</Label>
           <Input
             placeholder={t("orderShortPlaceholder")}
             value={editOrderNumber}
             onChange={(e) => setEditOrderNumber(e.target.value)}
-            className="text-xs h-7 min-w-0 flex-1"
+            className="h-8 text-sm"
           />
         </div>
-        {/* рядок 2: кнопки — видалити / скасувати / зберегти разом справа */}
+        {/* кнопки — видалити / скасувати / зберегти разом справа */}
         <div className="flex items-center justify-end gap-2">
           {canDelete && (
             <Button
@@ -512,20 +389,31 @@ export function TripInfoCard({
           </Button>
         </div>
       </div>
-      {editStopSection(
-        tStopType("LOADING"),
-        t("loadingStops"),
-        "text-emerald-600",
-        editLoadingStops,
-        setEditLoadingStops,
-      )}
-      {editStopSection(
-        tStopType("UNLOADING"),
-        t("unloadingStops"),
-        "text-red-500",
-        editUnloadingStops,
-        setEditUnloadingStops,
-      )}
+
+      {/* Маршрут — упорядкований список стопів; «+» вставляє між пунктами */}
+      <div className="flex flex-col gap-2">
+        <Label className="text-xs">{tNewTrip("routeLabel")}</Label>
+        <div className="flex flex-col gap-2">
+          {editStops.map((stop, i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <InsertStopButton onInsert={(type) => insertStop(i, type)} />
+              <StopRow
+                index={i}
+                value={stop}
+                onChange={(v) => updateStop(i, v)}
+                onRemove={() => removeStop(i)}
+                canRemove={editStops.length > 1}
+                onMoveUp={() => moveStop(i, -1)}
+                onMoveDown={() => moveStop(i, 1)}
+                canMoveUp={i > 0}
+                canMoveDown={i < editStops.length - 1}
+              />
+            </div>
+          ))}
+          <InsertStopButton onInsert={(type) => insertStop(editStops.length, type)} />
+        </div>
+      </div>
+
       <div className="flex flex-col gap-1 border-t pt-2">
         <Label className="text-xs">{tNewTrip("notesLabel")}</Label>
         <Textarea
@@ -536,6 +424,8 @@ export function TripInfoCard({
           className="resize-none text-xs"
         />
       </div>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
