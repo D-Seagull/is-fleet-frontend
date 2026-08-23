@@ -5,8 +5,9 @@ import {
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { api } from "@/lib/api";
+import { getSocket } from "@/lib/socket";
 import {
   flattenInfinitePages,
   patchInfiniteMessage,
@@ -184,6 +185,30 @@ export function useTrips() {
 }
 
 // trips for a specific truck (Chat + Trips tabs in truck detail)
+/**
+ * Global `tripUpdated` listener. The backend emits it to the company room on
+ * any trip change (status, info, driver). Invalidates the trucks lists too so
+ * a truck card's trip-status badge updates live — without this only the open
+ * chat / Trips tab refreshed, leaving the truck list stale until reload.
+ */
+export function useTripUpdatedSync() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const socket = getSocket();
+    const onTripUpdated = () => {
+      queryClient.invalidateQueries({ queryKey: ["trucks"] });
+      queryClient.invalidateQueries({ queryKey: ["trucks-my"] });
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck"] });
+    };
+    socket.on("tripUpdated", onTripUpdated);
+    return () => {
+      socket.off("tripUpdated", onTripUpdated);
+    };
+  }, [queryClient]);
+}
+
 export function useTripsByTruck(truckId: string) {
   return useQuery<Trip[]>({
     queryKey: ["trips-by-truck", truckId],

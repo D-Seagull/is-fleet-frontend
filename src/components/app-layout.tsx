@@ -35,6 +35,7 @@ import {
   useGroupUnreadSocketSync,
 } from "@/hooks/use-group-unread";
 import { useTruckChangedSync } from "@/hooks/use-trucks";
+import { useTripUpdatedSync } from "@/hooks/use-trips";
 import { useTabVisibilityPresence } from "@/hooks/use-tab-visibility-presence";
 import { useBrowserTimezoneSync } from "@/hooks/use-timezone-sync";
 import { useUserStatusSync } from "@/hooks/use-user-status-sync";
@@ -285,6 +286,9 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   // Auto-AWAY after 15 min of input silence (managers/teamleads/admins
   // only — bails inside the hook for drivers).
   useAutoAway();
+  // Live trip-status sync — a trip change (status/info/driver) refreshes the
+  // truck lists too, so a truck card's status badge updates without a reload.
+  useTripUpdatedSync();
 
   const { data: myTrucks } = useMyTrucks();
   const hasMyTrucks = (myTrucks?.length ?? 0) > 0;
