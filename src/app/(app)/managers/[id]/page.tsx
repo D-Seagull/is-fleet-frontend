@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { fullName, initials } from "@/lib/format";
+import { fullName } from "@/lib/format";
 import {
   ArrowLeft,
   Check,
@@ -124,7 +124,6 @@ export default function ManagerDetailPage({
   const avg = manager.managerAverageRating ?? null;
   const ratingCount = manager.managerRatingCount ?? 0;
   const trucks = manager.assignedTrucks ?? [];
-  const drivers = manager.drivers ?? [];
   const ratings = manager.managerRatingsReceived ?? [];
 
   return (
@@ -200,12 +199,6 @@ export default function ManagerDetailPage({
             {t("tabTrucks")}{" "}
             <span className="ml-1.5 text-xs text-muted-foreground">
               {trucks.length}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger value="drivers">
-            {t("tabDrivers")}{" "}
-            <span className="ml-1.5 text-xs text-muted-foreground">
-              {drivers.length}
             </span>
           </TabsTrigger>
           <TabsTrigger value="rating">
@@ -454,37 +447,6 @@ export default function ManagerDetailPage({
                     <div className="text-xs text-muted-foreground truncate">
                       {fullName(truck.currentDriver) || t("noDriver")} ·{" "}
                       {tTruckStatus(truck.status)}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* ── Drivers ───────────────────────────────────────────────────── */}
-        <TabsContent value="drivers" className="mt-4">
-          {drivers.length === 0 ? (
-            <EmptyState text={t("driversEmpty")} />
-          ) : (
-            <div className="grid gap-2 sm:grid-cols-2">
-              {drivers.map((d) => (
-                <Link
-                  key={d.id}
-                  href={`/drivers/${d.id}`}
-                  className="border rounded-md p-3 hover:bg-accent transition-colors flex items-center gap-3"
-                >
-                  <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarImage src={d.avatar ?? undefined} />
-<AvatarFallback className="text-xs">{initials(d)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">
-                      {fullName(d) || "—"}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {d.phone ?? "—"}
-                      {d.currentTruck ? ` · ${d.currentTruck.plate}` : ""}
                     </div>
                   </div>
                 </Link>
