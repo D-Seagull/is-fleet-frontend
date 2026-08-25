@@ -76,7 +76,11 @@ export default function TrucksPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === "TEAMLEAD" || user?.role === "ADMIN";
-  const isTeamlead = user?.role === "TEAMLEAD";
+  // Взяти/звільнити трак (стати його менеджером) — тімлід, менеджер і адмін.
+  const canTakeTruck =
+    user?.role === "TEAMLEAD" ||
+    user?.role === "MANAGER" ||
+    user?.role === "ADMIN";
 
   const { data: trucks, isLoading } = useTrucks();
   const { data: deactivatedTrucks } = useDeactivatedTrucks();
@@ -354,10 +358,10 @@ export default function TrucksPage() {
                           </span>
                         )}
                       </TableCell>
-                      {/* take/release truck — teamlead, all breakpoints */}
+                      {/* take/release truck — teamlead / manager / admin */}
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1">
-                          {isTeamlead && (
+                          {canTakeTruck && (
                             <Button
                               variant="ghost"
                               size="icon"
