@@ -74,20 +74,20 @@ export function TripAttachmentsContent({
             src={doc.signedUrl}
             alt={doc.fileName}
             className="h-10 w-10 object-cover rounded shrink-0 cursor-pointer"
-            onClick={() => openDoc(doc.id)}
+            onClick={() => openDoc(doc.id, doc.fileName)}
           />
         ) : (
           <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
         <button
-          onClick={() => openDoc(doc.id)}
+          onClick={() => openDoc(doc.id, doc.fileName)}
           className="text-xs truncate flex-1 text-left hover:underline"
         >
           {doc.fileName}
         </button>
         <div className="flex items-center gap-0.5 shrink-0">
           <button
-            onClick={() => openDoc(doc.id)}
+            onClick={() => openDoc(doc.id, doc.fileName)}
             title={tActions("view")}
             className="p-1 rounded hover:bg-muted"
           >

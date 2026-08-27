@@ -55,7 +55,9 @@
       "remove": "Usuń",
       "edit": "Edytuj",
       "reply": "Odpowiedz",
-      "ok": "OK"
+      "ok": "OK",
+      "openInNewTab": "Otwórz w nowej karcie",
+      "close": "Zamknij"
     },
     "status": {
       "ONLINE": "Online",

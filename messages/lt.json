@@ -55,7 +55,9 @@
       "remove": "Pašalinti",
       "edit": "Redaguoti",
       "reply": "Atsakyti",
-      "ok": "Gerai"
+      "ok": "Gerai",
+      "openInNewTab": "Atidaryti naujame skirtuke",
+      "close": "Uždaryti"
     },
     "status": {
       "ONLINE": "Prisijungęs",

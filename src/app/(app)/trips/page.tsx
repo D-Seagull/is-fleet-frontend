@@ -83,7 +83,7 @@ function DocsDropdown({ trip }: { trip: Trip }) {
             className="flex-1 text-xs truncate cursor-pointer hover:underline"
             onClick={(e) => {
               e.stopPropagation();
-              openDoc(doc.id);
+              openDoc(doc.id, doc.fileName);
             }}
             title={doc.fileName}
           >
@@ -93,7 +93,7 @@ function DocsDropdown({ trip }: { trip: Trip }) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                openDoc(doc.id);
+                openDoc(doc.id, doc.fileName);
               }}
               title={t("docView")}
               className="p-1 rounded hover:bg-muted"

@@ -62,6 +62,7 @@ import {
 } from "@/lib/infinite-messages";
 import { LoadOlderMessages } from "@/components/load-older-messages";
 import { cn } from "@/lib/utils";
+import { openUrlInViewer } from "@/lib/doc-helpers";
 import { useSearchParams } from "next/navigation";
 import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
@@ -1994,7 +1995,7 @@ function ChatPageContent() {
                                     src={doc.signedUrl}
                                     alt={doc.fileName}
                                     onClick={() =>
-                                      window.open(doc.signedUrl, "_blank")
+                                      openUrlInViewer(doc.signedUrl, doc.fileName)
                                     }
                                     className="block max-w-[220px] max-h-[200px] w-full object-cover cursor-pointer"
                                   />
@@ -2017,11 +2018,11 @@ function ChatPageContent() {
                                     role="button"
                                     tabIndex={0}
                                     onClick={() =>
-                                      window.open(doc.signedUrl, "_blank")
+                                      openUrlInViewer(doc.signedUrl, doc.fileName)
                                     }
                                     onKeyDown={(e) =>
                                       e.key === "Enter" &&
-                                      window.open(doc.signedUrl, "_blank")
+                                      openUrlInViewer(doc.signedUrl, doc.fileName)
                                     }
                                     className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:opacity-80 transition-opacity"
                                   >

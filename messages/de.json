@@ -55,7 +55,9 @@
       "remove": "Entfernen",
       "edit": "Bearbeiten",
       "reply": "Antworten",
-      "ok": "OK"
+      "ok": "OK",
+      "openInNewTab": "In neuem Tab öffnen",
+      "close": "Schließen"
     },
     "status": {
       "ONLINE": "Online",

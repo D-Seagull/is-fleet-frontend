@@ -10,12 +10,27 @@ export async function fetchSignedUrl(endpoint: string): Promise<string | null> {
   return data.url;
 }
 
-export async function openDoc(docId: string) {
-  const win = window.open("", "_blank");
-  if (!win) return;
+// Extensions the in-app viewer can render inline (<img> or <iframe>). Anything
+// else (Office docs, archives…) we hand to the browser in a new tab.
+const PREVIEWABLE_RE = /\.(pdf|png|jpe?g|gif|webp|bmp|svg|avif)(\?|$)/i;
+
+// Show a signed file URL in the global in-app viewer. We deliberately do NOT
+// navigate the browser to the raw URL: desktop browsers download PDFs (the
+// "Download PDFs instead of opening" setting) and can't render HEIC at all, so
+// the file "only downloads". An embedded <iframe>/<img> previews it reliably.
+export async function openUrlInViewer(url: string, fileName?: string | null) {
+  if (!PREVIEWABLE_RE.test(url.split("?")[0])) {
+    window.open(url, "_blank");
+    return;
+  }
+  const { useDocViewer } = await import("@/store/doc-viewer");
+  useDocViewer.getState().open(url, fileName ?? null);
+}
+
+export async function openDoc(docId: string, fileName?: string | null) {
   const url = await fetchSignedUrl(`/documents/${docId}/view`);
-  if (!url) { win.close(); return; }
-  win.location.href = url;
+  if (!url) return;
+  await openUrlInViewer(url, fileName);
 }
 
 export async function downloadDoc(docId: string) {

@@ -18,6 +18,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
+import { openUrlInViewer } from "@/lib/doc-helpers";
 import { useAuthStore } from "@/store/auth";
 import {
   useConversationDocuments,
@@ -94,12 +95,12 @@ export function MessageAttachmentsSheet({
     }
   }
 
-  async function openDoc(id: string) {
+  async function openDoc(id: string, fileName?: string) {
     const path = isDm
       ? `/direct-messages/documents/${id}/view`
       : `/group-messages/documents/${id}/view`;
     const res = await api.get<{ url: string }>(path);
-    window.open(res.data.url, "_blank");
+    await openUrlInViewer(res.data.url, fileName);
   }
 
   async function downloadDoc(id: string) {
@@ -135,20 +136,20 @@ export function MessageAttachmentsSheet({
             src={doc.signedUrl}
             alt={doc.fileName}
             className="h-10 w-10 object-cover rounded shrink-0 cursor-pointer"
-            onClick={() => openDoc(doc.id)}
+            onClick={() => openDoc(doc.id, doc.fileName)}
           />
         ) : (
           <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
         <button
-          onClick={() => openDoc(doc.id)}
+          onClick={() => openDoc(doc.id, doc.fileName)}
           className="text-xs truncate flex-1 text-left hover:underline"
         >
           {doc.fileName}
         </button>
         <div className="flex items-center gap-0.5 shrink-0">
           <button
-            onClick={() => openDoc(doc.id)}
+            onClick={() => openDoc(doc.id, doc.fileName)}
             title={tActions("view")}
             className="p-1 rounded hover:bg-muted"
           >

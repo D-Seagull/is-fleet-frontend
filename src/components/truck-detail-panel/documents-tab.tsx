@@ -247,7 +247,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                     </TableCell>
                     <TableCell className="px-2 py-1.5 max-w-[120px]">
                       <button
-                        onClick={() => openDoc(doc.id)}
+                        onClick={() => openDoc(doc.id, doc.fileName)}
                         className="truncate block w-full text-left hover:underline font-medium"
                         title={doc.fileName}
                       >
@@ -266,7 +266,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                     <TableCell className="px-2 py-1.5">
                       <div className="flex items-center gap-0.5 justify-end">
                         <button
-                          onClick={() => openDoc(doc.id)}
+                          onClick={() => openDoc(doc.id, doc.fileName)}
                           title={tActions("view")}
                           className="p-1 rounded hover:bg-muted"
                         >

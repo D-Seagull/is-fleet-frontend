@@ -358,8 +358,8 @@ function FileBubble({
                 <div
                   role="button"
                   tabIndex={0}
-                  onClick={() => openDoc(doc.id)}
-                  onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id)}
+                  onClick={() => openDoc(doc.id, doc.fileName)}
+                  onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id, doc.fileName)}
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:opacity-80 transition-opacity"
                 >
                   <FileText className="h-5 w-5 shrink-0" />
