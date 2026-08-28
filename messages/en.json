@@ -775,5 +775,11 @@
     "unreadCount": "{count, plural, one {# unread message} other {# unread messages}}",
     "allCaughtUp": "All caught up",
     "noUnread": "No unread messages"
+  },
+  "userCard": {
+    "phone": "Phone",
+    "email": "Email",
+    "language": "Language",
+    "teamlead": "Team lead"
   }
 }

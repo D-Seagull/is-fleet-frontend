@@ -775,5 +775,11 @@
     "unreadCount": "{count, plural, one {# nieprzeczytana wiadomość} few {# nieprzeczytane wiadomości} many {# nieprzeczytanych wiadomości} other {# nieprzeczytanej wiadomości}}",
     "allCaughtUp": "Wszystko przeczytane",
     "noUnread": "Brak nieprzeczytanych wiadomości"
+  },
+  "userCard": {
+    "phone": "Telefon",
+    "email": "E-mail",
+    "language": "Język",
+    "teamlead": "Lider zespołu"
   }
 }

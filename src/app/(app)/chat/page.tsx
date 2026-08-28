@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 import { GroupActionsMenu } from "@/components/group-actions-menu";
 import { StatusDot } from "@/components/status-dot";
+import { UserCardDialog } from "@/components/user-card-dialog";
 import {
   ConversationListSkeleton,
   MessageListSkeleton,
@@ -249,6 +250,8 @@ function ChatPageContent() {
     groupIdFromUrl ?? null,
   );
   const [isGroupTyping, setIsGroupTyping] = useState(false);
+  // A sender clicked in a group thread → show their read-only mini profile.
+  const [cardUserId, setCardUserId] = useState<string | null>(null);
   const [groupTypingName, setGroupTypingName] = useState<string | null>(null);
   const [membersSheetOpen, setMembersSheetOpen] = useState(false);
   const [newMemberId, setNewMemberId] = useState<string | null>(null);
@@ -1654,7 +1657,7 @@ function ChatPageContent() {
                           {showSenderAvatar && groupSender && (
                             <button
                               type="button"
-                              onClick={() => handleSelectUser(msg.senderId)}
+                              onClick={() => setCardUserId(msg.senderId)}
                               className="relative shrink-0"
                               title={tChat("messageUser", {
                                 name: senderName ?? tChat("userFallback"),
@@ -1685,7 +1688,7 @@ function ChatPageContent() {
                             {senderName && (
                               <button
                                 type="button"
-                                onClick={() => handleSelectUser(msg.senderId)}
+                                onClick={() => setCardUserId(msg.senderId)}
                                 className="text-xs font-semibold opacity-80 hover:underline cursor-pointer text-left px-1"
                               >
                                 {senderName}
@@ -2400,6 +2403,9 @@ function ChatPageContent() {
             : (fullName(selectedUser) || t("conversationFallback"))
         }
       />
+
+      {/* Click a group sender's name/avatar → read-only mini profile */}
+      <UserCardDialog userId={cardUserId} onClose={() => setCardUserId(null)} />
     </div>
   );
 }

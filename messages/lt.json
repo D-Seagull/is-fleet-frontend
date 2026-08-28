@@ -775,5 +775,11 @@
     "unreadCount": "{count, plural, one {# neperskaityta žinutė} few {# neperskaitytos žinutės} many {# neperskaitytos žinutės} other {# neperskaitytų žinučių}}",
     "allCaughtUp": "Viskas perskaityta",
     "noUnread": "Nėra neperskaitytų žinučių"
+  },
+  "userCard": {
+    "phone": "Telefonas",
+    "email": "El. paštas",
+    "language": "Kalba",
+    "teamlead": "Komandos vadovas"
   }
 }
