@@ -7,7 +7,7 @@ import {
   type DisplayStatus,
   type UserStatus,
 } from "@/lib/status";
-import { useIsUserOnline } from "@/hooks/use-presence";
+import { useUserPresence } from "@/hooks/use-presence";
 
 interface StatusDotProps {
   user:
@@ -47,9 +47,15 @@ export function StatusDot({
   // Read presence from the live store unless the caller explicitly
   // override it (e.g. an avatar where you always want the dot, like
   // your own profile preview).
-  const livePresence = useIsUserOnline(user?.id);
-  const effectiveOnline = isOnline ?? livePresence;
-  const status: DisplayStatus = resolveDisplayStatus(user, effectiveOnline);
+  const presence = useUserPresence(user?.id);
+  // An explicit `isOnline` override (e.g. self) skips the away tier entirely.
+  const effectiveOnline = isOnline ?? presence === "online";
+  const effectiveAway = isOnline == null && presence === "away";
+  const status: DisplayStatus = resolveDisplayStatus(
+    user,
+    effectiveOnline,
+    effectiveAway,
+  );
   const sizeClass = SIZE_PX[size];
   return (
     <span

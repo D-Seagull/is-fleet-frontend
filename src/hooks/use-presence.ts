@@ -7,8 +7,10 @@ import { useAuthStore } from "@/store/auth";
 
 interface PresenceState {
   onlineIds: Set<string>;
-  setSnapshot: (ids: string[]) => void;
-  setUserOnline: (id: string, online: boolean) => void;
+  /** Offline but seen within the last week → amber "away" instead of grey. */
+  awayIds: Set<string>;
+  setSnapshot: (ids: string[], awayIds: string[]) => void;
+  setUserOnline: (id: string, online: boolean, away?: boolean) => void;
 }
 
 /**
@@ -22,15 +24,24 @@ interface PresenceState {
  */
 const usePresenceStore = create<PresenceState>((set) => ({
   onlineIds: new Set<string>(),
-  setSnapshot: (ids) => set({ onlineIds: new Set(ids) }),
-  setUserOnline: (id, online) =>
+  awayIds: new Set<string>(),
+  setSnapshot: (ids, awayIds) =>
+    set({ onlineIds: new Set(ids), awayIds: new Set(awayIds) }),
+  setUserOnline: (id, online, away = false) =>
     set((state) => {
-      // Always allocate a new Set so React detects the change. Mutating
+      // Always allocate new Sets so React detects the change. Mutating
       // the existing one in place silently breaks downstream selectors.
-      const next = new Set(state.onlineIds);
-      if (online) next.add(id);
-      else next.delete(id);
-      return { onlineIds: next };
+      const nextOnline = new Set(state.onlineIds);
+      const nextAway = new Set(state.awayIds);
+      if (online) {
+        nextOnline.add(id);
+        nextAway.delete(id);
+      } else {
+        nextOnline.delete(id);
+        if (away) nextAway.add(id);
+        else nextAway.delete(id);
+      }
+      return { onlineIds: nextOnline, awayIds: nextAway };
     }),
 }));
 
@@ -49,11 +60,15 @@ export function usePresenceSync() {
     // presence snapshot landing.
     if (myId) setUserOnline(myId, true);
 
-    const onSnapshot = (data: { userIds: string[] }) => {
-      setSnapshot(data.userIds);
+    const onSnapshot = (data: { userIds: string[]; awayUserIds?: string[] }) => {
+      setSnapshot(data.userIds, data.awayUserIds ?? []);
     };
-    const onChange = (data: { userId: string; online: boolean }) => {
-      setUserOnline(data.userId, data.online);
+    const onChange = (data: {
+      userId: string;
+      online: boolean;
+      away?: boolean;
+    }) => {
+      setUserOnline(data.userId, data.online, data.away);
     };
 
     socket.on("presenceSnapshot", onSnapshot);
@@ -83,4 +98,18 @@ export function useIsUserOnline(
   return usePresenceStore((s) =>
     typeof userId === "string" ? s.onlineIds.has(userId) : false,
   );
+}
+
+export type PresenceTier = "online" | "away" | "offline";
+
+/** Live presence tier for a user — online / recently-away / offline. */
+export function useUserPresence(
+  userId: string | null | undefined,
+): PresenceTier {
+  return usePresenceStore((s) => {
+    if (typeof userId !== "string") return "offline";
+    if (s.onlineIds.has(userId)) return "online";
+    if (s.awayIds.has(userId)) return "away";
+    return "offline";
+  });
 }
