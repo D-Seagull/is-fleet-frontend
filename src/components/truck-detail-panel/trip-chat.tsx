@@ -42,6 +42,7 @@ import { TripInfoCard } from "./trip-info-card";
 import { TripAttachmentsContent } from "./trip-attachments-content";
 import { ChatComposer } from "./chat-composer";
 import { ChatLightbox } from "./chat-lightbox";
+import { UserCardDialog } from "@/components/user-card-dialog";
 import {
   ChatTimelineItem,
   type TimelineItem,
@@ -121,6 +122,7 @@ export function TripChat({
   } | null>(null);
   const [showTripDocs, setShowTripDocs] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
+  const [cardUserId, setCardUserId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   // true  → user is within ~80px of the bottom (messages are visible)
   // false → user scrolled up to read history
@@ -685,6 +687,9 @@ export function TripChat({
 
       <ChatLightbox item={lightbox} onClose={() => setLightbox(null)} />
 
+      {/* Click a sender's name/avatar → read-only mini profile */}
+      <UserCardDialog userId={cardUserId} onClose={() => setCardUserId(null)} />
+
       {/* Archive banner — visible to every role. Whether the archive
           contains anything for this user is decided by the server (see
           TripChatSessionsService.findArchived). */}
@@ -779,6 +784,7 @@ export function TripChat({
                         });
                     }
                   }}
+                  onOpenUser={setCardUserId}
                 />
               ))}
             </>

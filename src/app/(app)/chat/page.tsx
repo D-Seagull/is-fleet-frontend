@@ -1549,25 +1549,34 @@ function ChatPageContent() {
                 </>
               ) : selectedUser ? (
                 <>
-                  <span className="relative shrink-0">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={selectedUser?.avatar ?? undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary">{initials(selectedUser)}</AvatarFallback>
-                    </Avatar>
-                    <StatusDot
-                      user={selectedUser}
-                      size="sm"
-                      className="absolute -bottom-0.5 -right-0.5"
-                    />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">
-                      {fullName(selectedUser) || t("noName")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {tRoles(selectedUser.role)}
-                    </p>
-                  </div>
+                  {/* Click the peer's avatar/name → read-only mini profile */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      selectedUserId && setCardUserId(selectedUserId)
+                    }
+                    className="flex flex-1 min-w-0 items-center gap-3 text-left"
+                  >
+                    <span className="relative shrink-0">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={selectedUser?.avatar ?? undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary">{initials(selectedUser)}</AvatarFallback>
+                      </Avatar>
+                      <StatusDot
+                        user={selectedUser}
+                        size="sm"
+                        className="absolute -bottom-0.5 -right-0.5"
+                      />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold truncate">
+                        {fullName(selectedUser) || t("noName")}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {tRoles(selectedUser.role)}
+                      </p>
+                    </div>
+                  </button>
                   <Button
                     variant="ghost"
                     size="icon"

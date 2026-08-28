@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { FileText, Download } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
@@ -24,6 +23,7 @@ interface CommonProps {
   setReplyingTo: (v: ReplyTarget | null) => void;
   scrollToTripMessage: (id: string) => void;
   scrollToTripDoc: (id: string) => void;
+  onOpenUser: (userId: string) => void;
 }
 
 interface MessageBubbleProps extends CommonProps {
@@ -40,10 +40,10 @@ function MessageBubble({
   scrollToTripDoc,
   onEdit,
   onDelete,
+  onOpenUser,
 }: MessageBubbleProps) {
   const t = useTranslations("chat");
   const locale = useLocale();
-  const router = useRouter();
 
   // System messages render as a centred grey label (Telegram-style
   // "user X joined" notices).
@@ -99,7 +99,7 @@ function MessageBubble({
       {!isMine && (
         <button
           type="button"
-          onClick={() => router.push(`/chat?userId=${msg.senderId}`)}
+          onClick={() => onOpenUser(msg.senderId)}
           className="shrink-0"
           title={t("messageUser", {
             name: fullName(msg.sender) || t("userFallback"),
@@ -121,7 +121,7 @@ function MessageBubble({
         {!isMine && (
           <button
             type="button"
-            onClick={() => router.push(`/chat?userId=${msg.senderId}`)}
+            onClick={() => onOpenUser(msg.senderId)}
             className="text-xs text-muted-foreground px-1 hover:underline cursor-pointer text-left"
           >
             {fullName(msg.sender) || t("unknown")}
@@ -428,6 +428,7 @@ export function ChatTimelineItem({
   onDeleteDoc,
   onImageClick,
   onImageLoaded,
+  onOpenUser,
 }: {
   item: TimelineItem;
   currentUserId: string;
@@ -439,6 +440,7 @@ export function ChatTimelineItem({
   onDeleteDoc: (id: string) => void;
   onImageClick: (id: string, signedUrl: string) => void;
   onImageLoaded: () => void;
+  onOpenUser: (userId: string) => void;
 }) {
   if (item.kind === "msg") {
     return (
@@ -451,6 +453,7 @@ export function ChatTimelineItem({
         scrollToTripDoc={scrollToTripDoc}
         onEdit={onEditMessage}
         onDelete={onDeleteMessage}
+        onOpenUser={onOpenUser}
       />
     );
   }
@@ -462,6 +465,7 @@ export function ChatTimelineItem({
       setReplyingTo={setReplyingTo}
       scrollToTripMessage={scrollToTripMessage}
       scrollToTripDoc={scrollToTripDoc}
+      onOpenUser={onOpenUser}
       onDelete={onDeleteDoc}
       onImageClick={onImageClick}
       onImageLoaded={onImageLoaded}
