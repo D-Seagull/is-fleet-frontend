@@ -63,6 +63,7 @@ import {
 } from "@/lib/infinite-messages";
 import { LoadOlderMessages } from "@/components/load-older-messages";
 import { cn } from "@/lib/utils";
+import { EDIT_WINDOW_MS } from "@/lib/constants";
 import { openUrlInViewer } from "@/lib/doc-helpers";
 import { useSearchParams } from "next/navigation";
 import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
@@ -1721,7 +1722,7 @@ function ChatPageContent() {
                                   !msg.deletedAt &&
                                   Date.now() -
                                     new Date(msg.createdAt).getTime() <
-                                    15 * 60 * 1000
+                                    EDIT_WINDOW_MS
                                     ? () => {
                                         setEditing({
                                           id: msg.id,

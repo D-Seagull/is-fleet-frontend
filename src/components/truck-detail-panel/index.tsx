@@ -233,13 +233,9 @@ export function TruckDetailPanel({
     applyDriverChange(newDriverId);
   }
 
-  function canDeleteNote(noteUserId: string) {
-    if (!user) return false;
-    return (
-      user.id === noteUserId ||
-      user.role === "TEAMLEAD" ||
-      user.role === "ADMIN"
-    );
+  function canDeleteNote(_noteUserId: string) {
+    // Anyone in the company can delete a truck note, not just its author.
+    return !!user;
   }
 
   const canManageTruck =

@@ -37,9 +37,13 @@ export function useDmUnreadSocketSync() {
       void queryClient.invalidateQueries({ queryKey: DM_UNREAD_QUERY_KEY });
     };
     socket.on("new_direct_message", onNew);
+    // Attachments count toward unread too — invalidate on new documents so
+    // the bell updates when a peer sends a file (not just a text message).
+    socket.on("new_direct_document", onNew);
     socket.on("messages_read", onRead);
     return () => {
       socket.off("new_direct_message", onNew);
+      socket.off("new_direct_document", onNew);
       socket.off("messages_read", onRead);
     };
   }, [queryClient]);

@@ -4,6 +4,7 @@ import { FileText, Download } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { EDIT_WINDOW_MS } from "@/lib/constants";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageReactionsCluster } from "@/components/message-reactions";
@@ -64,8 +65,8 @@ function MessageBubble({
     isMine &&
     !isDeleted &&
     !msg.isSystem &&
-    // eslint-disable-next-line react-hooks/purity -- 15-min edit window must be evaluated against the current time on each render
-    Date.now() - new Date(msg.createdAt).getTime() < 15 * 60 * 1000;
+    // eslint-disable-next-line react-hooks/purity -- 24-hour edit window must be evaluated against the current time on each render
+    Date.now() - new Date(msg.createdAt).getTime() < EDIT_WINDOW_MS;
   const actions = {
     onCopy: () => navigator.clipboard.writeText(msg.content),
     onReply: () =>

@@ -62,6 +62,9 @@ export function useGroupUnreadSocketSync() {
       void queryClient.invalidateQueries({ queryKey: GROUP_UNREAD_QUERY_KEY });
     };
     socket.on("new_group_message", onNew);
+    // Attachments count toward unread too — invalidate on new documents so
+    // the bell updates when someone posts a file to a group.
+    socket.on("new_group_document", onNew);
     socket.on("group_messages_read", onRead);
     // Lightweight signal emitted by the backend to every group member's
     // personal room — fires even when the user isn't currently viewing the
@@ -69,6 +72,7 @@ export function useGroupUnreadSocketSync() {
     socket.on("group_unread_update", onNew);
     return () => {
       socket.off("new_group_message", onNew);
+      socket.off("new_group_document", onNew);
       socket.off("group_messages_read", onRead);
       socket.off("group_unread_update", onNew);
     };
