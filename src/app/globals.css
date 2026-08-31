@@ -145,5 +145,5 @@
   pointer-events: none;
 }
 .dark .chat-bg-image::before {
-  opacity: 0.14;
+  opacity: 0.2;
 }
