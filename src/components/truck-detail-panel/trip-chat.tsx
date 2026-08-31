@@ -722,7 +722,7 @@ export function TripChat({
       <div className="relative flex-1 min-h-0 bg-chat-bg chat-bg-image">
         <div
           ref={scrollContainerRef}
-          className="absolute inset-0 z-10 overflow-y-auto flex flex-col gap-2 py-2 pr-1"
+          className="absolute inset-0 z-10 overflow-y-auto flex flex-col gap-2 px-3 py-2"
           onScroll={(e) => {
             const el = e.currentTarget;
             const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
