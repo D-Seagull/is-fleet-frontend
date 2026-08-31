@@ -93,20 +93,6 @@ export function ChatTab({
           />
         </div>
       )}
-      {/* Desktop: always visible */}
-      <div className="hidden md:flex shrink-0 items-center gap-3">
-        <TripCombobox
-          trips={trips ?? []}
-          value={resolvedTripId}
-          onChange={setSelectedTripId}
-          className="flex-1"
-        />
-        <NewTripDialog
-          truckId={truckId}
-          defaultDriverId={defaultDriverId}
-          onCreated={(trip) => setSelectedTripId(trip.id)}
-        />
-      </div>
       {selectedTrip ? (
         <TripChat
           trip={selectedTrip}
