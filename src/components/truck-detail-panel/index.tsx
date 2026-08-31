@@ -311,7 +311,13 @@ export function TruckDetailPanel({
         onValueChange={setActiveTab}
         className="flex flex-col flex-1 min-h-0 w-full"
       >
-        <TabsList className={cn("shrink-0", !navOpen && "hidden md:flex")}>
+        <div
+          className={cn(
+            "flex items-center gap-2 shrink-0",
+            !navOpen && "hidden md:flex",
+          )}
+        >
+        <TabsList className="shrink-0">
           <TabsTrigger value="chat" disabled={!isChatEnabled} className="gap-1.5">
             {t("tabs.chat")}
             {(truckUnread?.activeTripUnread ?? 0) > 0 && (
@@ -332,6 +338,17 @@ export function TruckDetailPanel({
           <TabsTrigger value="alarm">{t("tabs.alarm")}</TabsTrigger>
           <TabsTrigger value="info">{t("tabs.info")}</TabsTrigger>
         </TabsList>
+          <div className="ml-auto hidden md:block shrink-0">
+            <NewTripDialog
+              truckId={truckId}
+              defaultDriverId={truck.currentDriverId}
+              onCreated={(trip) => {
+                setChatTripId(trip.id);
+                setActiveTab("chat");
+              }}
+            />
+          </div>
+        </div>
 
         <TabsContent value="chat" className="mt-4 flex flex-col flex-1 min-h-0">
           <ChatTab
