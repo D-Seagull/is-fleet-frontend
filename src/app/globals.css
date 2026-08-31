@@ -129,3 +129,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Trip-chat wallpaper — the isometric logistics map (public/chat-bg.png),
+   dimmed like the mobile apps: near-solid in light, heavily dimmed in dark so
+   it never fights the message bubbles. Layered behind the scroll content via a
+   ::before on the (relative) message-area container. */
+.chat-bg-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/chat-bg.png");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.dark .chat-bg-image::before {
+  opacity: 0.14;
+}
