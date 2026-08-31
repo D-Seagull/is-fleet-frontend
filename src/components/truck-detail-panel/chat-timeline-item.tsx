@@ -6,7 +6,7 @@ import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { EDIT_WINDOW_MS } from "@/lib/constants";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageReactionsCluster } from "@/components/message-reactions";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
@@ -107,6 +107,10 @@ function MessageBubble({
           })}
         >
           <Avatar className="h-8 w-8">
+            <AvatarImage
+              src={msg.sender?.avatar ?? undefined}
+              alt={fullName(msg.sender) || ""}
+            />
             <AvatarFallback className="text-xs bg-primary/10 text-primary">
               {senderInitials}
             </AvatarFallback>
