@@ -45,6 +45,24 @@ export function MessageReactionsTrigger({
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressed = useRef(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [openUp, setOpenUp] = useState(true);
+
+  // Flip the picker below the trigger when there isn't room above inside the
+  // scrollable message list — otherwise the top message's picker is clipped by
+  // the list's overflow. Decided on hover / just before a long-press opens.
+  const decideDirection = () => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    let p: HTMLElement | null = el.parentElement;
+    while (p) {
+      const oy = getComputedStyle(p).overflowY;
+      if (oy === "auto" || oy === "scroll") break;
+      p = p.parentElement;
+    }
+    const top = el.getBoundingClientRect().top;
+    const boundTop = p ? p.getBoundingClientRect().top : 0;
+    setOpenUp(top - boundTop > 56);
+  };
 
   // Close mobile picker when tapping anywhere outside the trigger area.
   useEffect(() => {
@@ -64,6 +82,7 @@ export function MessageReactionsTrigger({
   if (hideWhenReacted && hasMyReaction) return null;
 
   const startLongPress = () => {
+    decideDirection();
     longPressed.current = false;
     if (longPressTimer.current) clearTimeout(longPressTimer.current);
     longPressTimer.current = setTimeout(() => {
@@ -81,6 +100,7 @@ export function MessageReactionsTrigger({
   return (
     <div
       ref={wrapperRef}
+      onMouseEnter={decideDirection}
       className="relative group/picker shrink-0 touch-manipulation"
     >
       {/* Default trigger — small + grayscale when idle. Scales up to full
@@ -125,7 +145,8 @@ export function MessageReactionsTrigger({
           mouse up doesn't lose the hover state. */}
       <div
         className={cn(
-          "absolute bottom-full left-1/2 -translate-x-1/2 pb-2 z-10",
+          "absolute left-1/2 -translate-x-1/2 z-10",
+          openUp ? "bottom-full pb-2" : "top-full pt-2",
           mobileOpen ? "flex" : "hidden group-hover/picker:flex",
         )}
       >
