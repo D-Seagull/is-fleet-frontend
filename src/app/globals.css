@@ -142,9 +142,15 @@
   background-image: url("/chat-bg.png");
   background-size: cover;
   background-position: center;
+  /* Tint the wallpaper toward the app's brand blue and lift its saturation a
+     touch so it reads as part of the theme, not a flat greyscale map. */
+  background-color: oklch(0.55 0.2 255);
+  background-blend-mode: soft-light;
+  filter: saturate(1.15);
   opacity: 0.6;
   pointer-events: none;
 }
 .dark .chat-bg-image::before {
-  opacity: 0.2;
+  background-color: oklch(0.6 0.18 255);
+  opacity: 0.28;
 }
