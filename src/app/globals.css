@@ -37,9 +37,9 @@
   --sidebar-accent-foreground: oklch(0.15 0.02 240);
   --sidebar-border: oklch(0.88 0.01 240);
   --sidebar-ring: oklch(0.55 0.2 255);
-  /* Chat message-area — a hair darker/cooler than the page so it reads as a
-     gently recessed panel, still within the app's palette. */
-  --chat-bg: oklch(0.955 0.006 245);
+  /* Chat message-area — a gently recessed panel tinted toward the app's brand
+     blue (primary hue 255) so it reads as on-theme, not a neutral grey. */
+  --chat-bg: oklch(0.95 0.022 255);
 }
 
 .dark {
@@ -75,8 +75,9 @@
   --sidebar-accent-foreground: oklch(0.93 0.005 240);
   --sidebar-border: oklch(0.26 0.01 245);
   --sidebar-ring: oklch(0.6 0.18 255);
-  /* Chat message-area — slightly deeper than the page for a subtle recess. */
-  --chat-bg: oklch(0.165 0.012 245);
+  /* Chat message-area — a subtle deep-blue panel (brand hue 255) between the
+     page and card, so it reads as on-theme rather than flat neutral. */
+  --chat-bg: oklch(0.2 0.03 255);
 }
 
 @theme inline {
