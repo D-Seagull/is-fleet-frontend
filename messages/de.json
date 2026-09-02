@@ -757,6 +757,33 @@
       "colRole": "Rolle",
       "colStatus": "Status",
       "colContact": "Kontakt"
+    },
+    "bugReports": {
+      "title": "Fehlerberichte",
+      "subtitle": "Nutzermeldungen aus allen Apps, in Echtzeit.",
+      "loading": "Wird geladen…",
+      "error": "Berichte konnten nicht geladen werden.",
+      "empty": "Noch nichts hier.",
+      "screenshot": "Screenshot",
+      "statusResolved": "gelöst",
+      "filters": {
+        "all": "Alle",
+        "new": "Neu",
+        "resolved": "Gelöst",
+        "triaged": "In Bearbeitung"
+      },
+      "actions": {
+        "triage": "In Bearbeitung",
+        "resolve": "Lösen",
+        "message": "Schreiben",
+        "reopen": "Erneut öffnen"
+      },
+      "messageSent": "Nachricht gesendet",
+      "reply": {
+        "title": "Nachricht an {name}",
+        "subtitle": "Geht als Direktnachricht an den Melder.",
+        "send": "Senden"
+      }
     }
   },
   "avatarCropper": {
@@ -781,5 +808,15 @@
     "email": "E-Mail",
     "language": "Sprache",
     "teamlead": "Teamleiter"
+  },
+  "bugReport": {
+    "title": "Problem melden",
+    "subtitle": "Beschreiben Sie, was schiefgelaufen ist. Sie können einen Screenshot anhängen.",
+    "placeholder": "Was ist passiert?",
+    "attach": "Screenshot anhängen",
+    "send": "Senden",
+    "sent": "Danke! Ihr Bericht wurde gesendet.",
+    "error": "Konnte nicht gesendet werden. Versuchen Sie es erneut.",
+    "removeScreenshot": "Entfernen"
   }
 }

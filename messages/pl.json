@@ -757,6 +757,33 @@
       "colRole": "Rola",
       "colStatus": "Status",
       "colContact": "Kontakt"
+    },
+    "bugReports": {
+      "title": "Zgłoszenia błędów",
+      "subtitle": "Zgłoszenia użytkowników ze wszystkich aplikacji, na żywo.",
+      "loading": "Ładowanie…",
+      "error": "Nie udało się wczytać zgłoszeń.",
+      "empty": "Na razie pusto.",
+      "screenshot": "Zrzut ekranu",
+      "statusResolved": "rozwiązane",
+      "filters": {
+        "all": "Wszystkie",
+        "new": "Nowe",
+        "resolved": "Rozwiązane",
+        "triaged": "W toku"
+      },
+      "actions": {
+        "triage": "W toku",
+        "resolve": "Rozwiąż",
+        "message": "Napisz",
+        "reopen": "Przywróć"
+      },
+      "messageSent": "Wiadomość wysłana",
+      "reply": {
+        "title": "Napisz do: {name}",
+        "subtitle": "Trafi do zgłaszającego jako wiadomość prywatna.",
+        "send": "Wyślij"
+      }
     }
   },
   "avatarCropper": {
@@ -781,5 +808,15 @@
     "email": "E-mail",
     "language": "Język",
     "teamlead": "Lider zespołu"
+  },
+  "bugReport": {
+    "title": "Zgłoś problem",
+    "subtitle": "Opisz, co poszło nie tak. Możesz dołączyć zrzut ekranu.",
+    "placeholder": "Co się stało?",
+    "attach": "Dodaj zrzut",
+    "send": "Wyślij",
+    "sent": "Dziękujemy! Zgłoszenie wysłane.",
+    "error": "Nie udało się wysłać. Spróbuj ponownie.",
+    "removeScreenshot": "Usuń"
   }
 }

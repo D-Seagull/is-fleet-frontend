@@ -10,7 +10,7 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { UiLocalePicker } from "@/components/ui-locale-picker";
+import { BugReportButton } from "@/components/bug-report-button";
 import { fullName } from "@/lib/format";
 import {
   Truck,
@@ -328,10 +328,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             <SidebarTrigger />
           </div>
           <div className="flex items-center gap-2">
+            <BugReportButton />
             {isManager && <UnreadBell />}
-            {/* TEMP: quick locale switch for i18n testing — remove once
-                translation pass is done (the real one lives on /account). */}
-            <UiLocalePicker variant="compact" />
             <ThemeToggle />
           </div>
         </header>

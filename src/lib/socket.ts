@@ -44,3 +44,18 @@ export function disconnectSocket() {
     socket = null;
   }
 }
+
+/**
+ * Re-run the handshake on the EXISTING socket (same instance, so every
+ * registered listener survives). socket.connect() re-invokes the `auth`
+ * function, which re-reads the current in-memory token — so a socket that
+ * first connected before the token was ready (cold load / silent refresh)
+ * re-authenticates and the backend rejoins its user room. No-op if no socket
+ * exists yet; the next getSocket() will create one with the token present.
+ */
+export function reconnectSocket() {
+  if (socket) {
+    socket.disconnect();
+    socket.connect();
+  }
+}

@@ -757,6 +757,33 @@
       "colRole": "Vaidmuo",
       "colStatus": "Būsena",
       "colContact": "Kontaktas"
+    },
+    "bugReports": {
+      "title": "Klaidų pranešimai",
+      "subtitle": "Naudotojų pranešimai iš visų programų realiuoju laiku.",
+      "loading": "Įkeliama…",
+      "error": "Nepavyko įkelti pranešimų.",
+      "empty": "Kol kas tuščia.",
+      "screenshot": "Ekrano nuotrauka",
+      "statusResolved": "išspręsta",
+      "filters": {
+        "all": "Visi",
+        "new": "Nauji",
+        "resolved": "Išspręsti",
+        "triaged": "Vykdoma"
+      },
+      "actions": {
+        "triage": "Vykdoma",
+        "resolve": "Išspręsti",
+        "message": "Rašyti",
+        "reopen": "Atkurti"
+      },
+      "messageSent": "Žinutė išsiųsta",
+      "reply": {
+        "title": "Rašyti: {name}",
+        "subtitle": "Bus išsiųsta pranešėjui kaip asmeninė žinutė.",
+        "send": "Siųsti"
+      }
     }
   },
   "avatarCropper": {
@@ -781,5 +808,15 @@
     "email": "El. paštas",
     "language": "Kalba",
     "teamlead": "Komandos vadovas"
+  },
+  "bugReport": {
+    "title": "Pranešti apie problemą",
+    "subtitle": "Aprašykite, kas nutiko. Galite pridėti ekrano nuotrauką.",
+    "placeholder": "Kas nutiko?",
+    "attach": "Pridėti nuotrauką",
+    "send": "Siųsti",
+    "sent": "Ačiū! Pranešimas išsiųstas.",
+    "error": "Nepavyko išsiųsti. Bandykite dar kartą.",
+    "removeScreenshot": "Pašalinti"
   }
 }

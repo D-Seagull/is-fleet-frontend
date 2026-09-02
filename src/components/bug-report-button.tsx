@@ -53,8 +53,10 @@ export function BugReportButton() {
     setSubmitting(false);
   }
 
+  const canSend = description.trim().length > 0 || files.length > 0;
+
   async function handleSubmit() {
-    if (!description.trim() || submitting) return;
+    if (!canSend || submitting) return;
     setSubmitting(true);
     try {
       await reportBug(description.trim(), files, { route: pathname });
@@ -149,7 +151,7 @@ export function BugReportButton() {
             type="button"
             size="sm"
             onClick={handleSubmit}
-            disabled={!description.trim() || submitting}
+            disabled={!canSend || submitting}
           >
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t("send")}

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { api } from "@/lib/api";
-import { disconnectSocket } from "@/lib/socket";
+import { disconnectSocket, reconnectSocket } from "@/lib/socket";
 
 interface AuthUser {
   id: string;
@@ -118,6 +118,12 @@ export const useAuthStore = create<AuthState>()(
             token: access_token,
             isLoading: false,
           });
+          // A socket created before this token was ready (cold start, or a
+          // silent refresh after the access token expired) connected without a
+          // valid JWT, so the backend never joined its user room and rejects
+          // its emits. Re-handshake now that the token is set — same socket
+          // instance, so all listeners stay attached.
+          reconnectSocket();
           void get().fetchMe(access_token);
           return access_token as string;
         } catch {
