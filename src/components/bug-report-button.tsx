@@ -77,7 +77,7 @@ export function BugReportButton() {
     >
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={t("title")}>
-          <Bug className="h-6 w-6 text-destructive" />
+          <Bug className="size-8 text-destructive" />
         </Button>
       </DialogTrigger>
       <DialogContent
