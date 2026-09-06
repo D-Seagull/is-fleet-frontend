@@ -331,12 +331,23 @@ function ChatPageContent() {
   const selectedUser =
     conversations?.find((c) => c.user.id === selectedUserId)?.user ?? chatUser;
 
-  const managerConvs = (conversations ?? []).filter(
-    (c) => c.user.role === "MANAGER" || c.user.role === "TEAMLEAD",
-  );
-  const driverConvs = (conversations ?? []).filter(
-    (c) => c.user.role === "DRIVER",
-  );
+  // Unread first so chats with new messages never get lost in a long list,
+  // then most-recent first.
+  const byUnreadThenRecency = (a: Conversation, b: Conversation) => {
+    const aUnread = a.unreadCount > 0 ? 0 : 1;
+    const bUnread = b.unreadCount > 0 ? 0 : 1;
+    if (aUnread !== bUnread) return aUnread - bUnread;
+    return (
+      new Date(b.lastMessage.createdAt).getTime() -
+      new Date(a.lastMessage.createdAt).getTime()
+    );
+  };
+  const managerConvs = (conversations ?? [])
+    .filter((c) => c.user.role === "MANAGER" || c.user.role === "TEAMLEAD")
+    .sort(byUnreadThenRecency);
+  const driverConvs = (conversations ?? [])
+    .filter((c) => c.user.role === "DRIVER")
+    .sort(byUnreadThenRecency);
 
   // Merge messages + documents into a single chronological timeline so
   // attachments appear inline in the chat (same UX as trip chat).
@@ -372,9 +383,16 @@ function ChatPageContent() {
   );
 
   const searchQ = searchQuery.toLowerCase().trim();
-  const filteredGroups = !searchQ
-    ? (groups ?? [])
-    : (groups ?? []).filter((g) => g.name.toLowerCase().includes(searchQ));
+  const filteredGroups = [
+    ...(!searchQ
+      ? (groups ?? [])
+      : (groups ?? []).filter((g) => g.name.toLowerCase().includes(searchQ))),
+  ].sort(
+    // Groups with unread first, then their existing order.
+    (a, b) =>
+      ((groupUnreadMap.get(a.id) ?? 0) > 0 ? 0 : 1) -
+      ((groupUnreadMap.get(b.id) ?? 0) > 0 ? 0 : 1),
+  );
   const filteredManagerConvs = !searchQ
     ? managerConvs
     : managerConvs.filter((c) =>
@@ -1201,11 +1219,7 @@ function ChatPageContent() {
               const combinedConvs = [
                 ...filteredManagerConvs,
                 ...filteredDriverConvs,
-              ].sort(
-                (a, b) =>
-                  new Date(b.lastMessage.createdAt).getTime() -
-                  new Date(a.lastMessage.createdAt).getTime(),
-              );
+              ].sort(byUnreadThenRecency);
               return (
                 <>
                   <div className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-t mt-2">

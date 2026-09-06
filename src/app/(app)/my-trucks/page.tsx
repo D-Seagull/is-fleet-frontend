@@ -299,6 +299,13 @@ export default function MyTrucksPage() {
   const unreadByTruck = Object.fromEntries(
     (unreadSummary?.items ?? []).map((i) => [i.truckId, i])
   );
+  // Trucks whose trip chat has unread messages float to the top, so new
+  // activity isn't lost in a long fleet — the rest keep their order.
+  const sortedTrucks = [...(trucks ?? [])].sort(
+    (a, b) =>
+      ((unreadByTruck[a.id]?.totalUnread ?? 0) > 0 ? 0 : 1) -
+      ((unreadByTruck[b.id]?.totalUnread ?? 0) > 0 ? 0 : 1)
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -334,7 +341,7 @@ export default function MyTrucksPage() {
           {t("empty")}
         </p>
       ) : (
-        trucks.map((truck) => (
+        sortedTrucks.map((truck) => (
           <TruckListItem
             key={truck.id}
             truck={truck}
