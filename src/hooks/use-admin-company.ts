@@ -61,6 +61,19 @@ export function useDeactivateCompany() {
   });
 }
 
+export function useReactivateCompany() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) =>
+      (await api.patch(`/admin/companies/${id}/activate`)).data,
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ["admin", "company", id] });
+      qc.invalidateQueries({ queryKey: ["companies"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+  });
+}
+
 export function useResendCompanyInvite() {
   return useMutation({
     mutationFn: async ({ id, email }: { id: string; email: string }) =>

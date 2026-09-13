@@ -696,7 +696,12 @@
       "awaitingTeamlead": "Ожидает тимлида",
       "statusActive": "Активна",
       "statusDeactivated": "Деактивирована",
-      "empty": "Компаний пока нет"
+      "empty": "Компаний пока нет",
+      "onlineNowTitle": "Сейчас онлайн",
+      "onlineNowEmpty": "Сейчас никого нет онлайн",
+      "back": "Назад",
+      "onlineSearchPlaceholder": "Поиск пользователя…",
+      "onlineNoResults": "Ничего не найдено по запросу «{query}»"
     },
     "companies": {
       "title": "Компании",
@@ -706,7 +711,9 @@
       "colUsers": "Пользователей",
       "colStatus": "Статус",
       "colDate": "Дата регистрации",
-      "emptyHint": "Компаний пока нет — нажмите «{button}»."
+      "emptyHint": "Компаний пока нет — нажмите «{button}».",
+      "searchPlaceholder": "Поиск компании…",
+      "noResults": "Ничего не найдено по запросу «{query}»"
     },
     "newCompany": {
       "button": "Новая компания",
@@ -756,7 +763,10 @@
       "colUser": "Пользователь",
       "colRole": "Роль",
       "colStatus": "Статус",
-      "colContact": "Контакт"
+      "colContact": "Контакт",
+      "reactivate": "Активировать",
+      "reactivateSuccess": "Компания активирована",
+      "reactivateError": "Не удалось активировать"
     },
     "bugReports": {
       "title": "Баг-репорты",

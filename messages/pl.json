@@ -696,7 +696,12 @@
       "awaitingTeamlead": "Oczekuje na lidera zespołu",
       "statusActive": "Aktywna",
       "statusDeactivated": "Dezaktywowana",
-      "empty": "Brak firm"
+      "empty": "Brak firm",
+      "onlineNowTitle": "Teraz online",
+      "onlineNowEmpty": "Nikt nie jest teraz online",
+      "back": "Wstecz",
+      "onlineSearchPlaceholder": "Szukaj użytkownika…",
+      "onlineNoResults": "Nic nie znaleziono dla „{query}”"
     },
     "companies": {
       "title": "Firmy",
@@ -706,7 +711,9 @@
       "colUsers": "Użytkownicy",
       "colStatus": "Status",
       "colDate": "Data rejestracji",
-      "emptyHint": "Brak firm — kliknij „{button}”."
+      "emptyHint": "Brak firm — kliknij „{button}”.",
+      "searchPlaceholder": "Szukaj firmy…",
+      "noResults": "Nic nie znaleziono dla „{query}”"
     },
     "newCompany": {
       "button": "Nowa firma",
@@ -756,7 +763,10 @@
       "colUser": "Użytkownik",
       "colRole": "Rola",
       "colStatus": "Status",
-      "colContact": "Kontakt"
+      "colContact": "Kontakt",
+      "reactivate": "Aktywuj",
+      "reactivateSuccess": "Firma aktywowana",
+      "reactivateError": "Nie udało się aktywować"
     },
     "bugReports": {
       "title": "Zgłoszenia błędów",

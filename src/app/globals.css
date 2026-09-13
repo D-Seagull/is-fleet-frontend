@@ -152,3 +152,48 @@
   filter: invert(1) hue-rotate(180deg);
   opacity: 0.42;
 }
+
+/* Trip-chat wallpaper — chat2 art (public/chat2.png), shown prominently. The
+   web message area is wide/landscape while the art is portrait, so `cover`
+   fills it (mobile uses `contain` to show the whole portrait). DM + group chats
+   keep .chat-bg-image (chat-bg.png). */
+.chat2-bg-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/chat2.png");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  /* Light theme: soft, lightened backdrop that stays out of the bubbles' way. */
+  opacity: 0.6;
+  pointer-events: none;
+}
+/* Dark theme: the art is a bright photo, so darken + desaturate it hard into a
+   muted wallpaper that sits on the dark ground instead of glaring. */
+.dark .chat2-bg-image::before {
+  filter: brightness(0.26) saturate(0.8);
+  opacity: 0.95;
+}
+
+/* DM + group message area — chat-bg.png pinned behind the scrolling messages.
+   background-attachment: scroll (the default) keeps it fixed to the scroll box
+   while the content scrolls; an overlay dims it so it never fights the bubbles
+   (matches the mobile apps' dimmed wallpaper, no invert). */
+.chat-bg-scroll {
+  background-color: var(--chat-bg);
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.5)
+    ),
+    url("/chat-bg.png");
+  background-size: cover;
+  background-position: center;
+}
+.dark .chat-bg-scroll {
+  background-image: linear-gradient(
+      rgba(16, 20, 28, 0.72),
+      rgba(16, 20, 28, 0.72)
+    ),
+    url("/chat-bg.png");
+}

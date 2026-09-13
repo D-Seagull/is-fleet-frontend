@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import {
   useAdminCompany,
   useDeactivateCompany,
+  useReactivateCompany,
   useResendCompanyInvite,
 } from "@/hooks/use-admin-company";
 import type { AdminCompanyUser } from "@/hooks/use-admin-company";
@@ -156,6 +157,7 @@ function CompanyHeader({
   const locale = useLocale();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const deactivate = useDeactivateCompany();
+  const reactivate = useReactivateCompany();
   const resend = useResendCompanyInvite();
 
   if (isLoading || !data) {
@@ -191,6 +193,15 @@ function CompanyHeader({
       setConfirmOpen(false);
     } catch {
       toast.error(t("deactivateError"));
+    }
+  };
+
+  const handleReactivate = async () => {
+    try {
+      await reactivate.mutateAsync(data.id);
+      toast.success(t("reactivateSuccess"));
+    } catch {
+      toast.error(t("reactivateError"));
     }
   };
 
@@ -242,6 +253,21 @@ function CompanyHeader({
           )}
           {t("resendInvite")}
         </Button>
+        {!data.isActive && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReactivate}
+            disabled={reactivate.isPending}
+          >
+            {reactivate.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Power className="mr-2 h-4 w-4" />
+            )}
+            {t("reactivate")}
+          </Button>
+        )}
         {data.isActive && (
           <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
             <AlertDialogTrigger asChild>

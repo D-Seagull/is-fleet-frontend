@@ -12,11 +12,11 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SidebarLogoButton } from "@/components/sidebar-logo-button";
-import { useCompanies } from "@/hooks/use-companies";
 import {
   useNewBugCount,
   useBugReportsSocketSync,
 } from "@/hooks/use-bug-reports";
+import { useOnlineUsersSocketSync } from "@/hooks/use-admin-online";
 import { useAuthStore } from "@/store/auth";
 import type { NavItem } from "@/components/app-sidebar";
 
@@ -37,10 +37,10 @@ export default function AdminLayout({
     }
   }, [user, router]);
 
-  const { data: companies = [] } = useCompanies();
-
   // Keep the reports + NEW badge live across every admin page.
   useBugReportsSocketSync();
+  // Keep the dashboard's cross-company "online now" list live.
+  useOnlineUsersSocketSync();
   const newBugs = useNewBugCount();
 
   if (user && user.role !== "ADMIN") {
@@ -56,10 +56,6 @@ export default function AdminLayout({
       title: t("companies.title"),
       href: "/admin/companies",
       icon: Building2,
-      children: companies.map((c) => ({
-        title: c.name,
-        href: `/admin/companies/${c.id}`,
-      })),
     },
     {
       title: t("bugReports.title"),

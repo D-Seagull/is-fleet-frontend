@@ -719,7 +719,7 @@ export function TripChat({
         currentUserId={currentUserId}
       />
 
-      <div className="relative flex-1 min-h-0 bg-chat-bg chat-bg-image">
+      <div className="relative flex-1 min-h-0 bg-chat-bg chat2-bg-image">
         <div
           ref={scrollContainerRef}
           className="absolute inset-0 z-10 overflow-y-auto flex flex-col gap-2 px-3 py-2"

@@ -1,23 +1,21 @@
 "use client";
 
-import { useSidebar } from "@/components/ui/sidebar";
+import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 
 /**
- * Brand logo that doubles as the sidebar toggle — the same affordance the main
- * app header uses, so the admin panel reads as one product. Must render inside
- * a SidebarProvider (it calls useSidebar).
+ * Brand logo in the admin header — clicking it returns to the dashboard
+ * (`/admin`), the way a product logo goes home. The sidebar collapse lives on
+ * the separate SidebarTrigger next to it.
  */
 export function SidebarLogoButton() {
-  const { toggleSidebar } = useSidebar();
   return (
-    <button
-      type="button"
-      onClick={toggleSidebar}
-      aria-label="Toggle Sidebar"
+    <Link
+      href="/admin"
+      aria-label="Dashboard"
       className="flex items-center rounded-md transition-opacity hover:opacity-80"
     >
       <BrandLogo className="h-13" />
-    </button>
+    </Link>
   );
 }

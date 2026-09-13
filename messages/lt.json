@@ -696,7 +696,12 @@
       "awaitingTeamlead": "Laukiama komandos vadovo",
       "statusActive": "Aktyvi",
       "statusDeactivated": "Deaktyvuota",
-      "empty": "Įmonių dar nėra"
+      "empty": "Įmonių dar nėra",
+      "onlineNowTitle": "Dabar prisijungę",
+      "onlineNowEmpty": "Šiuo metu niekas neprisijungęs",
+      "back": "Atgal",
+      "onlineSearchPlaceholder": "Ieškoti naudotojo…",
+      "onlineNoResults": "Nieko nerasta pagal „{query}“"
     },
     "companies": {
       "title": "Įmonės",
@@ -706,7 +711,9 @@
       "colUsers": "Naudotojai",
       "colStatus": "Būsena",
       "colDate": "Registracijos data",
-      "emptyHint": "Įmonių dar nėra — spustelėkite „{button}“."
+      "emptyHint": "Įmonių dar nėra — spustelėkite „{button}“.",
+      "searchPlaceholder": "Ieškoti įmonės…",
+      "noResults": "Nieko nerasta pagal „{query}“"
     },
     "newCompany": {
       "button": "Nauja įmonė",
@@ -756,7 +763,10 @@
       "colUser": "Naudotojas",
       "colRole": "Vaidmuo",
       "colStatus": "Būsena",
-      "colContact": "Kontaktas"
+      "colContact": "Kontaktas",
+      "reactivate": "Aktyvuoti",
+      "reactivateSuccess": "Įmonė aktyvuota",
+      "reactivateError": "Nepavyko aktyvuoti"
     },
     "bugReports": {
       "title": "Klaidų pranešimai",

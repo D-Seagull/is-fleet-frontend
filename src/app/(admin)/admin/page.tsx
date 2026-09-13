@@ -11,6 +11,7 @@ import {
   Clock,
   CheckCircle2,
   MailWarning,
+  ChevronRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,6 +48,7 @@ export default function AdminDashboardPage() {
               : undefined
           }
           isLoading={isLoading}
+          href="/admin/companies"
         />
         <KpiCard
           title={t("kpiUsers")}
@@ -77,6 +79,7 @@ export default function AdminDashboardPage() {
               : undefined
           }
           isLoading={isLoading}
+          href="/admin/online"
         />
         <KpiCard
           title={t("kpiActiveTrips")}
@@ -163,20 +166,36 @@ function KpiCard({
   value,
   subline,
   isLoading,
+  href,
 }: {
   title: string;
   icon: React.ReactNode;
   value: number | undefined;
   subline?: string;
   isLoading: boolean;
+  /** When set, the whole card links to a detail page (e.g. the online list). */
+  href?: string;
 }) {
-  return (
-    <Card>
+  const card = (
+    <Card
+      className={
+        href
+          ? "h-full transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          : undefined
+      }
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        {icon}
+        {href ? (
+          <div className="flex items-center gap-1">
+            {icon}
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        ) : (
+          icon
+        )}
       </CardHeader>
       <CardContent>
         {isLoading || value === undefined ? (
@@ -189,5 +208,13 @@ function KpiCard({
         )}
       </CardContent>
     </Card>
+  );
+
+  return href ? (
+    <Link href={href} className="block">
+      {card}
+    </Link>
+  ) : (
+    card
   );
 }

@@ -696,7 +696,12 @@
       "awaitingTeamlead": "Чекає тімліда",
       "statusActive": "Активна",
       "statusDeactivated": "Деактивована",
-      "empty": "Компаній ще немає"
+      "empty": "Компаній ще немає",
+      "onlineNowTitle": "Зараз онлайн",
+      "onlineNowEmpty": "Зараз нікого немає онлайн",
+      "back": "Назад",
+      "onlineSearchPlaceholder": "Пошук користувача…",
+      "onlineNoResults": "Нічого не знайдено за запитом «{query}»"
     },
     "companies": {
       "title": "Компанії",
@@ -706,7 +711,9 @@
       "colUsers": "Користувачів",
       "colStatus": "Статус",
       "colDate": "Дата реєстрації",
-      "emptyHint": "Компаній ще немає — натисніть «{button}»."
+      "emptyHint": "Компаній ще немає — натисніть «{button}».",
+      "searchPlaceholder": "Пошук компанії…",
+      "noResults": "Нічого не знайдено за запитом «{query}»"
     },
     "newCompany": {
       "button": "Нова компанія",
@@ -756,7 +763,10 @@
       "colUser": "Користувач",
       "colRole": "Роль",
       "colStatus": "Статус",
-      "colContact": "Контакт"
+      "colContact": "Контакт",
+      "reactivate": "Активувати",
+      "reactivateSuccess": "Компанію активовано",
+      "reactivateError": "Не вдалося активувати"
     },
     "bugReports": {
       "title": "Баг-репорти",

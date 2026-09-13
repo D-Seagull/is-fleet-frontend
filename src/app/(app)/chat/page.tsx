@@ -1604,7 +1604,7 @@ function ChatPageContent() {
               ) : null}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 bg-chat-bg">
+            <div className="flex-1 overflow-y-auto p-4 chat-bg-scroll">
               {loadingMessages && !selectedGroupId ? (
                 <MessageListSkeleton />
               ) : (

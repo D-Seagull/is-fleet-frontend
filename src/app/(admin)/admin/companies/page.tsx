@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCompanies } from "@/hooks/use-companies";
-import { Loader2, Building2, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, Building2, CheckCircle2, XCircle, Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { NewCompanyDialog } from "./_components/new-company-dialog";
 
 export default function CompaniesPage() {
@@ -21,10 +23,19 @@ export default function CompaniesPage() {
   const tDash = useTranslations("admin.dashboard");
   const locale = useLocale();
   const { data: companies, isLoading, isError } = useCompanies();
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return companies ?? [];
+    return (companies ?? []).filter((c) =>
+      c.name.toLowerCase().includes(q),
+    );
+  }, [companies, query]);
 
   return (
     <div className="p-6 w-full">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <Building2 className="h-5 w-5" />
           <h1 className="text-xl font-semibold">{t("title")}</h1>
@@ -32,7 +43,18 @@ export default function CompaniesPage() {
             ({companies?.length ?? 0})
           </span>
         </div>
-        <NewCompanyDialog />
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t("searchPlaceholder")}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <NewCompanyDialog />
+        </div>
       </div>
 
       {isLoading && (
@@ -57,7 +79,7 @@ export default function CompaniesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {companies?.map((company) => (
+            {filtered.map((company) => (
               <TableRow
                 key={company.id}
                 className="cursor-pointer hover:bg-muted/50"
@@ -114,6 +136,18 @@ export default function CompaniesPage() {
                 </TableCell>
               </TableRow>
             )}
+            {companies &&
+              companies.length > 0 &&
+              filtered.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={4}
+                    className="text-center text-muted-foreground py-8"
+                  >
+                    {t("noResults", { query })}
+                  </TableCell>
+                </TableRow>
+              )}
           </TableBody>
         </Table>
       )}

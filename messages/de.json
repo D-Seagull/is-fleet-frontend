@@ -696,7 +696,12 @@
       "awaitingTeamlead": "Wartet auf Teamleiter",
       "statusActive": "Aktiv",
       "statusDeactivated": "Deaktiviert",
-      "empty": "Noch keine Unternehmen"
+      "empty": "Noch keine Unternehmen",
+      "onlineNowTitle": "Jetzt online",
+      "onlineNowEmpty": "Derzeit ist niemand online",
+      "back": "Zurück",
+      "onlineSearchPlaceholder": "Benutzer suchen…",
+      "onlineNoResults": "Nichts gefunden für „{query}“"
     },
     "companies": {
       "title": "Unternehmen",
@@ -706,7 +711,9 @@
       "colUsers": "Benutzer",
       "colStatus": "Status",
       "colDate": "Registrierungsdatum",
-      "emptyHint": "Noch keine Unternehmen — klicken Sie auf „{button}“."
+      "emptyHint": "Noch keine Unternehmen — klicken Sie auf „{button}“.",
+      "searchPlaceholder": "Unternehmen suchen…",
+      "noResults": "Nichts gefunden für „{query}“"
     },
     "newCompany": {
       "button": "Neues Unternehmen",
@@ -756,7 +763,10 @@
       "colUser": "Benutzer",
       "colRole": "Rolle",
       "colStatus": "Status",
-      "colContact": "Kontakt"
+      "colContact": "Kontakt",
+      "reactivate": "Aktivieren",
+      "reactivateSuccess": "Unternehmen aktiviert",
+      "reactivateError": "Aktivierung fehlgeschlagen"
     },
     "bugReports": {
       "title": "Fehlerberichte",
