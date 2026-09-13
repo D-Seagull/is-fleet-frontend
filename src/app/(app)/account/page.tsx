@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import {
   Camera,
   Globe,
   Loader2,
   Trash2,
+  TriangleAlert,
   User as UserIcon,
 } from "lucide-react";
 import { isAxiosError } from "axios";
@@ -39,6 +41,8 @@ import { fullName, initials } from "@/lib/format";
 import { AvatarCropperDialog } from "@/components/avatar-cropper-dialog";
 import { UiLocalePicker } from "@/components/ui-locale-picker";
 import { BackButton } from "@/components/back-button";
+import { useConfirm } from "@/components/confirm-dialog";
+import { useDeleteAccount } from "@/hooks/use-delete-account";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -340,6 +344,67 @@ function ProfileForm() {
   );
 }
 
+function DangerZone() {
+  const t = useTranslations("account.danger");
+  const confirm = useConfirm();
+  const router = useRouter();
+  const deleteAccount = useDeleteAccount();
+  const [error, setError] = useState<string | null>(null);
+
+  const onDelete = async () => {
+    setError(null);
+    const ok = await confirm({
+      title: t("confirmTitle"),
+      description: t("confirmDescription"),
+      confirmText: t("confirmAction"),
+      destructive: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteAccount.mutateAsync();
+      router.push("/login");
+    } catch (err) {
+      // The backend refuses on one business rule — the last remaining admin
+      // of a company — so surface its message instead of a generic failure.
+      if (isAxiosError(err)) {
+        const data = err.response?.data as
+          | { message?: string | string[] }
+          | undefined;
+        const msg = Array.isArray(data?.message)
+          ? data?.message?.[0]
+          : data?.message;
+        setError(msg ?? t("error"));
+      } else {
+        setError(t("error"));
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted-foreground max-w-2xl">
+        {t("description")}
+      </p>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      <div>
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={onDelete}
+          disabled={deleteAccount.isPending}
+        >
+          {deleteAccount.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Trash2 className="mr-2 h-4 w-4" />
+          )}
+          {t("action")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function AccountSettingsPage() {
   const t = useTranslations("account");
   return (
@@ -373,6 +438,23 @@ export default function AccountSettingsPage() {
         </CardHeader>
         <CardContent>
           <UiLocalePicker />
+        </CardContent>
+      </Card>
+
+      {/* Self-service erasure. Required by Google Play / App Store for any
+          app with sign-in, and the web counterpart of the in-app flow. */}
+      <Card className="border-destructive/40">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <TriangleAlert className="h-5 w-5 text-destructive" />
+            <CardTitle className="text-destructive">
+              {t("danger.title")}
+            </CardTitle>
+          </div>
+          <CardDescription>{t("danger.subtitle")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DangerZone />
         </CardContent>
       </Card>
     </div>

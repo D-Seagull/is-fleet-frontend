@@ -3,15 +3,16 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
-
-const PUBLIC_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
+import { AUTH_ROUTES, isOpenRoute } from "@/lib/routes";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { fetchMe, token, isLoading, setLoading } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
-  const isPublic = PUBLIC_ROUTES.includes(pathname);
+  // Legal pages count as public here too: a store reviewer opens them signed
+  // out, and must see the text rather than a spinner or a redirect.
+  const isPublic = AUTH_ROUTES.includes(pathname) || isOpenRoute(pathname);
 
   // Крок 1 — при завантаженні відновлюємо сесію
   useEffect(() => {

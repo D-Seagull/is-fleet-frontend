@@ -657,6 +657,16 @@
     "uiLocale": {
       "title": "Sąsajos kalba",
       "description": "Kalba, kuria rodomi mygtukai, formos ir pranešimai. Netaikoma pokalbių žinučių vertimui."
+    },
+    "danger": {
+      "title": "Pavojinga zona",
+      "subtitle": "Negrįžtami paskyros veiksmai",
+      "description": "Paskyros ištrynimo atšaukti negalima. Jūsų asmens duomenys — vardas, telefonas, el. paštas, nuotrauka — bus ištrinti, o prisijungti nebebus įmanoma. Reisai ir pokalbiai liks įmonės istorijoje nuasmeninti.",
+      "action": "Ištrinti paskyrą",
+      "confirmTitle": "Visam laikui ištrinti paskyrą?",
+      "confirmDescription": "Šio veiksmo atšaukti negalima. Prieigą prarasite iš karto ir daugiau prisijungti negalėsite.",
+      "confirmAction": "Ištrinti visam laikui",
+      "error": "Nepavyko ištrinti paskyros"
     }
   },
   "settings": {

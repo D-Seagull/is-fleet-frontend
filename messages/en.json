@@ -657,6 +657,16 @@
     "uiLocale": {
       "title": "Interface language",
       "description": "The language used for buttons, forms and app messages. Does not affect chat-message translation."
+    },
+    "danger": {
+      "title": "Danger zone",
+      "subtitle": "Irreversible actions on your account",
+      "description": "Deleting your account cannot be undone. Your personal data — name, phone, email, photo — is erased and signing in becomes impossible forever. Trips and conversations stay in the company history, anonymised.",
+      "action": "Delete account",
+      "confirmTitle": "Delete your account permanently?",
+      "confirmDescription": "This cannot be undone. You will lose access immediately and will never be able to sign in again.",
+      "confirmAction": "Delete permanently",
+      "error": "Could not delete the account"
     }
   },
   "settings": {
