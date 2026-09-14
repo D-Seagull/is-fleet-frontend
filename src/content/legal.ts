@@ -95,6 +95,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
           "Resend — надсилання службових листів.",
           "Expo, Google FCM та Apple APNs — доставка push-сповіщень.",
           "Google Cloud Translation — автоматичний переклад повідомлень у чаті між мовами співрозмовників.",
+          "Sentry — технічні звіти про помилки застосунку: стектрейси та адреса запиту. Вміст повідомлень, куки й заголовки авторизації не передаються.",
         ],
       },
       {
@@ -190,6 +191,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
           "Resend — delivery of service emails.",
           "Expo, Google FCM and Apple APNs — push-notification delivery.",
           "Google Cloud Translation — automatic translation of chat messages between participants' languages.",
+          "Sentry — technical error reports: stack traces and the request path. Message content, cookies and authorisation headers are not sent.",
         ],
       },
       {
