@@ -1,24 +1,41 @@
 /**
  * Sentry for the Node.js runtime (server components, route handlers, SSR).
  * Loaded by src/instrumentation.ts.
- *
- * With no DSN the SDK initialises disabled and every capture is a no-op — that
- * is how local development runs, so dev errors stay in the terminal instead of
- * polluting the production dashboard.
  */
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  dsn: "https://f2706c0a201e6ec444692a1f489dbd6f@o4512086189080576.ingest.de.sentry.io/4512086213328976",
   environment: process.env.NODE_ENV,
 
-  // Driver phone numbers, addresses and chat messages pass through this app.
-  // Never let the SDK attach request bodies, cookies or IPs on its own.
-  sendDefaultPii: false,
+  // Local dev stays out of the production dashboard. Set NEXT_PUBLIC_SENTRY_DEV=1
+  // in .env.local when you deliberately want to test reporting from localhost.
+  enabled:
+    process.env.NODE_ENV === "production" ||
+    process.env.NEXT_PUBLIC_SENTRY_DEV === "1",
 
-  // Errors only — see the backend's instrument.ts for the reasoning.
+  // Errors only — tracing on a Socket.io app burns the quota that errors need.
   tracesSampleRate: 0,
 
+// Explicit, because the v10 defaults collect far more than this app may
+  // send: request bodies, database query data (including returned rows) and
+  // local variables from stack frames all default to ON. sendDefaultPii is
+  // deprecated in v10 and ignored when dataCollection is present, so state
+  // every category rather than relying on it.
+  dataCollection: {
+    userInfo: false,
+    cookies: false,
+    httpHeaders: { request: false, response: false },
+    httpBodies: [],
+    urlQueryParams: false,
+    // Prisma rows would carry driver names, phones and message text.
+    databaseQueryData: false,
+    // A local named `message` or `phone` is exactly what we must not ship.
+    stackFrameVariables: false,
+  },
+
+  // Second layer behind dataCollection: the SDK's categories move between
+  // versions, these two fields never become acceptable to send.
   beforeSend(event) {
     if (event.request) {
       delete event.request.cookies;

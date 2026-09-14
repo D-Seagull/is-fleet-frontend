@@ -1,119 +1,70 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 /**
- * Last-resort boundary for errors thrown by the root layout itself —
- * app/error.tsx is rendered *inside* the layout, so it can't catch a
- * layout crash. This component replaces the whole document tree
- * (Next.js gives it its own <html>/<body>), and can't rely on
- * globals.css or app providers being loaded, so we inline the minimum
- * styling we need.
+ * Last-resort boundary: this catches a crash in the root layout itself, the
+ * one place a route-level error.tsx cannot reach. It replaces the whole
+ * document, which is why it renders its own <html> and <body>.
+ *
+ * Nothing from the providers is available here — NextIntlClientProvider and
+ * the theme provider live inside the layout that just failed — so the text is
+ * hardcoded in two languages and the styles are inline. Calling
+ * useTranslations() in this file would throw inside the error handler itself
+ * and leave the user with a blank page and no way out.
  */
 export default function GlobalError({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[global-error boundary]", error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (
-    <html lang="en">
+    <html lang="uk">
       <body
         style={{
           margin: 0,
-          fontFamily:
-            "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
-          background: "#0b0b0f",
-          color: "#f5f5f7",
           minHeight: "100vh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "24px",
+          fontFamily:
+            "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+          background: "#0b131d",
+          color: "#e7eef6",
         }}
       >
-        <div style={{ maxWidth: 480, textAlign: "center" }}>
-          <div
-            style={{
-              fontSize: 72,
-              fontWeight: 800,
-              lineHeight: 1,
-              marginBottom: 16,
-            }}
-          >
-            500
-          </div>
-          <h1
-            style={{
-              fontSize: 24,
-              fontWeight: 600,
-              margin: "0 0 8px",
-            }}
-          >
-            Something went wrong
+        <main style={{ maxWidth: "28rem", padding: "2rem", textAlign: "center" }}>
+          <h1 style={{ fontSize: "1.25rem", fontWeight: 600, margin: "0 0 .75rem" }}>
+            Сталася помилка
           </h1>
-          <p
+          <p style={{ margin: "0 0 .25rem", opacity: 0.75, fontSize: ".9375rem" }}>
+            Спробуйте перезавантажити сторінку.
+          </p>
+          <p style={{ margin: "0 0 1.5rem", opacity: 0.55, fontSize: ".875rem" }}>
+            Something went wrong. Please reload the page.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
             style={{
-              margin: "0 0 24px",
-              color: "#a1a1aa",
-              lineHeight: 1.5,
+              font: "inherit",
+              fontSize: ".9375rem",
+              padding: ".625rem 1.25rem",
+              borderRadius: ".5rem",
+              border: "1px solid #233343",
+              background: "#131f2c",
+              color: "inherit",
+              cursor: "pointer",
             }}
           >
-            The app crashed in a place we could not recover from
-            automatically. Please try again or reload the page.
-          </p>
-          {error.digest && (
-            <p
-              style={{
-                margin: "0 0 24px",
-                color: "#71717a",
-                fontSize: 12,
-                fontFamily: "ui-monospace, Menlo, monospace",
-              }}
-            >
-              Error ID: {error.digest}
-            </p>
-          )}
-          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-            <button
-              onClick={() => reset()}
-              style={{
-                padding: "10px 20px",
-                borderRadius: 8,
-                border: "none",
-                background: "#3b82f6",
-                color: "white",
-                fontWeight: 500,
-                fontSize: 14,
-                cursor: "pointer",
-              }}
-            >
-              Try again
-            </button>
-            <button
-              onClick={() => {
-                window.location.href = "/";
-              }}
-              style={{
-                padding: "10px 20px",
-                borderRadius: 8,
-                border: "1px solid #3f3f46",
-                background: "transparent",
-                color: "#f5f5f7",
-                fontWeight: 500,
-                fontSize: 14,
-                cursor: "pointer",
-              }}
-            >
-              Go home
-            </button>
-          </div>
-        </div>
+            Перезавантажити · Reload
+          </button>
+        </main>
       </body>
     </html>
   );

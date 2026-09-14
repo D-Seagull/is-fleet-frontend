@@ -25,9 +25,19 @@ export const AUTH_ROUTES = [
  */
 export const OPEN_ROUTES = ["/privacy", "/terms", "/delete-account"];
 
-/** True for a path that must render without any authentication check. */
+/**
+ * Routes that exist for machines rather than people, and must never be
+ * redirected. `/monitoring` is the Sentry tunnel: the browser posts error
+ * events there so ad blockers cannot drop them. A signed-out visitor generates
+ * exactly the errors worth having — a broken /login page means nobody can use
+ * the app at all — and without this exemption the guard would answer those
+ * posts with a 302 to /login and the events would be lost silently.
+ */
+export const INFRA_ROUTES = ["/monitoring"];
+
+/** True for a path that must be served without any authentication check. */
 export function isOpenRoute(pathname: string): boolean {
-  return OPEN_ROUTES.some(
+  return [...OPEN_ROUTES, ...INFRA_ROUTES].some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 }

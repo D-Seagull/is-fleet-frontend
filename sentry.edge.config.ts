@@ -1,13 +1,32 @@
 /**
- * Sentry for the Edge runtime — this is where src/proxy.ts (the Next 16
- * middleware) runs, so an auth-guard failure that redirects every user to
- * /login would surface here and nowhere else.
+ * Sentry for the Edge runtime — where src/proxy.ts (the Next 16 middleware)
+ * runs. An auth-guard failure there redirects every user to /login and would
+ * surface nowhere else.
  */
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  dsn: "https://f2706c0a201e6ec444692a1f489dbd6f@o4512086189080576.ingest.de.sentry.io/4512086213328976",
   environment: process.env.NODE_ENV,
-  sendDefaultPii: false,
+  enabled:
+    process.env.NODE_ENV === "production" ||
+    process.env.NEXT_PUBLIC_SENTRY_DEV === "1",
   tracesSampleRate: 0,
+
+// Explicit, because the v10 defaults collect far more than this app may
+  // send: request bodies, database query data (including returned rows) and
+  // local variables from stack frames all default to ON. sendDefaultPii is
+  // deprecated in v10 and ignored when dataCollection is present, so state
+  // every category rather than relying on it.
+  dataCollection: {
+    userInfo: false,
+    cookies: false,
+    httpHeaders: { request: false, response: false },
+    httpBodies: [],
+    urlQueryParams: false,
+    // Prisma rows would carry driver names, phones and message text.
+    databaseQueryData: false,
+    // A local named `message` or `phone` is exactly what we must not ship.
+    stackFrameVariables: false,
+  },
 });
