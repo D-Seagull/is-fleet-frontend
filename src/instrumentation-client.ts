@@ -6,10 +6,14 @@ import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
   dsn: "https://f2706c0a201e6ec444692a1f489dbd6f@o4512086189080576.ingest.de.sentry.io/4512086213328976",
-  environment: process.env.NODE_ENV,
+  // VERCEL_ENV, not NODE_ENV: a local `npm run build && npm start` also sets
+  // NODE_ENV=production and would file its errors as if they came from the
+  // live site. This also separates preview deploys from production, so a
+  // crash on a feature branch does not read as an outage.
+  environment: process.env.NEXT_PUBLIC_VERCEL_ENV ?? "development",
 
   enabled:
-    process.env.NODE_ENV === "production" ||
+    Boolean(process.env.NEXT_PUBLIC_VERCEL_ENV) ||
     process.env.NEXT_PUBLIC_SENTRY_DEV === "1",
 
   tracesSampleRate: 0,
