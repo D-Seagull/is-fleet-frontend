@@ -659,12 +659,10 @@
       "description": "The language used for buttons, forms and app messages. Does not affect chat-message translation."
     },
     "danger": {
-      "title": "Danger zone",
-      "subtitle": "Irreversible actions on your account",
-      "description": "Deleting your account cannot be undone. Your personal data — name, phone, email, photo — is erased and signing in becomes impossible forever. Trips and conversations stay in the company history, anonymised.",
       "action": "Delete account",
+      "menuLabel": "Account actions",
       "confirmTitle": "Delete your account permanently?",
-      "confirmDescription": "This cannot be undone. You will lose access immediately and will never be able to sign in again.",
+      "confirmDescription": "This cannot be undone. Your personal data — name, phone, email, photo — is erased and signing in becomes impossible forever. Trips and conversations stay in the company history, anonymised.",
       "confirmAction": "Delete permanently",
       "error": "Could not delete the account"
     }

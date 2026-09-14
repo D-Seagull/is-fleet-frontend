@@ -659,12 +659,10 @@
       "description": "Sprache für Schaltflächen, Formulare und Meldungen der App. Beeinflusst nicht die Übersetzung von Chat-Nachrichten."
     },
     "danger": {
-      "title": "Gefahrenzone",
-      "subtitle": "Unwiderrufliche Aktionen für Ihr Konto",
-      "description": "Das Löschen des Kontos kann nicht rückgängig gemacht werden. Ihre persönlichen Daten — Name, Telefon, E-Mail, Foto — werden gelöscht und eine Anmeldung ist dauerhaft nicht mehr möglich. Fahrten und Unterhaltungen bleiben anonymisiert in der Firmenhistorie.",
       "action": "Konto löschen",
+      "menuLabel": "Kontoaktionen",
       "confirmTitle": "Konto endgültig löschen?",
-      "confirmDescription": "Dies kann nicht rückgängig gemacht werden. Sie verlieren sofort den Zugang und können sich nie wieder anmelden.",
+      "confirmDescription": "Dies kann nicht rückgängig gemacht werden. Ihre persönlichen Daten — Name, Telefon, E-Mail, Foto — werden gelöscht und eine Anmeldung ist dauerhaft nicht mehr möglich. Fahrten und Unterhaltungen bleiben anonymisiert in der Firmenhistorie.",
       "confirmAction": "Endgültig löschen",
       "error": "Konto konnte nicht gelöscht werden"
     }

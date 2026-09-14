@@ -659,12 +659,10 @@
       "description": "Język używany do przycisków, formularzy i komunikatów aplikacji. Nie wpływa na tłumaczenie wiadomości czatu."
     },
     "danger": {
-      "title": "Strefa niebezpieczna",
-      "subtitle": "Nieodwracalne działania na koncie",
-      "description": "Usunięcia konta nie można cofnąć. Twoje dane osobowe — imię, telefon, e-mail, zdjęcie — zostaną usunięte, a logowanie stanie się trwale niemożliwe. Trasy i rozmowy pozostaną w historii firmy w formie zanonimizowanej.",
       "action": "Usuń konto",
+      "menuLabel": "Akcje konta",
       "confirmTitle": "Trwale usunąć konto?",
-      "confirmDescription": "Tej operacji nie można cofnąć. Natychmiast utracisz dostęp i nie zalogujesz się ponownie.",
+      "confirmDescription": "Tej operacji nie można cofnąć. Twoje dane osobowe — imię, telefon, e-mail, zdjęcie — zostaną usunięte, a logowanie stanie się trwale niemożliwe. Trasy i rozmowy pozostaną w historii firmy w formie zanonimizowanej.",
       "confirmAction": "Usuń trwale",
       "error": "Nie udało się usunąć konta"
     }

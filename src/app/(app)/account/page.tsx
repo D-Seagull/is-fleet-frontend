@@ -7,10 +7,11 @@ import {
   Camera,
   Globe,
   Loader2,
+  MoreVertical,
   Trash2,
-  TriangleAlert,
   User as UserIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import { isAxiosError } from "axios";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,12 @@ import { UiLocalePicker } from "@/components/ui-locale-picker";
 import { BackButton } from "@/components/back-button";
 import { useConfirm } from "@/components/confirm-dialog";
 import { useDeleteAccount } from "@/hooks/use-delete-account";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -344,15 +351,20 @@ function ProfileForm() {
   );
 }
 
-function DangerZone() {
+/**
+ * Overflow menu for the rare, irreversible account actions. Tucked behind a
+ * kebab in the page header rather than shown as a standing red panel: store
+ * policy requires the deletion path to exist, but nobody visits this page to
+ * delete their account, and a permanent red block next to the profile form
+ * reads as a warning about the form itself.
+ */
+function AccountMenu() {
   const t = useTranslations("account.danger");
   const confirm = useConfirm();
   const router = useRouter();
   const deleteAccount = useDeleteAccount();
-  const [error, setError] = useState<string | null>(null);
 
   const onDelete = async () => {
-    setError(null);
     const ok = await confirm({
       title: t("confirmTitle"),
       description: t("confirmDescription"),
@@ -366,42 +378,46 @@ function DangerZone() {
     } catch (err) {
       // The backend refuses on one business rule — the last remaining admin
       // of a company — so surface its message instead of a generic failure.
+      // A toast, since the menu has closed and there is no panel left to
+      // render the error into.
+      let detail: string | undefined;
       if (isAxiosError(err)) {
         const data = err.response?.data as
           | { message?: string | string[] }
           | undefined;
-        const msg = Array.isArray(data?.message)
+        detail = Array.isArray(data?.message)
           ? data?.message?.[0]
           : data?.message;
-        setError(msg ?? t("error"));
-      } else {
-        setError(t("error"));
       }
+      toast.error(t("error"), { description: detail });
     }
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground max-w-2xl">
-        {t("description")}
-      </p>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <Button
           type="button"
-          variant="destructive"
-          onClick={onDelete}
+          variant="ghost"
+          size="icon"
+          className="ml-auto"
+          aria-label={t("menuLabel")}
           disabled={deleteAccount.isPending}
         >
           {deleteAccount.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Trash2 className="mr-2 h-4 w-4" />
+            <MoreVertical className="h-4 w-4" />
           )}
-          {t("action")}
         </Button>
-      </div>
-    </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem className="text-destructive" onClick={onDelete}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          {t("action")}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -412,6 +428,7 @@ export default function AccountSettingsPage() {
       <div className="flex items-center gap-2">
         <BackButton />
         <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <AccountMenu />
       </div>
 
       <Card>
@@ -438,23 +455,6 @@ export default function AccountSettingsPage() {
         </CardHeader>
         <CardContent>
           <UiLocalePicker />
-        </CardContent>
-      </Card>
-
-      {/* Self-service erasure. Required by Google Play / App Store for any
-          app with sign-in, and the web counterpart of the in-app flow. */}
-      <Card className="border-destructive/40">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <TriangleAlert className="h-5 w-5 text-destructive" />
-            <CardTitle className="text-destructive">
-              {t("danger.title")}
-            </CardTitle>
-          </div>
-          <CardDescription>{t("danger.subtitle")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DangerZone />
         </CardContent>
       </Card>
     </div>
