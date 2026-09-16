@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# …but the example belongs in the repo: it is the only record of which
+# variables the project needs, and it holds no values.
+!.env.example
 
 # vercel
 .vercel
@@ -43,5 +46,3 @@ next-env.d.ts
 # Local dev server logs (fleet-up skill)
 .fleet-logs/
 
-# Sentry Config File
-.env.sentry-build-plugin
