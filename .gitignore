@@ -31,7 +31,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
 # …but the example belongs in the repo: it is the only record of which
 # variables the project needs, and it holds no values.
 !.env.example
