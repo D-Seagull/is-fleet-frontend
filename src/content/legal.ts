@@ -10,6 +10,11 @@
  * to Google Play or the App Store. The pages render them highlighted so an
  * unfilled one cannot ship unnoticed.
  *
+ * Written for a Polish sp. z o.o.: the controller block carries KRS and NIP
+ * because Polish law requires a company to identify itself by them, and UODO
+ * is named as the supervisory authority. If the entity ends up being
+ * registered elsewhere, those three details are what change.
+ *
  * The data inventory below is drawn from the actual code, not assumed. Notably
  * the driver app collects NO location data: there is no expo-location
  * dependency, no location permission in app.json and no geolocation call
@@ -49,7 +54,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
       {
         heading: "1. Хто відповідає за ваші дані",
         paragraphs: [
-          "Оператором даних є [НАЗВА КОМПАНІЇ], зареєстрована за адресою [АДРЕСА], [КРАЇНА].",
+          "Оператором даних є [НАЗВА КОМПАНІЇ] sp. z o.o., зареєстрована за адресою [АДРЕСА], Польща. KRS [KRS], NIP [NIP].",
           "З будь-яких питань щодо обробки даних пишіть на [EMAIL].",
           "Зверніть увагу: щодо робочих даних працівника (рейси, повідомлення, документи) оператором виступає транспортна компанія-роботодавець, а [НАЗВА КОМПАНІЇ] діє як постачальник послуги за її дорученням.",
         ],
@@ -109,7 +114,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         heading: "7. Ваші права",
         paragraphs: [
           "Якщо до вас застосовується GDPR, ви маєте право на доступ до своїх даних, їх виправлення, видалення, обмеження чи заперечення проти обробки, а також на перенесення даних.",
-          "Щоб скористатися цими правами, напишіть на [EMAIL]. Ви також маєте право подати скаргу до наглядового органу з питань захисту даних у вашій країні.",
+          "Щоб скористатися цими правами, напишіть на [EMAIL]. Ви також маєте право подати скаргу до наглядового органу: у Польщі це Prezes Urzędu Ochrony Danych Osobowych (UODO), вул. Stawki 2, 00-193 Варшава. Якщо ви проживаєте в іншій країні ЄС, скаргу можна подати до органу за місцем проживання.",
         ],
       },
       {
@@ -145,7 +150,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
       {
         heading: "1. Who is responsible for your data",
         paragraphs: [
-          "The data controller is [COMPANY NAME], registered at [ADDRESS], [COUNTRY].",
+          "The data controller is [COMPANY NAME] sp. z o.o., registered at [ADDRESS], Poland. KRS [KRS], NIP [NIP].",
           "For any question about how your data is handled, write to [EMAIL].",
           "Note that for work records (trips, messages, documents) the employing transport company is the controller, and [COMPANY NAME] acts as a processor on its instructions.",
         ],
@@ -205,7 +210,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         heading: "7. Your rights",
         paragraphs: [
           "Where GDPR applies to you, you have the right to access your data, to have it corrected or erased, to restrict or object to its processing, and to data portability.",
-          "To exercise any of these, write to [EMAIL]. You also have the right to lodge a complaint with the data-protection supervisory authority in your country.",
+          "To exercise any of these, write to [EMAIL]. You also have the right to lodge a complaint with a supervisory authority: in Poland this is the President of the Personal Data Protection Office (UODO), ul. Stawki 2, 00-193 Warsaw. If you live in another EU country, you may complain to the authority where you reside.",
         ],
       },
       {
@@ -239,7 +244,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
     title: "Умови використання",
     updated: UPDATED_UK,
     intro: [
-      "Ці умови регулюють користування системою IS Fleet, яку надає [НАЗВА КОМПАНІЇ].",
+      "Ці умови регулюють користування системою IS Fleet, яку надає [НАЗВА КОМПАНІЇ] sp. z o.o.",
     ],
     sections: [
       {
@@ -285,7 +290,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
       {
         heading: "7. Право, що застосовується",
         paragraphs: [
-          "До цих умов застосовується право [КРАЇНА]. Питання — на [EMAIL].",
+          "До цих умов застосовується право Польщі, а спори розглядає суд за місцем реєстрації [НАЗВА КОМПАНІЇ] sp. z o.o. Це не позбавляє споживача захисту, який надають імперативні норми країни його проживання. Питання — на [EMAIL].",
         ],
       },
     ],
@@ -294,7 +299,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
     title: "Terms of Service",
     updated: UPDATED_EN,
     intro: [
-      "These terms govern use of the IS Fleet system provided by [COMPANY NAME].",
+      "These terms govern use of the IS Fleet system provided by [COMPANY NAME] sp. z o.o.",
     ],
     sections: [
       {
@@ -340,7 +345,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
       {
         heading: "7. Governing law",
         paragraphs: [
-          "These terms are governed by the law of [COUNTRY]. Questions: [EMAIL].",
+          "These terms are governed by Polish law, and disputes are heard by the court for the registered seat of [COMPANY NAME] sp. z o.o. This does not deprive a consumer of the protection of mandatory rules in their country of residence. Questions: [EMAIL].",
         ],
       },
     ],
