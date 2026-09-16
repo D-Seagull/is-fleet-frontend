@@ -15,6 +15,23 @@
  * is named as the supervisory authority. If the entity ends up being
  * registered elsewhere, those three details are what change.
  *
+ * ⚠️ UNVERIFIED ASSUMPTION — confirm before filling the placeholders in.
+ * This text assumes the operator is our own company. If the business is run
+ * through a Polish business incubator instead, there is no such company: the
+ * incubator holds the legal personality and only issues invoices, so the data
+ * controller would be the founder as a natural person, or the incubator
+ * itself. That changes section 1 and the Terms outright — not just the three
+ * details above.
+ *
+ * Two questions decide it, and both are for the incubator:
+ *   1. Do they permit a store developer account under their legal entity?
+ *      Apple requires whoever enrols to have authority to bind the company.
+ *   2. Who do they consider the data controller for an app run by a
+ *      beneficiary? Their answer usually reveals whether the model fits.
+ *
+ * A policy naming one entity while the store listing names another is a
+ * standard review rejection, so this must be settled first.
+ *
  * The data inventory below is drawn from the actual code, not assumed. Notably
  * the driver app collects NO location data: there is no expo-location
  * dependency, no location permission in app.json and no geolocation call
