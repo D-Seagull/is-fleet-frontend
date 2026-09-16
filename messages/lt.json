@@ -57,7 +57,8 @@
       "reply": "Atsakyti",
       "ok": "Gerai",
       "openInNewTab": "Atidaryti naujame skirtuke",
-      "close": "Uždaryti"
+      "close": "Uždaryti",
+      "more": "Daugiau"
     },
     "status": {
       "ONLINE": "Prisijungęs",
@@ -384,7 +385,8 @@
     "deleteConfirm": "Ištrinti reisą „{title}“?",
     "deleteConfirmDesc": "Reisas, jo pokalbis ir dokumentai bus visam laikui ištrinti. Šio veiksmo anuliuoti negalima.",
     "deleteSuccess": "Reisas ištrintas",
-    "deleteError": "Nepavyko ištrinti reiso"
+    "deleteError": "Nepavyko ištrinti reiso",
+    "deleteTrip": "Ištrinti reisą"
   },
   "drivers": {
     "title": "Vairuotojai",

@@ -11,11 +11,18 @@ import {
   Clock,
   Loader2,
   Trash2,
+  MoreVertical,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -89,8 +96,14 @@ export function TripInfoCard({
   const deleteTrip = useDeleteTrip();
   const confirm = useConfirm();
   const role = useAuthStore((s) => s.user?.role);
+  const userId = useAuthStore((s) => s.user?.id);
+  // Mirrors what the backend enforces: teamleads and admins may delete any
+  // trip, a manager only those of a truck they currently hold. Showing it
+  // any wider would offer an action that comes back as Forbidden.
   const canDelete =
-    role === "ADMIN" || role === "TEAMLEAD" || role === "MANAGER";
+    role === "ADMIN" ||
+    role === "TEAMLEAD" ||
+    (role === "MANAGER" && trip.truck?.managerId === userId);
   const [editing, setEditing] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
 
@@ -269,6 +282,37 @@ export function TripInfoCard({
               >
                 <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
+              {/* Deleting hides the trip together with its chat and documents,
+                  so it sits behind a kebab rather than beside the pencil. */}
+              {canDelete && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      aria-label={tActions("more")}
+                      disabled={deleteTrip.isPending}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {deleteTrip.isPending ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                      ) : (
+                        <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={handleDelete}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {tActions("delete")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
             {collapsed ? (
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -350,24 +394,8 @@ export function TripInfoCard({
             className="h-8 text-sm"
           />
         </div>
-        {/* кнопки — видалити / скасувати / зберегти разом справа */}
+        {/* скасувати / зберегти — видалення переїхало в «⋮» у шапці картки */}
         <div className="flex items-center justify-end gap-2">
-          {canDelete && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs text-destructive hover:text-destructive"
-              onClick={handleDelete}
-              disabled={deleteTrip.isPending}
-            >
-              {deleteTrip.isPending ? (
-                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-              ) : (
-                <Trash2 className="mr-1 h-3 w-3" />
-              )}
-              {tActions("delete")}
-            </Button>
-          )}
           <Button
             variant="ghost"
             size="sm"

@@ -17,8 +17,15 @@ import {
   ChevronUp,
   Trash2,
   Loader2,
+  MoreVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -129,10 +136,20 @@ export default function TripsPage() {
 
   const { data: trips, isLoading } = useTrips();
   const user = useAuthStore((s) => s.user);
+  // Whether the actions column exists at all — drivers never see it.
   const canDelete =
     user?.role === "ADMIN" ||
     user?.role === "TEAMLEAD" ||
     user?.role === "MANAGER";
+
+  // Whether *this* trip may be deleted. Teamleads and admins may delete any;
+  // a manager only the trips of a truck they currently hold. Mirrors the rule
+  // the backend enforces, so the menu never offers an action that would come
+  // back as Forbidden.
+  const canDeleteTrip = (trip: Trip) =>
+    user?.role === "ADMIN" ||
+    user?.role === "TEAMLEAD" ||
+    (user?.role === "MANAGER" && trip.truck?.managerId === user.id);
   const confirm = useConfirm();
   const deleteTrip = useDeleteTrip();
 
@@ -380,28 +397,45 @@ export default function TripsPage() {
                         )}
                       </TableCell>
 
-                      {/* Delete — ADMIN/TEAMLEAD only, tablet+ */}
-                      {canDelete && (
-                        <TableCell
-                          className="hidden sm:table-cell py-2 text-center"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            title={tActions("delete")}
-                            onClick={() => handleDelete(trip)}
-                            disabled={deleteTrip.isPending}
+                      {/* Row actions. Behind a kebab rather than a bare trash
+                            icon: deleting a trip hides its whole chat and
+                            document history, which is not something to leave
+                            one stray click away in a dense table. */}
+                        {canDelete && (
+                          <TableCell
+                            className="hidden sm:table-cell py-2 text-center"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            {deleteTrip.isPending ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            {canDeleteTrip(trip) && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    aria-label={tActions("more")}
+                                    disabled={deleteTrip.isPending}
+                                  >
+                                    {deleteTrip.isPending ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <MoreVertical className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    className="text-destructive"
+                                    onClick={() => handleDelete(trip)}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {tActions("delete")}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             )}
-                          </Button>
-                        </TableCell>
-                      )}
+                          </TableCell>
+                        )}
                     </TableRow>
 
                     {/* Expanded docs row */}

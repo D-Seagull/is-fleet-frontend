@@ -97,7 +97,9 @@ export interface Trip {
     status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; phone: string | null };
   manager: { id: string; firstName: string; lastName: string | null; avatar: string | null };
-  truck: { id: string; plate: string };
+  // managerId decides who may delete the trip: the truck's current manager,
+  // or a teamlead. Sent by the API so the UI need not ask separately.
+  truck: { id: string; plate: string; managerId: string | null };
   stops: TripStop[];
   documents: TripDocument[];
 }

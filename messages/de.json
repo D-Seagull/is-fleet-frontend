@@ -57,7 +57,8 @@
       "reply": "Antworten",
       "ok": "OK",
       "openInNewTab": "In neuem Tab öffnen",
-      "close": "Schließen"
+      "close": "Schließen",
+      "more": "Mehr"
     },
     "status": {
       "ONLINE": "Online",
@@ -384,7 +385,8 @@
     "deleteConfirm": "Fahrt „{title}“ löschen?",
     "deleteConfirmDesc": "Die Fahrt, ihr Chat und die Dokumente werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
     "deleteSuccess": "Fahrt gelöscht",
-    "deleteError": "Fahrt konnte nicht gelöscht werden"
+    "deleteError": "Fahrt konnte nicht gelöscht werden",
+    "deleteTrip": "Fahrt löschen"
   },
   "drivers": {
     "title": "Fahrer",

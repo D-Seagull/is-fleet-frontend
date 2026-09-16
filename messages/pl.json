@@ -57,7 +57,8 @@
       "reply": "Odpowiedz",
       "ok": "OK",
       "openInNewTab": "Otwórz w nowej karcie",
-      "close": "Zamknij"
+      "close": "Zamknij",
+      "more": "Więcej"
     },
     "status": {
       "ONLINE": "Online",
@@ -384,7 +385,8 @@
     "deleteConfirm": "Usunąć trasę „{title}”?",
     "deleteConfirmDesc": "Trasa, jej czat i dokumenty zostaną trwale usunięte. Nie można tego cofnąć.",
     "deleteSuccess": "Trasa usunięta",
-    "deleteError": "Nie udało się usunąć trasy"
+    "deleteError": "Nie udało się usunąć trasy",
+    "deleteTrip": "Usuń trasę"
   },
   "drivers": {
     "title": "Kierowcy",

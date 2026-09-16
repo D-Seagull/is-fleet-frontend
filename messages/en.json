@@ -57,7 +57,8 @@
       "reply": "Reply",
       "ok": "OK",
       "openInNewTab": "Open in new tab",
-      "close": "Close"
+      "close": "Close",
+      "more": "More"
     },
     "status": {
       "ONLINE": "Online",
@@ -384,7 +385,8 @@
     "deleteConfirm": "Delete trip “{title}”?",
     "deleteConfirmDesc": "The trip, its chat and documents will be permanently deleted. This cannot be undone.",
     "deleteSuccess": "Trip deleted",
-    "deleteError": "Couldn’t delete the trip"
+    "deleteError": "Couldn’t delete the trip",
+    "deleteTrip": "Delete trip"
   },
   "drivers": {
     "title": "Drivers",
