@@ -66,6 +66,10 @@
       "SLEEP": "Schlafe",
       "VACATION": "Im Urlaub",
       "OFFLINE": "Offline"
+    },
+    "legal": {
+      "privacy": "Datenschutzerklärung",
+      "terms": "Nutzungsbedingungen"
     }
   },
   "alarm": {

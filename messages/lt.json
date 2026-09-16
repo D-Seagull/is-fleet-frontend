@@ -66,6 +66,10 @@
       "SLEEP": "Miegu",
       "VACATION": "Atostogauju",
       "OFFLINE": "Neprisijungęs"
+    },
+    "legal": {
+      "privacy": "Privatumo politika",
+      "terms": "Naudojimo sąlygos"
     }
   },
   "alarm": {

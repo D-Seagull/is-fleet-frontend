@@ -66,6 +66,10 @@
       "SLEEP": "Sleeping",
       "VACATION": "On vacation",
       "OFFLINE": "Offline"
+    },
+    "legal": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
     }
   },
   "alarm": {
