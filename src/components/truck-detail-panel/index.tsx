@@ -298,7 +298,7 @@ export function TruckDetailPanel({
             )}
           </button>
         </div>
-        {canManageTruck && (
+        {canManageTruck && activeTab === "info" && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="shrink-0">

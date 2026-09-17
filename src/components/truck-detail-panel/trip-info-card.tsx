@@ -11,18 +11,12 @@ import {
   Clock,
   Loader2,
   Trash2,
-  MoreVertical,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import {} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,7 +57,11 @@ import {
 } from "./stop-row";
 import { buildStopsPayload } from "./new-trip-dialog";
 import { CoordsCell } from "./coords-cell";
-import { shortenTripTitle, formatStopWindow, extractPostcodeCity } from "./utils";
+import {
+  shortenTripTitle,
+  formatStopWindow,
+  extractPostcodeCity,
+} from "./utils";
 
 /** Назва рейсу з адрес: перше завантаження → останнє розвантаження. */
 function deriveTripTitle(rows: StopRowData[]): string {
@@ -110,7 +108,9 @@ export function TripInfoCard({
   const [editStops, setEditStops] = useState<StopRowData[]>([]);
   const [editTitle, setEditTitle] = useState(trip.title ?? "");
   const [editNotes, setEditNotes] = useState(trip.notes ?? "");
-  const [editOrderNumber, setEditOrderNumber] = useState(trip.orderNumber ?? "");
+  const [editOrderNumber, setEditOrderNumber] = useState(
+    trip.orderNumber ?? "",
+  );
   // назва редагована вручну → не перезаписуємо автоматично з адрес
   const isTitleEdited = useRef(false);
 
@@ -242,7 +242,9 @@ export function TripInfoCard({
                 title={t("tripDocuments")}
               >
                 <FolderOpen className="h-3.5 w-3.5" />
-                {!!docsCount && <span className="text-[10px]">{docsCount}</span>}
+                {!!docsCount && (
+                  <span className="text-[10px]">{docsCount}</span>
+                )}
               </button>
             )}
           </div>
@@ -285,33 +287,21 @@ export function TripInfoCard({
               {/* Deleting hides the trip together with its chat and documents,
                   so it sits behind a kebab rather than beside the pencil. */}
               {canDelete && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      aria-label={tActions("more")}
-                      disabled={deleteTrip.isPending}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {deleteTrip.isPending ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                      ) : (
-                        <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={handleDelete}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      {tActions("delete")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 mr-3"
+                  title={tActions("delete")}
+                  aria-label={tActions("delete")}
+                  disabled={deleteTrip.isPending}
+                  onClick={handleDelete}
+                >
+                  {deleteTrip.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                  )}
+                </Button>
               )}
             </div>
             {collapsed ? (
@@ -365,93 +355,95 @@ export function TripInfoCard({
           <DialogHeader>
             <DialogTitle>{t("editTripInfo")}</DialogTitle>
           </DialogHeader>
-      <div className="flex flex-col gap-3">
-        {/* Назва рейсу (автозаповнення з адрес · редагується вручну) */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <Label className="text-xs">{tNewTrip("tripNameLabel")}</Label>
-            <span className="text-[11px] text-muted-foreground">
-              {tNewTrip("tripNameHint")}
-            </span>
-          </div>
-          <Input
-            placeholder={tNewTrip("tripNamePlaceholder")}
-            value={editTitle}
-            onChange={(e) => {
-              isTitleEdited.current = true;
-              setEditTitle(e.target.value);
-            }}
-            className="h-8 text-sm"
-          />
-        </div>
-        {/* № замовлення */}
-        <div className="flex flex-col gap-1">
-          <Label className="text-xs">{tNewTrip("orderNumberLabel")}</Label>
-          <Input
-            placeholder={t("orderShortPlaceholder")}
-            value={editOrderNumber}
-            onChange={(e) => setEditOrderNumber(e.target.value)}
-            className="h-8 text-sm"
-          />
-        </div>
-        {/* скасувати / зберегти — видалення переїхало в «⋮» у шапці картки */}
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={() => setEditing(false)}
-          >
-            {tActions("cancel")}
-          </Button>
-          <Button
-            size="sm"
-            className="h-7 text-xs"
-            onClick={saveEdit}
-            disabled={updateInfo.isPending}
-          >
-            {updateInfo.isPending && (
-              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-            )}
-            {tActions("save")}
-          </Button>
-        </div>
-      </div>
-
-      {/* Маршрут — упорядкований список стопів; «+» вставляє між пунктами */}
-      <div className="flex flex-col gap-2">
-        <Label className="text-xs">{tNewTrip("routeLabel")}</Label>
-        <div className="flex flex-col gap-2">
-          {editStops.map((stop, i) => (
-            <div key={i} className="flex flex-col gap-2">
-              <InsertStopButton onInsert={(type) => insertStop(i, type)} />
-              <StopRow
-                index={i}
-                value={stop}
-                onChange={(v) => updateStop(i, v)}
-                onRemove={() => removeStop(i)}
-                canRemove={editStops.length > 1}
-                onMoveUp={() => moveStop(i, -1)}
-                onMoveDown={() => moveStop(i, 1)}
-                canMoveUp={i > 0}
-                canMoveDown={i < editStops.length - 1}
+          <div className="flex flex-col gap-3">
+            {/* Назва рейсу (автозаповнення з адрес · редагується вручну) */}
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <Label className="text-xs">{tNewTrip("tripNameLabel")}</Label>
+                <span className="text-[11px] text-muted-foreground">
+                  {tNewTrip("tripNameHint")}
+                </span>
+              </div>
+              <Input
+                placeholder={tNewTrip("tripNamePlaceholder")}
+                value={editTitle}
+                onChange={(e) => {
+                  isTitleEdited.current = true;
+                  setEditTitle(e.target.value);
+                }}
+                className="h-8 text-sm"
               />
             </div>
-          ))}
-          <InsertStopButton onInsert={(type) => insertStop(editStops.length, type)} />
-        </div>
-      </div>
+            {/* № замовлення */}
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs">{tNewTrip("orderNumberLabel")}</Label>
+              <Input
+                placeholder={t("orderShortPlaceholder")}
+                value={editOrderNumber}
+                onChange={(e) => setEditOrderNumber(e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+            {/* скасувати / зберегти — видалення переїхало в «⋮» у шапці картки */}
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => setEditing(false)}
+              >
+                {tActions("cancel")}
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 text-xs"
+                onClick={saveEdit}
+                disabled={updateInfo.isPending}
+              >
+                {updateInfo.isPending && (
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                )}
+                {tActions("save")}
+              </Button>
+            </div>
+          </div>
 
-      <div className="flex flex-col gap-1 border-t pt-2">
-        <Label className="text-xs">{tNewTrip("notesLabel")}</Label>
-        <Textarea
-          placeholder={tNewTrip("notesPlaceholder")}
-          value={editNotes}
-          onChange={(e) => setEditNotes(e.target.value)}
-          rows={2}
-          className="resize-none text-xs"
-        />
-      </div>
+          {/* Маршрут — упорядкований список стопів; «+» вставляє між пунктами */}
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs">{tNewTrip("routeLabel")}</Label>
+            <div className="flex flex-col gap-2">
+              {editStops.map((stop, i) => (
+                <div key={i} className="flex flex-col gap-2">
+                  <InsertStopButton onInsert={(type) => insertStop(i, type)} />
+                  <StopRow
+                    index={i}
+                    value={stop}
+                    onChange={(v) => updateStop(i, v)}
+                    onRemove={() => removeStop(i)}
+                    canRemove={editStops.length > 1}
+                    onMoveUp={() => moveStop(i, -1)}
+                    onMoveDown={() => moveStop(i, 1)}
+                    canMoveUp={i > 0}
+                    canMoveDown={i < editStops.length - 1}
+                  />
+                </div>
+              ))}
+              <InsertStopButton
+                onInsert={(type) => insertStop(editStops.length, type)}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1 border-t pt-2">
+            <Label className="text-xs">{tNewTrip("notesLabel")}</Label>
+            <Textarea
+              placeholder={tNewTrip("notesPlaceholder")}
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              rows={2}
+              className="resize-none text-xs"
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </>

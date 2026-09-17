@@ -64,7 +64,8 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
     if (tripFilter !== "all" && d.tripId !== tripFilter) return false;
     if (!q) return true;
     // Search by date (localized + ISO), order number and file name.
-    const dateStr = `${new Date(d.createdAt).toLocaleDateString(locale)} ${d.createdAt.slice(0, 10)}`.toLowerCase();
+    const dateStr =
+      `${new Date(d.createdAt).toLocaleDateString(locale)} ${d.createdAt.slice(0, 10)}`.toLowerCase();
     const order = (d.trip?.orderNumber ?? "").toLowerCase();
     return (
       dateStr.includes(q) ||

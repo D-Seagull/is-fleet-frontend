@@ -2,11 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { MapPin, Paperclip, Loader2, Search } from "lucide-react";
+import {
+  MapPin,
+  Paperclip,
+  Loader2,
+  Search,
+  MoreVertical,
+  Trash2,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { getSocket } from "@/lib/socket";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,12 +34,15 @@ import { cn } from "@/lib/utils";
 import {
   useTripsByTruck,
   useUpdateTripStatus,
+  useDeleteTrip,
   tripLoadingDate,
   TRIP_STATUS_COLORS,
   TRIP_STATUS_KEYS,
   type Trip,
   type TripStatus,
 } from "@/hooks/use-trips";
+import { useAuthStore } from "@/store/auth";
+import { useConfirm } from "@/components/confirm-dialog";
 import { shortenTripTitle } from "./utils";
 import { NewTripDialog } from "./new-trip-dialog";
 import { TripAttachmentsContent } from "./trip-attachments-content";
@@ -47,10 +64,38 @@ function TripCard({
 }) {
   const t = useTranslations("truckPanel.trips");
   const tStatus = useTranslations("common.tripStatus");
+  const tActions = useTranslations("common.actions");
+  const tTrips = useTranslations("trips");
   const locale = useLocale();
   const updateStatus = useUpdateTripStatus(truckId);
+  const deleteTrip = useDeleteTrip();
+  const confirm = useConfirm();
+  const role = useAuthStore((s) => s.user?.role);
+  const userId = useAuthStore((s) => s.user?.id);
+  // Те саме правило, що й на бекенді: тімлід і адмін видаляють будь-який
+  // рейс, менеджер — лише рейси трака, який зараз за ним.
+  const canDelete =
+    role === "ADMIN" ||
+    role === "TEAMLEAD" ||
+    (role === "MANAGER" && trip.truck?.managerId === userId);
   const [section, setSection] = useState<"stops" | "attachments" | null>(null);
   const allDocs = trip.documents;
+
+  async function handleDelete() {
+    const ok = await confirm({
+      title: tTrips("deleteConfirm", { title: trip.title }),
+      description: tTrips("deleteConfirmDesc"),
+      confirmText: tActions("delete"),
+      destructive: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteTrip.mutateAsync(trip.id);
+      toast.success(tTrips("deleteSuccess"));
+    } catch {
+      toast.error(tTrips("deleteError"));
+    }
+  }
 
   return (
     <div
@@ -157,6 +202,34 @@ function TripCard({
               ))}
             </SelectContent>
           </Select>
+          {canDelete && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  aria-label={tActions("more")}
+                  disabled={deleteTrip.isPending}
+                >
+                  {deleteTrip.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {tActions("delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
