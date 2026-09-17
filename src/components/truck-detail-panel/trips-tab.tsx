@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  MapPin,
-  Paperclip,
-  Loader2,
-  Search,
-} from "lucide-react";
+import { MapPin, Paperclip, Loader2, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { getSocket } from "@/lib/socket";
 import { fullName } from "@/lib/format";
@@ -254,9 +249,24 @@ export function TripsTab({
     else if (IN_PROGRESS.includes(trip.status)) active.push(trip);
     else queued.push(trip);
   }
-  const sections: { key: string; label: string; list: Trip[]; variant: TripVariant }[] = [
-    { key: "active", label: t("sectionActive"), list: active, variant: "active" },
-    { key: "queued", label: t("sectionQueued"), list: queued, variant: "queued" },
+  const sections: {
+    key: string;
+    label: string;
+    list: Trip[];
+    variant: TripVariant;
+  }[] = [
+    {
+      key: "active",
+      label: t("sectionActive"),
+      list: active,
+      variant: "active",
+    },
+    {
+      key: "queued",
+      label: t("sectionQueued"),
+      list: queued,
+      variant: "queued",
+    },
     { key: "done", label: t("sectionDone"), list: done, variant: "done" },
   ];
 
@@ -272,11 +282,13 @@ export function TripsTab({
             className="pl-8 h-8 text-xs"
           />
         </div>
-        <NewTripDialog
-          truckId={truckId}
-          defaultDriverId={defaultDriverId}
-          onCreated={(trip) => onOpenTrip(trip.id)}
-        />
+        <div className="md:hidden">
+          <NewTripDialog
+            truckId={truckId}
+            defaultDriverId={defaultDriverId}
+            onCreated={(trip) => onOpenTrip(trip.id)}
+          />
+        </div>
       </div>
 
       {isLoading ? (

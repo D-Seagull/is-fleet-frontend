@@ -143,8 +143,15 @@ export function TruckDetailPanel({
     fromTruck: { id: string; plate: string };
   } | null>(null);
 
-  const ACTIVE_STATUSES = ["ASSIGNED", "ACCEPTED", "ON_WAY", "ON_SITE", "LOADED"];
-  const activeTrip = truckTrips.find((t) => ACTIVE_STATUSES.includes(t.status)) ?? null;
+  const ACTIVE_STATUSES = [
+    "ASSIGNED",
+    "ACCEPTED",
+    "ON_WAY",
+    "ON_SITE",
+    "LOADED",
+  ];
+  const activeTrip =
+    truckTrips.find((t) => ACTIVE_STATUSES.includes(t.status)) ?? null;
 
   const [noteText, setNoteText] = useState("");
 
@@ -225,7 +232,10 @@ export function TruckDetailPanel({
     if (occupiedTruck && occupiedTruck.id !== truckId) {
       setPendingDriver({
         driverId: newDriverId,
-        driverName: fullName(selectedDriver) || selectedDriver?.email || t("info.driverFallback"),
+        driverName:
+          fullName(selectedDriver) ||
+          selectedDriver?.email ||
+          t("info.driverFallback"),
         fromTruck: { id: occupiedTruck.id, plate: occupiedTruck.plate },
       });
       return;
@@ -238,8 +248,7 @@ export function TruckDetailPanel({
     return !!user;
   }
 
-  const canManageTruck =
-    user?.role === "TEAMLEAD" || user?.role === "ADMIN";
+  const canManageTruck = user?.role === "TEAMLEAD" || user?.role === "ADMIN";
 
   async function handleDeactivateTruck() {
     const ok = await confirm({
@@ -265,7 +274,9 @@ export function TruckDetailPanel({
           </Button>
         )}
         <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-          <h1 className="text-base md:text-2xl font-bold shrink-0">{truck.plate}</h1>
+          <h1 className="text-base md:text-2xl font-bold shrink-0">
+            {truck.plate}
+          </h1>
           {truck.currentDriver && (
             <Link
               href={`/drivers/${truck.currentDriver.id}`}
@@ -280,9 +291,11 @@ export function TruckDetailPanel({
             onClick={() => setNavOpen((v) => !v)}
             aria-label={t("header.toggleNav")}
           >
-            {navOpen
-              ? <ChevronUp className="h-3.5 w-3.5" />
-              : <ChevronDown className="h-3.5 w-3.5" />}
+            {navOpen ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
           </button>
         </div>
         {canManageTruck && (
@@ -317,36 +330,42 @@ export function TruckDetailPanel({
             !navOpen && "hidden md:flex",
           )}
         >
-        <TabsList className="shrink-0">
-          <TabsTrigger value="chat" disabled={!isChatEnabled} className="gap-1.5">
-            {t("tabs.chat")}
-            {(truckUnread?.activeTripUnread ?? 0) > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none">
-                {truckUnread!.activeTripUnread}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="trips" className="gap-1.5">
-            {t("tabs.trips")}
-            {(truckUnread?.pastTripsUnread ?? 0) > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-muted text-muted-foreground text-[10px] font-bold px-1 leading-none">
-                {truckUnread!.pastTripsUnread}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="documents">{t("tabs.documents")}</TabsTrigger>
-          <TabsTrigger value="alarm">{t("tabs.alarm")}</TabsTrigger>
-          <TabsTrigger value="info">{t("tabs.info")}</TabsTrigger>
-        </TabsList>
+          <TabsList className="shrink-0">
+            <TabsTrigger
+              value="chat"
+              disabled={!isChatEnabled}
+              className="gap-1.5"
+            >
+              {t("tabs.chat")}
+              {(truckUnread?.activeTripUnread ?? 0) > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none">
+                  {truckUnread!.activeTripUnread}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="trips" className="gap-1.5">
+              {t("tabs.trips")}
+              {(truckUnread?.pastTripsUnread ?? 0) > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[16px] h-4 rounded-full bg-muted text-muted-foreground text-[10px] font-bold px-1 leading-none">
+                  {truckUnread!.pastTripsUnread}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="documents">{t("tabs.documents")}</TabsTrigger>
+            <TabsTrigger value="alarm">{t("tabs.alarm")}</TabsTrigger>
+            <TabsTrigger value="info">{t("tabs.info")}</TabsTrigger>
+          </TabsList>
           <div className="ml-auto hidden md:block shrink-0">
-            <NewTripDialog
-              truckId={truckId}
-              defaultDriverId={truck.currentDriverId}
-              onCreated={(trip) => {
-                setChatTripId(trip.id);
-                setActiveTab("chat");
-              }}
-            />
+            {(activeTab === "chat" || activeTab === "trips") && (
+              <NewTripDialog
+                truckId={truckId}
+                defaultDriverId={truck.currentDriverId}
+                onCreated={(trip) => {
+                  setChatTripId(trip.id);
+                  setActiveTab("chat");
+                }}
+              />
+            )}
           </div>
         </div>
 
@@ -436,7 +455,9 @@ export function TruckDetailPanel({
               {/* Підтвердження переводу водія з іншого трака */}
               <AlertDialog
                 open={!!pendingDriver}
-                onOpenChange={(open) => { if (!open) setPendingDriver(null); }}
+                onOpenChange={(open) => {
+                  if (!open) setPendingDriver(null);
+                }}
               >
                 <AlertDialogContent>
                   <AlertDialogHeader>
