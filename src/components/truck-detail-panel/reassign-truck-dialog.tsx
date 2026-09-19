@@ -26,11 +26,22 @@ import {
 } from "@/hooks/use-trips";
 import { shortenTripTitle } from "./utils";
 
-/** Витягує 409-тіло з axios-помилки, якщо це саме конфлікт зайнятої машини. */
+/**
+ * Витягує 409-тіло з axios-помилки, якщо це саме конфлікт зайнятої машини.
+ * Глобальний фільтр помилок бекенду перепаковує кинуте тіло під `message`,
+ * тож payload приходить вкладеним; читаємо обидві форми.
+ */
 function readConflict(error: unknown): TargetTruckBusy | null {
   if (!axios.isAxiosError(error) || error.response?.status !== 409) return null;
-  const data = error.response.data as Partial<TargetTruckBusy> | undefined;
-  return data?.code === "TARGET_TRUCK_BUSY" ? (data as TargetTruckBusy) : null;
+  const data = error.response.data as
+    | { code?: string; message?: unknown }
+    | undefined;
+  const body = (
+    data && typeof data.message === "object" && data.message !== null
+      ? data.message
+      : data
+  ) as Partial<TargetTruckBusy> | undefined;
+  return body?.code === "TARGET_TRUCK_BUSY" ? (body as TargetTruckBusy) : null;
 }
 
 function readMessage(error: unknown, fallback: string): string {
@@ -38,6 +49,11 @@ function readMessage(error: unknown, fallback: string): string {
   const message = (error.response?.data as { message?: unknown })?.message;
   if (typeof message === "string") return message;
   if (Array.isArray(message) && typeof message[0] === "string") return message[0];
+  // Nested envelope: { message: { code, message, trip } }.
+  if (message && typeof message === "object") {
+    const inner = (message as { message?: unknown }).message;
+    if (typeof inner === "string") return inner;
+  }
   return fallback;
 }
 
@@ -227,7 +243,11 @@ export function ReassignTruckDialog({
                       onClick={() => setSelectedId(truck.id)}
                       className={cn(
                         "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors",
-                        selectedId === truck.id ? "bg-accent" : "hover:bg-muted/50",
+                        // Вибір позначаємо тихо: підкладка + тонка рамка,
+                        // без заливки акцентом на всю ширину рядка.
+                        selectedId === truck.id
+                          ? "bg-muted ring-1 ring-inset ring-primary/40"
+                          : "hover:bg-muted/50",
                         noDriver && "opacity-50 cursor-not-allowed",
                       )}
                     >
