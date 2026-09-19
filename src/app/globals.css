@@ -165,15 +165,25 @@
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
-  /* Light theme: soft, lightened backdrop that stays out of the bubbles' way. */
-  opacity: 0.6;
+  /* A wallpaper, not a picture: it should register as texture out of the
+     corner of the eye and never compete with the bubbles for attention. */
+  opacity: 0.32;
+  filter: saturate(0.5);
   pointer-events: none;
 }
 /* Dark theme: the art is a bright photo, so darken + desaturate it hard into a
    muted wallpaper that sits on the dark ground instead of glaring. */
 .dark .chat2-bg-image::before {
-  filter: brightness(0.26) saturate(0.8);
-  opacity: 0.95;
+  filter: brightness(0.2) saturate(0.35);
+  opacity: 0.55;
+}
+/* Empty chat: nothing is layered on top yet, so the wallpaper would be the
+   loudest thing on screen. Fade it almost out and let the empty state speak. */
+.chat2-bg-image.chat2-bg-quiet::before {
+  opacity: 0.12;
+}
+.dark .chat2-bg-image.chat2-bg-quiet::before {
+  opacity: 0.22;
 }
 
 /* DM + group message area — chat-bg.png pinned behind the scrolling messages.

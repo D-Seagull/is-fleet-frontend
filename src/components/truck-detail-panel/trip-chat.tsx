@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import { Loader2, ChevronDown, FolderOpen, History } from "lucide-react";
+import {
+  ChevronDown,
+  FolderOpen,
+  History,
+  Loader2,
+  MessageSquare,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import {
@@ -12,6 +18,7 @@ import {
   patchInfiniteMessage,
 } from "@/lib/infinite-messages";
 import { getSocket } from "@/lib/socket";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -719,7 +726,14 @@ export function TripChat({
         currentUserId={currentUserId}
       />
 
-      <div className="relative flex-1 min-h-0 bg-chat-bg chat2-bg-image">
+      <div
+        className={cn(
+          "relative flex-1 min-h-0 bg-chat-bg chat2-bg-image",
+          // Nothing is layered over the wallpaper yet — fade it right down so
+          // the empty state reads as the subject, not as a caption on a photo.
+          !isLoading && timeline.length === 0 && "chat2-bg-quiet",
+        )}
+      >
         <div
           ref={scrollContainerRef}
           className="absolute inset-0 z-10 overflow-y-auto flex flex-col gap-2 px-3 py-2"
@@ -741,9 +755,13 @@ export function TripChat({
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : timeline.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-10">
-              {t("emptyChat")}
-            </p>
+            <div className="flex-1 flex flex-col items-center justify-center gap-2 py-10">
+              <MessageSquare className="h-6 w-6 text-muted-foreground/60" />
+              <p className="text-sm text-muted-foreground">{t("emptyChat")}</p>
+              <p className="text-xs text-muted-foreground/70">
+                {t("emptyChatHint")}
+              </p>
+            </div>
           ) : (
             <>
               <LoadOlderMessages
