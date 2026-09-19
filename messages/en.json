@@ -283,7 +283,8 @@
   "chat": {
     "sys": {
       "driverAssigned": "Driver {name} assigned to truck {plate}",
-      "managerAssigned": "Manager {name} assigned to truck {plate}"
+      "managerAssigned": "Manager {name} assigned to truck {plate}",
+      "truckAssigned": "Truck {plate} assigned to this trip · driver {name}"
     },
     "selectPrompt": "Select or create a trip to start chatting",
     "readOnly": "You're no longer a participant in this chat — read-only view.",
@@ -338,7 +339,8 @@
         "DRIVER_CHANGED": "Driver changed",
         "MANAGER_CHANGED": "Manager changed",
         "TRIP_COMPLETED": "Trip completed",
-        "LEGACY_RESET": "Chat reset (legacy)"
+        "LEGACY_RESET": "Chat reset (legacy)",
+        "TRUCK_CHANGED": "Truck reassigned"
       }
     },
     "loadOlder": "Load older messages",
@@ -575,7 +577,24 @@
       "add": "Add",
       "loadingStops": "Loading stops",
       "unloadingStops": "Unloading stops",
-      "orderShortPlaceholder": "#order"
+      "orderShortPlaceholder": "#order",
+      "reassign": {
+        "title": "Reassign truck",
+        "subtitle": "{trip} · currently {plate}",
+        "searchPlaceholder": "Plate or driver",
+        "noTrucks": "No other trucks",
+        "noDriver": "no driver",
+        "busy": "busy",
+        "confirm": "Reassign",
+        "success": "Trip moved to {plate}",
+        "error": "Could not reassign the trip",
+        "conflictTitle": "{plate} is already on a trip",
+        "conflictBody": "Choose what happens to the trip it is running.",
+        "swap": "Swap the trips",
+        "swapHint": "That trip moves to {plate}",
+        "completeOther": "Complete that trip",
+        "completeOtherHint": "It becomes delivered and frees the truck"
+      }
     },
     "newTrip": {
       "button": "New Trip",

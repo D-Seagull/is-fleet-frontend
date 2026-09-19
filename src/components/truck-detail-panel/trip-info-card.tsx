@@ -56,6 +56,7 @@ import {
   type StopRowData,
 } from "./stop-row";
 import { buildStopsPayload } from "./new-trip-dialog";
+import { ReassignTruckButton } from "./reassign-truck-dialog";
 import { CoordsCell } from "./coords-cell";
 import {
   shortenTripTitle,
@@ -102,6 +103,12 @@ export function TripInfoCard({
     role === "ADMIN" ||
     role === "TEAMLEAD" ||
     (role === "MANAGER" && trip.truck?.managerId === userId);
+  // Перепризначення веде менеджер рейсу, а не менеджер траку: рейс лишається
+  // за ним і після переїзду на чужу машину.
+  const canReassign =
+    role === "ADMIN" ||
+    role === "TEAMLEAD" ||
+    (role === "MANAGER" && trip.managerId === userId);
   const [editing, setEditing] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
 
@@ -275,6 +282,7 @@ export function TripInfoCard({
                   ))}
                 </SelectContent>
               </Select>
+              {canReassign && <ReassignTruckButton trip={trip} />}
               <Button
                 variant="ghost"
                 size="icon"

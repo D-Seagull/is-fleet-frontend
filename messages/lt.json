@@ -283,7 +283,8 @@
   "chat": {
     "sys": {
       "driverAssigned": "Vairuotojas {name} priskirtas vilkikui {plate}",
-      "managerAssigned": "Vadovas {name} priskirtas vilkikui {plate}"
+      "managerAssigned": "Vadovas {name} priskirtas vilkikui {plate}",
+      "truckAssigned": "Reisui priskirtas vilkikas {plate} · vairuotojas {name}"
     },
     "selectPrompt": "Pasirinkite arba sukurkite reisą, kad pradėtumėte pokalbį",
     "readOnly": "Jūs nebesate šio pokalbio dalyvis — tik skaitymo režimas.",
@@ -338,7 +339,8 @@
         "DRIVER_CHANGED": "Pakeistas vairuotojas",
         "MANAGER_CHANGED": "Pakeistas vadybininkas",
         "TRIP_COMPLETED": "Reisas baigtas",
-        "LEGACY_RESET": "Pokalbio atstatymas (senas)"
+        "LEGACY_RESET": "Pokalbio atstatymas (senas)",
+        "TRUCK_CHANGED": "Pakeistas vilkikas"
       }
     },
     "loadOlder": "Įkelti senesnes žinutes",
@@ -575,7 +577,24 @@
       "add": "Pridėti",
       "loadingStops": "Pakrovimo taškai",
       "unloadingStops": "Iškrovimo taškai",
-      "orderShortPlaceholder": "#užsakymas"
+      "orderShortPlaceholder": "#užsakymas",
+      "reassign": {
+        "title": "Keisti vilkiką",
+        "subtitle": "{trip} · dabar {plate}",
+        "searchPlaceholder": "Numeris arba vairuotojas",
+        "noTrucks": "Kitų vilkikų nėra",
+        "noDriver": "be vairuotojo",
+        "busy": "užimtas",
+        "confirm": "Keisti vilkiką",
+        "success": "Reisas perkeltas į {plate}",
+        "error": "Nepavyko pakeisti vilkiko",
+        "conflictTitle": "{plate} jau vykdo reisą",
+        "conflictBody": "Pasirinkite, ką daryti su tuo reisu.",
+        "swap": "Sukeisti reisus",
+        "swapHint": "Tas reisas persikels į {plate}",
+        "completeOther": "Užbaigti tą reisą",
+        "completeOtherHint": "Jis taps pristatytas, vilkikas atsilaisvins"
+      }
     },
     "newTrip": {
       "button": "Naujas reisas",

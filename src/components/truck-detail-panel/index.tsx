@@ -155,11 +155,16 @@ export function TruckDetailPanel({
 
   const [noteText, setNoteText] = useState("");
 
+  // Chat access follows the TRIP, not only the truck: a trip reassigned to
+  // someone else's truck keeps its manager, and that manager still has to
+  // reach the chat — otherwise their unread badge can never be cleared.
+  const managesTripHere = truckTrips.some((tr) => tr.managerId === user?.id);
+
   // Resolve chat access once truck data is available
   useEffect(() => {
     if (!truck || !user) return;
     const isCurrentMgr = truck.managerId === user.id;
-    const canAccessChat = user.role === "ADMIN" || isCurrentMgr;
+    const canAccessChat = user.role === "ADMIN" || isCurrentMgr || managesTripHere;
 
     // URL says chat але user не має доступу → fallback на trips
     if (defaultTab === "chat" && !canAccessChat) {
@@ -170,7 +175,7 @@ export function TruckDetailPanel({
       setActiveTab(canAccessChat ? "chat" : "trips");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [truck?.id, user?.id]);
+  }, [truck?.id, user?.id, managesTripHere]);
 
   if (isLoading) {
     return (
@@ -185,7 +190,8 @@ export function TruckDetailPanel({
   }
 
   const isCurrentManager = truck.managerId === user?.id;
-  const isChatEnabled = user?.role === "ADMIN" || isCurrentManager;
+  const isChatEnabled =
+    user?.role === "ADMIN" || isCurrentManager || managesTripHere;
 
   function handleOpenTrip(tripId: string) {
     setChatTripId(tripId);

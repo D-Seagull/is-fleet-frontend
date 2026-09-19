@@ -272,6 +272,7 @@ export type SessionEndReason =
   | "DRIVER_CHANGED"
   | "MANAGER_CHANGED"
   | "TRIP_COMPLETED"
+  | "TRUCK_CHANGED"
   | "LEGACY_RESET";
 
 export interface ChatArchiveSession {
@@ -464,6 +465,58 @@ export function useReassignTrip(truckId: string) {
         queryKey: ["trip-messages", updatedTrip.id],
       });
       queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
+    },
+  });
+}
+
+/** 409 body the backend returns when the target truck already runs a trip. */
+export interface TargetTruckBusy {
+  code: "TARGET_TRUCK_BUSY";
+  message: string;
+  trip: {
+    id: string;
+    title: string;
+    orderNumber: string | null;
+    status: TripStatus;
+    driverName: string;
+  };
+}
+
+export type TruckConflictStrategy = "SWAP" | "COMPLETE_OTHER";
+
+/**
+ * Перепризначення рейсу на іншу вантажівку. Водій підтягується за машиною,
+ * менеджер лишається той самий. Без `onConflict` сервер відмовляє з 409,
+ * якщо цільова машина вже в рейсі.
+ */
+export function useAssignTruck() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      targetTruckId,
+      onConflict,
+    }: {
+      id: string;
+      targetTruckId: string;
+      onConflict?: TruckConflictStrategy;
+    }) => {
+      const res = await api.patch(`/trips/${id}/truck`, {
+        truckId: targetTruckId,
+        ...(onConflict ? { onConflict } : {}),
+      });
+      return res.data as Trip;
+    },
+    onSuccess: (updatedTrip) => {
+      // Рейс залишає одну машину й сідає на іншу, тож застарілі обидві
+      // сторони: списки рейсів, картки траків і лічильники непрочитаного.
+      queryClient.invalidateQueries({ queryKey: ["trips"] });
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck"] });
+      queryClient.invalidateQueries({ queryKey: ["trucks"] });
+      queryClient.invalidateQueries({ queryKey: ["unread-summary"] });
+      queryClient.invalidateQueries({
+        queryKey: ["trip-messages", updatedTrip.id],
+      });
     },
   });
 }

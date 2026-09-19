@@ -283,7 +283,8 @@
   "chat": {
     "sys": {
       "driverAssigned": "Kierowca {name} przydzielony do ciężarówki {plate}",
-      "managerAssigned": "Menedżer {name} przydzielony do ciężarówki {plate}"
+      "managerAssigned": "Menedżer {name} przydzielony do ciężarówki {plate}",
+      "truckAssigned": "Do trasy przypisano pojazd {plate} · kierowca {name}"
     },
     "selectPrompt": "Wybierz lub utwórz trasę, aby rozpocząć czat",
     "readOnly": "Nie jesteś już uczestnikiem tego czatu — widok tylko do odczytu.",
@@ -338,7 +339,8 @@
         "DRIVER_CHANGED": "Zmieniono kierowcę",
         "MANAGER_CHANGED": "Zmieniono menedżera",
         "TRIP_COMPLETED": "Trasa zakończona",
-        "LEGACY_RESET": "Reset czatu (starsza wersja)"
+        "LEGACY_RESET": "Reset czatu (starsza wersja)",
+        "TRUCK_CHANGED": "Zmieniono pojazd"
       }
     },
     "loadOlder": "Wczytaj starsze wiadomości",
@@ -575,7 +577,24 @@
       "add": "Dodaj",
       "loadingStops": "Punkty załadunku",
       "unloadingStops": "Punkty rozładunku",
-      "orderShortPlaceholder": "#zamówienie"
+      "orderShortPlaceholder": "#zamówienie",
+      "reassign": {
+        "title": "Zmień pojazd",
+        "subtitle": "{trip} · obecnie {plate}",
+        "searchPlaceholder": "Numer lub kierowca",
+        "noTrucks": "Brak innych pojazdów",
+        "noDriver": "bez kierowcy",
+        "busy": "zajęty",
+        "confirm": "Zmień pojazd",
+        "success": "Trasa przeniesiona na {plate}",
+        "error": "Nie udało się zmienić pojazdu",
+        "conflictTitle": "{plate} jest już w trasie",
+        "conflictBody": "Wybierz, co zrobić z tamtą trasą.",
+        "swap": "Zamień trasy",
+        "swapHint": "Tamta trasa przejdzie na {plate}",
+        "completeOther": "Zakończ tamtą trasę",
+        "completeOtherHint": "Zostanie dostarczona, pojazd się zwolni"
+      }
     },
     "newTrip": {
       "button": "Nowa trasa",

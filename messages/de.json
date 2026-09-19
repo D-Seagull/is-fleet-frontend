@@ -283,7 +283,8 @@
   "chat": {
     "sys": {
       "driverAssigned": "Fahrer {name} dem Lkw {plate} zugewiesen",
-      "managerAssigned": "Manager {name} dem Lkw {plate} zugewiesen"
+      "managerAssigned": "Manager {name} dem Lkw {plate} zugewiesen",
+      "truckAssigned": "Fahrzeug {plate} dieser Fahrt zugewiesen · Fahrer {name}"
     },
     "selectPrompt": "Wählen oder erstellen Sie eine Fahrt, um zu chatten",
     "readOnly": "Sie sind kein Teilnehmer dieses Chats mehr — schreibgeschützte Ansicht.",
@@ -338,7 +339,8 @@
         "DRIVER_CHANGED": "Fahrer geändert",
         "MANAGER_CHANGED": "Manager geändert",
         "TRIP_COMPLETED": "Fahrt abgeschlossen",
-        "LEGACY_RESET": "Chat zurückgesetzt (Legacy)"
+        "LEGACY_RESET": "Chat zurückgesetzt (Legacy)",
+        "TRUCK_CHANGED": "Fahrzeug gewechselt"
       }
     },
     "loadOlder": "Ältere Nachrichten laden",
@@ -575,7 +577,24 @@
       "add": "Hinzufügen",
       "loadingStops": "Beladestellen",
       "unloadingStops": "Entladestellen",
-      "orderShortPlaceholder": "#Bestellung"
+      "orderShortPlaceholder": "#Bestellung",
+      "reassign": {
+        "title": "Fahrzeug wechseln",
+        "subtitle": "{trip} · aktuell {plate}",
+        "searchPlaceholder": "Kennzeichen oder Fahrer",
+        "noTrucks": "Keine weiteren Fahrzeuge",
+        "noDriver": "ohne Fahrer",
+        "busy": "belegt",
+        "confirm": "Fahrzeug wechseln",
+        "success": "Fahrt auf {plate} übertragen",
+        "error": "Fahrzeugwechsel fehlgeschlagen",
+        "conflictTitle": "{plate} ist bereits unterwegs",
+        "conflictBody": "Wählen Sie, was mit der anderen Fahrt geschieht.",
+        "swap": "Fahrten tauschen",
+        "swapHint": "Die andere Fahrt geht auf {plate}",
+        "completeOther": "Andere Fahrt abschließen",
+        "completeOtherHint": "Sie gilt als zugestellt, das Fahrzeug wird frei"
+      }
     },
     "newTrip": {
       "button": "Neue Fahrt",

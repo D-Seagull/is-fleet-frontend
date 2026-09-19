@@ -283,7 +283,8 @@
   "chat": {
     "sys": {
       "driverAssigned": "Водитель {name} назначен на грузовик {plate}",
-      "managerAssigned": "Менеджер {name} назначен на грузовик {plate}"
+      "managerAssigned": "Менеджер {name} назначен на грузовик {plate}",
+      "truckAssigned": "Рейсу назначена машина {plate} · водитель {name}"
     },
     "selectPrompt": "Выберите или создайте рейс, чтобы начать общение",
     "readOnly": "Вы больше не участник этого чата — просмотр только для чтения.",
@@ -338,7 +339,8 @@
         "DRIVER_CHANGED": "Изменён водитель",
         "MANAGER_CHANGED": "Изменён менеджер",
         "TRIP_COMPLETED": "Рейс завершён",
-        "LEGACY_RESET": "Сброс чата (устаревший)"
+        "LEGACY_RESET": "Сброс чата (устаревший)",
+        "TRUCK_CHANGED": "Переназначена машина"
       }
     },
     "loadOlder": "Загрузить старые сообщения",
@@ -575,7 +577,24 @@
       "add": "Добавить",
       "loadingStops": "Точки погрузки",
       "unloadingStops": "Точки разгрузки",
-      "orderShortPlaceholder": "#заказ"
+      "orderShortPlaceholder": "#заказ",
+      "reassign": {
+        "title": "Переназначить машину",
+        "subtitle": "{trip} · сейчас {plate}",
+        "searchPlaceholder": "Номер или водитель",
+        "noTrucks": "Других машин нет",
+        "noDriver": "без водителя",
+        "busy": "занята",
+        "confirm": "Переназначить",
+        "success": "Рейс переназначен на {plate}",
+        "error": "Не удалось переназначить рейс",
+        "conflictTitle": "{plate} уже в рейсе",
+        "conflictBody": "Выберите, что сделать со встречным рейсом.",
+        "swap": "Заменить рейсы",
+        "swapHint": "Встречный рейс перейдёт на {plate}",
+        "completeOther": "Завершить тот рейс",
+        "completeOtherHint": "Станет доставленным, машина освободится"
+      }
     },
     "newTrip": {
       "button": "Новый рейс",
