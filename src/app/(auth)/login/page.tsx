@@ -82,7 +82,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md sm:max-w-lg">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
-            <BrandLogo className="h-12" />
+            <BrandLogo className="h-7" />
           </div>
           <CardTitle className="text-2xl">{t("title")}</CardTitle>
           <CardDescription>{t("subtitle")}</CardDescription>

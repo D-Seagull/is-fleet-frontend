@@ -14,7 +14,7 @@ export default function AuthPageLayout({
   return (
     <main className="flex flex-col  min-h-screen items-center justify-center">
       <header className="flex h-14 w-full absolute top-0 left-0 shrink-0 items-center justify-between border-b bg-background px-4">
-        <BrandLogo className="h-8" />
+        <BrandLogo className="h-5" />
         <ThemeToggle />
       </header>
       <div className="w-full">{children}</div>

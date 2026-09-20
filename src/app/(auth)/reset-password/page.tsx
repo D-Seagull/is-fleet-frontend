@@ -76,7 +76,7 @@ function ResetPasswordForm() {
             </div>
           ) : (
             <div className="mb-4 flex justify-center">
-              <BrandLogo className="h-12" />
+              <BrandLogo className="h-7" />
             </div>
           )}
           <CardTitle className="text-2xl">

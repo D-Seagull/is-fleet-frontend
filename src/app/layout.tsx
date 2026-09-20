@@ -11,10 +11,9 @@ const geist = Geist({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "IS Fleet",
   description: "Fleet management system",
-  icons: {
-    icon: "/app-icon.png",
-    apple: "/app-icon.png",
-  },
+  // Іконки НЕ перелічуємо вручну: Next бере app/icon.png, app/apple-icon.png
+  // і app/favicon.ico за файловою угодою. Явний список тут перебивав їх і
+  // тримав старий фавікон навіть після заміни файлів.
 };
 
 export default async function RootLayout({

@@ -190,7 +190,7 @@ function RegisterInner() {
     <CenterCard>
       <CardHeader className="text-center">
         <div className="mb-4 flex justify-center">
-          <BrandLogo className="h-12" />
+          <BrandLogo className="h-7" />
         </div>
         <CardTitle className="text-2xl">
           {t("title", { companyName: invite.companyName })}

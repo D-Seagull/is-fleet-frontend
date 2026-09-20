@@ -249,7 +249,7 @@ function HeaderLogo() {
       aria-label="Toggle Sidebar"
       className="flex items-center rounded-md transition-opacity hover:opacity-80"
     >
-      <BrandLogo className="h-13" />
+      <BrandLogo className="h-8" />
     </button>
   );
 }

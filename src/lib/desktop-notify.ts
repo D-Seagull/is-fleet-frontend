@@ -90,7 +90,7 @@ export function showMessageNotification(opts: {
   try {
     const n = new Notification(opts.title, {
       body: opts.body,
-      icon: opts.icon || "/app-icon.png",
+      icon: opts.icon || "/icon-192.png",
       // Same tag → a burst of messages replaces rather than stacks.
       tag: "is-fleet-message",
     });
