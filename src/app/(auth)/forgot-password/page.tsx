@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <div className="mb-4 flex justify-center">
-              <BrandLogo className="h-7" />
+              <BrandLogo className="h-[25px]" />
             </div>
           )}
           <CardTitle className="text-2xl">

@@ -15,7 +15,7 @@ export function SidebarLogoButton() {
       aria-label="Dashboard"
       className="flex items-center rounded-md transition-opacity hover:opacity-80"
     >
-      <BrandLogo className="h-8" />
+      <BrandLogo className="h-[25px]" />
     </Link>
   );
 }
