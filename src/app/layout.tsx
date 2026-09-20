@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   // Іконки НЕ перелічуємо вручну: Next бере app/icon.png, app/apple-icon.png
   // і app/favicon.ico за файловою угодою. Явний список тут перебивав їх і
   // тримав старий фавікон навіть після заміни файлів.
+};
+
+// Колір системної смуги у встановленому застосунку і в мобільному браузері.
+// Живе саме тут, а не в metadata: у Next 15+ themeColor переїхав у viewport.
+export const viewport: Viewport = {
+  themeColor: "#0F172A",
 };
 
 export default async function RootLayout({
