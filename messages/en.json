@@ -288,6 +288,7 @@
     },
     "selectPrompt": "Select or create a trip to start chatting",
     "readOnly": "You're no longer a participant in this chat — read-only view.",
+    "companyDeactivatedNotice": "Unfortunately, you can't use the app in full right now.",
     "editingMessage": "Editing message",
     "cancelEditing": "Cancel editing",
     "replyTo": "Reply to {name}",
@@ -652,7 +653,11 @@
       "noPhotos": "No photos.",
       "noDocuments": "No documents."
     },
-    "deactivate": "Deactivate"
+    "deactivate": "Deactivate",
+    "handedOver": {
+      "body": "Truck {plate} now belongs to another manager.",
+      "action": "Go to my trucks"
+    }
   },
   "account": {
     "title": "Account Settings",

@@ -236,6 +236,7 @@ function ChatPageContent() {
   const selectedGroupIdRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
+  const isCompanyActive = user?.company?.isActive !== false;
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { resolvedTheme } = useTheme();
   const pickerTheme = resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT;
@@ -2250,93 +2251,99 @@ function ChatPageContent() {
               </div>
             )}
 
-            <form
-              onSubmit={handleSend}
-              className={cn(
-                "p-4 shrink-0 flex gap-2",
-                !replyingTo &&
-                  !editing &&
-                  pendingFiles.length === 0 &&
-                  "border-t",
-              )}
-            >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => attachInputRef.current?.click()}
-                disabled={attachUploading}
-                title={tChat("attachFile")}
-              >
-                {attachUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Paperclip className="h-4 w-4" />
+            {!isCompanyActive ? (
+              <div className="p-4 shrink-0 border-t text-center text-xs text-muted-foreground">
+                {tChat("companyDeactivatedNotice")}
+              </div>
+            ) : (
+              <form
+                onSubmit={handleSend}
+                className={cn(
+                  "p-4 shrink-0 flex gap-2",
+                  !replyingTo &&
+                    !editing &&
+                    pendingFiles.length === 0 &&
+                    "border-t",
                 )}
-              </Button>
-              <input
-                ref={attachInputRef}
-                type="file"
-                multiple
-                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                className="hidden"
-                onChange={handleAttach}
-              />
-              <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-                <PopoverTrigger asChild>
-                  <Button type="button" variant="ghost" size="icon">
-                    <Smile className="h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-auto p-0 border-none"
-                  side="top"
-                  align="start"
-                  onOpenAutoFocus={(e) => e.preventDefault()}
-                  onInteractOutside={(e) => e.preventDefault()}
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => attachInputRef.current?.click()}
+                  disabled={attachUploading}
+                  title={tChat("attachFile")}
                 >
-                  <EmojiPicker
-                    onEmojiClick={handleEmojiClick}
-                    theme={pickerTheme}
-                    skinTonesDisabled
-                    searchDisabled={false}
-                  />
-                </PopoverContent>
-              </Popover>
-              <Input
-                value={newMessage}
-                onChange={handleInputChange}
-                onKeyDown={(e) => {
-                  if (editing && e.key === "Escape") {
-                    e.preventDefault();
-                    setEditing(null);
-                    setNewMessage("");
+                  {attachUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Paperclip className="h-4 w-4" />
+                  )}
+                </Button>
+                <input
+                  ref={attachInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                  className="hidden"
+                  onChange={handleAttach}
+                />
+                <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="ghost" size="icon">
+                      <Smile className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-auto p-0 border-none"
+                    side="top"
+                    align="start"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    onInteractOutside={(e) => e.preventDefault()}
+                  >
+                    <EmojiPicker
+                      onEmojiClick={handleEmojiClick}
+                      theme={pickerTheme}
+                      skinTonesDisabled
+                      searchDisabled={false}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Input
+                  value={newMessage}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (editing && e.key === "Escape") {
+                      e.preventDefault();
+                      setEditing(null);
+                      setNewMessage("");
+                    }
+                  }}
+                  placeholder={
+                    editing
+                      ? tChat("editPlaceholder")
+                      : tChat("messagePlaceholder")
                   }
-                }}
-                placeholder={
-                  editing
-                    ? tChat("editPlaceholder")
-                    : tChat("messagePlaceholder")
-                }
-                className="flex-1"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                title={editing ? tActions("save") : tChat("send")}
-                disabled={
-                  editing
-                    ? !newMessage.trim()
-                    : !newMessage.trim() && pendingFiles.length === 0
-                }
-              >
-                {editing ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </form>
+                  className="flex-1"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  title={editing ? tActions("save") : tChat("send")}
+                  disabled={
+                    editing
+                      ? !newMessage.trim()
+                      : !newMessage.trim() && pendingFiles.length === 0
+                  }
+                >
+                  {editing ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </form>
+            )}
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">

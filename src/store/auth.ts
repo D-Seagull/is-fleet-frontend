@@ -18,6 +18,8 @@ interface AuthUser {
   status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
   statusUntil?: string | null;
   timezone?: string | null;
+  /** null/undefined = не деактивована (безпечний дефолт); false — компанія деактивована. */
+  company?: { isActive: boolean } | null;
 }
 
 interface AuthState {
@@ -181,3 +183,5 @@ export const useAuthStore = create<AuthState>()(
 export const useUser = () => useAuthStore((s) => s.user);
 export const useIsAuth = () => useAuthStore((s) => !!s.token);
 export const useRole = () => useAuthStore((s) => s.user?.role);
+export const useIsCompanyActive = () =>
+  useAuthStore((s) => s.user?.company?.isActive !== false);

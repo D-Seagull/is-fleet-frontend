@@ -288,6 +288,7 @@
     },
     "selectPrompt": "Pasirinkite arba sukurkite reisą, kad pradėtumėte pokalbį",
     "readOnly": "Jūs nebesate šio pokalbio dalyvis — tik skaitymo režimas.",
+    "companyDeactivatedNotice": "Deja, šiuo metu negalite naudotis programėle visa apimtimi.",
     "editingMessage": "Žinutės redagavimas",
     "cancelEditing": "Atšaukti redagavimą",
     "replyTo": "Atsakymas {name}",
@@ -652,7 +653,11 @@
       "noPhotos": "Nuotraukų nėra.",
       "noDocuments": "Dokumentų nėra."
     },
-    "deactivate": "Deaktyvuoti"
+    "deactivate": "Deaktyvuoti",
+    "handedOver": {
+      "body": "Vilkikas {plate} dabar priklauso kitam vadybininkui.",
+      "action": "Į mano vilkikus"
+    }
   },
   "account": {
     "title": "Paskyros nustatymai",

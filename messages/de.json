@@ -288,6 +288,7 @@
     },
     "selectPrompt": "Wählen oder erstellen Sie eine Fahrt, um zu chatten",
     "readOnly": "Sie sind kein Teilnehmer dieses Chats mehr — schreibgeschützte Ansicht.",
+    "companyDeactivatedNotice": "Leider können Sie die App im Moment nicht vollständig nutzen.",
     "editingMessage": "Nachricht bearbeiten",
     "cancelEditing": "Bearbeitung abbrechen",
     "replyTo": "Antwort an {name}",
@@ -652,7 +653,11 @@
       "noPhotos": "Keine Fotos.",
       "noDocuments": "Keine Dokumente."
     },
-    "deactivate": "Deaktivieren"
+    "deactivate": "Deaktivieren",
+    "handedOver": {
+      "body": "Fahrzeug {plate} gehört jetzt einem anderen Manager.",
+      "action": "Zu meinen Fahrzeugen"
+    }
   },
   "account": {
     "title": "Kontoeinstellungen",

@@ -1,5 +1,13 @@
 import axios from "axios";
+import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
+import { dbToCookie } from "@/lib/ui-locale";
+import ukMessages from "../../messages/uk.json";
+import enMessages from "../../messages/en.json";
+import plMessages from "../../messages/pl.json";
+import ltMessages from "../../messages/lt.json";
+import deMessages from "../../messages/de.json";
+import ruMessages from "../../messages/ru.json";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -12,11 +20,39 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+const SAFE_METHODS = new Set(["get", "head", "options"]);
+const CHAT_MESSAGES: Record<
+  string,
+  { chat?: { companyDeactivatedNotice?: string } }
+> = {
+  uk: ukMessages,
+  en: enMessages,
+  pl: plMessages,
+  lt: ltMessages,
+  de: deMessages,
+  ru: ruMessages,
+};
+
+function companyDeactivatedMessage(): string {
+  const locale = dbToCookie(useAuthStore.getState().user?.uiLocale ?? "UK");
+  return (
+    CHAT_MESSAGES[locale]?.chat?.companyDeactivatedNotice ??
+    CHAT_MESSAGES.uk.chat!.companyDeactivatedNotice!
+  );
+}
+
 // Підставляємо access-токен (у памʼяті) із store в кожен запит
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const method = (config.method ?? "get").toLowerCase();
+  const isAuthPath = (config.url ?? "").includes("/auth/");
+  const user = useAuthStore.getState().user;
+  if (!isAuthPath && !SAFE_METHODS.has(method) && user?.company?.isActive === false) {
+    toast.error(companyDeactivatedMessage());
+    return Promise.reject(new Error("company-deactivated"));
   }
   return config;
 });

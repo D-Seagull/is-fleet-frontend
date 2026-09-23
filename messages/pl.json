@@ -288,6 +288,7 @@
     },
     "selectPrompt": "Wybierz lub utwórz trasę, aby rozpocząć czat",
     "readOnly": "Nie jesteś już uczestnikiem tego czatu — widok tylko do odczytu.",
+    "companyDeactivatedNotice": "Niestety, obecnie nie możesz w pełni korzystać z aplikacji.",
     "editingMessage": "Edycja wiadomości",
     "cancelEditing": "Anuluj edycję",
     "replyTo": "Odpowiedź do {name}",
@@ -652,7 +653,11 @@
       "noPhotos": "Brak zdjęć.",
       "noDocuments": "Brak dokumentów."
     },
-    "deactivate": "Dezaktywuj"
+    "deactivate": "Dezaktywuj",
+    "handedOver": {
+      "body": "Pojazd {plate} należy teraz do innego menedżera.",
+      "action": "Do moich pojazdów"
+    }
   },
   "account": {
     "title": "Ustawienia konta",

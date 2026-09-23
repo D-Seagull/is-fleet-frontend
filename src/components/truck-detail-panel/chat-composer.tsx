@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useIsCompanyActive } from "@/store/auth";
 
 export interface EditingState {
   id: string;
@@ -71,6 +72,7 @@ export function ChatComposer({
 }) {
   const t = useTranslations("chat");
   const tActions = useTranslations("common.actions");
+  const isCompanyActive = useIsCompanyActive();
   const { resolvedTheme } = useTheme();
   const pickerTheme = resolvedTheme === "dark" ? Theme.DARK : Theme.LIGHT;
   const onEmojiClick = (data: EmojiClickData) => {
@@ -80,7 +82,11 @@ export function ChatComposer({
 
   return (
     <div className="shrink-0 border-t pt-3 relative">
-      {!isActiveParticipant ? (
+      {!isCompanyActive ? (
+        <div className="px-3 py-3 text-center text-xs text-muted-foreground">
+          {t("companyDeactivatedNotice")}
+        </div>
+      ) : !isActiveParticipant ? (
         <div className="px-3 py-3 text-center text-xs text-muted-foreground">
           {t("readOnly")}
         </div>
