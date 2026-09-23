@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BrandLogo } from "@/components/brand-logo";
+import { TruckSwappedNotice } from "@/components/truck-swapped-notice";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BugReportButton } from "@/components/bug-report-button";
 import { fullName } from "@/lib/format";
@@ -344,6 +345,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
       </div>
       {/* Fires when one of the user's alarms is due (cron → socket). */}
       <AlarmNoticeOverlay />
+      {/* Хтось інший перецепив рейс цього менеджера на іншу машину. */}
+      <TruckSwappedNotice />
     </SidebarProvider>
   );
 }

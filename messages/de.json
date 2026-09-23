@@ -595,7 +595,12 @@
         "swap": "Fahrten tauschen",
         "swapHint": "Die andere Fahrt geht auf {plate}",
         "completeOther": "Andere Fahrt abschließen",
-        "completeOtherHint": "Sie gilt als zugestellt, das Fahrzeug wird frei"
+        "completeOtherHint": "Sie gilt als zugestellt, das Fahrzeug wird frei",
+        "successTitle": "Wechsel abgeschlossen",
+        "pending": "Wird gewechselt…",
+        "swappedTitle": "Das Fahrzeug hat gewechselt",
+        "swappedBody": "Die Fahrt „{trip}“ läuft jetzt auf Fahrzeug {plate}.",
+        "swappedAction": "Zur Fahrt"
       }
     },
     "newTrip": {
@@ -653,11 +658,7 @@
       "noPhotos": "Keine Fotos.",
       "noDocuments": "Keine Dokumente."
     },
-    "deactivate": "Deaktivieren",
-    "handedOver": {
-      "body": "Fahrzeug {plate} gehört jetzt einem anderen Manager.",
-      "action": "Zu meinen Fahrzeugen"
-    }
+    "deactivate": "Deaktivieren"
   },
   "account": {
     "title": "Kontoeinstellungen",

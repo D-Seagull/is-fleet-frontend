@@ -595,7 +595,12 @@
         "swap": "Swap the trips",
         "swapHint": "That trip moves to {plate}",
         "completeOther": "Complete that trip",
-        "completeOtherHint": "It becomes delivered and frees the truck"
+        "completeOtherHint": "It becomes delivered and frees the truck",
+        "successTitle": "Reassignment done",
+        "pending": "Reassigning…",
+        "swappedTitle": "The truck has changed",
+        "swappedBody": "Trip “{trip}” is now on truck {plate}.",
+        "swappedAction": "Go to the trip"
       }
     },
     "newTrip": {
@@ -653,11 +658,7 @@
       "noPhotos": "No photos.",
       "noDocuments": "No documents."
     },
-    "deactivate": "Deactivate",
-    "handedOver": {
-      "body": "Truck {plate} now belongs to another manager.",
-      "action": "Go to my trucks"
-    }
+    "deactivate": "Deactivate"
   },
   "account": {
     "title": "Account Settings",

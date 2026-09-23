@@ -2,7 +2,13 @@
 
 import { useMemo, useState } from "react";
 import axios from "axios";
-import { AlertTriangle, ArrowLeftRight, Loader2, Search } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeftRight,
+  CheckCircle2,
+  Loader2,
+  Search,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fullName } from "@/lib/format";
@@ -84,6 +90,10 @@ export function ReassignTruckDialog({
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [conflict, setConflict] = useState<TargetTruckBusy | null>(null);
+  // Успіх показуємо вікном, а не тостом: замін машини зачіпає права на чат
+  // одразу двох менеджерів, і найчесніший спосіб їх оновити — перезавантажити
+  // сторінку. Кнопка у вікні це й робить, без вигадок навколо кешу.
+  const [donePlate, setDonePlate] = useState<string | null>(null);
 
   const candidates = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -107,7 +117,20 @@ export function ReassignTruckDialog({
 
   function close() {
     reset();
+    setDonePlate(null);
     onOpenChange(false);
+  }
+
+  /**
+   * Закриття вікна успіху. Перезавантажуємо ту саму сторінку, нікуди не ведучи:
+   * перецеп міняє і склад рейсів на траку, і права на їхні чати, і скидання
+   * кешів запитів це повністю не покриває — частина стану живе в самих
+   * компонентах чату. Чистий перезапуск сторінки дешевший і чесніший за спроби
+   * вгадати, що саме треба інвалідовувати.
+   */
+  function finish() {
+    close();
+    window.location.reload();
   }
 
   async function submit(onConflict?: TruckConflictStrategy) {
@@ -120,8 +143,8 @@ export function ReassignTruckDialog({
         targetTruckId,
         onConflict,
       });
-      toast.success(t("success", { plate }));
-      close();
+      setConflict(null);
+      setDonePlate(plate);
     } catch (error) {
       const busy = readConflict(error);
       if (busy) {
@@ -139,12 +162,46 @@ export function ReassignTruckDialog({
     <Dialog
       open={open}
       onOpenChange={(next) => {
+        // Закрити хрестиком після успіху — те саме, що натиснути кнопку:
+        // лишати сторінку зі старими правами не можна в жодному разі.
+        if (!next && donePlate) {
+          finish();
+          return;
+        }
         if (!next) reset();
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-md">
-        {conflict ? (
+      <DialogContent className="sm:max-w-lg">
+        {assignTruck.isPending ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-base">{t("title")}</DialogTitle>
+              <DialogDescription>{t("pending")}</DialogDescription>
+            </DialogHeader>
+            {/* Поки бекенд переставляє рейси, списки під діалогом встигають
+                перемалюватись по кілька разів. Показуємо спокійний екран
+                очікування замість того, щоб людина дивилась на це метушіння. */}
+            <div className="flex flex-col items-center justify-center gap-3 py-10">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          </>
+        ) : donePlate ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                {t("successTitle")}
+              </DialogTitle>
+              <DialogDescription>
+                {t("success", { plate: donePlate })}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end">
+              <Button onClick={finish}>{tActions("ok")}</Button>
+            </div>
+          </>
+        ) : conflict ? (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base">

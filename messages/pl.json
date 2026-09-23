@@ -595,7 +595,12 @@
         "swap": "Zamień trasy",
         "swapHint": "Tamta trasa przejdzie na {plate}",
         "completeOther": "Zakończ tamtą trasę",
-        "completeOtherHint": "Zostanie dostarczona, pojazd się zwolni"
+        "completeOtherHint": "Zostanie dostarczona, pojazd się zwolni",
+        "successTitle": "Zmiana wykonana",
+        "pending": "Trwa zmiana…",
+        "swappedTitle": "Pojazd został zmieniony",
+        "swappedBody": "Trasa „{trip}” jest teraz na pojeździe {plate}.",
+        "swappedAction": "Przejdź do trasy"
       }
     },
     "newTrip": {
@@ -653,11 +658,7 @@
       "noPhotos": "Brak zdjęć.",
       "noDocuments": "Brak dokumentów."
     },
-    "deactivate": "Dezaktywuj",
-    "handedOver": {
-      "body": "Pojazd {plate} należy teraz do innego menedżera.",
-      "action": "Do moich pojazdów"
-    }
+    "deactivate": "Dezaktywuj"
   },
   "account": {
     "title": "Ustawienia konta",

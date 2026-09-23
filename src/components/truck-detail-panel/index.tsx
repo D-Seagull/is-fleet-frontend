@@ -174,8 +174,11 @@ export function TruckDetailPanel({
     } else {
       setActiveTab(canAccessChat ? "chat" : "trips");
     }
+    // Свідомо без managesTripHere: доступ може змінитись просто під відкритою
+    // панеллю (хтось перецепив рейс), і перекидати людину з Чату на Рейси
+    // посеред дії — гірше за вимкнену вкладку, яку вона бачить і розуміє.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [truck?.id, user?.id, managesTripHere]);
+  }, [truck?.id, user?.id]);
 
   if (isLoading) {
     return (
@@ -192,6 +195,7 @@ export function TruckDetailPanel({
   const isCurrentManager = truck.managerId === user?.id;
   const isChatEnabled =
     user?.role === "ADMIN" || isCurrentManager || managesTripHere;
+
 
   function handleOpenTrip(tripId: string) {
     setChatTripId(tripId);

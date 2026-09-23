@@ -595,7 +595,12 @@
         "swap": "Заменить рейсы",
         "swapHint": "Встречный рейс перейдёт на {plate}",
         "completeOther": "Завершить тот рейс",
-        "completeOtherHint": "Станет доставленным, машина освободится"
+        "completeOtherHint": "Станет доставленным, машина освободится",
+        "successTitle": "Замена выполнена",
+        "pending": "Выполняем замену…",
+        "swappedTitle": "Машина изменилась",
+        "swappedBody": "Рейс «{trip}» теперь на машине {plate}.",
+        "swappedAction": "Перейти к рейсу"
       }
     },
     "newTrip": {
@@ -653,11 +658,7 @@
       "noPhotos": "Нет фото.",
       "noDocuments": "Нет документов."
     },
-    "deactivate": "Деактивировать",
-    "handedOver": {
-      "body": "Машина {plate} теперь у другого менеджера.",
-      "action": "К моим машинам"
-    }
+    "deactivate": "Деактивировать"
   },
   "account": {
     "title": "Настройки аккаунта",

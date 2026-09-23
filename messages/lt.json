@@ -595,7 +595,12 @@
         "swap": "Sukeisti reisus",
         "swapHint": "Tas reisas persikels į {plate}",
         "completeOther": "Užbaigti tą reisą",
-        "completeOtherHint": "Jis taps pristatytas, vilkikas atsilaisvins"
+        "completeOtherHint": "Jis taps pristatytas, vilkikas atsilaisvins",
+        "successTitle": "Pakeitimas atliktas",
+        "pending": "Vykdoma…",
+        "swappedTitle": "Vilkikas pasikeitė",
+        "swappedBody": "Reisas „{trip}“ dabar vykdomas vilkiku {plate}.",
+        "swappedAction": "Eiti į reisą"
       }
     },
     "newTrip": {
@@ -653,11 +658,7 @@
       "noPhotos": "Nuotraukų nėra.",
       "noDocuments": "Dokumentų nėra."
     },
-    "deactivate": "Deaktyvuoti",
-    "handedOver": {
-      "body": "Vilkikas {plate} dabar priklauso kitam vadybininkui.",
-      "action": "Į mano vilkikus"
-    }
+    "deactivate": "Deaktyvuoti"
   },
   "account": {
     "title": "Paskyros nustatymai",
