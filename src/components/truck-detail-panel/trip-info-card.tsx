@@ -103,12 +103,11 @@ export function TripInfoCard({
     role === "ADMIN" ||
     role === "TEAMLEAD" ||
     (role === "MANAGER" && trip.truck?.managerId === userId);
-  // Перепризначення веде менеджер рейсу, а не менеджер траку: рейс лишається
-  // за ним і після переїзду на чужу машину.
+  // Перепризначення — спільна дія менеджерів і тімлідів, не привʼязана до
+  // того, хто веде рейс: перецеп трапляється в дорозі, і розбирається з ним
+  // той, хто на місці.
   const canReassign =
-    role === "ADMIN" ||
-    role === "TEAMLEAD" ||
-    (role === "MANAGER" && trip.managerId === userId);
+    role === "ADMIN" || role === "TEAMLEAD" || role === "MANAGER";
   const [editing, setEditing] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
 
