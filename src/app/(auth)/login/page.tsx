@@ -20,7 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
-import { writeUiLocaleCookie, type UiLocaleDb } from "@/lib/ui-locale";
+import { syncUiLocaleFromAccount, type UiLocaleDb } from "@/lib/ui-locale";
 
 export default function LoginPage() {
   const t = useTranslations("auth.login");
@@ -50,8 +50,7 @@ export default function LoginPage() {
       const { access_token, user } = res.data;
 
       login(user, access_token, rememberMe);
-      const uiLocale = user.uiLocale as UiLocaleDb | undefined;
-      if (uiLocale) writeUiLocaleCookie(uiLocale);
+      syncUiLocaleFromAccount(user.uiLocale as UiLocaleDb | undefined);
       router.push(user.role === "ADMIN" ? "/admin" : user.role === "MANAGER" ? "/my-trucks" : "/trucks");
     } catch (err) {
       let msg: string | string[] | undefined;

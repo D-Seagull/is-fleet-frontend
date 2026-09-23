@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/select";
 import { useUpdateMe } from "@/hooks/use-avatar";
 import { useUser } from "@/store/auth";
-import { writeUiLocaleCookie, type UiLocaleDb } from "@/lib/ui-locale";
+import {
+  markUiLocaleExplicit,
+  writeUiLocaleCookie,
+  type UiLocaleDb,
+} from "@/lib/ui-locale";
 
 /**
  * UI-locale switcher. On change:
@@ -62,11 +66,13 @@ export function UiLocalePicker({
         await updateMe.mutateAsync({ uiLocale: next });
       }
       writeUiLocaleCookie(next);
+      markUiLocaleExplicit();
       router.refresh();
     } catch {
       // Even on backend failure, honour the local pick so the switcher
       // still feels responsive. Next login will re-sync from the DB.
       writeUiLocaleCookie(next);
+      markUiLocaleExplicit();
       router.refresh();
     } finally {
       setPending(false);
