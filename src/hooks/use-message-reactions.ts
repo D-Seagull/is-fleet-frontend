@@ -22,6 +22,19 @@ export interface MessageReactionRow {
 export const QUICK_REACTION_EMOJIS = ["👍", "😮", "😢"] as const;
 export type QuickReactionEmoji = (typeof QUICK_REACTION_EMOJIS)[number];
 
+// Short tap sound on every reaction toggle (add/remove/change emoji).
+// Autoplay is only blocked before the user's first interaction — a click is
+// itself an interaction, so this doesn't hit the same gate as `useChatSoundSync`.
+function playReactionSound() {
+  try {
+    const a = new Audio("/sounds/reaction.mp3");
+    a.volume = 0.6;
+    void a.play().catch(() => {});
+  } catch {
+    /* Audio constructor unavailable (SSR / very old browser) — silent */
+  }
+}
+
 const REACT_ENDPOINT: Record<ReactionTargetType, string> = {
   DM: "/direct-messages/messages",
   GROUP: "/group-messages/messages",
@@ -57,6 +70,7 @@ export function useToggleReaction(type: ReactionTargetType) {
     // trigger a full refetch of every open chat (+1s wasted). The WS
     // event already keeps everyone in sync.
     onMutate: ({ messageId, emoji }) => {
+      playReactionSound();
       // Without a known userId we can't safely write an optimistic row —
       // the row would land in "others" instead of replacing the user's
       // own reaction. Skip the patch and let the WS echo populate state.
@@ -132,6 +146,7 @@ export function useReactionsSocketSync(opts?: {
   tripId?: string | null;
 }) {
   const queryClient = useQueryClient();
+  const myId = useAuthStore((s) => s.user?.id);
   const dmOther = opts?.dmOtherUserId ?? null;
   const groupId = opts?.groupId ?? null;
   const tripId = opts?.tripId ?? null;
@@ -142,8 +157,12 @@ export function useReactionsSocketSync(opts?: {
       targetType: ReactionTargetType;
       targetId: string;
       reactions: MessageReactionRow[];
+      actorId?: string;
     }) => {
       const { targetType, targetId, reactions } = payload;
+      // The actor already heard the tap sound instantly via onMutate — only
+      // the OTHER participant should hear it here, off the socket echo.
+      if (payload.actorId && payload.actorId !== myId) playReactionSound();
       const mutator = <
         T extends { id: string; reactions?: MessageReactionRow[] },
       >(
@@ -181,5 +200,5 @@ export function useReactionsSocketSync(opts?: {
     return () => {
       socket.off("reaction_changed", onChange);
     };
-  }, [queryClient, dmOther, groupId, tripId]);
+  }, [queryClient, dmOther, groupId, tripId, myId]);
 }

@@ -20,9 +20,15 @@ const ACTIVITY_EVENTS = [
 /**
  * Auto-AWAY for managers / teamleads / admins. Watches mouse, keyboard
  * and touch activity; after 15 min of silence we flip the user to AWAY
- * (when they were ONLINE) and back to ONLINE as soon as they come
- * back — but only if the AWAY came from us. Manual BUSY / SLEEP /
- * VACATION / AWAY clicks win.
+ * (when they were ONLINE) and back to ONLINE the moment any activity is
+ * seen while the status is AWAY.
+ *
+ * The revert check reads live status from the store rather than a "did
+ * WE set this" flag, so it also recovers a stale AWAY left over from a
+ * previous session/reload (status is persisted server-side and a plain
+ * page reload doesn't touch it — only a fresh login resets it). Manual
+ * BUSY / SLEEP / VACATION stay untouched by both the sweep and the
+ * revert; only AWAY is considered "come back" territory.
  *
  * Drivers are skipped. For a driver, "no input for 15 min" means they
  * are driving the truck, which is the opposite of "not at the desk".
@@ -30,9 +36,10 @@ const ACTIVITY_EVENTS = [
 export function useAutoAway() {
   const role = useAuthStore((s) => s.user?.role);
   const updateMe = useUpdateMe();
-  // True when WE flipped the user to AWAY automatically. We use it to
-  // decide whether to revert on activity — and to skip manual AWAYs.
-  const wasAutoAwayRef = useRef(false);
+  // Dedupe: without this, a burst of mousemoves before the optimistic
+  // status update commits would each pass the AWAY check and fire their
+  // own mutate() call.
+  const revertingRef = useRef(false);
 
   const enabled =
     role === "MANAGER" || role === "TEAMLEAD" || role === "ADMIN";
@@ -45,26 +52,23 @@ export function useAutoAway() {
     const onActivity = () => {
       lastActivity = Date.now();
 
-      // Fast path: 99 % of mousemoves hit this branch.
-      if (!wasAutoAwayRef.current) return;
-
-      // Restore only if the current status is still the AWAY we set;
-      // a manual change since then (BUSY, SLEEP, …) wins.
+      if (revertingRef.current) return;
       const current = useAuthStore.getState().user;
       if (current?.status === "AWAY") {
-        updateMe.mutate({ status: "ONLINE" });
+        revertingRef.current = true;
+        updateMe.mutate(
+          { status: "ONLINE" },
+          { onSettled: () => { revertingRef.current = false; } },
+        );
       }
-      wasAutoAwayRef.current = false;
     };
 
     const sweep = window.setInterval(() => {
-      if (wasAutoAwayRef.current) return;
       if (Date.now() - lastActivity < IDLE_MS) return;
       const current = useAuthStore.getState().user;
       // Respect anything other than ONLINE — the user chose to be
-      // BUSY / SLEEP / VACATION / AWAY themselves.
+      // BUSY / SLEEP / VACATION themselves.
       if (current?.status !== "ONLINE") return;
-      wasAutoAwayRef.current = true;
       updateMe.mutate({ status: "AWAY" });
     }, CHECK_EVERY_MS);
 

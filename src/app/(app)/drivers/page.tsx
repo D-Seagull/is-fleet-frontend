@@ -41,6 +41,7 @@ import {
   useCreateDriver,
   useActivateDriver,
   type Language,
+  type DriverExistsElsewhereConflict,
 } from "@/hooks/use-drivers";
 import { useAuthStore } from "@/store/auth";
 import { BackButton } from "@/components/back-button";
@@ -73,6 +74,8 @@ export default function DriversPage() {
   const [phone, setPhone] = useState("");
   const [language, setLanguage] = useState<Language>("EN");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [existsElsewhere, setExistsElsewhere] =
+    useState<DriverExistsElsewhereConflict["driver"] | null>(null);
 
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -107,6 +110,7 @@ export default function DriversPage() {
     setPhone("");
     setLanguage("EN");
     setSubmitError(null);
+    setExistsElsewhere(null);
   }
 
   function handleDialogChange(open: boolean) {
@@ -114,8 +118,8 @@ export default function DriversPage() {
     if (!open) resetForm();
   }
 
-  async function handleCreate() {
-    if (!canSubmit) return;
+  async function handleCreate(confirmTransfer = false) {
+    if (!confirmTransfer && !canSubmit) return;
     setSubmitError(null);
     try {
       await createDriver.mutateAsync({
@@ -123,16 +127,27 @@ export default function DriversPage() {
         lastName: lastName.trim() || null,
         phone: cleanedPhone,
         language,
+        confirmTransfer,
       });
       resetForm();
       setDialogOpen(false);
     } catch (e) {
       if (isAxiosError(e)) {
-        const data = e.response?.data as { message?: string | string[] } | undefined;
-        const msg = Array.isArray(data?.message)
-          ? data?.message?.[0]
-          : data?.message;
-        setSubmitError(msg ?? t("createError"));
+        const data = e.response?.data as
+          | { message?: string | string[] | DriverExistsElsewhereConflict }
+          | undefined;
+        const inner = data?.message;
+        if (
+          inner &&
+          typeof inner === "object" &&
+          !Array.isArray(inner) &&
+          inner.code === "DRIVER_EXISTS_ELSEWHERE"
+        ) {
+          setExistsElsewhere(inner.driver);
+          return;
+        }
+        const msg = Array.isArray(inner) ? inner[0] : inner;
+        setSubmitError((typeof msg === "string" ? msg : null) ?? t("createError"));
       } else {
         setSubmitError(t("createError"));
       }
@@ -155,8 +170,38 @@ export default function DriversPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t("addDialogTitle")}</DialogTitle>
+              <DialogTitle>
+                {existsElsewhere ? t("existsElsewhereTitle") : t("addDialogTitle")}
+              </DialogTitle>
             </DialogHeader>
+            {existsElsewhere ? (
+              <div className="flex flex-col gap-4 py-4">
+                <p className="text-sm text-muted-foreground">
+                  {t("existsElsewhereBody", {
+                    name: fullName(existsElsewhere) ?? existsElsewhere.id,
+                  })}
+                </p>
+                {submitError && (
+                  <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    {submitError}
+                  </p>
+                )}
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setExistsElsewhere(null)}>
+                    {t("cancelTransfer")}
+                  </Button>
+                  <Button
+                    onClick={() => handleCreate(true)}
+                    disabled={createDriver.isPending}
+                  >
+                    {createDriver.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {t("confirmTransfer")}
+                  </Button>
+                </div>
+              </div>
+            ) : (
             <div className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="d-firstName">{t("firstNameLabel")}</Label>
@@ -223,13 +268,14 @@ export default function DriversPage() {
                   {submitError}
                 </p>
               )}
-              <Button onClick={handleCreate} disabled={!canSubmit}>
+              <Button onClick={() => handleCreate()} disabled={!canSubmit}>
                 {createDriver.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 {t("addButton")}
               </Button>
             </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>

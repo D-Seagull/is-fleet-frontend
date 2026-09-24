@@ -62,6 +62,16 @@ export interface CreateDriverPayload {
   lastName: string | null;
   phone: string;
   language?: Language;
+  /** Set after the user confirms the "driver already exists elsewhere" prompt. */
+  confirmTransfer?: boolean;
+}
+
+/** Shape of a 409's `response.data.message` when the backend flags a phone
+ *  match against a driver in another company (see users.service.ts). */
+export interface DriverExistsElsewhereConflict {
+  code: "DRIVER_EXISTS_ELSEWHERE";
+  message: string;
+  driver: { id: string; firstName: string; lastName: string | null };
 }
 
 export function useDrivers() {
