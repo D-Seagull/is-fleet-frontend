@@ -694,6 +694,7 @@
       "title": "Interface language",
       "description": "The language used for buttons, forms and app messages. Does not affect chat-message translation."
     },
+    "appVersion": "App version v{version}",
     "danger": {
       "action": "Delete account",
       "menuLabel": "Account actions",

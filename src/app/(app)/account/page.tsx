@@ -50,6 +50,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getDesktopVersion } from "@/lib/desktop-notify";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -421,6 +422,23 @@ function AccountMenu() {
   );
 }
 
+/** Installed desktop-shell version; renders nothing in a regular browser. */
+function DesktopVersion() {
+  const t = useTranslations("account");
+  const [version, setVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    void getDesktopVersion().then(setVersion);
+  }, []);
+
+  if (!version) return null;
+  return (
+    <p className="text-xs text-muted-foreground text-right">
+      {t("appVersion", { version })}
+    </p>
+  );
+}
+
 export default function AccountSettingsPage() {
   const t = useTranslations("account");
   return (
@@ -457,6 +475,8 @@ export default function AccountSettingsPage() {
           <UiLocalePicker />
         </CardContent>
       </Card>
+
+      <DesktopVersion />
     </div>
   );
 }

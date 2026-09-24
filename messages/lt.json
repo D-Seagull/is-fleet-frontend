@@ -694,6 +694,7 @@
       "title": "Sąsajos kalba",
       "description": "Kalba, kuria rodomi mygtukai, formos ir pranešimai. Netaikoma pokalbių žinučių vertimui."
     },
+    "appVersion": "Programos versija v{version}",
     "danger": {
       "action": "Ištrinti paskyrą",
       "menuLabel": "Paskyros veiksmai",

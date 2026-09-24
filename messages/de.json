@@ -694,6 +694,7 @@
       "title": "Oberflächensprache",
       "description": "Sprache für Schaltflächen, Formulare und Meldungen der App. Beeinflusst nicht die Übersetzung von Chat-Nachrichten."
     },
+    "appVersion": "App-Version v{version}",
     "danger": {
       "action": "Konto löschen",
       "menuLabel": "Kontoaktionen",

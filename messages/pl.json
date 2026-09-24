@@ -694,6 +694,7 @@
       "title": "Język interfejsu",
       "description": "Język używany do przycisków, formularzy i komunikatów aplikacji. Nie wpływa na tłumaczenie wiadomości czatu."
     },
+    "appVersion": "Wersja aplikacji v{version}",
     "danger": {
       "action": "Usuń konto",
       "menuLabel": "Akcje konta",

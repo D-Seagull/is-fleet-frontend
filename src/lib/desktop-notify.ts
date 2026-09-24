@@ -28,6 +28,24 @@ function tauriNotify(): TauriNotification | null {
   return tauri?.notification ?? null;
 }
 
+/**
+ * Version of the installed desktop shell (tauri.conf.json "version"), or
+ * null in a regular browser. Uses `core:app:default`, already granted.
+ */
+export async function getDesktopVersion(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  const tauri = (
+    window as unknown as {
+      __TAURI__?: { app?: { getVersion: () => Promise<string> } };
+    }
+  ).__TAURI__;
+  try {
+    return (await tauri?.app?.getVersion()) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 let primed = false;
 
 /** Ask for notification permission up front (browser: on first gesture). */
