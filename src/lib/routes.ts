@@ -35,6 +35,21 @@ export const OPEN_ROUTES = ["/privacy", "/terms", "/delete-account"];
  */
 export const INFRA_ROUTES = ["/monitoring"];
 
+/**
+ * Where each role lands after signing in (login, register, or opening an
+ * auth page while already signed in). One map so the three entry points
+ * cannot drift apart.
+ */
+const HOME_BY_ROLE: Record<string, string> = {
+  ADMIN: "/admin",
+  MANAGER: "/my-trucks",
+  TEAMLEAD: "/managers",
+};
+
+export function homeRouteFor(role: string | null | undefined): string {
+  return (role && HOME_BY_ROLE[role]) || "/trucks";
+}
+
 /** True for a path that must be served without any authentication check. */
 export function isOpenRoute(pathname: string): boolean {
   return [...OPEN_ROUTES, ...INFRA_ROUTES].some(
