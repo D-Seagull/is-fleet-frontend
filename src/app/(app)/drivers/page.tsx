@@ -231,7 +231,7 @@ export default function DriversPage() {
                   type="tel"
                   inputMode="tel"
                   autoComplete="tel"
-                  placeholder="+380501234567"
+                  placeholder="+48501234567"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   aria-invalid={!!phoneError}
