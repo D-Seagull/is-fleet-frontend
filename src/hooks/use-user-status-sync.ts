@@ -1,9 +1,24 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { getSocket } from "@/lib/socket";
+import {
+  dbToCookie,
+  markUiLocaleExplicit,
+  readUiLocaleCookie,
+  writeUiLocaleCookie,
+} from "@/lib/ui-locale";
 import { useAuthStore } from "@/store/auth";
+
+type AuthUser = NonNullable<ReturnType<typeof useAuthStore.getState>["user"]>;
+
+interface ProfileUpdatedEvent {
+  user: Partial<AuthUser> & { id: string };
+  /** Fields the edit touched — e.g. ["firstName"], ["uiLocale", "language"]. */
+  changed: string[];
+}
 
 type Status = "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
 
@@ -25,6 +40,7 @@ interface UserStatusEvent {
  */
 export function useUserStatusSync() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
   const myId = useAuthStore((s) => s.user?.id);
 
@@ -272,11 +288,37 @@ export function useUserStatusSync() {
       }
     };
 
+    // `profileUpdated` (sent to my own `userId` room after any edit of my
+    // profile — from another tab, the desktop app, a phone, or a manager
+    // editing a driver): merge it into the store so name / avatar / phone
+    // repaint everywhere, and follow a UI-language switch made elsewhere.
+    const onProfile = (evt: ProfileUpdatedEvent) => {
+      const current = useAuthStore.getState().user;
+      if (!current || evt.user.id !== current.id) return;
+      setUser({ ...current, ...evt.user });
+      void queryClient.invalidateQueries({ queryKey: ["managers"] });
+      void queryClient.invalidateQueries({ queryKey: ["drivers"] });
+
+      const ui = evt.user.uiLocale;
+      if (
+        evt.changed.includes("uiLocale") &&
+        ui &&
+        readUiLocaleCookie() !== dbToCookie(ui)
+      ) {
+        // The same person picked it by hand elsewhere — treat it as explicit.
+        writeUiLocaleCookie(ui);
+        markUiLocaleExplicit();
+        router.refresh();
+      }
+    };
+
     socket.on("userStatusChanged", onChange);
     socket.on("companyStatusChanged", onCompanyChange);
+    socket.on("profileUpdated", onProfile);
     return () => {
       socket.off("userStatusChanged", onChange);
       socket.off("companyStatusChanged", onCompanyChange);
+      socket.off("profileUpdated", onProfile);
     };
-  }, [queryClient, setUser, myId]);
+  }, [queryClient, setUser, myId, router]);
 }

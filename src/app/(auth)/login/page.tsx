@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { api } from "@/lib/api";
+import { homeRouteFor } from "@/lib/routes";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { syncUiLocaleFromAccount, type UiLocaleDb } from "@/lib/ui-locale";
@@ -51,7 +52,7 @@ export default function LoginPage() {
 
       login(user, access_token, rememberMe);
       syncUiLocaleFromAccount(user.uiLocale as UiLocaleDb | undefined);
-      router.push(user.role === "ADMIN" ? "/admin" : user.role === "MANAGER" ? "/my-trucks" : "/trucks");
+      router.push(homeRouteFor(user.role));
     } catch (err) {
       let msg: string | string[] | undefined;
       if (isAxiosError(err)) {

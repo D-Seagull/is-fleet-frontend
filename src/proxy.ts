@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AUTH_ROUTES, isOpenRoute } from "@/lib/routes";
+import { AUTH_ROUTES, homeRouteFor, isOpenRoute } from "@/lib/routes";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -25,7 +25,7 @@ export function proxy(request: NextRequest) {
       const user = userCookie
         ? JSON.parse(decodeURIComponent(userCookie))
         : null;
-      const redirectTo = user?.role === "ADMIN" ? "/admin" : "/trucks";
+      const redirectTo = homeRouteFor(user?.role);
       return NextResponse.redirect(new URL(redirectTo, request.url));
     }
     return NextResponse.next();

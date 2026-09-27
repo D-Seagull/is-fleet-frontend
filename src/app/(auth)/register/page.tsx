@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/lib/api";
+import { homeRouteFor } from "@/lib/routes";
 import { useAuthStore } from "@/store/auth";
 import { syncUiLocaleFromAccount, type UiLocaleDb } from "@/lib/ui-locale";
 
@@ -133,15 +134,11 @@ function RegisterInner() {
       login(user, access_token, true);
       syncUiLocaleFromAccount(user.uiLocale);
 
-      router.push(
-        user.role === "ADMIN"
-          ? "/admin"
-          : user.role === "MANAGER"
-            ? "/my-trucks"
-            : "/trucks",
-      );
+      router.push(homeRouteFor(user.role));
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string | string[] } } };
+      const e = err as {
+        response?: { data?: { message?: string | string[] } };
+      };
       const msg = e.response?.data?.message;
       if (Array.isArray(msg)) setError(msg.join(", "));
       else if (typeof msg === "string") setError(msg);
@@ -169,7 +166,9 @@ function RegisterInner() {
             <ShieldCheck className="h-6 w-6 text-destructive" />
           </div>
           <CardTitle className="text-2xl">{t("errorCardTitle")}</CardTitle>
-          <CardDescription>{checkError ?? t("errorCardUnknown")}</CardDescription>
+          <CardDescription>
+            {checkError ?? t("errorCardUnknown")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Button
