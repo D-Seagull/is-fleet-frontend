@@ -15,6 +15,8 @@ export interface AdminCompanyUser {
   statusUntil: string | null;
   avatar: string | null;
   createdAt: string;
+  /** True when the user has a live socket right now (real presence). */
+  isOnline: boolean;
 }
 
 export interface AdminCompanyDetail {
