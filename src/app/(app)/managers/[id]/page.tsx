@@ -300,7 +300,7 @@ export default function ManagerDetailPage({
                                 e.target.value !== (manager.phone ?? ""),
                               );
                             }}
-                            placeholder="+12345678901"
+                            placeholder="+48501234567"
                             className={`h-8 text-sm ${
                               phoneDirty && !phoneValid
                                 ? "border-destructive focus-visible:ring-destructive"

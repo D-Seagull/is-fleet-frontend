@@ -53,6 +53,7 @@ import {
   useResendCompanyInvite,
 } from "@/hooks/use-admin-company";
 import type { AdminCompanyUser } from "@/hooks/use-admin-company";
+import { resolveDisplayStatus, STATUS_COLOR } from "@/lib/status";
 
 export default function AdminCompanyDetailPage() {
   const t = useTranslations("admin.detail");
@@ -465,7 +466,9 @@ function UsersCard({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((u) => (
+              {users.map((u) => {
+                const ds = resolveDisplayStatus(u, u.isOnline);
+                return (
                 <TableRow key={u.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -486,16 +489,9 @@ function UsersCard({
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
-                      <span
-                        className={
-                          "h-2 w-2 rounded-full " +
-                          (u.status === "ONLINE"
-                            ? "bg-emerald-500"
-                            : "bg-muted-foreground/30")
-                        }
-                      />
+                      <span className={"h-2 w-2 rounded-full " + STATUS_COLOR[ds]} />
                       <span className="text-sm text-muted-foreground">
-                        {tStatus(u.status)}
+                        {tStatus(ds)}
                       </span>
                     </div>
                   </TableCell>
@@ -503,7 +499,8 @@ function UsersCard({
                     {u.email ?? u.phone ?? "—"}
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         )}

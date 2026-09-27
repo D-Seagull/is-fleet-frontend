@@ -437,7 +437,7 @@ function DriverDetailContent({ id }: { id: string }) {
                           <Input
                             value={phone}
                             onChange={(e) => handlePhoneChange(e.target.value)}
-                            placeholder="+12345678901"
+                            placeholder="+48501234567"
                             className={`h-8 text-sm ${
                               phoneDirty && !phoneValid
                                 ? "border-destructive focus-visible:ring-destructive"

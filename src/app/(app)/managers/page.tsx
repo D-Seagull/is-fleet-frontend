@@ -193,7 +193,7 @@ export default function ManagersPage() {
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+380501234567"
+                  placeholder="+48501234567"
                   value={newPhone}
                   onChange={(e) => setNewPhone(e.target.value)}
                   required
