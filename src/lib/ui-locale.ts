@@ -30,6 +30,16 @@ export function writeUiLocaleCookie(db: UiLocaleDb): void {
   document.cookie = `${COOKIE_NAME}=${value}; path=/; max-age=${ONE_YEAR_SECONDS}; samesite=lax`;
 }
 
+/** The locale next-intl is currently rendering (null before any cookie). */
+export function readUiLocaleCookie(): UiLocaleCookie | null {
+  if (typeof document === "undefined") return null;
+  const hit = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${COOKIE_NAME}=`));
+  return hit ? (hit.slice(COOKIE_NAME.length + 1) as UiLocaleCookie) : null;
+}
+
 /** Remember that this language came from the picker, not from an account. */
 export function markUiLocaleExplicit(): void {
   if (typeof document === "undefined") return;
