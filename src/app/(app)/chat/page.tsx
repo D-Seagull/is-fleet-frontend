@@ -887,11 +887,14 @@ function ChatPageContent() {
 
   useEffect(() => {
     const socket = getSocket();
+    // Only the person whose conversation is open — typing from any other
+    // DM used to light up the indicator here too.
+    setIsTyping(false);
     const onTyping = ({ userId }: { userId: string }) => {
-      if (userId !== user?.id) setIsTyping(true);
+      if (userId === selectedUserId) setIsTyping(true);
     };
     const onStopped = ({ userId }: { userId: string }) => {
-      if (userId !== user?.id) setIsTyping(false);
+      if (userId === selectedUserId) setIsTyping(false);
     };
     socket.on("user_typing", onTyping);
     socket.on("user_stopped_typing", onStopped);
@@ -899,7 +902,7 @@ function ChatPageContent() {
       socket.off("user_typing", onTyping);
       socket.off("user_stopped_typing", onStopped);
     };
-  }, [user?.id]);
+  }, [selectedUserId]);
 
   useEffect(() => {
     if (!selectedGroupId) return;
