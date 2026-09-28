@@ -14,7 +14,7 @@ import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ChatInput } from "@/components/chat-input";
 import { cn } from "@/lib/utils";
 import { useIsCompanyActive } from "@/store/auth";
 
@@ -32,7 +32,7 @@ export interface ReplyTarget {
 }
 
 // Bottom input bar of the trip chat — mode-switches between plain send,
-// reply, and edit while sharing one Input + one Send button.
+// reply, and edit while sharing one ChatInput + one Send button.
 export function ChatComposer({
   isActiveParticipant,
   text,
@@ -189,7 +189,7 @@ export function ChatComposer({
             </div>
           )}
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-end gap-1.5">
             <Button
               size="icon"
               variant="ghost"
@@ -223,19 +223,19 @@ export function ChatComposer({
               <Smile className="h-4 w-4 text-muted-foreground" />
             </Button>
 
-            <Input
+            <ChatInput
               placeholder={
                 editing ? t("editPlaceholder") : t("messagePlaceholder")
               }
               value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-                if (e.target.value.length > 0) notifyTyping();
+              onValueChange={(v) => {
+                setText(v);
+                if (v.length > 0) notifyTyping();
                 else notifyStopTyping();
               }}
+              onEnter={handleSend}
               onBlur={notifyStopTyping}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) handleSend();
                 if (e.key === "Escape") {
                   setShowEmoji(false);
                   if (editing) {

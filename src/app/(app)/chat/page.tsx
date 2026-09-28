@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ChatInput } from "@/components/chat-input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 import { GroupActionsMenu } from "@/components/group-actions-menu";
@@ -232,6 +233,7 @@ function ChatPageContent() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const composerFormRef = useRef<HTMLFormElement>(null);
   const selectedUserIdRef = useRef(selectedUserId);
   const selectedGroupIdRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
@@ -887,11 +889,14 @@ function ChatPageContent() {
 
   useEffect(() => {
     const socket = getSocket();
+    // Only the person whose conversation is open — typing from any other
+    // DM used to light up the indicator here too.
+    setIsTyping(false);
     const onTyping = ({ userId }: { userId: string }) => {
-      if (userId !== user?.id) setIsTyping(true);
+      if (userId === selectedUserId) setIsTyping(true);
     };
     const onStopped = ({ userId }: { userId: string }) => {
-      if (userId !== user?.id) setIsTyping(false);
+      if (userId === selectedUserId) setIsTyping(false);
     };
     socket.on("user_typing", onTyping);
     socket.on("user_stopped_typing", onStopped);
@@ -899,7 +904,7 @@ function ChatPageContent() {
       socket.off("user_typing", onTyping);
       socket.off("user_stopped_typing", onStopped);
     };
-  }, [user?.id]);
+  }, [selectedUserId]);
 
   useEffect(() => {
     if (!selectedGroupId) return;
@@ -1081,8 +1086,8 @@ function ChatPageContent() {
     setReplyingTo(null);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMessage(e.target.value);
+  const handleInputChange = (value: string) => {
+    setNewMessage(value);
     const socket = getSocket();
     if (selectedGroupId) {
       socket.emit("group_typing", {
@@ -1762,11 +1767,11 @@ function ChatPageContent() {
                               <div
                                 id={`chat-msg-${msg.id}`}
                                 className={cn(
-                                  "rounded-lg max-w-full transition-shadow",
+                                  "rounded-2xl max-w-full transition-shadow",
                                   msg.deletedAt
                                     ? "bg-muted/40 text-muted-foreground italic px-3 py-1"
                                     : cn(
-                                        "px-4 py-2",
+                                        "px-3 py-2",
                                         isOwn
                                           ? "bg-primary text-primary-foreground"
                                           : "bg-muted",
@@ -1803,7 +1808,7 @@ function ChatPageContent() {
                                   className={cn(
                                     msg.deletedAt
                                       ? "text-xs whitespace-nowrap"
-                                      : "text-sm whitespace-pre-wrap break-all",
+                                      : "text-sm whitespace-pre-wrap break-words",
                                   )}
                                 >
                                   {msg.deletedAt
@@ -2135,36 +2140,37 @@ function ChatPageContent() {
                   <div ref={messagesEndRef} />
                 </div>
               )}
+              {/* Typing — no background of its own: sticks to the bottom of
+                  the message list, over the chat wallpaper. */}
+              {!selectedGroupId && isTyping && (
+                <div className="sticky bottom-0 pt-1 text-xs text-muted-foreground flex items-center gap-1">
+                  <span>
+                    {tChat("userTyping", {
+                      name: fullName(selectedUser) || tChat("someone"),
+                    })}
+                  </span>
+                  <span className="flex gap-0.5">
+                    <span className="animate-bounce delay-0">.</span>
+                    <span className="animate-bounce delay-100">.</span>
+                    <span className="animate-bounce delay-200">.</span>
+                  </span>
+                </div>
+              )}
+              {selectedGroupId && isGroupTyping && (
+                <div className="sticky bottom-0 pt-1 text-xs text-muted-foreground flex items-center gap-1">
+                  <span>
+                    {tChat("userTyping", {
+                      name: groupTypingName ?? tChat("someone"),
+                    })}
+                  </span>
+                  <span className="flex gap-0.5">
+                    <span className="animate-bounce delay-0">.</span>
+                    <span className="animate-bounce delay-100">.</span>
+                    <span className="animate-bounce delay-200">.</span>
+                  </span>
+                </div>
+              )}
             </div>
-
-            {!selectedGroupId && isTyping && (
-              <div className="px-4 py-1 shrink-0 text-xs text-muted-foreground flex items-center gap-1">
-                <span>
-                  {tChat("userTyping", {
-                    name: fullName(selectedUser) || tChat("someone"),
-                  })}
-                </span>
-                <span className="flex gap-0.5">
-                  <span className="animate-bounce delay-0">.</span>
-                  <span className="animate-bounce delay-100">.</span>
-                  <span className="animate-bounce delay-200">.</span>
-                </span>
-              </div>
-            )}
-            {selectedGroupId && isGroupTyping && (
-              <div className="px-4 py-1 shrink-0 text-xs text-muted-foreground flex items-center gap-1">
-                <span>
-                  {tChat("userTyping", {
-                    name: groupTypingName ?? tChat("someone"),
-                  })}
-                </span>
-                <span className="flex gap-0.5">
-                  <span className="animate-bounce delay-0">.</span>
-                  <span className="animate-bounce delay-100">.</span>
-                  <span className="animate-bounce delay-200">.</span>
-                </span>
-              </div>
-            )}
 
             {editing && (
               <div className="px-4 pt-2 shrink-0 border-t flex items-start gap-2">
@@ -2257,9 +2263,10 @@ function ChatPageContent() {
               </div>
             ) : (
               <form
+                ref={composerFormRef}
                 onSubmit={handleSend}
                 className={cn(
-                  "p-4 shrink-0 flex gap-2",
+                  "p-4 shrink-0 flex items-end gap-2",
                   !replyingTo &&
                     !editing &&
                     pendingFiles.length === 0 &&
@@ -2309,9 +2316,10 @@ function ChatPageContent() {
                     />
                   </PopoverContent>
                 </Popover>
-                <Input
+                <ChatInput
                   value={newMessage}
-                  onChange={handleInputChange}
+                  onValueChange={handleInputChange}
+                  onEnter={() => composerFormRef.current?.requestSubmit()}
                   onKeyDown={(e) => {
                     if (editing && e.key === "Escape") {
                       e.preventDefault();

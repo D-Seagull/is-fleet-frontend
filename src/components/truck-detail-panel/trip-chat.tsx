@@ -807,6 +807,21 @@ export function TripChat({
               ))}
             </>
           )}
+          {/* Typing indicator — no background of its own: sticks to the bottom
+              of the message list, over the chat wallpaper. */}
+          {typers.size > 0 && (
+            <div className="sticky bottom-0 shrink-0 px-1 text-xs text-muted-foreground flex items-center gap-1">
+              <span>
+                {Array.from(typers.values()).join(", ")}{" "}
+                {t("typing", { count: typers.size })}
+              </span>
+              <span className="flex gap-0.5">
+                <span className="animate-bounce delay-0">.</span>
+                <span className="animate-bounce delay-100">.</span>
+                <span className="animate-bounce delay-200">.</span>
+              </span>
+            </div>
+          )}
         </div>
         {/* "↓ N new" pill — visible when user scrolled up and new messages arrived */}
         {newMsgCount > 0 && (
@@ -827,21 +842,6 @@ export function TripChat({
           </button>
         )}
       </div>
-      {/* Typing indicator — animated dots matching the direct-chat style. */}
-      {typers.size > 0 && (
-        <div className="shrink-0 px-4 py-1 text-xs text-muted-foreground flex items-center gap-1">
-          <span>
-            {Array.from(typers.values()).join(", ")}{" "}
-            {t("typing", { count: typers.size })}
-          </span>
-          <span className="flex gap-0.5">
-            <span className="animate-bounce delay-0">.</span>
-            <span className="animate-bounce delay-100">.</span>
-            <span className="animate-bounce delay-200">.</span>
-          </span>
-        </div>
-      )}
-
       <ChatComposer
         isActiveParticipant={isActiveParticipant}
         text={text}

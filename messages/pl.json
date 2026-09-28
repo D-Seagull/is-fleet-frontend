@@ -370,7 +370,10 @@
     "releaseTruck": "Zwolnij ciężarówkę",
     "activate": "Aktywuj",
     "deleteConfirm": "Dezaktywować tę ciężarówkę? Zniknie z listy.",
-    "colManager": "Menedżer"
+    "colManager": "Menedżer",
+    "duplicateTitle": "Taki pojazd już istnieje",
+    "duplicateBody": "Pojazd o numerze {plate} jest już w Twojej firmie.",
+    "duplicateDeactivatedBody": "Pojazd o numerze {plate} jest już w Twojej firmie, ale jest dezaktywowany. Możesz go aktywować zamiast tworzyć nowy."
   },
   "trips": {
     "title": "Trasy",

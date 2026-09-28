@@ -370,7 +370,10 @@
     "releaseTruck": "LKW freigeben",
     "activate": "Aktivieren",
     "deleteConfirm": "Diesen LKW deaktivieren? Er verschwindet aus der Liste.",
-    "colManager": "Manager"
+    "colManager": "Manager",
+    "duplicateTitle": "Dieser LKW existiert bereits",
+    "duplicateBody": "Ein LKW mit dem Kennzeichen {plate} ist bereits in Ihrem Unternehmen.",
+    "duplicateDeactivatedBody": "Ein LKW mit dem Kennzeichen {plate} ist bereits in Ihrem Unternehmen, aber deaktiviert. Sie können ihn aktivieren, statt einen neuen anzulegen."
   },
   "trips": {
     "title": "Fahrten",

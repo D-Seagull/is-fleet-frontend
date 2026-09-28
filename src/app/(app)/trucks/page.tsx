@@ -19,6 +19,16 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -68,10 +78,17 @@ const statusColors: Record<TruckStatus, string> = {
 export default function TrucksPage() {
   const t = useTranslations("trucks");
   const tStatus = useTranslations("common.truckStatus");
+  const tActions = useTranslations("common.actions");
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [plate, setPlate] = useState("");
   const [selectedDriverId, setSelectedDriverId] = useState<string>("");
+  // Set when the backend refuses a plate that the company already has.
+  const [duplicate, setDuplicate] = useState<{
+    id: string;
+    plate: string;
+    isActive: boolean;
+  } | null>(null);
 
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -101,12 +118,30 @@ export default function TrucksPage() {
 
   async function handleCreate() {
     if (!plate.trim()) return;
-    await createTruck.mutateAsync({
-      plate: plate.trim(),
-      ...(selectedDriverId && selectedDriverId !== "none"
-        ? { currentDriverId: selectedDriverId }
-        : {}),
-    });
+    try {
+      await createTruck.mutateAsync({
+        plate: plate.trim(),
+        ...(selectedDriverId && selectedDriverId !== "none"
+          ? { currentDriverId: selectedDriverId }
+          : {}),
+      });
+    } catch (err) {
+      const data = (
+        err as {
+          response?: {
+            data?: {
+              code?: string;
+              truck?: { id: string; plate: string; isActive: boolean };
+            };
+          };
+        }
+      ).response?.data;
+      if (data?.code === "TRUCK_PLATE_EXISTS" && data.truck) {
+        setDuplicate(data.truck);
+        return;
+      }
+      throw err;
+    }
     setPlate("");
     setSelectedDriverId("");
     setDialogOpen(false);
@@ -172,6 +207,45 @@ export default function TrucksPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <AlertDialog
+        open={!!duplicate}
+        onOpenChange={(open) => !open && setDuplicate(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("duplicateTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {duplicate &&
+                t(
+                  duplicate.isActive
+                    ? "duplicateBody"
+                    : "duplicateDeactivatedBody",
+                  { plate: duplicate.plate },
+                )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            {duplicate && !duplicate.isActive ? (
+              <>
+                <AlertDialogCancel>{tActions("cancel")}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    activateTruck.mutate(duplicate.id);
+                    setPlate("");
+                    setSelectedDriverId("");
+                    setDialogOpen(false);
+                  }}
+                >
+                  {t("activate")}
+                </AlertDialogAction>
+              </>
+            ) : (
+              <AlertDialogAction>{tActions("ok")}</AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Tabs defaultValue="active">
         <div className="flex items-center justify-between gap-4">
