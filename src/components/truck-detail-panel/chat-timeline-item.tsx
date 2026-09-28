@@ -84,8 +84,10 @@ function MessageBubble({
   return (
     <div
       className={cn(
-        "group flex items-center gap-2",
-        isMine && "self-end",
+        // Full-width row: the bubble column's max-w is then a share of the
+        // chat width, not of its own content (which squeezed bubbles).
+        "group flex w-full items-center gap-2",
+        isMine && "justify-end",
       )}
     >
       {/* Sidekick — Trigger (mine / idle) + others inline. */}
@@ -119,7 +121,7 @@ function MessageBubble({
       )}
       <div
         className={cn(
-          "flex flex-col gap-0.5 max-w-[75%] min-w-0",
+          "flex flex-col gap-0.5 max-w-[70%] min-w-0",
           isMine && "items-end",
         )}
       >
@@ -144,7 +146,7 @@ function MessageBubble({
               isDeleted
                 ? "bg-muted/40 text-muted-foreground italic text-xs px-3 py-1 whitespace-nowrap"
                 : cn(
-                    "px-3 py-2 text-sm whitespace-pre-wrap break-all",
+                    "px-3 py-2 text-sm whitespace-pre-wrap break-words",
                     isMine
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted",
@@ -173,17 +175,7 @@ function MessageBubble({
             )}
             {isDeleted
               ? t("messageDeleted")
-              : (() => {
-                  const [subject, ...rest] = msg.content.split("\n");
-                  return rest.length > 0 ? (
-                    <>
-                      <span className="font-semibold block">{subject}</span>
-                      <span>{rest.join("\n")}</span>
-                    </>
-                  ) : (
-                    msg.content
-                  );
-                })()}
+              : msg.content}
           </div>
         </MessageActionsContext>
         <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
