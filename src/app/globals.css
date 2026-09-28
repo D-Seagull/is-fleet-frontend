@@ -129,6 +129,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Edge / WebView2 (desktop shell) add their own password "eye" once the
+     field is typed into again (e.g. after a failed login) — it doubled up
+     with ours. Our toggle is the only one. */
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none;
+  }
 }
 
 /* Trip-chat wallpaper — the isometric logistics map (public/chat-bg.png),
