@@ -27,6 +27,7 @@ import { NavItem } from "@/components/app-sidebar";
 import { useAuthStore } from "@/store/auth";
 import { useMyTrucks } from "@/hooks/use-trucks";
 import { useUnreadSummary, useUnreadSocketSync } from "@/hooks/use-unread";
+import { useTaskbarBadge } from "@/lib/desktop-badge";
 import {
   useDmUnreadSummary,
   useDmUnreadSocketSync,
@@ -85,6 +86,12 @@ const BASE_NAV: NavDef[] = [
 // navigation-affordance filter.
 const TEAMLEAD_ONLY = new Set(["/managers", "/settings"]);
 
+/** Taskbar counter for roles without the bell (chat unread only). */
+function TaskbarBadge({ count }: { count: number }) {
+  useTaskbarBadge(count);
+  return null;
+}
+
 function UnreadBell() {
   const router = useRouter();
   const t = useTranslations("notifications");
@@ -104,6 +111,8 @@ function UnreadBell() {
   const groupTotal = groupData?.total ?? 0;
   const groupItems = groupData?.items ?? [];
   const total = tripTotal + dmTotal + groupTotal;
+  // Desktop shell: same total as a red counter on the taskbar icon.
+  useTaskbarBadge(total);
 
   return (
     <Popover>
@@ -330,7 +339,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-2">
             <BugReportButton />
-            {isManager && <UnreadBell />}
+            {isManager ? <UnreadBell /> : <TaskbarBadge count={chatBadge} />}
             <ThemeToggle />
           </div>
         </header>
