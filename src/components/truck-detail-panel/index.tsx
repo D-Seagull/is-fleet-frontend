@@ -64,7 +64,7 @@ import { useUnreadSummary } from "@/hooks/use-unread";
 // surface so `import { X } from "@/components/truck-detail-panel"` sites
 // don't break.
 import { TRUCK_STATUS_COLORS, TRUCK_STATUS_LABELS } from "./constants";
-import { shortenTripTitle } from "./utils";
+import { currentTrip, shortenTripTitle } from "./utils";
 import { NewTripDialog } from "./new-trip-dialog";
 
 // Tabs are lazy-loaded. Info renders synchronously (it's the only tab that
@@ -143,15 +143,9 @@ export function TruckDetailPanel({
     fromTruck: { id: string; plate: string };
   } | null>(null);
 
-  const ACTIVE_STATUSES = [
-    "ASSIGNED",
-    "ACCEPTED",
-    "ON_WAY",
-    "ON_SITE",
-    "LOADED",
-  ];
-  const activeTrip =
-    truckTrips.find((t) => ACTIVE_STATUSES.includes(t.status)) ?? null;
+  // The trip in progress — not simply the newest open one, which could be a
+  // load queued behind it.
+  const activeTrip = currentTrip(truckTrips);
 
   const [noteText, setNoteText] = useState("");
 

@@ -62,7 +62,7 @@
     },
     "status": {
       "ONLINE": "Online",
-      "BUSY": "Do not disturb",
+      "BUSY": "Busy",
       "AWAY": "Away",
       "SLEEP": "Sleeping",
       "VACATION": "On vacation",
@@ -608,7 +608,8 @@
         "swappedTitle": "The truck has changed",
         "swappedBody": "Trip “{trip}” is now on truck {plate}.",
         "swappedAction": "Go to the trip"
-      }
+      },
+      "queuedChatNotice": "This trip's chat opens once the current trip is finished."
     },
     "newTrip": {
       "button": "New Trip",
@@ -859,7 +860,8 @@
     "unreadMessages": "Unread messages",
     "unreadCount": "{count, plural, one {# unread message} other {# unread messages}}",
     "allCaughtUp": "All caught up",
-    "noUnread": "No unread messages"
+    "noUnread": "No unread messages",
+    "tripNotDeparted": "{name}: departure not confirmed after 3 reminders"
   },
   "userCard": {
     "phone": "Phone",

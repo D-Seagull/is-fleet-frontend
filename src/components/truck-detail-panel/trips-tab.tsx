@@ -43,7 +43,7 @@ import {
 } from "@/hooks/use-trips";
 import { useAuthStore } from "@/store/auth";
 import { useConfirm } from "@/components/confirm-dialog";
-import { shortenTripTitle } from "./utils";
+import { currentTrip, shortenTripTitle } from "./utils";
 import { NewTripDialog } from "./new-trip-dialog";
 import { TripAttachmentsContent } from "./trip-attachments-content";
 
@@ -108,7 +108,12 @@ function TripCard({
     >
       <div
         className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
-        onClick={() => onOpenTrip(trip.id)}
+        onClick={() =>
+          // A queued trip's chat opens only once it's the current one.
+          variant === "queued"
+            ? toast.info(t("queuedChatNotice"))
+            : onOpenTrip(trip.id)
+        }
       >
         <span
           className={cn(
@@ -313,13 +318,15 @@ export function TripsTab({
   // Group by status so a pre-assigned upcoming trip reads as clearly separate
   // from the one in progress. Managers move a trip between sections just by
   // changing its status in the per-card dropdown. Section order is preserved.
-  const IN_PROGRESS: TripStatus[] = ["ON_WAY", "ON_SITE", "LOADED"];
+  // "Current" is decided on the full list, so a search never promotes a
+  // queued trip.
+  const current = currentTrip(trips);
   const active: Trip[] = [];
   const queued: Trip[] = [];
   const done: Trip[] = [];
   for (const trip of filtered ?? []) {
     if (trip.status === "DELIVERED") done.push(trip);
-    else if (IN_PROGRESS.includes(trip.status)) active.push(trip);
+    else if (trip.id === current?.id) active.push(trip);
     else queued.push(trip);
   }
   const sections: {

@@ -28,6 +28,7 @@ import { useAuthStore } from "@/store/auth";
 import { useMyTrucks } from "@/hooks/use-trucks";
 import { useUnreadSummary, useUnreadSocketSync } from "@/hooks/use-unread";
 import { useTaskbarBadge } from "@/lib/desktop-badge";
+import { TripStatusNotices } from "@/components/trip-status-notices";
 import {
   useDmUnreadSummary,
   useDmUnreadSocketSync,
@@ -340,6 +341,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <BugReportButton />
             {isManager ? <UnreadBell /> : <TaskbarBadge count={chatBadge} />}
+            {/* Colored trip-status banners (driver accepted / on the way …). */}
+            {isManager && <TripStatusNotices />}
             <ThemeToggle />
           </div>
         </header>
