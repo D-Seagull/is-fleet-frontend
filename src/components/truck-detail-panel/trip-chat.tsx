@@ -18,6 +18,7 @@ import {
   patchInfiniteMessage,
 } from "@/lib/infinite-messages";
 import { getSocket } from "@/lib/socket";
+import { isLooking } from "@/lib/is-looking";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -164,25 +165,27 @@ export function TripChat({
     currentUserIdRef.current = currentUserId;
   }, [currentUserId]);
 
-  // Only acknowledge reads when the browser tab is visible. Without this,
-  // the sender sees ✓✓ even though the manager had the tab in the
-  // background and never actually saw the message.
-  const tabVisibleRef = useRef(
-    typeof document !== "undefined"
-      ? document.visibilityState === "visible"
-      : true,
-  );
+  // Only acknowledge reads while the manager is actually looking (tab visible
+  // AND window focused — see isLooking). Name kept: read in handlers below.
+  const tabVisibleRef = useRef(isLooking());
   useEffect(() => {
     if (typeof document === "undefined") return;
-    const onVis = () => {
-      tabVisibleRef.current = document.visibilityState === "visible";
-      // On returning to the tab, catch up — mark any unread as read.
-      if (tabVisibleRef.current) {
+    const onChange = () => {
+      const was = tabVisibleRef.current;
+      tabVisibleRef.current = isLooking();
+      // Came back to the chat (tab shown / window focused) — catch up.
+      if (tabVisibleRef.current && !was) {
         getSocket().emit("markTripRead", { tripId: trip.id });
       }
     };
-    document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
+    document.addEventListener("visibilitychange", onChange);
+    window.addEventListener("focus", onChange);
+    window.addEventListener("blur", onChange);
+    return () => {
+      document.removeEventListener("visibilitychange", onChange);
+      window.removeEventListener("focus", onChange);
+      window.removeEventListener("blur", onChange);
+    };
   }, [trip.id]);
 
   useEffect(() => {
