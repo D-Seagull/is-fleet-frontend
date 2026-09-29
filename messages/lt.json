@@ -608,7 +608,8 @@
         "swappedTitle": "Vilkikas pasikeitė",
         "swappedBody": "Reisas „{trip}“ dabar vykdomas vilkiku {plate}.",
         "swappedAction": "Eiti į reisą"
-      }
+      },
+      "queuedChatNotice": "Šio reiso pokalbis atsidarys, kai bus baigtas dabartinis reisas."
     },
     "newTrip": {
       "button": "Naujas reisas",
@@ -859,7 +860,8 @@
     "unreadMessages": "Neperskaitytos žinutės",
     "unreadCount": "{count, plural, one {# neperskaityta žinutė} few {# neperskaitytos žinutės} many {# neperskaitytos žinutės} other {# neperskaitytų žinučių}}",
     "allCaughtUp": "Viskas perskaityta",
-    "noUnread": "Nėra neperskaitytų žinučių"
+    "noUnread": "Nėra neperskaitytų žinučių",
+    "tripNotDeparted": "{name}: išvykimas nepatvirtintas po 3 priminimų"
   },
   "userCard": {
     "phone": "Telefonas",

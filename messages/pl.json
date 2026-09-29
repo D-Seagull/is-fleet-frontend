@@ -608,7 +608,8 @@
         "swappedTitle": "Pojazd został zmieniony",
         "swappedBody": "Trasa „{trip}” jest teraz na pojeździe {plate}.",
         "swappedAction": "Przejdź do trasy"
-      }
+      },
+      "queuedChatNotice": "Czat tej trasy otworzy się po zakończeniu bieżącej trasy."
     },
     "newTrip": {
       "button": "Nowa trasa",
@@ -859,7 +860,8 @@
     "unreadMessages": "Nieprzeczytane wiadomości",
     "unreadCount": "{count, plural, one {# nieprzeczytana wiadomość} few {# nieprzeczytane wiadomości} many {# nieprzeczytanych wiadomości} other {# nieprzeczytanej wiadomości}}",
     "allCaughtUp": "Wszystko przeczytane",
-    "noUnread": "Brak nieprzeczytanych wiadomości"
+    "noUnread": "Brak nieprzeczytanych wiadomości",
+    "tripNotDeparted": "{name}: wyjazd niepotwierdzony po 3 przypomnieniach"
   },
   "userCard": {
     "phone": "Telefon",

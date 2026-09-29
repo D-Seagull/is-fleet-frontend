@@ -63,3 +63,38 @@ export function extractPostcodeCity(address: string): string {
   const last = parts[parts.length - 1] ?? address;
   return last.replace(/^[a-z]{1,3}[-\s]/i, "").trim();
 }
+
+const PROGRESS_RANK: Record<string, number> = {
+  LOADED: 5,
+  ON_SITE: 4,
+  ON_WAY: 3,
+  ACCEPTED: 2,
+  ASSIGNED: 1,
+};
+
+/**
+ * The truck's trip in progress — mirrors the backend's `trip-order.ts`:
+ * furthest along first, then the OLDEST within a status (loads are done in
+ * the order given). Every other open trip is "queued": its chat stays closed
+ * until it becomes current.
+ */
+export function currentTrip<T extends { status: string; createdAt: string }>(
+  trips: T[] | undefined,
+): T | null {
+  const open = (trips ?? []).filter((tr) => tr.status !== "DELIVERED");
+  open.sort((a, b) => {
+    const byStatus =
+      (PROGRESS_RANK[b.status] ?? 0) - (PROGRESS_RANK[a.status] ?? 0);
+    if (byStatus !== 0) return byStatus;
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+  return open[0] ?? null;
+}
+
+/** Open but not current — waiting for the trip in progress to finish. */
+export function isQueuedTrip(
+  trip: { id: string; status: string },
+  current: { id: string } | null,
+): boolean {
+  return trip.status !== "DELIVERED" && !!current && trip.id !== current.id;
+}

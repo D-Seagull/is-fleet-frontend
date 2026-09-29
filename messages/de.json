@@ -608,7 +608,8 @@
         "swappedTitle": "Das Fahrzeug hat gewechselt",
         "swappedBody": "Die Fahrt „{trip}“ läuft jetzt auf Fahrzeug {plate}.",
         "swappedAction": "Zur Fahrt"
-      }
+      },
+      "queuedChatNotice": "Der Chat dieser Fahrt öffnet sich, sobald die aktuelle Fahrt abgeschlossen ist."
     },
     "newTrip": {
       "button": "Neue Fahrt",
@@ -859,7 +860,8 @@
     "unreadMessages": "Ungelesene Nachrichten",
     "unreadCount": "{count, plural, one {# ungelesene Nachricht} other {# ungelesene Nachrichten}}",
     "allCaughtUp": "Alles gelesen",
-    "noUnread": "Keine ungelesenen Nachrichten"
+    "noUnread": "Keine ungelesenen Nachrichten",
+    "tripNotDeparted": "{name}: Abfahrt nach 3 Erinnerungen nicht bestätigt"
   },
   "userCard": {
     "phone": "Telefon",

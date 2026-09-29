@@ -6,8 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { useTripsByTruck } from "@/hooks/use-trips";
-import { ACTIVE_STATUSES } from "./constants";
-import { shortenTripTitle } from "./utils";
+import { currentTrip, isQueuedTrip, shortenTripTitle } from "./utils";
 import { NewTripDialog } from "./new-trip-dialog";
 import { TripCombobox } from "./trip-combobox";
 import { TripChat } from "./trip-chat";
@@ -34,8 +33,12 @@ export function ChatTab({
   );
   const [selectorOpen, setSelectorOpen] = useState(false);
 
-  const activeTrip = trips?.find((t) => ACTIVE_STATUSES.includes(t.status));
-  const resolvedTripId = selectedTripId ?? activeTrip?.id ?? null;
+  // The chat shows the trip in progress and finished ones — a queued trip's
+  // chat stays closed until the current load is delivered.
+  const activeTrip = currentTrip(trips);
+  const chatTrips = (trips ?? []).filter((t) => !isQueuedTrip(t, activeTrip));
+  const pickedTrip = chatTrips.find((t) => t.id === selectedTripId);
+  const resolvedTripId = pickedTrip?.id ?? activeTrip?.id ?? null;
   const selectedTrip = trips?.find((t) => t.id === resolvedTripId) ?? null;
 
   if (isLoading) {
@@ -74,7 +77,9 @@ export function ChatTab({
           truckId={truckId}
           defaultDriverId={defaultDriverId}
           onCreated={(trip) => {
-            setSelectedTripId(trip.id);
+            // Jump to the new trip only when it's the one to do now — a
+            // queued load must not take over the chat of the current one.
+            if (!activeTrip) setSelectedTripId(trip.id);
             setSelectorOpen(false);
           }}
         />
@@ -83,7 +88,7 @@ export function ChatTab({
       {selectorOpen && navOpen && (
         <div className="md:hidden shrink-0">
           <TripCombobox
-            trips={trips ?? []}
+            trips={chatTrips}
             value={resolvedTripId}
             onChange={(id) => {
               setSelectedTripId(id);
