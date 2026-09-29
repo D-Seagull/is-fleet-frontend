@@ -62,7 +62,7 @@
     },
     "status": {
       "ONLINE": "Online",
-      "BUSY": "Nicht stören",
+      "BUSY": "Beschäftigt",
       "AWAY": "Abwesend",
       "SLEEP": "Schlafe",
       "VACATION": "Im Urlaub",

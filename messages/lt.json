@@ -62,7 +62,7 @@
     },
     "status": {
       "ONLINE": "Prisijungęs",
-      "BUSY": "Netrukdyti",
+      "BUSY": "Užimtas",
       "AWAY": "Išėjęs",
       "SLEEP": "Miegu",
       "VACATION": "Atostogauju",
