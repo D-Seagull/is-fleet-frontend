@@ -57,6 +57,7 @@ import {
 import { useChatInit } from "@/hooks/use-chat-init";
 import { useAuthStore } from "@/store/auth";
 import { getSocket } from "@/lib/socket";
+import { isLooking } from "@/lib/is-looking";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import {
   appendInfiniteMessage,
@@ -690,6 +691,21 @@ function ChatPageContent() {
     }
   }, [selectedUserId, markMessagesAsRead]);
 
+  // Messages that arrived while the window was aside get ✓✓ once the user is
+  // back (tab shown / window focused) with that conversation still open.
+  useEffect(() => {
+    const onBack = () => {
+      const peer = selectedUserIdRef.current;
+      if (peer && isLooking()) markMessagesAsRead(peer);
+    };
+    document.addEventListener("visibilitychange", onBack);
+    window.addEventListener("focus", onBack);
+    return () => {
+      document.removeEventListener("visibilitychange", onBack);
+      window.removeEventListener("focus", onBack);
+    };
+  }, [markMessagesAsRead]);
+
   useEffect(() => {
     if (selectedGroupId) {
       markGroupRead.mutate(selectedGroupId);
@@ -708,7 +724,9 @@ function ChatPageContent() {
       );
       if (
         message.senderId !== user?.id &&
-        selectedUserIdRef.current === message.senderId
+        selectedUserIdRef.current === message.senderId &&
+        // Only while someone is looking — not a desktop left open aside.
+        isLooking()
       ) {
         markMessagesAsRead(message.senderId);
       } else {
