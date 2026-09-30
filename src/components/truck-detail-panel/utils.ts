@@ -75,8 +75,8 @@ const PROGRESS_RANK: Record<string, number> = {
 /**
  * The truck's trip in progress — mirrors the backend's `trip-order.ts`:
  * furthest along first, then the OLDEST within a status (loads are done in
- * the order given). Every other open trip is "queued": its chat stays closed
- * until it becomes current.
+ * the order given). Every other open trip is "queued" (shown under
+ * В черзі; its chat can still be opened).
  */
 export function currentTrip<T extends { status: string; createdAt: string }>(
   trips: T[] | undefined,
@@ -91,10 +91,3 @@ export function currentTrip<T extends { status: string; createdAt: string }>(
   return open[0] ?? null;
 }
 
-/** Open but not current — waiting for the trip in progress to finish. */
-export function isQueuedTrip(
-  trip: { id: string; status: string },
-  current: { id: string } | null,
-): boolean {
-  return trip.status !== "DELIVERED" && !!current && trip.id !== current.id;
-}

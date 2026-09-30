@@ -608,8 +608,7 @@
         "swappedTitle": "The truck has changed",
         "swappedBody": "Trip “{trip}” is now on truck {plate}.",
         "swappedAction": "Go to the trip"
-      },
-      "queuedChatNotice": "This trip's chat opens once the current trip is finished."
+      }
     },
     "newTrip": {
       "button": "New Trip",

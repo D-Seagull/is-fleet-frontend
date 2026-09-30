@@ -608,8 +608,7 @@
         "swappedTitle": "Das Fahrzeug hat gewechselt",
         "swappedBody": "Die Fahrt „{trip}“ läuft jetzt auf Fahrzeug {plate}.",
         "swappedAction": "Zur Fahrt"
-      },
-      "queuedChatNotice": "Der Chat dieser Fahrt öffnet sich, sobald die aktuelle Fahrt abgeschlossen ist."
+      }
     },
     "newTrip": {
       "button": "Neue Fahrt",

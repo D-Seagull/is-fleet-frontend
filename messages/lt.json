@@ -608,8 +608,7 @@
         "swappedTitle": "Vilkikas pasikeitė",
         "swappedBody": "Reisas „{trip}“ dabar vykdomas vilkiku {plate}.",
         "swappedAction": "Eiti į reisą"
-      },
-      "queuedChatNotice": "Šio reiso pokalbis atsidarys, kai bus baigtas dabartinis reisas."
+      }
     },
     "newTrip": {
       "button": "Naujas reisas",

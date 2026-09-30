@@ -108,12 +108,7 @@ function TripCard({
     >
       <div
         className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
-        onClick={() =>
-          // A queued trip's chat opens only once it's the current one.
-          variant === "queued"
-            ? toast.info(t("queuedChatNotice"))
-            : onOpenTrip(trip.id)
-        }
+        onClick={() => onOpenTrip(trip.id)}
       >
         <span
           className={cn(

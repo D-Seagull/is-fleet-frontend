@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { useTripsByTruck } from "@/hooks/use-trips";
-import { currentTrip, isQueuedTrip, shortenTripTitle } from "./utils";
+import { currentTrip, shortenTripTitle } from "./utils";
 import { NewTripDialog } from "./new-trip-dialog";
 import { TripCombobox } from "./trip-combobox";
 import { TripChat } from "./trip-chat";
@@ -33,10 +33,10 @@ export function ChatTab({
   );
   const [selectorOpen, setSelectorOpen] = useState(false);
 
-  // The chat shows the trip in progress and finished ones — a queued trip's
-  // chat stays closed until the current load is delivered.
+  // Defaults to the trip in progress (not simply the newest open one); any
+  // trip — the queued next one included — can be picked to read and write.
   const activeTrip = currentTrip(trips);
-  const chatTrips = (trips ?? []).filter((t) => !isQueuedTrip(t, activeTrip));
+  const chatTrips = trips ?? [];
   const pickedTrip = chatTrips.find((t) => t.id === selectedTripId);
   const resolvedTripId = pickedTrip?.id ?? activeTrip?.id ?? null;
   const selectedTrip = trips?.find((t) => t.id === resolvedTripId) ?? null;
