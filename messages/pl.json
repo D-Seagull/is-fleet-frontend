@@ -608,8 +608,7 @@
         "swappedTitle": "Pojazd został zmieniony",
         "swappedBody": "Trasa „{trip}” jest teraz na pojeździe {plate}.",
         "swappedAction": "Przejdź do trasy"
-      },
-      "queuedChatNotice": "Czat tej trasy otworzy się po zakończeniu bieżącej trasy."
+      }
     },
     "newTrip": {
       "button": "Nowa trasa",
