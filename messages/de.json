@@ -71,6 +71,14 @@
     "legal": {
       "privacy": "Datenschutzerklärung",
       "terms": "Nutzungsbedingungen"
+    },
+    "download": {
+      "preparing": "Datei wird vorbereitet…",
+      "downloading": "Wird heruntergeladen: {name}",
+      "saved": "In „Downloads“ gespeichert",
+      "started": "Download gestartet",
+      "failed": "Datei konnte nicht heruntergeladen werden",
+      "showInFolder": "Im Ordner anzeigen"
     }
   },
   "alarm": {

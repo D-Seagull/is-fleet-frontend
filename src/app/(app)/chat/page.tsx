@@ -2121,7 +2121,10 @@ function ChatPageContent() {
                                       title={tActions("download")}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        window.open(doc.signedUrl, "_blank");
+                                        void downloadChatDoc(
+                                          selectedGroupId ? "group" : "dm",
+                                          doc.id,
+                                        );
                                       }}
                                       className="shrink-0 opacity-70 hover:opacity-100"
                                     >

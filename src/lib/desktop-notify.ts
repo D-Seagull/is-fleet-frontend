@@ -46,6 +46,78 @@ export async function getDesktopVersion(): Promise<string | null> {
   }
 }
 
+// ── Clickable desktop toasts (shell ≥ 0.2.4) ────────────────────────────
+// The shell's `show_notification` command shows a Windows toast whose click
+// brings the window back and emits `notification-clicked` with our id; we
+// then run that notification's onClick (opens the right chat). Older shells
+// don't have the command — the call rejects and we use the plugin instead.
+
+type TauriCore = {
+  core?: { invoke: (cmd: string, args?: Record<string, unknown>) => Promise<unknown> };
+  event?: {
+    listen: (
+      event: string,
+      handler: (e: { payload: unknown }) => void,
+    ) => Promise<() => void>;
+  };
+};
+
+function tauriCore(): TauriCore | null {
+  if (typeof window === "undefined") return null;
+  return (window as unknown as { __TAURI__?: TauriCore }).__TAURI__ ?? null;
+}
+
+// Pending click handlers by notification id (bounded — old toasts expire).
+const clickHandlers = new Map<string, () => void>();
+let clickListenerStarted = false;
+
+function listenForToastClicks() {
+  if (clickListenerStarted) return;
+  const ev = tauriCore()?.event;
+  if (!ev) return;
+  clickListenerStarted = true;
+  void ev
+    .listen("notification-clicked", (e) => {
+      const id = typeof e.payload === "string" ? e.payload : "";
+      const handler = clickHandlers.get(id);
+      clickHandlers.delete(id);
+      handler?.();
+    })
+    .catch(() => {
+      clickListenerStarted = false;
+    });
+}
+
+/** true when the shell showed the toast itself (click routing works). */
+async function showShellToast(opts: {
+  title: string;
+  body: string;
+  onClick?: () => void;
+}): Promise<boolean> {
+  const core = tauriCore()?.core;
+  if (!core) return false;
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  if (opts.onClick) {
+    clickHandlers.set(id, opts.onClick);
+    if (clickHandlers.size > 50) {
+      const oldest = clickHandlers.keys().next().value;
+      if (oldest) clickHandlers.delete(oldest);
+    }
+    listenForToastClicks();
+  }
+  try {
+    await core.invoke("show_notification", {
+      id,
+      title: opts.title,
+      body: opts.body,
+    });
+    return true;
+  } catch {
+    clickHandlers.delete(id);
+    return false; // older shell — no such command
+  }
+}
+
 let primed = false;
 
 /** Ask for notification permission up front (browser: on first gesture). */
@@ -90,6 +162,8 @@ export function showMessageNotification(opts: {
   const tn = tauriNotify();
   if (tn) {
     void (async () => {
+      // Shell ≥ 0.2.4: clickable toast that opens this chat.
+      if (await showShellToast(opts)) return;
       try {
         let granted = await tn.isPermissionGranted();
         if (!granted) granted = (await tn.requestPermission()) === "granted";

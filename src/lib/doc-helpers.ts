@@ -33,17 +33,41 @@ export async function openDoc(docId: string, fileName?: string | null) {
   await openUrlInViewer(url, fileName);
 }
 
-export async function downloadDoc(docId: string) {
-  const url = await fetchSignedUrl(`/documents/${docId}/download`);
-  if (!url) return;
-  window.location.href = url;
+// ── Download progress for the UI (components/download-status.tsx) ───────
+// Helpers announce phases as a window event; the component turns them (and
+// the desktop shell's own download events) into one morphing toast.
+export const DOWNLOAD_EVENT = "isfleet:download";
+export type DownloadPhase = "preparing" | "navigated" | "failed";
+
+function announce(phase: DownloadPhase) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(DOWNLOAD_EVENT, { detail: phase }));
 }
 
-/** Download a DM / group chat file (their own endpoints, not /documents). */
+/** Fetch the attachment URL and navigate to it — downloads in place. */
+async function startDownload(endpoint: string) {
+  announce("preparing");
+  const url = await fetchSignedUrl(endpoint).catch(() => null);
+  if (!url) {
+    announce("failed");
+    return;
+  }
+  window.location.href = url;
+  announce("navigated");
+}
+
+export async function downloadDoc(docId: string) {
+  await startDownload(`/documents/${docId}/download`);
+}
+
+/**
+ * Download a DM / group chat file (their own endpoints, not /documents).
+ * The signed URL carries `Content-Disposition: attachment`, so navigating to
+ * it downloads in place — the browser saves it, the desktop shell routes it
+ * to Downloads. (`window.open` did nothing in the desktop shell.)
+ */
 export async function downloadChatDoc(source: "dm" | "group", docId: string) {
   const base =
     source === "dm" ? "/direct-messages/documents" : "/group-messages/documents";
-  const url = await fetchSignedUrl(`${base}/${docId}/download`);
-  if (!url) return;
-  window.open(url, "_blank");
+  await startDownload(`${base}/${docId}/download`);
 }

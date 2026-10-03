@@ -71,6 +71,14 @@
     "legal": {
       "privacy": "Privacy Policy",
       "terms": "Terms of Service"
+    },
+    "download": {
+      "preparing": "Preparing file…",
+      "downloading": "Downloading: {name}",
+      "saved": "Saved to Downloads",
+      "started": "Download started",
+      "failed": "Couldn't download the file",
+      "showInFolder": "Show in folder"
     }
   },
   "alarm": {
