@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -49,7 +49,8 @@ import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
 import { TripInfoCard } from "./trip-info-card";
 import { TripAttachmentsContent } from "./trip-attachments-content";
 import { ChatComposer } from "./chat-composer";
-import { ChatLightbox } from "./chat-lightbox";
+import { PhotoGallery } from "@/components/photo-gallery";
+import { downloadDoc } from "@/lib/doc-helpers";
 import { UserCardDialog } from "@/components/user-card-dialog";
 import {
   ChatTimelineItem,
@@ -124,10 +125,8 @@ export function TripChat({
   };
   const [showEmoji, setShowEmoji] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [lightbox, setLightbox] = useState<{
-    id: string;
-    signedUrl: string;
-  } | null>(null);
+  // Index into `galleryPhotos` of the photo open in the gallery, or null.
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [showTripDocs, setShowTripDocs] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
   const [cardUserId, setCardUserId] = useState<string | null>(null);
@@ -142,6 +141,19 @@ export function TripChat({
   // Files staged for sending — uploaded together with the text caption on
   // Send so a single reply can carry both a file and text.
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+
+  // Every photo of this chat, oldest first (same order as the timeline) —
+  // the gallery flips through all of them, starting at the one clicked.
+  const galleryPhotos = useMemo(
+    () =>
+      tripDocs
+        .filter((d) => d.fileType === "PHOTO" && !d.deletedAt && d.signedUrl)
+        .sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        ),
+    [tripDocs],
+  );
 
   // unified timeline: messages + files sorted by createdAt
   const timeline: TimelineItem[] = [
@@ -662,7 +674,8 @@ export function TripChat({
         <TripInfoCard
           trip={trip}
           truckId={truckId}
-          docsCount={tripDocs.length}
+          // Live files only — deleted ones aren't listed in the panel either.
+          docsCount={tripDocs.filter((d) => !d.deletedAt && d.signedUrl).length}
           onDocsClick={() => setShowTripDocs(true)}
         />
       </div>
@@ -690,12 +703,25 @@ export function TripChat({
               truckId={truckId}
               canDelete
               canUpload
+              // The Sheet is modal and would block a gallery over it: close
+              // it and open the chat's gallery (same trip photos) instead.
+              onOpenPhoto={(id) => {
+                const i = galleryPhotos.findIndex((p) => p.id === id);
+                if (i < 0) return;
+                setShowTripDocs(false);
+                setGalleryIndex(i);
+              }}
             />
           </div>
         </SheetContent>
       </Sheet>
 
-      <ChatLightbox item={lightbox} onClose={() => setLightbox(null)} />
+      <PhotoGallery
+        photos={galleryPhotos}
+        startIndex={galleryIndex}
+        onClose={() => setGalleryIndex(null)}
+        onDownload={(photo) => downloadDoc(photo.id)}
+      />
 
       {/* Click a sender's name/avatar → read-only mini profile */}
       <UserCardDialog userId={cardUserId} onClose={() => setCardUserId(null)} />
@@ -792,9 +818,10 @@ export function TripChat({
                   }}
                   onDeleteMessage={(id) => deleteMessage.mutate(id)}
                   onDeleteDoc={(id) => deleteDocument.mutate(id)}
-                  onImageClick={(id, signedUrl) =>
-                    setLightbox({ id, signedUrl })
-                  }
+                  onImageClick={(id) => {
+                    const i = galleryPhotos.findIndex((p) => p.id === id);
+                    if (i >= 0) setGalleryIndex(i);
+                  }}
                   onImageLoaded={() => {
                     if (nearBottomRef.current) {
                       const el = scrollContainerRef.current;

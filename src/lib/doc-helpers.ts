@@ -38,3 +38,12 @@ export async function downloadDoc(docId: string) {
   if (!url) return;
   window.location.href = url;
 }
+
+/** Download a DM / group chat file (their own endpoints, not /documents). */
+export async function downloadChatDoc(source: "dm" | "group", docId: string) {
+  const base =
+    source === "dm" ? "/direct-messages/documents" : "/group-messages/documents";
+  const url = await fetchSignedUrl(`${base}/${docId}/download`);
+  if (!url) return;
+  window.open(url, "_blank");
+}

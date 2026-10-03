@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import {
-  X,
   Download,
   Loader2,
   Plus,
@@ -38,6 +37,7 @@ import {
   useDeleteDocument,
 } from "@/hooks/use-documents";
 import { useTripsByTruck } from "@/hooks/use-trips";
+import { PhotoGallery } from "@/components/photo-gallery";
 import { shortenTripTitle } from "./utils";
 
 export function DocumentsTab({ truckId }: { truckId: string }) {
@@ -50,10 +50,8 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
   const [uploadTripId, setUploadTripId] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [lightbox, setLightbox] = useState<{
-    id: string;
-    signedUrl: string;
-  } | null>(null);
+  // Index into `galleryPhotos` of the photo open in the gallery, or null.
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
 
   const { data: docs = [], isLoading } = useDocumentsByTruck(truckId);
   const upload = useUploadDocuments(truckId);
@@ -61,6 +59,9 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
 
   const q = search.trim().toLowerCase();
   const filtered = docs.filter((d) => {
+    // Deleted files (incl. ones gone from storage — the backend marks those
+    // deleted and sends signedUrl "") can't be viewed or downloaded.
+    if (d.deletedAt || !d.signedUrl) return false;
     if (tripFilter !== "all" && d.tripId !== tripFilter) return false;
     if (!q) return true;
     // Search by date (localized + ISO), order number and file name.
@@ -73,6 +74,18 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
       d.fileName.toLowerCase().includes(q)
     );
   });
+
+  // The gallery flips through the photos currently listed — trip filter and
+  // search applied, same order as the table.
+  const galleryPhotos = filtered.filter((d) => d.fileType === "PHOTO");
+
+  // Photos open in the gallery (thumbnail, name or 👁), other files in the
+  // viewer / new tab.
+  const openRow = (doc: (typeof filtered)[number]) => {
+    const i = galleryPhotos.findIndex((p) => p.id === doc.id);
+    if (i >= 0) setGalleryIndex(i);
+    else openDoc(doc.id, doc.fileName);
+  };
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -88,38 +101,12 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-          onClick={() => setLightbox(null)}
-        >
-          <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white"
-            onClick={() => setLightbox(null)}
-          >
-            <X className="h-6 w-6" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={lightbox.signedUrl}
-            alt="preview"
-            className="max-w-full max-h-full object-contain rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className="absolute bottom-4">
-            <button
-              className="flex items-center gap-1.5 rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1.5 text-white text-sm transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                downloadDoc(lightbox.id);
-              }}
-            >
-              <Download className="h-4 w-4" /> {tActions("download")}
-            </button>
-          </div>
-        </div>
-      )}
+      <PhotoGallery
+        photos={galleryPhotos}
+        startIndex={galleryIndex}
+        onClose={() => setGalleryIndex(null)}
+        onDownload={(photo) => downloadDoc(photo.id)}
+      />
 
       {/* Search by date / order # / file name */}
       <div className="relative">
@@ -233,12 +220,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                           src={doc.signedUrl}
                           alt={doc.fileName}
                           className="h-9 w-9 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() =>
-                            setLightbox({
-                              id: doc.id,
-                              signedUrl: doc.signedUrl,
-                            })
-                          }
+                          onClick={() => openRow(doc)}
                         />
                       ) : (
                         <div className="h-9 w-9 flex items-center justify-center rounded bg-muted">
@@ -248,7 +230,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                     </TableCell>
                     <TableCell className="px-2 py-1.5 max-w-[120px]">
                       <button
-                        onClick={() => openDoc(doc.id, doc.fileName)}
+                        onClick={() => openRow(doc)}
                         className="truncate block w-full text-left hover:underline font-medium"
                         title={doc.fileName}
                       >
@@ -267,7 +249,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                     <TableCell className="px-2 py-1.5">
                       <div className="flex items-center gap-0.5 justify-end">
                         <button
-                          onClick={() => openDoc(doc.id, doc.fileName)}
+                          onClick={() => openRow(doc)}
                           title={tActions("view")}
                           className="p-1 rounded hover:bg-muted"
                         >

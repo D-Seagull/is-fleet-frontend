@@ -18,7 +18,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
-import { openUrlInViewer } from "@/lib/doc-helpers";
+import { downloadChatDoc, openUrlInViewer } from "@/lib/doc-helpers";
 import { useAuthStore } from "@/store/auth";
 import {
   useConversationDocuments,
@@ -45,6 +45,11 @@ interface Props {
   source: Source;
   targetId: string;
   title: string;
+  /**
+   * Open a photo in the chat's gallery. The parent closes this (modal) sheet
+   * first — a gallery over a modal Sheet would be blocked by it.
+   */
+  onOpenPhoto?: (docId: string) => void;
 }
 
 export function MessageAttachmentsSheet({
@@ -53,6 +58,7 @@ export function MessageAttachmentsSheet({
   source,
   targetId,
   title,
+  onOpenPhoto,
 }: Props) {
   const t = useTranslations("chat.attachments");
   const tActions = useTranslations("common.actions");
@@ -76,8 +82,11 @@ export function MessageAttachmentsSheet({
   const docs: AnyDoc[] = isDm ? (dmQuery.data ?? []) : (groupQuery.data ?? []);
   const isLoading = isDm ? dmQuery.isLoading : groupQuery.isLoading;
 
-  const photos = docs.filter((d) => d.fileType === "PHOTO");
-  const documents = docs.filter((d) => d.fileType === "DOCUMENT");
+  // Deleted files (incl. ones gone from storage — signedUrl "") can't be
+  // viewed or downloaded; leave them out of every tab.
+  const live = docs.filter((d) => !d.deletedAt && d.signedUrl);
+  const photos = live.filter((d) => d.fileType === "PHOTO");
+  const documents = live.filter((d) => d.fileType === "DOCUMENT");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -103,12 +112,10 @@ export function MessageAttachmentsSheet({
     await openUrlInViewer(res.data.url, fileName);
   }
 
-  async function downloadDoc(id: string) {
-    const path = isDm
-      ? `/direct-messages/documents/${id}/download`
-      : `/group-messages/documents/${id}/download`;
-    const res = await api.get<{ url: string }>(path);
-    window.open(res.data.url, "_blank");
+  // Photos go to the chat's gallery when the parent offers one.
+  function openRow(doc: AnyDoc) {
+    if (doc.fileType === "PHOTO" && onOpenPhoto) onOpenPhoto(doc.id);
+    else void openDoc(doc.id, doc.fileName);
   }
 
   async function handleDelete(id: string) {
@@ -136,27 +143,27 @@ export function MessageAttachmentsSheet({
             src={doc.signedUrl}
             alt={doc.fileName}
             className="h-10 w-10 object-cover rounded shrink-0 cursor-pointer"
-            onClick={() => openDoc(doc.id, doc.fileName)}
+            onClick={() => openRow(doc)}
           />
         ) : (
           <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
         <button
-          onClick={() => openDoc(doc.id, doc.fileName)}
+          onClick={() => openRow(doc)}
           className="text-xs truncate flex-1 text-left hover:underline"
         >
           {doc.fileName}
         </button>
         <div className="flex items-center gap-0.5 shrink-0">
           <button
-            onClick={() => openDoc(doc.id, doc.fileName)}
+            onClick={() => openRow(doc)}
             title={tActions("view")}
             className="p-1 rounded hover:bg-muted"
           >
             <Eye className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
           <button
-            onClick={() => downloadDoc(doc.id)}
+            onClick={() => downloadChatDoc(source, doc.id)}
             title={tActions("download")}
             className="p-1 rounded hover:bg-muted"
           >
@@ -216,7 +223,7 @@ export function MessageAttachmentsSheet({
               <div className="py-6 flex justify-center">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               </div>
-            ) : docs.length === 0 ? (
+            ) : live.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-6">
                 {t("noAttachments")}
               </p>
@@ -224,7 +231,7 @@ export function MessageAttachmentsSheet({
               <Tabs defaultValue="ALL">
                 <TabsList className="grid grid-cols-3 mb-2">
                   <TabsTrigger value="ALL" className="text-xs">
-                    {t("tabAll", { count: docs.length })}
+                    {t("tabAll", { count: live.length })}
                   </TabsTrigger>
                   <TabsTrigger value="PHOTO" className="text-xs">
                     {t("tabPhotos", { count: photos.length })}
@@ -234,7 +241,7 @@ export function MessageAttachmentsSheet({
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="ALL" className="flex flex-col gap-1.5 mt-0">
-                  {docs.map(renderRow)}
+                  {live.map(renderRow)}
                 </TabsContent>
                 <TabsContent
                   value="PHOTO"

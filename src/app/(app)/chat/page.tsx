@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  Suspense,
+} from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fullName, initials } from "@/lib/format";
@@ -66,7 +73,8 @@ import {
 import { LoadOlderMessages } from "@/components/load-older-messages";
 import { cn } from "@/lib/utils";
 import { EDIT_WINDOW_MS } from "@/lib/constants";
-import { openUrlInViewer } from "@/lib/doc-helpers";
+import { downloadChatDoc, openUrlInViewer } from "@/lib/doc-helpers";
+import { PhotoGallery } from "@/components/photo-gallery";
 import { useSearchParams } from "next/navigation";
 import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
@@ -274,6 +282,8 @@ function ChatPageContent() {
     null,
   );
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
+  // Index into `galleryPhotos` of the photo open in the gallery, or null.
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const attachInputRef = useRef<HTMLInputElement>(null);
   const [attachUploading, setAttachUploading] = useState(false);
   // Files staged for sending — uploaded together with the text on Send so a
@@ -313,6 +323,22 @@ function ChatPageContent() {
   const deleteGroupDoc = useDeleteGroupDoc(selectedGroupId ?? "");
   const { data: dmDocs = [] } = useConversationDocuments(selectedUserId ?? "");
   const { data: groupDocs = [] } = useGroupDocuments(selectedGroupId ?? "");
+  // Every photo of the open DM / group, oldest first (timeline order) — the
+  // gallery flips through all of them, starting at the one clicked.
+  const galleryPhotos = useMemo(
+    () =>
+      (selectedGroupId ? groupDocs : dmDocs)
+        .filter((d) => d.fileType === "PHOTO" && !d.deletedAt && d.signedUrl)
+        .sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        ),
+    [selectedGroupId, groupDocs, dmDocs],
+  );
+  const openPhoto = (docId: string) => {
+    const i = galleryPhotos.findIndex((p) => p.id === docId);
+    if (i >= 0) setGalleryIndex(i);
+  };
   useConversationDocsSocketSync(selectedUserId);
   useGroupDocsSocketSync(selectedGroupId);
   useReactionsSocketSync({
@@ -2045,9 +2071,7 @@ function ChatPageContent() {
                                   <img
                                     src={doc.signedUrl}
                                     alt={doc.fileName}
-                                    onClick={() =>
-                                      openUrlInViewer(doc.signedUrl, doc.fileName)
-                                    }
+                                    onClick={() => openPhoto(doc.id)}
                                     className="block max-w-[220px] max-h-[200px] w-full object-cover cursor-pointer"
                                   />
                                   {doc.caption && (
@@ -2449,9 +2473,22 @@ function ChatPageContent() {
         </DialogContent>
       </Dialog>
 
+      <PhotoGallery
+        photos={galleryPhotos}
+        startIndex={galleryIndex}
+        onClose={() => setGalleryIndex(null)}
+        onDownload={(photo) =>
+          downloadChatDoc(selectedGroupId ? "group" : "dm", photo.id)
+        }
+      />
+
       <MessageAttachmentsSheet
         open={attachmentsOpen}
         onOpenChange={setAttachmentsOpen}
+        onOpenPhoto={(id) => {
+          setAttachmentsOpen(false);
+          openPhoto(id);
+        }}
         source={selectedGroupId ? "group" : "dm"}
         targetId={selectedGroupId ?? selectedUserId ?? ""}
         title={

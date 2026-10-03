@@ -45,6 +45,8 @@ import {
   type Trip,
 } from "@/hooks/use-trips";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
+import { useDocumentsByTrip } from "@/hooks/use-documents";
+import { PhotoGallery } from "@/components/photo-gallery";
 import { BackButton } from "@/components/back-button";
 import { useAuthStore } from "@/store/auth";
 import { useConfirm } from "@/components/confirm-dialog";
@@ -73,10 +75,31 @@ function StopsCell({ stops }: { stops: Trip["stops"] }) {
 
 function DocsDropdown({ trip }: { trip: Trip }) {
   const t = useTranslations("trips");
-  if (trip.documents.length === 0) return null;
+  // Only rendered for the expanded row, so this is one request on expand.
+  // These come with signed URLs (trip.documents don't) — the gallery needs
+  // them; deleted / vanished files are left out.
+  const { data: docs = [] } = useDocumentsByTrip(trip.id);
+  const live = docs.filter((d) => !d.deletedAt && d.signedUrl);
+  const photos = live.filter((d) => d.fileType === "PHOTO");
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
+
+  // Photos open in the gallery, other files in the viewer / new tab.
+  const openRow = (doc: (typeof live)[number]) => {
+    const i = photos.findIndex((p) => p.id === doc.id);
+    if (i >= 0) setGalleryIndex(i);
+    else openDoc(doc.id, doc.fileName);
+  };
+
+  if (live.length === 0) return null;
   return (
     <div className="flex flex-col gap-0.5 py-1">
-      {trip.documents.map((doc) => (
+      <PhotoGallery
+        photos={photos}
+        startIndex={galleryIndex}
+        onClose={() => setGalleryIndex(null)}
+        onDownload={(photo) => downloadDoc(photo.id)}
+      />
+      {live.map((doc) => (
         <div
           key={doc.id}
           className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/60 transition-colors"
@@ -90,7 +113,7 @@ function DocsDropdown({ trip }: { trip: Trip }) {
             className="flex-1 text-xs truncate cursor-pointer hover:underline"
             onClick={(e) => {
               e.stopPropagation();
-              openDoc(doc.id, doc.fileName);
+              openRow(doc);
             }}
             title={doc.fileName}
           >
@@ -100,7 +123,7 @@ function DocsDropdown({ trip }: { trip: Trip }) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                openDoc(doc.id, doc.fileName);
+                openRow(doc);
               }}
               title={t("docView")}
               className="p-1 rounded hover:bg-muted"
