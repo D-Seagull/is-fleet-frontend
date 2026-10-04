@@ -303,6 +303,7 @@
     "unknown": "Unbekannt",
     "someone": "Jemand",
     "fileDeleted": "Datei gelöscht",
+    "albumLabel": "Album · {count, plural, one {# Datei} other {# Dateien}}",
     "messageDeleted": "Nachricht gelöscht",
     "cancelReply": "Antwort abbrechen",
     "removeFile": "Entfernen",

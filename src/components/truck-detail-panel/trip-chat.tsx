@@ -43,6 +43,7 @@ import {
   useDocumentsByTrip,
   useUploadDocuments,
   useDeleteDocument,
+  useDeleteDocumentAlbum,
   type TripDocumentFull,
 } from "@/hooks/use-documents";
 import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
@@ -50,6 +51,7 @@ import { TripInfoCard } from "./trip-info-card";
 import { TripAttachmentsContent } from "./trip-attachments-content";
 import { ChatComposer } from "./chat-composer";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { albumSizes, groupAlbums } from "@/lib/albums";
 import { downloadDoc } from "@/lib/doc-helpers";
 import { UserCardDialog } from "@/components/user-card-dialog";
 import {
@@ -93,6 +95,7 @@ export function TripChat({
   const deleteMessage = useDeleteMessage(trip.id);
   const editMessage = useEditTripMessage(trip.id);
   const deleteDocument = useDeleteDocument(truckId);
+  const deleteAlbum = useDeleteDocumentAlbum(truckId);
   const [text, setText] = useState("");
   const [editing, setEditing] = useState<{ id: string; original: string } | null>(
     null,
@@ -150,15 +153,28 @@ export function TripChat({
         .filter((d) => d.fileType === "PHOTO" && !d.deletedAt && d.signedUrl)
         .sort(
           (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+            new Date(a.createdAt).getTime() -
+              new Date(b.createdAt).getTime() || a.id.localeCompare(b.id),
         ),
     [tripDocs],
   );
 
-  // unified timeline: messages + files sorted by createdAt
+  // A quoted file that belongs to an album is shown as "Album · N files".
+  const albumSize = useMemo(() => albumSizes(tripDocs), [tripDocs]);
+  const docLabel = (d: { fileName: string; batchId?: string | null }) => {
+    const count = d.batchId ? albumSize.get(d.batchId) : undefined;
+    return count ? t("albumLabel", { count }) : d.fileName;
+  };
+
+  // unified timeline: messages + files sorted by createdAt; files sent in one
+  // message (same batchId) become a single album item.
   const timeline: TimelineItem[] = [
     ...messages.map((m) => ({ kind: "msg" as const, data: m })),
-    ...tripDocs.map((d) => ({ kind: "file" as const, data: d })),
+    ...groupAlbums(tripDocs).map((g): TimelineItem =>
+      g.length > 1
+        ? { kind: "album", data: g[0], docs: g }
+        : { kind: "file", data: g[0] },
+    ),
   ].sort(
     (a, b) =>
       new Date(a.data.createdAt).getTime() -
@@ -818,6 +834,8 @@ export function TripChat({
                   }}
                   onDeleteMessage={(id) => deleteMessage.mutate(id)}
                   onDeleteDoc={(id) => deleteDocument.mutate(id)}
+                  onDeleteAlbum={(id) => deleteAlbum.mutate(id)}
+                  docLabel={docLabel}
                   onImageClick={(id) => {
                     const i = galleryPhotos.findIndex((p) => p.id === id);
                     if (i >= 0) setGalleryIndex(i);

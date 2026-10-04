@@ -303,6 +303,7 @@
     "unknown": "Невідомо",
     "someone": "Хтось",
     "fileDeleted": "Файл видалено",
+    "albumLabel": "Альбом · {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлу}}",
     "messageDeleted": "Повідомлення видалено",
     "cancelReply": "Скасувати відповідь",
     "removeFile": "Прибрати",

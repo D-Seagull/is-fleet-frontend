@@ -15,6 +15,8 @@ export interface TripDocReplyPreviewLite {
   fileName: string;
   fileType: FileDocType;
   deletedAt: string | null;
+  /** Set when the quoted file is part of an album. */
+  batchId?: string | null;
   uploader: { id: string; firstName: string; lastName: string | null; avatar: string | null };
 }
 
@@ -26,6 +28,8 @@ export interface TripDocumentFull {
   // Small preview for bubbles and thumbnails; null for documents and for
   // photos uploaded before previews existed. Galleries use signedUrl.
   thumbUrl?: string | null;
+  // Files sent together in one message share it (an album); null otherwise.
+  batchId?: string | null;
   fileName: string;
   fileType: FileDocType;
   publicId: string | null;
@@ -117,6 +121,21 @@ export function useUploadDocuments(truckId: string) {
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY(truckId) });
       queryClient.invalidateQueries({ queryKey: ["documents-trip", vars.tripId] });
+      queryClient.invalidateQueries({ queryKey: ["documents-all"] });
+      queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
+    },
+  });
+}
+
+// Deletes the whole album `id` belongs to (just `id` when it isn't in one).
+export function useDeleteDocumentAlbum(truckId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/documents/${id}/album`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY(truckId) });
       queryClient.invalidateQueries({ queryKey: ["documents-all"] });
       queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
     },

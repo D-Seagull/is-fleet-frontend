@@ -11,13 +11,17 @@ import { MessageReactionsCluster } from "@/components/message-reactions";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
 import { systemMessageText } from "@/lib/system-message";
+import { AlbumGrid } from "@/components/album-grid";
 import type { TripMessage } from "@/hooks/use-trips";
 import type { TripDocumentFull } from "@/hooks/use-documents";
 import type { ReplyTarget } from "./chat-composer";
 
 export type TimelineItem =
   | { kind: "msg"; data: TripMessage }
-  | { kind: "file"; data: TripDocumentFull };
+  | { kind: "file"; data: TripDocumentFull }
+  // Files sent in one message — `data` is the first one (timeline position,
+  // reactions, replies, ✓✓), `docs` the whole album oldest first.
+  | { kind: "album"; data: TripDocumentFull; docs: TripDocumentFull[] };
 
 interface CommonProps {
   currentUserId: string;
@@ -25,6 +29,8 @@ interface CommonProps {
   scrollToTripMessage: (id: string) => void;
   scrollToTripDoc: (id: string) => void;
   onOpenUser: (userId: string) => void;
+  /** Label of a quoted file — "Album · N files" when it belongs to one. */
+  docLabel: (doc: { fileName: string; batchId?: string | null }) => string;
 }
 
 interface MessageBubbleProps extends CommonProps {
@@ -42,6 +48,7 @@ function MessageBubble({
   onEdit,
   onDelete,
   onOpenUser,
+  docLabel,
 }: MessageBubbleProps) {
   const t = useTranslations("chat");
   const locale = useLocale();
@@ -166,7 +173,7 @@ function MessageBubble({
               <MessageQuote
                 kind="doc"
                 senderName={fullName(msg.replyToDocument.uploader)}
-                fileName={msg.replyToDocument.fileName}
+                fileName={docLabel(msg.replyToDocument)}
                 content=""
                 isDeleted={!!msg.replyToDocument.deletedAt}
                 onClick={() => scrollToTripDoc(msg.replyToDocument!.id)}
@@ -216,6 +223,59 @@ function MessageBubble({
   );
 }
 
+const isPhotoDoc = (doc: { fileType: string; fileName: string }) =>
+  doc.fileType === "PHOTO" ||
+  /\.(jpe?g|png|gif|webp|heic|avif)$/i.test(doc.fileName);
+
+/** One non-photo file: icon, name, extension, download. Opens on click. */
+function FileRow({
+  doc,
+  isMine,
+  anchorId,
+}: {
+  doc: TripDocumentFull;
+  isMine: boolean;
+  anchorId?: string;
+}) {
+  const tActions = useTranslations("common.actions");
+  const ext = doc.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
+  return (
+    <div
+      id={anchorId}
+      role="button"
+      tabIndex={0}
+      onClick={() => openDoc(doc.id, doc.fileName)}
+      onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id, doc.fileName)}
+      className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:opacity-80 transition-opacity"
+    >
+      <FileText className="h-5 w-5 shrink-0" />
+      <div className="flex flex-col min-w-0 flex-1">
+        <span className="text-sm truncate max-w-[180px] leading-tight">
+          {doc.fileName}
+        </span>
+        <span
+          className={cn(
+            "text-[10px] leading-tight",
+            isMine ? "text-primary-foreground/70" : "text-muted-foreground",
+          )}
+        >
+          {ext}
+        </span>
+      </div>
+      <button
+        title={tActions("download")}
+        onClick={(e) => {
+          e.stopPropagation();
+          downloadDoc(doc.id);
+        }}
+        className="shrink-0 opacity-70 hover:opacity-100"
+      >
+        <Download className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
 interface FileBubbleProps extends CommonProps {
   doc: TripDocumentFull;
   onDelete: (id: string) => void;
@@ -232,16 +292,13 @@ function FileBubble({
   onDelete,
   onImageClick,
   onImageLoaded,
+  docLabel,
 }: FileBubbleProps) {
   const t = useTranslations("chat");
-  const tActions = useTranslations("common.actions");
   const locale = useLocale();
   const isMine = doc.uploadedBy === currentUserId;
   const isDeletedDoc = !!doc.deletedAt;
-  const isPhoto =
-    doc.fileType === "PHOTO" ||
-    /\.(jpe?g|png|gif|webp|heic|avif)$/i.test(doc.fileName);
-  const ext = doc.fileName.split(".").pop()?.toUpperCase() ?? "FILE";
+  const isPhoto = isPhotoDoc(doc);
   const docActions = {
     onCopy: () => navigator.clipboard.writeText(doc.fileName),
     onReply: () =>
@@ -304,7 +361,7 @@ function FileBubble({
               <MessageQuote
                 kind="doc"
                 senderName={fullName(doc.replyToDocument.uploader)}
-                fileName={doc.replyToDocument.fileName}
+                fileName={docLabel(doc.replyToDocument)}
                 content=""
                 isDeleted={!!doc.replyToDocument.deletedAt}
                 onClick={() => scrollToTripDoc(doc.replyToDocument!.id)}
@@ -352,40 +409,7 @@ function FileBubble({
                     : "bg-muted",
                 )}
               >
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openDoc(doc.id, doc.fileName)}
-                  onKeyDown={(e) => e.key === "Enter" && openDoc(doc.id, doc.fileName)}
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:opacity-80 transition-opacity"
-                >
-                  <FileText className="h-5 w-5 shrink-0" />
-                  <div className="flex flex-col min-w-0 flex-1">
-                    <span className="text-sm truncate max-w-[180px] leading-tight">
-                      {doc.fileName}
-                    </span>
-                    <span
-                      className={cn(
-                        "text-[10px] leading-tight",
-                        isMine
-                          ? "text-primary-foreground/70"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      {ext}
-                    </span>
-                  </div>
-                  <button
-                    title={tActions("download")}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      downloadDoc(doc.id);
-                    }}
-                    className="shrink-0 opacity-70 hover:opacity-100"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                  </button>
-                </div>
+                <FileRow doc={doc} isMine={isMine} />
                 {doc.caption && (
                   <p className="text-sm whitespace-pre-wrap break-words px-3 pb-2">
                     {doc.caption}
@@ -411,6 +435,164 @@ function FileBubble({
   );
 }
 
+interface AlbumBubbleProps extends CommonProps {
+  docs: TripDocumentFull[];
+  onDeleteAlbum: (id: string) => void;
+  onImageClick: (id: string, signedUrl: string) => void;
+  onImageLoaded: () => void;
+}
+
+/**
+ * Several files sent in one message: photo grid (+N), the other files under
+ * it, the caption once. Reply / react / ✓✓ belong to the first file; delete
+ * removes the whole album.
+ */
+function AlbumBubble({
+  docs,
+  currentUserId,
+  setReplyingTo,
+  scrollToTripMessage,
+  scrollToTripDoc,
+  onDeleteAlbum,
+  onImageClick,
+  onImageLoaded,
+  docLabel,
+}: AlbumBubbleProps) {
+  const t = useTranslations("chat");
+  const locale = useLocale();
+  const lead = docs[0];
+  const isMine = lead.uploadedBy === currentUserId;
+  // Files can also be deleted one by one from the Documents tab.
+  const live = docs.filter((d) => !d.deletedAt && d.signedUrl);
+  const isDeleted = live.length === 0;
+  const photos = live.filter(isPhotoDoc);
+  const files = live.filter((d) => !isPhotoDoc(d));
+  const caption = lead.caption;
+  const label = docLabel(lead);
+  // The bubble itself carries the first file's anchor; the rest get their
+  // own so a reply quoting any file of the album scrolls to it.
+  const anchor = (id: string) =>
+    id === lead.id ? undefined : `trip-doc-${id}`;
+
+  const actions = {
+    onCopy: () => navigator.clipboard.writeText(caption || label),
+    onReply: () =>
+      setReplyingTo({
+        id: lead.id,
+        targetType: "doc",
+        senderName: fullName(lead.uploader) || null,
+        content: label,
+        isDeleted,
+      }),
+    onDelete: isMine ? () => onDeleteAlbum(lead.id) : undefined,
+  };
+
+  return (
+    <div
+      className={cn(
+        "group flex items-center gap-3",
+        isMine ? "self-end" : "self-start flex-row-reverse",
+      )}
+    >
+      {!isDeleted && (
+        <MessageReactionsCluster
+          messageId={lead.id}
+          type="TRIP_DOC"
+          reactions={lead.reactions ?? []}
+          currentUserId={currentUserId}
+        />
+      )}
+      <div
+        className={cn(
+          "flex flex-col gap-0.5 max-w-[80%] w-fit min-w-0",
+          isMine && "items-end",
+        )}
+      >
+        <span className="text-xs text-muted-foreground px-1">
+          {fullName(lead.uploader) || t("unknown")}
+        </span>
+        <MessageActionsContext
+          actions={actions}
+          isOwn={isMine}
+          isDeleted={isDeleted}
+        >
+          <div id={`trip-doc-${lead.id}`} className="transition-shadow">
+            {!isDeleted && lead.replyTo && (
+              <MessageQuote
+                senderName={fullName(lead.replyTo.sender)}
+                content={lead.replyTo.content}
+                isDeleted={!!lead.replyTo.deletedAt}
+                onClick={() => scrollToTripMessage(lead.replyTo!.id)}
+                variant="default"
+              />
+            )}
+            {!isDeleted && lead.replyToDocument && (
+              <MessageQuote
+                kind="doc"
+                senderName={fullName(lead.replyToDocument.uploader)}
+                fileName={docLabel(lead.replyToDocument)}
+                content=""
+                isDeleted={!!lead.replyToDocument.deletedAt}
+                onClick={() => scrollToTripDoc(lead.replyToDocument!.id)}
+                variant="default"
+              />
+            )}
+            {isDeleted ? (
+              <div className="rounded-2xl bg-muted/40 text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
+                {t("fileDeleted")}
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "rounded-2xl overflow-hidden border w-fit max-w-[260px]",
+                  (caption || files.length > 0) &&
+                    (isMine
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"),
+                )}
+              >
+                <AlbumGrid
+                  photos={photos}
+                  onOpen={(id) => {
+                    const p = photos.find((x) => x.id === id);
+                    if (p) onImageClick(p.id, p.signedUrl);
+                  }}
+                  onImageLoaded={onImageLoaded}
+                  anchorId={anchor}
+                />
+                {files.map((d) => (
+                  <FileRow
+                    key={d.id}
+                    doc={d}
+                    isMine={isMine}
+                    anchorId={anchor(d.id)}
+                  />
+                ))}
+                {caption && (
+                  <p className="text-sm whitespace-pre-wrap break-words px-3 py-2">
+                    {caption}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </MessageActionsContext>
+        <span className="text-[10px] text-muted-foreground/60 px-1 flex items-center gap-1">
+          {new Date(lead.createdAt).toLocaleTimeString(locale, {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+          {isMine && !isDeleted && (
+            <span className={cn(lead.isRead && "text-primary")}>
+              {lead.isRead ? "✓✓" : "✓"}
+            </span>
+          )}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // Dispatcher — takes one timeline item and renders either MessageBubble
 // or FileBubble. Callers just map(items => <ChatTimelineItem item />) and
 // don't have to switch on kind themselves.
@@ -423,9 +605,11 @@ export function ChatTimelineItem({
   onEditMessage,
   onDeleteMessage,
   onDeleteDoc,
+  onDeleteAlbum,
   onImageClick,
   onImageLoaded,
   onOpenUser,
+  docLabel,
 }: {
   item: TimelineItem;
   currentUserId: string;
@@ -435,10 +619,28 @@ export function ChatTimelineItem({
   onEditMessage: (id: string, original: string) => void;
   onDeleteMessage: (id: string) => void;
   onDeleteDoc: (id: string) => void;
+  onDeleteAlbum: (id: string) => void;
   onImageClick: (id: string, signedUrl: string) => void;
   onImageLoaded: () => void;
   onOpenUser: (userId: string) => void;
+  docLabel: (doc: { fileName: string; batchId?: string | null }) => string;
 }) {
+  if (item.kind === "album") {
+    return (
+      <AlbumBubble
+        docs={item.docs}
+        currentUserId={currentUserId}
+        setReplyingTo={setReplyingTo}
+        scrollToTripMessage={scrollToTripMessage}
+        scrollToTripDoc={scrollToTripDoc}
+        onOpenUser={onOpenUser}
+        onDeleteAlbum={onDeleteAlbum}
+        onImageClick={onImageClick}
+        onImageLoaded={onImageLoaded}
+        docLabel={docLabel}
+      />
+    );
+  }
   if (item.kind === "msg") {
     return (
       <MessageBubble
@@ -451,6 +653,7 @@ export function ChatTimelineItem({
         onEdit={onEditMessage}
         onDelete={onDeleteMessage}
         onOpenUser={onOpenUser}
+        docLabel={docLabel}
       />
     );
   }
@@ -466,6 +669,7 @@ export function ChatTimelineItem({
       onDelete={onDeleteDoc}
       onImageClick={onImageClick}
       onImageLoaded={onImageLoaded}
+      docLabel={docLabel}
     />
   );
 }
