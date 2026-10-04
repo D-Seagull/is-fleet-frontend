@@ -35,11 +35,10 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { useUnreadSummary, type UnreadSummaryItem } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "@/components/status-dot";
-import { LastSeen } from "@/components/last-seen";
 
 // ─── Driver line ──────────────────────────────────────────────────────────────
 
-/** Driver name, live status dot and — after 15+ min away — "останній вхід 12:30". */
+/** Driver name and live status dot (last login lives in the truck's chat header). */
 function DriverStatusLine({
   driver,
 }: {
@@ -49,7 +48,6 @@ function DriverStatusLine({
     <span className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
       <span className="truncate">{fullName(driver)}</span>
       <StatusDot user={driver} size="xs" className="shrink-0 ring-0" />
-      <LastSeen user={driver} className="truncate" />
     </span>
   );
 }
