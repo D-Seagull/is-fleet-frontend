@@ -283,18 +283,18 @@ export function TruckDetailPanel({
             {truck.plate}
           </h1>
           {truck.currentDriver && (
-            <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0 text-muted-foreground text-xs md:text-sm">
               <Link
                 href={`/drivers/${truck.currentDriver.id}`}
-                className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors inline-flex items-center gap-1.5"
+                className="truncate hover:text-foreground hover:underline transition-colors inline-flex items-center gap-1.5"
               >
                 <StatusDot user={truck.currentDriver} size="xs" />
                 {t("header.driverLabel", { name: fullName(truck.currentDriver) })}
               </Link>
-              {/* Under the name: "останній вхід 12:30" after 15+ min away. */}
+              {/* "- останній вхід 12:30" after 15+ min out of the app. */}
               <LastSeen
                 user={truck.currentDriver}
-                className="text-[11px] text-muted-foreground/80 truncate pl-3.5"
+                className="shrink-0 before:content-['-'] before:mr-1.5"
               />
             </div>
           )}

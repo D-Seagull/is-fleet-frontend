@@ -1673,7 +1673,7 @@ function ChatPageContent() {
                         {tRoles(selectedUser.role)}
                         <LastSeen
                           user={selectedUser}
-                          className="before:content-['·'] before:mx-1.5"
+                          className="before:content-['-'] before:mx-1.5"
                         />
                       </p>
                     </div>
