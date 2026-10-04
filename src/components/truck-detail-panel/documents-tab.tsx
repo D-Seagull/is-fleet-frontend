@@ -217,7 +217,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                       {isPhoto ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={doc.signedUrl}
+                          src={doc.thumbUrl || doc.signedUrl}
                           alt={doc.fileName}
                           className="h-9 w-9 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => openRow(doc)}

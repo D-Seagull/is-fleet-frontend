@@ -26,6 +26,9 @@ export interface GroupDocumentFull {
   uploadedBy: string;
   fileUrl: string;
   signedUrl: string;
+  // Small preview for bubbles and thumbnails; null for documents and for
+  // photos uploaded before previews existed. Galleries use signedUrl.
+  thumbUrl?: string | null;
   fileName: string;
   fileType: FileDocType;
   publicId: string | null;

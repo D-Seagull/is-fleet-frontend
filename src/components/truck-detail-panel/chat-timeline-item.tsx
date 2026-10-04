@@ -331,7 +331,7 @@ function FileBubble({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={doc.signedUrl}
+                    src={doc.thumbUrl || doc.signedUrl}
                     alt={doc.fileName}
                     onLoad={onImageLoaded}
                     className="max-w-[200px] max-h-[200px] w-full object-cover block"

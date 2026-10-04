@@ -92,7 +92,7 @@ export function TripAttachmentsContent({
         {isPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={doc.signedUrl}
+            src={doc.thumbUrl || doc.signedUrl}
             alt={doc.fileName}
             className="h-10 w-10 object-cover rounded shrink-0 cursor-pointer"
             onClick={() => openRow(doc)}

@@ -2069,7 +2069,7 @@ function ChatPageContent() {
                                 >
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img
-                                    src={doc.signedUrl}
+                                    src={doc.thumbUrl || doc.signedUrl}
                                     alt={doc.fileName}
                                     onClick={() => openPhoto(doc.id)}
                                     className="block max-w-[220px] max-h-[200px] w-full object-cover cursor-pointer"
