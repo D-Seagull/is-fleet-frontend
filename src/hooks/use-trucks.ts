@@ -21,6 +21,8 @@ export interface Truck {
     avatar?: string | null;
     status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
+    /** Last time the driver had a live connection (My Trucks only). */
+    lastSeenAt?: string | null;
   } | null;
   managerId: string | null;
   manager: {

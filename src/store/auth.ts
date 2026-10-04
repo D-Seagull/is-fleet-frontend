@@ -45,13 +45,31 @@ const AUTHED_COOKIE = "fleet_authed";
 // keep the refresh cookie session-only (unchecked) vs 30-day (checked).
 const REMEMBER_KEY = "fleet_remember";
 
-function setAuthedCookie(remember: boolean) {
+// The user's role, also first-party and non-sensitive: lets the edge
+// (src/proxy.ts) send an already signed-in visitor to their own start page —
+// manager → My Trucks, teamlead → Managers — instead of guessing. It used to
+// read a `user` cookie that nothing writes any more, so everyone opening the
+// site while signed in landed on /trucks. Permissions are still enforced by
+// the backend; a forged value only changes which page opens first.
+const ROLE_COOKIE = "fleet_role";
+
+function setAuthedCookie(remember: boolean, role?: string | null) {
   const maxAge = remember ? `; max-age=${30 * 24 * 60 * 60}` : "";
   document.cookie = `${AUTHED_COOKIE}=1; path=/; samesite=lax${maxAge}`;
+  if (role) {
+    document.cookie = `${ROLE_COOKIE}=${encodeURIComponent(role)}; path=/; samesite=lax${maxAge}`;
+  }
 }
 
 function clearAuthedCookie() {
   document.cookie = `${AUTHED_COOKIE}=; path=/; max-age=0`;
+  document.cookie = `${ROLE_COOKIE}=; path=/; max-age=0`;
+}
+
+/** Keep the role cookie in step with the profile (role can change). */
+function syncRoleCookie(role: string | null | undefined) {
+  if (!role) return;
+  setAuthedCookie(localStorage.getItem(REMEMBER_KEY) !== "0", role);
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -76,7 +94,7 @@ export const useAuthStore = create<AuthState>()(
         // The backend already set the httpOnly refresh cookie on the login
         // response (axios withCredentials).
         localStorage.setItem(REMEMBER_KEY, remember ? "1" : "0");
-        setAuthedCookie(remember);
+        setAuthedCookie(remember, user.role);
         set({ user, token, isLoading: false });
         // The /auth/login response only carries the bare-minimum
         // fields used by the token (id, role, firstName, lastName).
@@ -109,7 +127,7 @@ export const useAuthStore = create<AuthState>()(
           // rotates it (honouring `remember`) and returns a fresh access token.
           const res = await api.post("/auth/refresh", { remember });
           const { access_token, user } = res.data;
-          setAuthedCookie(remember);
+          setAuthedCookie(remember, user?.role);
           // /auth/refresh (signToken) returns a BARE user — no avatar / status /
           // email. Merge it over the persisted row so the sidebar avatar doesn't
           // blank out, then hydrate the authoritative full profile from
@@ -148,6 +166,7 @@ export const useAuthStore = create<AuthState>()(
             headers: { Authorization: `Bearer ${token}` },
           });
           set({ user: res.data, token, isLoading: false });
+          syncRoleCookie(res.data?.role);
         } catch {
           // If the access token was expired, the api interceptor already
           // tried to refresh + retry; landing here means the session is gone.

@@ -29,6 +29,7 @@ import { useMyTrucks } from "@/hooks/use-trucks";
 import { useUnreadSummary, useUnreadSocketSync } from "@/hooks/use-unread";
 import { useTaskbarBadge } from "@/lib/desktop-badge";
 import { TripStatusNotices } from "@/components/trip-status-notices";
+import { DownloadStatus } from "@/components/download-status";
 import {
   useDmUnreadSummary,
   useDmUnreadSocketSync,
@@ -343,6 +344,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             {isManager ? <UnreadBell /> : <TaskbarBadge count={chatBadge} />}
             {/* Colored trip-status banners (driver accepted / on the way …). */}
             {isManager && <TripStatusNotices />}
+            {/* "Preparing → Downloading → Saved" toast for file downloads. */}
+            <DownloadStatus />
             <ThemeToggle />
           </div>
         </header>

@@ -26,6 +26,8 @@ export interface DocReplyPreviewLite {
   id: string;
   fileName: string;
   fileType: "PHOTO" | "DOCUMENT";
+  /** Shared by files sent in one message (an album). */
+  batchId?: string | null;
   deletedAt: string | null;
   uploader: { id: string; firstName: string; lastName: string | null; avatar: string | null };
 }

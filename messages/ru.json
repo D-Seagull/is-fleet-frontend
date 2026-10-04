@@ -71,6 +71,14 @@
     "legal": {
       "privacy": "Политика конфиденциальности",
       "terms": "Условия использования"
+    },
+    "download": {
+      "preparing": "Готовим файл…",
+      "downloading": "Скачивается: {name}",
+      "saved": "Сохранено в «Загрузки»",
+      "started": "Скачивание началось",
+      "failed": "Не удалось скачать файл",
+      "showInFolder": "Показать в папке"
     }
   },
   "alarm": {
@@ -295,6 +303,7 @@
     "unknown": "Неизвестно",
     "someone": "Кто-то",
     "fileDeleted": "Файл удалён",
+    "albumLabel": "Альбом · {count, plural, one {# файл} few {# файла} many {# файлов} other {# файла}}",
     "messageDeleted": "Сообщение удалено",
     "cancelReply": "Отменить ответ",
     "removeFile": "Убрать",
@@ -522,6 +531,7 @@
   },
   "myTrucks": {
     "title": "Мои грузовики",
+    "lastLogin": "последний вход {time}",
     "empty": "Вам ещё не назначено грузовиков.",
     "selectPrompt": "Выберите грузовик, чтобы начать работу",
     "broadcast": {

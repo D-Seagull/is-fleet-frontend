@@ -71,6 +71,14 @@
     "legal": {
       "privacy": "Privacy Policy",
       "terms": "Terms of Service"
+    },
+    "download": {
+      "preparing": "Preparing file…",
+      "downloading": "Downloading: {name}",
+      "saved": "Saved to Downloads",
+      "started": "Download started",
+      "failed": "Couldn't download the file",
+      "showInFolder": "Show in folder"
     }
   },
   "alarm": {
@@ -295,6 +303,7 @@
     "unknown": "Unknown",
     "someone": "Someone",
     "fileDeleted": "File deleted",
+    "albumLabel": "Album · {count, plural, one {# file} other {# files}}",
     "messageDeleted": "Message deleted",
     "cancelReply": "Cancel reply",
     "removeFile": "Remove",
@@ -522,6 +531,7 @@
   },
   "myTrucks": {
     "title": "My Trucks",
+    "lastLogin": "last in the app {time}",
     "empty": "No trucks assigned to you yet.",
     "selectPrompt": "Select a truck to start working",
     "broadcast": {

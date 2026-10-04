@@ -21,11 +21,9 @@ export function proxy(request: NextRequest) {
   if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
     // Але вже залогінений — редіректимо
     if (token) {
-      const userCookie = request.cookies.get("user")?.value;
-      const user = userCookie
-        ? JSON.parse(decodeURIComponent(userCookie))
-        : null;
-      const redirectTo = homeRouteFor(user?.role);
+      // Role cookie written by the auth store (non-sensitive, routing only).
+      const role = request.cookies.get("fleet_role")?.value;
+      const redirectTo = homeRouteFor(role ? decodeURIComponent(role) : null);
       return NextResponse.redirect(new URL(redirectTo, request.url));
     }
     return NextResponse.next();

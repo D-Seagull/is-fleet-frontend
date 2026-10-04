@@ -71,6 +71,14 @@
     "legal": {
       "privacy": "Privatumo politika",
       "terms": "Naudojimo sąlygos"
+    },
+    "download": {
+      "preparing": "Ruošiamas failas…",
+      "downloading": "Atsisiunčiama: {name}",
+      "saved": "Išsaugota aplanke „Atsisiuntimai“",
+      "started": "Atsisiuntimas pradėtas",
+      "failed": "Nepavyko atsisiųsti failo",
+      "showInFolder": "Rodyti aplanke"
     }
   },
   "alarm": {
@@ -295,6 +303,7 @@
     "unknown": "Nežinomas",
     "someone": "Kažkas",
     "fileDeleted": "Failas ištrintas",
+    "albumLabel": "Albumas · {count, plural, one {# failas} few {# failai} many {# failo} other {# failų}}",
     "messageDeleted": "Žinutė ištrinta",
     "cancelReply": "Atšaukti atsakymą",
     "removeFile": "Pašalinti",
@@ -522,6 +531,7 @@
   },
   "myTrucks": {
     "title": "Mano sunkvežimiai",
+    "lastLogin": "paskutinį kartą programėlėje {time}",
     "empty": "Jums dar nepriskirta sunkvežimių.",
     "selectPrompt": "Pasirinkite sunkvežimį, kad pradėtumėte darbą",
     "broadcast": {

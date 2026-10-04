@@ -71,6 +71,14 @@
     "legal": {
       "privacy": "Polityka prywatności",
       "terms": "Regulamin"
+    },
+    "download": {
+      "preparing": "Przygotowujemy plik…",
+      "downloading": "Pobieranie: {name}",
+      "saved": "Zapisano w Pobranych",
+      "started": "Pobieranie rozpoczęte",
+      "failed": "Nie udało się pobrać pliku",
+      "showInFolder": "Pokaż w folderze"
     }
   },
   "alarm": {
@@ -295,6 +303,7 @@
     "unknown": "Nieznany",
     "someone": "Ktoś",
     "fileDeleted": "Plik usunięty",
+    "albumLabel": "Album · {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliku}}",
     "messageDeleted": "Wiadomość usunięta",
     "cancelReply": "Anuluj odpowiedź",
     "removeFile": "Usuń",
@@ -522,6 +531,7 @@
   },
   "myTrucks": {
     "title": "Moje ciężarówki",
+    "lastLogin": "ostatnio w aplikacji {time}",
     "empty": "Nie przypisano Ci jeszcze żadnych ciężarówek.",
     "selectPrompt": "Wybierz ciężarówkę, aby rozpocząć pracę",
     "broadcast": {

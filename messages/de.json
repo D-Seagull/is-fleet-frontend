@@ -71,6 +71,14 @@
     "legal": {
       "privacy": "Datenschutzerklärung",
       "terms": "Nutzungsbedingungen"
+    },
+    "download": {
+      "preparing": "Datei wird vorbereitet…",
+      "downloading": "Wird heruntergeladen: {name}",
+      "saved": "In „Downloads“ gespeichert",
+      "started": "Download gestartet",
+      "failed": "Datei konnte nicht heruntergeladen werden",
+      "showInFolder": "Im Ordner anzeigen"
     }
   },
   "alarm": {
@@ -295,6 +303,7 @@
     "unknown": "Unbekannt",
     "someone": "Jemand",
     "fileDeleted": "Datei gelöscht",
+    "albumLabel": "Album · {count, plural, one {# Datei} other {# Dateien}}",
     "messageDeleted": "Nachricht gelöscht",
     "cancelReply": "Antwort abbrechen",
     "removeFile": "Entfernen",
@@ -522,6 +531,7 @@
   },
   "myTrucks": {
     "title": "Meine LKW",
+    "lastLogin": "zuletzt in der App {time}",
     "empty": "Ihnen sind noch keine LKW zugewiesen.",
     "selectPrompt": "Wählen Sie einen LKW, um zu beginnen",
     "broadcast": {
