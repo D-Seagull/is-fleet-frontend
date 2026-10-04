@@ -75,6 +75,8 @@ import { cn } from "@/lib/utils";
 import { EDIT_WINDOW_MS } from "@/lib/constants";
 import { downloadChatDoc, openUrlInViewer } from "@/lib/doc-helpers";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { AlbumGrid } from "@/components/album-grid";
+import { albumSizes, groupAlbums } from "@/lib/albums";
 import { useSearchParams } from "next/navigation";
 import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
@@ -128,6 +130,7 @@ import {
   useConversationDocuments,
   useUploadConversationDocs,
   useDeleteConversationDoc,
+  useDeleteConversationDocAlbum,
   useConversationDocsSocketSync,
   type ConversationDocumentFull,
 } from "@/hooks/use-conversation-documents";
@@ -135,6 +138,7 @@ import {
   useGroupDocuments,
   useUploadGroupDocs,
   useDeleteGroupDoc,
+  useDeleteGroupDocAlbum,
   useGroupDocsSocketSync,
   type GroupDocumentFull,
 } from "@/hooks/use-group-documents";
@@ -321,6 +325,8 @@ function ChatPageContent() {
   const groupDocUpload = useUploadGroupDocs(selectedGroupId ?? "");
   const deleteDmDoc = useDeleteConversationDoc(selectedUserId ?? "");
   const deleteGroupDoc = useDeleteGroupDoc(selectedGroupId ?? "");
+  const deleteDmAlbum = useDeleteConversationDocAlbum(selectedUserId ?? "");
+  const deleteGroupAlbum = useDeleteGroupDocAlbum(selectedGroupId ?? "");
   const { data: dmDocs = [] } = useConversationDocuments(selectedUserId ?? "");
   const { data: groupDocs = [] } = useGroupDocuments(selectedGroupId ?? "");
   // Folder-button counters — live files only, as in the trip chat (deleted or
@@ -339,7 +345,8 @@ function ChatPageContent() {
         .filter((d) => d.fileType === "PHOTO" && !d.deletedAt && d.signedUrl)
         .sort(
           (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+            new Date(a.createdAt).getTime() -
+              new Date(b.createdAt).getTime() || a.id.localeCompare(b.id),
         ),
     [selectedGroupId, groupDocs, dmDocs],
   );
@@ -403,6 +410,9 @@ function ChatPageContent() {
         kind: "doc";
         data: ConversationDocumentFull | GroupDocumentFull;
         createdAt: string;
+        // Files sent in one message: all of them, oldest first (`data` is
+        // the first). Absent for a single file.
+        album?: (ConversationDocumentFull | GroupDocumentFull)[];
       };
   const timeline: ChatItem[] = [
     ...currentMessages.map((m) => ({
@@ -410,15 +420,25 @@ function ChatPageContent() {
       data: m,
       createdAt: m.createdAt,
     })),
-    ...currentDocs.map((d) => ({
+    ...groupAlbums<ConversationDocumentFull | GroupDocumentFull>(
+      currentDocs,
+    ).map((g) => ({
       kind: "doc" as const,
-      data: d,
-      createdAt: d.createdAt,
+      data: g[0],
+      createdAt: g[0].createdAt,
+      album: g.length > 1 ? g : undefined,
     })),
   ].sort(
     (a, b) =>
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
+
+  // A quoted file that belongs to an album reads "Album · N files".
+  const albumSize = albumSizes(currentDocs);
+  const docLabel = (d: { fileName: string; batchId?: string | null }) => {
+    const count = d.batchId ? albumSize.get(d.batchId) : undefined;
+    return count ? tChat("albumLabel", { count }) : d.fileName;
+  };
 
   const searchQ = searchQuery.toLowerCase().trim();
   const filteredGroups = [
@@ -1853,7 +1873,7 @@ function ChatPageContent() {
                                     senderName={
                                       fullName(msg.replyToDocument.uploader)
                                     }
-                                    fileName={msg.replyToDocument.fileName}
+                                    fileName={docLabel(msg.replyToDocument)}
                                     content=""
                                     isDeleted={!!msg.replyToDocument.deletedAt}
                                     onClick={() =>
@@ -1928,7 +1948,14 @@ function ChatPageContent() {
                     // kind === "doc"
                     const doc = item.data;
                     const isOwn = doc.uploadedBy === user?.id;
-                    const isDeleted = !!doc.deletedAt;
+                    // Album: files may also be deleted one by one elsewhere —
+                    // it counts as deleted only when none is left.
+                    const albumLive = item.album?.filter(
+                      (d) => !d.deletedAt && d.signedUrl,
+                    );
+                    const isDeleted = albumLive
+                      ? albumLive.length === 0
+                      : !!doc.deletedAt;
                     const isPhoto = doc.fileType === "PHOTO";
                     const senderName =
                       !isOwn && selectedGroupId
@@ -2012,18 +2039,27 @@ function ChatPageContent() {
                           <MessageActionsContext
                             actions={{
                               onCopy: () =>
-                                navigator.clipboard.writeText(doc.fileName),
+                                navigator.clipboard.writeText(
+                                  item.album
+                                    ? doc.caption || docLabel(doc)
+                                    : doc.fileName,
+                                ),
                               onReply: () =>
                                 setReplyingTo({
                                   id: doc.id,
                                   targetType: "doc",
                                   senderName: fullName(doc.uploader) || null,
-                                  content: doc.fileName,
+                                  content: docLabel(doc),
                                   isDeleted,
                                 }),
+                              // An album is one message — it goes as a whole.
                               onDelete: isOwn
                                 ? () => {
-                                    if (selectedGroupId)
+                                    if (item.album) {
+                                      if (selectedGroupId)
+                                        deleteGroupAlbum.mutate(doc.id);
+                                      else deleteDmAlbum.mutate(doc.id);
+                                    } else if (selectedGroupId)
                                       deleteGroupDoc.mutate(doc.id);
                                     else deleteDmDoc.mutate(doc.id);
                                   }
@@ -2056,7 +2092,7 @@ function ChatPageContent() {
                                     <MessageQuote
                                       kind="doc"
                                       senderName={fullName(docReplyToDoc.uploader)}
-                                      fileName={docReplyToDoc.fileName}
+                                      fileName={docLabel(docReplyToDoc)}
                                       content=""
                                       isDeleted={!!docReplyToDoc.deletedAt}
                                       onClick={() =>
@@ -2070,6 +2106,86 @@ function ChatPageContent() {
                               {isDeleted ? (
                                 <div className="rounded-lg bg-muted/40 text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
                                   {tChat("fileDeleted")}
+                                </div>
+                              ) : albumLive ? (
+                                // Album: photo grid (+N), other files, caption once.
+                                <div
+                                  className={cn(
+                                    "rounded-2xl overflow-hidden border w-fit max-w-[260px]",
+                                    (doc.caption ||
+                                      albumLive.some(
+                                        (d) => d.fileType !== "PHOTO",
+                                      )) &&
+                                      (isOwn
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-muted"),
+                                  )}
+                                >
+                                  <AlbumGrid
+                                    photos={albumLive.filter(
+                                      (d) => d.fileType === "PHOTO",
+                                    )}
+                                    onOpen={openPhoto}
+                                    anchorId={(id) =>
+                                      id === doc.id ? undefined : `chat-doc-${id}`
+                                    }
+                                  />
+                                  {albumLive
+                                    .filter((d) => d.fileType !== "PHOTO")
+                                    .map((d) => (
+                                      <div
+                                        key={d.id}
+                                        id={`chat-doc-${d.id}`}
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() =>
+                                          openUrlInViewer(d.signedUrl, d.fileName)
+                                        }
+                                        onKeyDown={(e) =>
+                                          e.key === "Enter" &&
+                                          openUrlInViewer(d.signedUrl, d.fileName)
+                                        }
+                                        className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                      >
+                                        <FileText className="h-5 w-5 shrink-0" />
+                                        <div className="flex flex-col min-w-0 flex-1">
+                                          <span className="text-sm truncate max-w-[180px] leading-tight">
+                                            {d.fileName}
+                                          </span>
+                                          <span
+                                            className={cn(
+                                              "text-[10px] leading-tight",
+                                              isOwn
+                                                ? "text-primary-foreground/70"
+                                                : "text-muted-foreground",
+                                            )}
+                                          >
+                                            {d.fileName
+                                              .split(".")
+                                              .pop()
+                                              ?.toUpperCase() ?? "FILE"}
+                                          </span>
+                                        </div>
+                                        <button
+                                          title={tActions("download")}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            void downloadChatDoc(
+                                              selectedGroupId ? "group" : "dm",
+                                              d.id,
+                                            );
+                                          }}
+                                          className="shrink-0 opacity-70 hover:opacity-100"
+                                        >
+                                          <Download className="h-3.5 w-3.5" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  {doc.caption && (
+                                    <p className="text-sm whitespace-pre-wrap break-words px-3 py-2">
+                                      {doc.caption}
+                                    </p>
+                                  )}
                                 </div>
                               ) : isPhoto ? (
                                 <div
