@@ -1,5 +1,9 @@
 {
   "common": {
+    "lastSeen": {
+      "label": "paskutinį kartą programėlėje {when}",
+      "yesterday": "vakar {time}"
+    },
     "appName": "IS Fleet",
     "roles": {
       "TEAMLEAD": "Komandos vadovas",
@@ -531,7 +535,6 @@
   },
   "myTrucks": {
     "title": "Mano sunkvežimiai",
-    "lastLogin": "paskutinį kartą programėlėje {time}",
     "empty": "Jums dar nepriskirta sunkvežimių.",
     "selectPrompt": "Pasirinkite sunkvežimį, kad pradėtumėte darbą",
     "broadcast": {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Loader2, Truck, ChevronRight, Megaphone, BookTemplate, Trash2, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,70 +35,21 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { useUnreadSummary, type UnreadSummaryItem } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "@/components/status-dot";
-import { useLastSeen, useUserPresence } from "@/hooks/use-presence";
-import { resolveDisplayStatus } from "@/lib/status";
+import { LastSeen } from "@/components/last-seen";
 
-// ─── Driver status line ───────────────────────────────────────────────────────
+// ─── Driver line ──────────────────────────────────────────────────────────────
 
-// Below this a driver who just closed the app isn't worth a timestamp.
-const LAST_SEEN_AFTER_MS = 15 * 60 * 1000;
-
-/** Re-renders every `ms` so relative times ("5 min ago") keep moving. */
-function useNow(ms: number): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), ms);
-    return () => clearInterval(id);
-  }, [ms]);
-  return now;
-}
-
-/** "5 хв тому" / "3 год тому" within a day, otherwise "12 жовт., 18:40". */
-function formatLastSeen(at: Date, now: number, locale: string): string {
-  const minutes = Math.round((now - at.getTime()) / 60_000);
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-  if (minutes < 60) return rtf.format(-minutes, "minute");
-  if (minutes < 24 * 60) return rtf.format(-Math.round(minutes / 60), "hour");
-  return at.toLocaleString(locale, {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-/**
- * Driver name + live status (dot and label). When the driver has been out of
- * the app for 15 min or more, also when they were last in it.
- */
+/** Driver name, live status dot and — after 15+ min away — "останній вхід 12:30". */
 function DriverStatusLine({
   driver,
 }: {
   driver: NonNullable<TruckType["currentDriver"]>;
 }) {
-  const tStatus = useTranslations("common.status");
-  const t = useTranslations("myTrucks");
-  const locale = useLocale();
-  const presence = useUserPresence(driver.id);
-  const lastSeen = useLastSeen(driver.id, driver.lastSeenAt);
-  const now = useNow(60_000);
-  const status = resolveDisplayStatus(
-    driver,
-    presence === "online",
-    presence === "away",
-  );
-  const showLastSeen =
-    !!lastSeen && now - lastSeen.getTime() >= LAST_SEEN_AFTER_MS;
-
   return (
     <span className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
       <span className="truncate">{fullName(driver)}</span>
       <StatusDot user={driver} size="xs" className="shrink-0 ring-0" />
-      <span className="truncate">
-        {tStatus(status)}
-        {showLastSeen &&
-          ` · ${t("lastLogin", { time: formatLastSeen(lastSeen, now, locale) })}`}
-      </span>
+      <LastSeen user={driver} className="truncate" />
     </span>
   );
 }

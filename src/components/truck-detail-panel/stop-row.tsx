@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { StopType } from "@/hooks/use-trips";
+import { HourScale, TimeInput24 } from "./time-window";
 
 export interface StopRowData {
   type: StopType;
@@ -62,13 +63,8 @@ export function todayLocal(): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-/** Quick-pick chips for the window start. label — без нуля спереду, value — HH:mm для <input type="time">. */
-export const TIME_PRESETS: { label: string; value: string }[] = [
-  { label: "8:00", value: "08:00" },
-  { label: "8:30", value: "08:30" },
-  { label: "9:00", value: "09:00" },
-  { label: "9:30", value: "09:30" },
-];
+// A new stop starts with the usual working window; change it if it differs.
+export const DEFAULT_WINDOW = { start: "08:00", end: "16:00" };
 
 export const emptyStop = (type: StopType = "LOADING"): StopRowData => ({
   type,
@@ -77,8 +73,8 @@ export const emptyStop = (type: StopType = "LOADING"): StopRowData => ({
   ref: "",
   coords: "",
   windowDate: todayLocal(),
-  windowStart: "00:00",
-  windowEnd: "00:00",
+  windowStart: DEFAULT_WINDOW.start,
+  windowEnd: DEFAULT_WINDOW.end,
 });
 
 /** Список 3 типів стопа для попапа (вставка нового / зміна типу наявного). */
@@ -319,34 +315,27 @@ export function StopRow({
           aria-label={t("date")}
           className="w-[132px] h-8 text-xs px-2"
         />
-        <Input
-          type="time"
+        <TimeInput24
           value={value.windowStart}
-          onChange={(e) => set("windowStart", e.target.value)}
-          aria-label={t("from")}
-          className="w-[104px] h-8 text-xs px-2"
+          onChange={(v) => set("windowStart", v)}
+          ariaLabel={t("from")}
+          className="w-[64px] h-8 text-xs px-2 text-center"
         />
         <span className="text-muted-foreground text-xs">–</span>
-        <Input
-          type="time"
+        <TimeInput24
           value={value.windowEnd}
-          onChange={(e) => set("windowEnd", e.target.value)}
-          aria-label={t("to")}
-          className="w-[104px] h-8 text-xs px-2"
+          onChange={(v) => set("windowEnd", v)}
+          ariaLabel={t("to")}
+          className="w-[64px] h-8 text-xs px-2 text-center"
         />
       </div>
-      <div className="flex flex-wrap gap-1">
-        {TIME_PRESETS.map((p) => (
-          <button
-            key={p.value}
-            type="button"
-            className="px-2 py-0.5 text-[11px] rounded border hover:bg-accent transition-colors"
-            onClick={() => set("windowStart", p.value)}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+      <HourScale
+        start={value.windowStart}
+        end={value.windowEnd}
+        onChange={(start, end) =>
+          onChange({ ...value, windowStart: start, windowEnd: end })
+        }
+      />
     </div>
   );
 }

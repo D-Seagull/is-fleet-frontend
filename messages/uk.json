@@ -1,5 +1,9 @@
 {
   "common": {
+    "lastSeen": {
+      "label": "останній вхід {when}",
+      "yesterday": "учора {time}"
+    },
     "appName": "IS Fleet",
     "roles": {
       "TEAMLEAD": "Тімлід",
@@ -531,7 +535,6 @@
   },
   "myTrucks": {
     "title": "Мої вантажівки",
-    "lastLogin": "останній вхід {time}",
     "empty": "Вам ще не призначено вантажівок.",
     "selectPrompt": "Оберіть вантажівку, щоб почати роботу",
     "broadcast": {
