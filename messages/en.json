@@ -1,5 +1,9 @@
 {
   "common": {
+    "lastSeen": {
+      "label": "last in the app {when}",
+      "yesterday": "yesterday {time}"
+    },
     "appName": "IS Fleet",
     "roles": {
       "TEAMLEAD": "Team Lead",
@@ -531,7 +535,6 @@
   },
   "myTrucks": {
     "title": "My Trucks",
-    "lastLogin": "last in the app {time}",
     "empty": "No trucks assigned to you yet.",
     "selectPrompt": "Select a truck to start working",
     "broadcast": {

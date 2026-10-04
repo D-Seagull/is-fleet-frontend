@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 import { GroupActionsMenu } from "@/components/group-actions-menu";
 import { StatusDot } from "@/components/status-dot";
+import { LastSeen } from "@/components/last-seen";
 import { UserCardDialog } from "@/components/user-card-dialog";
 import {
   ConversationListSkeleton,
@@ -1668,8 +1669,12 @@ function ChatPageContent() {
                       <p className="font-semibold truncate">
                         {fullName(selectedUser) || t("noName")}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground truncate">
                         {tRoles(selectedUser.role)}
+                        <LastSeen
+                          user={selectedUser}
+                          className="before:content-['·'] before:mx-1.5"
+                        />
                       </p>
                     </div>
                   </button>

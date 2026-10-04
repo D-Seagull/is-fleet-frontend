@@ -1,5 +1,9 @@
 {
   "common": {
+    "lastSeen": {
+      "label": "последний вход {when}",
+      "yesterday": "вчера {time}"
+    },
     "appName": "IS Fleet",
     "roles": {
       "TEAMLEAD": "Тимлид",
@@ -531,7 +535,6 @@
   },
   "myTrucks": {
     "title": "Мои грузовики",
-    "lastLogin": "последний вход {time}",
     "empty": "Вам ещё не назначено грузовиков.",
     "selectPrompt": "Выберите грузовик, чтобы начать работу",
     "broadcast": {

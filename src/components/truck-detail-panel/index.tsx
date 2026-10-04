@@ -25,6 +25,7 @@ import {
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "@/components/status-dot";
+import { LastSeen } from "@/components/last-seen";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -288,6 +289,10 @@ export function TruckDetailPanel({
             >
               <StatusDot user={truck.currentDriver} size="xs" />
               {t("header.driverLabel", { name: fullName(truck.currentDriver) })}
+              <LastSeen
+                user={truck.currentDriver}
+                className="before:content-['·'] before:mr-1.5"
+              />
             </Link>
           )}
           <button
