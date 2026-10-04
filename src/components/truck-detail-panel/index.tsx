@@ -283,17 +283,20 @@ export function TruckDetailPanel({
             {truck.plate}
           </h1>
           {truck.currentDriver && (
-            <Link
-              href={`/drivers/${truck.currentDriver.id}`}
-              className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors inline-flex items-center gap-1.5"
-            >
-              <StatusDot user={truck.currentDriver} size="xs" />
-              {t("header.driverLabel", { name: fullName(truck.currentDriver) })}
+            <div className="flex flex-col min-w-0">
+              <Link
+                href={`/drivers/${truck.currentDriver.id}`}
+                className="text-muted-foreground text-xs md:text-sm truncate hover:text-foreground hover:underline transition-colors inline-flex items-center gap-1.5"
+              >
+                <StatusDot user={truck.currentDriver} size="xs" />
+                {t("header.driverLabel", { name: fullName(truck.currentDriver) })}
+              </Link>
+              {/* Under the name: "останній вхід 12:30" after 15+ min away. */}
               <LastSeen
                 user={truck.currentDriver}
-                className="before:content-['·'] before:mr-1.5"
+                className="text-[11px] text-muted-foreground/80 truncate pl-3.5"
               />
-            </Link>
+            </div>
           )}
           <button
             className="md:hidden ml-auto shrink-0 flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-primary hover:bg-primary/20 transition-colors"
