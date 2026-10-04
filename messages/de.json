@@ -531,6 +531,7 @@
   },
   "myTrucks": {
     "title": "Meine LKW",
+    "lastLogin": "zuletzt in der App {time}",
     "empty": "Ihnen sind noch keine LKW zugewiesen.",
     "selectPrompt": "Wählen Sie einen LKW, um zu beginnen",
     "broadcast": {

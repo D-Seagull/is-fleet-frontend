@@ -531,6 +531,7 @@
   },
   "myTrucks": {
     "title": "Moje ciężarówki",
+    "lastLogin": "ostatnio w aplikacji {time}",
     "empty": "Nie przypisano Ci jeszcze żadnych ciężarówek.",
     "selectPrompt": "Wybierz ciężarówkę, aby rozpocząć pracę",
     "broadcast": {

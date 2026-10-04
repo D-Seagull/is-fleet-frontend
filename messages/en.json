@@ -531,6 +531,7 @@
   },
   "myTrucks": {
     "title": "My Trucks",
+    "lastLogin": "last in the app {time}",
     "empty": "No trucks assigned to you yet.",
     "selectPrompt": "Select a truck to start working",
     "broadcast": {
