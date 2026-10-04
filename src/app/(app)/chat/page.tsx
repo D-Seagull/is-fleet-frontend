@@ -323,6 +323,14 @@ function ChatPageContent() {
   const deleteGroupDoc = useDeleteGroupDoc(selectedGroupId ?? "");
   const { data: dmDocs = [] } = useConversationDocuments(selectedUserId ?? "");
   const { data: groupDocs = [] } = useGroupDocuments(selectedGroupId ?? "");
+  // Folder-button counters — live files only, as in the trip chat (deleted or
+  // vanished ones come back with deletedAt / an empty signedUrl).
+  const dmAttachmentsCount = dmDocs.filter(
+    (d) => !d.deletedAt && d.signedUrl,
+  ).length;
+  const groupAttachmentsCount = groupDocs.filter(
+    (d) => !d.deletedAt && d.signedUrl,
+  ).length;
   // Every photo of the open DM / group, oldest first (timeline order) — the
   // gallery flips through all of them, starting at the one clicked.
   const galleryPhotos = useMemo(
@@ -1450,11 +1458,14 @@ function ChatPageContent() {
                   </div>
                   <Button
                     variant="ghost"
-                    size="icon"
+                    className="h-9 px-2 gap-1 text-muted-foreground"
                     title={t("attachments")}
                     onClick={() => setAttachmentsOpen(true)}
                   >
                     <Folder className="h-4 w-4" />
+                    {groupAttachmentsCount > 0 && (
+                      <span className="text-[10px]">{groupAttachmentsCount}</span>
+                    )}
                   </Button>
                   <Sheet
                     open={membersSheetOpen}
@@ -1644,11 +1655,14 @@ function ChatPageContent() {
                   </button>
                   <Button
                     variant="ghost"
-                    size="icon"
+                    className="h-9 px-2 gap-1 text-muted-foreground"
                     title={t("attachments")}
                     onClick={() => setAttachmentsOpen(true)}
                   >
                     <Folder className="h-4 w-4" />
+                    {dmAttachmentsCount > 0 && (
+                      <span className="text-[10px]">{dmAttachmentsCount}</span>
+                    )}
                   </Button>
                 </>
               ) : null}
