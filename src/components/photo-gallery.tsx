@@ -8,6 +8,9 @@ import { useTranslations } from "next-intl";
 export interface GalleryPhoto {
   id: string;
   signedUrl: string;
+  /** Small preview, usually already cached from the chat — shown at once
+   *  while the full photo loads. Absent for photos uploaded before previews. */
+  thumbUrl?: string | null;
 }
 
 // How far (px) a drag must travel to flip to the neighbouring photo.
@@ -165,9 +168,28 @@ export function PhotoGallery({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  if (!open) return null;
+  // Photos whose full image has loaded; until then the preview stands in.
+  const [loaded, setLoaded] = useState<ReadonlySet<string>>(new Set());
+  const current = open ? photos[Math.min(index, photos.length - 1)] : undefined;
+  useEffect(() => {
+    if (!current?.thumbUrl || loaded.has(current.id)) return;
+    const { id } = current;
+    const full = new Image();
+    full.onload = () => setLoaded((prev) => new Set(prev).add(id));
+    full.src = current.signedUrl;
+    return () => {
+      full.onload = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current?.id]);
+
+  if (!open || !current) return null;
   // A photo may have been deleted while the gallery was open.
-  const photo = photos[Math.min(index, photos.length - 1)];
+  const photo = current;
+  // The preview is small, so it is stretched to the box the full photo will
+  // take (85vw × 85vh, contained) — no jump when the full one swaps in. If
+  // the full photo never loads, the preview simply stays.
+  const showPreview = !!photo.thumbUrl && !loaded.has(photo.id);
 
   const pinchDistance = () => {
     const [a, b] = [...pointers.current.values()];
@@ -272,9 +294,11 @@ export function PhotoGallery({
       <img
         ref={imgRef}
         key={photo.id}
-        src={photo.signedUrl}
+        src={showPreview ? photo.thumbUrl! : photo.signedUrl}
         alt=""
         className={`max-h-[85vh] max-w-[85vw] rounded-lg object-contain ${
+          showPreview ? "h-[85vh] w-[85vw]" : ""
+        } ${
           dragging ? "" : "transition-transform duration-150"
         }`}
         style={{
