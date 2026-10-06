@@ -12,6 +12,8 @@ import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
 import { systemMessageText } from "@/lib/system-message";
 import { AlbumGrid } from "@/components/album-grid";
+import { UploadingTick, UploadProgress } from "@/components/upload-progress";
+import { isPending, stableKey, uploadProgress } from "@/lib/outbox";
 import type { TripMessage } from "@/hooks/use-trips";
 import type { TripDocumentFull } from "@/hooks/use-documents";
 import type { ReplyTarget } from "./chat-composer";
@@ -299,6 +301,8 @@ function FileBubble({
   const isMine = doc.uploadedBy === currentUserId;
   const isDeletedDoc = !!doc.deletedAt;
   const isPhoto = isPhotoDoc(doc);
+  // Still uploading (lib/outbox): no menu / reactions / gallery until stored.
+  const pending = isPending(doc);
   const docActions = {
     onCopy: () => navigator.clipboard.writeText(doc.fileName),
     onReply: () =>
@@ -319,6 +323,7 @@ function FileBubble({
         // Own: trigger on the LEFT, bubble on the right.
         // Other: bubble on the left, trigger on the RIGHT (reverse).
         isMine ? "self-end" : "self-start flex-row-reverse",
+        pending && "pointer-events-none",
       )}
     >
       {/* Doc sidekick — cluster style. flex-row-reverse on `other` keeps
@@ -383,7 +388,7 @@ function FileBubble({
                 )}
               >
                 <div
-                  className="cursor-pointer hover:opacity-90 transition-opacity"
+                  className="relative cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => onImageClick(doc.id, doc.signedUrl)}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -393,6 +398,7 @@ function FileBubble({
                     onLoad={onImageLoaded}
                     className="max-w-[200px] max-h-[200px] w-full object-cover block"
                   />
+                  <UploadProgress progress={uploadProgress(doc)} />
                 </div>
                 {doc.caption && (
                   <p className="text-sm whitespace-pre-wrap break-words px-3 py-2">
@@ -424,7 +430,8 @@ function FileBubble({
             hour: "2-digit",
             minute: "2-digit",
           })}
-          {isMine && !isDeletedDoc && (
+          {isMine && !isDeletedDoc && pending && <UploadingTick />}
+          {isMine && !isDeletedDoc && !pending && (
             <span className={cn(doc.isRead && "text-primary")}>
               {doc.isRead ? "✓✓" : "✓"}
             </span>
@@ -469,6 +476,7 @@ function AlbumBubble({
   const files = live.filter((d) => !isPhotoDoc(d));
   const caption = lead.caption;
   const label = docLabel(lead);
+  const pending = isPending(lead);
   // The bubble itself carries the first file's anchor; the rest get their
   // own so a reply quoting any file of the album scrolls to it.
   const anchor = (id: string) =>
@@ -492,6 +500,7 @@ function AlbumBubble({
       className={cn(
         "group flex items-center gap-3",
         isMine ? "self-end" : "self-start flex-row-reverse",
+        pending && "pointer-events-none",
       )}
     >
       {!isDeleted && (
@@ -562,7 +571,7 @@ function AlbumBubble({
                 />
                 {files.map((d) => (
                   <FileRow
-                    key={d.id}
+                    key={stableKey(d.id)}
                     doc={d}
                     isMine={isMine}
                     anchorId={anchor(d.id)}
@@ -582,7 +591,8 @@ function AlbumBubble({
             hour: "2-digit",
             minute: "2-digit",
           })}
-          {isMine && !isDeleted && (
+          {isMine && !isDeleted && pending && <UploadingTick />}
+          {isMine && !isDeleted && !pending && (
             <span className={cn(lead.isRead && "text-primary")}>
               {lead.isRead ? "✓✓" : "✓"}
             </span>

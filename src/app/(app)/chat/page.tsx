@@ -12,7 +12,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fullName, initials } from "@/lib/format";
 import {
-  Loader2,
   Send,
   ArrowLeft,
   Users,
@@ -31,6 +30,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChatInput } from "@/components/chat-input";
+import { FileDropZone } from "@/components/file-drop-zone";
+import { PendingFiles } from "@/components/pending-files";
+import { UploadingTick, UploadProgress } from "@/components/upload-progress";
+import {
+  addToDocList,
+  claimJob,
+  createJob,
+  dropJob,
+  isPending,
+  mergeOutbox,
+  replyFields,
+  stableKey,
+  uploadProgress,
+  type OutboxJob,
+} from "@/lib/outbox";
+import { addToQueue, CHAT_FILE_ACCEPT } from "@/lib/chat-files";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 import { GroupActionsMenu } from "@/components/group-actions-menu";
@@ -290,10 +305,22 @@ function ChatPageContent() {
   // Index into `galleryPhotos` of the photo open in the gallery, or null.
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const attachInputRef = useRef<HTMLInputElement>(null);
-  const [attachUploading, setAttachUploading] = useState(false);
+  // Uploads in flight (lib/outbox), each tagged with its conversation
+  // ("g:<id>" / "u:<id>") so switching chats doesn't carry them along.
+  const [outbox, setOutbox] = useState<
+    OutboxJob<ConversationDocumentFull | GroupDocumentFull>[]
+  >([]);
   // Files staged for sending — uploaded together with the text on Send so a
   // single reply can have both a caption AND a file (Telegram-style).
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const openConversation = selectedGroupId
+    ? `g:${selectedGroupId}`
+    : `u:${selectedUserId}`;
+  // Read by an upload that finishes after the user moved to another chat.
+  const openConversationRef = useRef(openConversation);
+  useEffect(() => {
+    openConversationRef.current = openConversation;
+  }, [openConversation]);
 
   // Pre-fetches conversations + dm/group/trip unread summaries in a single
   // round-trip and seeds the corresponding query caches, so the dependent
@@ -400,7 +427,12 @@ function ChatPageContent() {
   const currentMessages = selectedGroupId
     ? (groupMessages ?? [])
     : (messages ?? []);
-  const currentDocs = selectedGroupId ? groupDocs : dmDocs;
+  // Stored files + ones still uploading in this chat (lib/outbox).
+  const currentDocs = mergeOutbox<ConversationDocumentFull | GroupDocumentFull>(
+    selectedGroupId ? groupDocs : dmDocs,
+    outbox.filter((j) => j.conversation === openConversation),
+    user?.id,
+  );
   type ChatItem =
     | {
         kind: "msg";
@@ -1033,7 +1065,9 @@ function ChatPageContent() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, groupMessages, dmDocs, groupDocs]);
+    // currentDocs.length: an upload swapping its local files for the stored
+    // ones keeps the count, so no extra scroll then.
+  }, [messages, groupMessages, currentDocs.length]);
 
   const handleSelectUser = (userId: string) => {
     setSelectedUserId(userId);
@@ -1075,8 +1109,21 @@ function ChatPageContent() {
     }, 1500);
   };
 
+  // One send at a time. An upload takes seconds and the text / files stay in
+  // the composer meanwhile, so a second click or Enter would send them again.
+  const sendingRef = useRef(false);
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sendingRef.current) return;
+    sendingRef.current = true;
+    try {
+      await sendNow();
+    } finally {
+      sendingRef.current = false;
+    }
+  };
+
+  const sendNow = async () => {
     const trimmed = newMessage.trim();
     const hasFiles = pendingFiles.length > 0;
     if (!trimmed && !hasFiles && !editing) return;
@@ -1113,29 +1160,9 @@ function ChatPageContent() {
     // the caption on the file bubble — NOT a separate message. Pure text or
     // pure files use the existing single-channel paths.
     if (hasFiles) {
-      setAttachUploading(true);
-      try {
-        if (selectedGroupId) {
-          await groupDocUpload.mutateAsync({
-            files: pendingFiles,
-            replyToMessageId: replyMsgId,
-            replyToDocumentId: replyDocId,
-            caption: trimmed || null,
-          });
-        } else if (selectedUserId) {
-          await dmDocUpload.mutateAsync({
-            files: pendingFiles,
-            replyToMessageId: replyMsgId,
-            replyToDocumentId: replyDocId,
-            caption: trimmed || null,
-          });
-        }
-      } catch (err) {
-        setAttachUploading(false);
-        console.error("[chat] file upload failed", err);
-        return;
-      }
-      setAttachUploading(false);
+      // Not awaited: the composer is free at once, the upload runs behind
+      // its "sending" bubble.
+      void sendFiles(pendingFiles, trimmed || null, replyingTo);
       setPendingFiles([]);
     } else if (trimmed) {
       if (selectedGroupId) {
@@ -1191,35 +1218,104 @@ function ChatPageContent() {
     if (!files.length) return;
     // Send immediately on selection — no staging / extra Send click. Any
     // active reply target still travels with the upload.
-    const replyMsgId = replyingTo?.targetType === "msg" ? replyingTo.id : null;
-    const replyDocId = replyingTo?.targetType === "doc" ? replyingTo.id : null;
-    setAttachUploading(true);
+    setReplyingTo(null);
+    await sendFiles(files, null, replyingTo);
+  }
+
+  // Telegram-style: the files show up in the chat at once and upload in the
+  // background, then turn into the stored ones in place (lib/outbox). On
+  // failure they go back into the composer queue, caption into the input,
+  // if that chat is still open.
+  async function sendFiles(
+    files: File[],
+    caption: string | null,
+    reply: typeof replyingTo,
+  ) {
+    const groupId = selectedGroupId;
+    const otherUserId = selectedUserId;
+    if (!user || (!groupId && !otherUserId)) return;
+    const conversation = openConversation;
+    const quote = replyFields(reply);
+    const uploader = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatar: user.avatar ?? null,
+      role: user.role,
+    };
+    const common = { conversation, files, caption, meId: user.id };
+    const job: OutboxJob<ConversationDocumentFull | GroupDocumentFull> = groupId
+      ? createJob<GroupDocumentFull>({
+          ...common,
+          serverDocs: groupDocs,
+          extra: { groupId, fileUrl: "", publicId: null, uploader, ...quote },
+        })
+      : createJob<ConversationDocumentFull>({
+          ...common,
+          serverDocs: dmDocs,
+          extra: {
+            otherUserId: otherUserId!,
+            fileUrl: "",
+            publicId: null,
+            uploader,
+            ...quote,
+          },
+        });
+    setOutbox((prev) => [...prev, job]);
+    let shown = -1;
+    const vars = {
+      files,
+      replyToMessageId: quote.replyToMessageId,
+      replyToDocumentId: quote.replyToDocumentId,
+      caption,
+      onProgress: (percent: number) => {
+        // Re-render on whole steps only: progress events come in bursts.
+        const step = Math.floor(percent / 5) * 5;
+        if (step === shown) return;
+        shown = step;
+        setOutbox((prev) =>
+          prev.map((j) => (j.id === job.id ? { ...j, progress: step } : j)),
+        );
+      },
+    };
     try {
-      if (selectedGroupId) {
-        await groupDocUpload.mutateAsync({
-          files,
-          replyToMessageId: replyMsgId,
-          replyToDocumentId: replyDocId,
-          caption: null,
-        });
-      } else if (selectedUserId) {
-        await dmDocUpload.mutateAsync({
-          files,
-          replyToMessageId: replyMsgId,
-          replyToDocumentId: replyDocId,
-          caption: null,
-        });
+      // Same tick: cache gets the stored files, the job goes. One render.
+      if (groupId) {
+        const real = await groupDocUpload.mutateAsync(vars);
+        claimJob(job, real);
+        queryClient.setQueryData<GroupDocumentFull[]>(
+          ["group-documents", groupId],
+          (old) => addToDocList(old, real),
+        );
+      } else {
+        const real = await dmDocUpload.mutateAsync(vars);
+        claimJob(job, real);
+        queryClient.setQueryData<ConversationDocumentFull[]>(
+          ["conversation-documents", otherUserId],
+          (old) => addToDocList(old, real),
+        );
       }
-      setReplyingTo(null);
     } catch (err) {
       console.error("[chat] file upload failed", err);
+      dropJob(job);
+      if (openConversationRef.current === conversation) {
+        setPendingFiles((prev) => addToQueue(files, prev));
+        if (caption) setNewMessage((prev) => prev || caption);
+      }
     } finally {
-      setAttachUploading(false);
+      setOutbox((prev) => prev.filter((j) => j.id !== job.id));
     }
   }
 
   function removePendingFile(idx: number) {
     setPendingFiles((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  // Pasted / dropped files are staged (thumbnail above the input) and go out
+  // with the next Send, text becoming their caption — unlike the paperclip,
+  // which sends at once. A paste is easy to do by accident.
+  function addPendingFiles(files: File[]) {
+    setPendingFiles((prev) => addToQueue(prev, files));
   }
 
   async function handleCreateGroup() {
@@ -1444,7 +1540,10 @@ function ChatPageContent() {
       </div>
 
       {/* Вікно повідомлень */}
-      <div
+      <FileDropZone
+        onFiles={addPendingFiles}
+        label={tChat("dropToAttach")}
+        disabled={!(selectedUser || selectedGroup) || !isCompanyActive}
         className={cn(
           "flex-1 flex flex-col overflow-hidden",
           !showConversations ? "flex" : "hidden md:flex",
@@ -1962,6 +2061,8 @@ function ChatPageContent() {
                       ? albumLive.length === 0
                       : !!doc.deletedAt;
                     const isPhoto = doc.fileType === "PHOTO";
+                    // Still uploading (lib/outbox): no menu / reactions yet.
+                    const pending = isPending(doc);
                     const senderName =
                       !isOwn && selectedGroupId
                         ? fullName(doc.uploader)
@@ -1984,10 +2085,11 @@ function ChatPageContent() {
                         : null;
                     return (
                       <div
-                        key={`doc-${doc.id}`}
+                        key={`doc-${stableKey(doc.id)}`}
                         className={cn(
                           "group flex items-center gap-2",
                           isOwn ? "justify-end" : "justify-start",
+                          pending && "pointer-events-none",
                         )}
                       >
                         {/* Sidekick (own→LEFT) — cluster style. */}
@@ -2139,7 +2241,7 @@ function ChatPageContent() {
                                     .filter((d) => d.fileType !== "PHOTO")
                                     .map((d) => (
                                       <div
-                                        key={d.id}
+                                        key={stableKey(d.id)}
                                         id={`chat-doc-${d.id}`}
                                         role="button"
                                         tabIndex={0}
@@ -2195,7 +2297,7 @@ function ChatPageContent() {
                               ) : isPhoto ? (
                                 <div
                                   className={cn(
-                                    "rounded-2xl overflow-hidden border max-w-[220px]",
+                                    "relative rounded-2xl overflow-hidden border max-w-[220px]",
                                     doc.caption &&
                                       (isOwn
                                         ? "bg-primary text-primary-foreground"
@@ -2209,6 +2311,7 @@ function ChatPageContent() {
                                     onClick={() => openPhoto(doc.id)}
                                     className="block max-w-[220px] max-h-[200px] w-full object-cover cursor-pointer"
                                   />
+                                  <UploadProgress progress={uploadProgress(doc)} />
                                   {doc.caption && (
                                     <p className="text-sm whitespace-pre-wrap break-words px-3 py-2">
                                       {doc.caption}
@@ -2286,7 +2389,8 @@ function ChatPageContent() {
                                 locale,
                                 { hour: "2-digit", minute: "2-digit" },
                               )}
-                              {isOwn && !selectedGroupId && !isDeleted && (
+                              {isOwn && !isDeleted && pending && <UploadingTick />}
+                              {isOwn && !selectedGroupId && !isDeleted && !pending && (
                                 <span
                                   className={cn(
                                     (doc as ConversationDocumentFull).isRead &&
@@ -2415,27 +2519,12 @@ function ChatPageContent() {
               </div>
             )}
 
-            {pendingFiles.length > 0 && (
-              <div className="px-4 pt-2 shrink-0 flex flex-wrap gap-1.5">
-                {pendingFiles.map((f, i) => (
-                  <div
-                    key={`${f.name}-${i}`}
-                    className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs max-w-[200px]"
-                  >
-                    <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
-                    <span className="truncate">{f.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removePendingFile(i)}
-                      title={tChat("removeFile")}
-                      className="shrink-0 text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <PendingFiles
+              files={pendingFiles}
+              onRemove={removePendingFile}
+              removeLabel={tChat("removeFile")}
+              className="px-4 pt-2 shrink-0"
+            />
 
             {!isCompanyActive ? (
               <div className="p-4 shrink-0 border-t text-center text-xs text-muted-foreground">
@@ -2458,20 +2547,15 @@ function ChatPageContent() {
                   variant="ghost"
                   size="icon"
                   onClick={() => attachInputRef.current?.click()}
-                  disabled={attachUploading}
                   title={tChat("attachFile")}
                 >
-                  {attachUploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Paperclip className="h-4 w-4" />
-                  )}
+                  <Paperclip className="h-4 w-4" />
                 </Button>
                 <input
                   ref={attachInputRef}
                   type="file"
                   multiple
-                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                  accept={CHAT_FILE_ACCEPT}
                   className="hidden"
                   onChange={handleAttach}
                 />
@@ -2500,6 +2584,7 @@ function ChatPageContent() {
                   value={newMessage}
                   onValueChange={handleInputChange}
                   onEnter={() => composerFormRef.current?.requestSubmit()}
+                  onPasteFiles={editing ? undefined : addPendingFiles}
                   onKeyDown={(e) => {
                     if (editing && e.key === "Escape") {
                       e.preventDefault();
@@ -2538,7 +2623,7 @@ function ChatPageContent() {
             {t("emptyState")}
           </div>
         )}
-      </div>
+      </FileDropZone>
 
       <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
         <DialogContent>

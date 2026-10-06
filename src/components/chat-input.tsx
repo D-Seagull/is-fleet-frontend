@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { chatFilesFrom } from "@/lib/chat-files";
 import { cn } from "@/lib/utils";
 
 // Emoticons swapped for emoji as you type.
@@ -21,18 +22,22 @@ const MAX_HEIGHT_PX = 160;
  *  - Enter sends (`onEnter`); Ctrl+Enter or Shift+Enter inserts a new line.
  *  - Auto-grows from one line up to MAX_HEIGHT_PX.
  *  - ":)" becomes 🙂 while typing (caret position kept).
+ *  - Ctrl+V of a screenshot / copied file hands it to `onPasteFiles`
+ *    (plain-text paste is untouched).
  */
 export function ChatInput({
   value,
   onValueChange,
   onEnter,
   onKeyDown,
+  onPasteFiles,
   className,
   ...props
 }: Omit<React.ComponentProps<"textarea">, "value" | "onChange"> & {
   value: string;
   onValueChange: (value: string) => void;
   onEnter: () => void;
+  onPasteFiles?: (files: File[]) => void;
 }) {
   const ref = React.useRef<HTMLTextAreaElement>(null);
   const pendingCaret = React.useRef<number | null>(null);
@@ -80,6 +85,15 @@ export function ChatInput({
     onEnter();
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (!onPasteFiles) return;
+    const files = chatFilesFrom(e.clipboardData?.files);
+    if (!files.length) return;
+    // Don't also paste the file's name / a "[image]" placeholder as text.
+    e.preventDefault();
+    onPasteFiles(files);
+  };
+
   return (
     <textarea
       ref={ref}
@@ -87,6 +101,7 @@ export function ChatInput({
       value={value}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
+      onPaste={handlePaste}
       data-slot="textarea"
       className={cn(
         "border-input placeholder:text-muted-foreground dark:bg-input/30 min-h-9 w-full min-w-0 resize-none rounded-md border bg-transparent px-3 py-[7px] text-base leading-5 shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",

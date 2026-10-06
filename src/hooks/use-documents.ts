@@ -99,12 +99,14 @@ export function useUploadDocuments(truckId: string) {
       replyToMessageId,
       replyToDocumentId,
       caption,
+      onProgress,
     }: {
       tripId: string;
       files: File[];
       replyToMessageId?: string | null;
       replyToDocumentId?: string | null;
       caption?: string | null;
+      onProgress?: (percent: number) => void;
     }) => {
       const form = new FormData();
       form.append("tripId", tripId);
@@ -115,14 +117,19 @@ export function useUploadDocuments(truckId: string) {
       files.forEach((f) => form.append("files", f));
       const res = await api.post("/documents/upload-many", form, {
         headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (e) => {
+          if (e.total) onProgress?.(Math.round((e.loaded / e.total) * 100));
+        },
       });
       return res.data as TripDocumentFull[];
     },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY(truckId) });
-      queryClient.invalidateQueries({ queryKey: ["documents-trip", vars.tripId] });
       queryClient.invalidateQueries({ queryKey: ["documents-all"] });
       queryClient.invalidateQueries({ queryKey: ["trips-by-truck", truckId] });
+      queryClient.invalidateQueries({
+        queryKey: ["documents-trip", vars.tripId],
+      });
     },
   });
 }

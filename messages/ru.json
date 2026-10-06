@@ -311,6 +311,7 @@
     "messageDeleted": "Сообщение удалено",
     "cancelReply": "Отменить ответ",
     "removeFile": "Убрать",
+    "dropToAttach": "Отпустите, чтобы прикрепить",
     "attachFile": "Прикрепить файл",
     "emoji": "Эмодзи",
     "messagePlaceholder": "Введите сообщение…",

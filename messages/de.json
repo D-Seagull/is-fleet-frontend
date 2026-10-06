@@ -311,6 +311,7 @@
     "messageDeleted": "Nachricht gelöscht",
     "cancelReply": "Antwort abbrechen",
     "removeFile": "Entfernen",
+    "dropToAttach": "Loslassen zum Anhängen",
     "attachFile": "Datei anhängen",
     "emoji": "Emoji",
     "messagePlaceholder": "Nachricht eingeben…",

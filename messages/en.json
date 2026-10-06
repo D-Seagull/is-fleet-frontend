@@ -311,6 +311,7 @@
     "messageDeleted": "Message deleted",
     "cancelReply": "Cancel reply",
     "removeFile": "Remove",
+    "dropToAttach": "Drop to attach",
     "attachFile": "Attach file",
     "emoji": "Emoji",
     "messagePlaceholder": "Type a message...",
