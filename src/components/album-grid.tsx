@@ -1,5 +1,7 @@
 "use client";
 
+import { UploadProgress } from "@/components/upload-progress";
+import { stableKey, uploadProgress } from "@/lib/outbox";
 import { cn } from "@/lib/utils";
 
 export interface AlbumPhoto {
@@ -34,7 +36,7 @@ export function AlbumGrid({
 
   const tile = (p: AlbumPhoto, className?: string, more = 0) => (
     <button
-      key={p.id}
+      key={stableKey(p.id)}
       id={anchorId?.(p.id)}
       type="button"
       onClick={() => onOpen(p.id)}
@@ -50,6 +52,7 @@ export function AlbumGrid({
         onLoad={onImageLoaded}
         className="h-full w-full object-cover block"
       />
+      <UploadProgress progress={uploadProgress(p)} />
       {more > 0 && (
         <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-xl font-semibold">
           +{more}

@@ -29,7 +29,19 @@ import {
 } from "@/components/ui/sheet";
 import { LoadOlderMessages } from "@/components/load-older-messages";
 import { ChatArchiveDialog } from "@/components/chat-archive-dialog";
-import { useAuthStore } from "@/store/auth";
+import { useAuthStore, useIsCompanyActive } from "@/store/auth";
+import { FileDropZone } from "@/components/file-drop-zone";
+import { addToQueue } from "@/lib/chat-files";
+import {
+  addToDocList,
+  claimJob,
+  createJob,
+  dropJob,
+  mergeOutbox,
+  replyFields,
+  stableKey,
+  type OutboxJob,
+} from "@/lib/outbox";
 import { UNREAD_QUERY_KEY } from "@/hooks/use-unread";
 import {
   useTripMessages,
@@ -49,7 +61,7 @@ import {
 import { useReactionsSocketSync } from "@/hooks/use-message-reactions";
 import { TripInfoCard } from "./trip-info-card";
 import { TripAttachmentsContent } from "./trip-attachments-content";
-import { ChatComposer } from "./chat-composer";
+import { ChatComposer, type ReplyTarget } from "./chat-composer";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { albumSizes, groupAlbums } from "@/lib/albums";
 import { downloadDoc } from "@/lib/doc-helpers";
@@ -70,6 +82,7 @@ export function TripChat({
   truckManagerId?: string | null;
 }) {
   const t = useTranslations("chat");
+  const isCompanyActive = useIsCompanyActive();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   // Only ADMIN sees every session's live messages (full oversight, matching
@@ -91,6 +104,9 @@ export function TripChat({
     isFetchingOlder: isFetchingOlderTrip,
   } = useTripMessages(trip.id);
   const { data: tripDocs = [] } = useDocumentsByTrip(trip.id);
+  const [outbox, setOutbox] = useState<OutboxJob<TripDocumentFull>[]>([]);
+  // What the chat shows: stored files + ones still uploading (lib/outbox).
+  const chatDocs = mergeOutbox(tripDocs, outbox, currentUserId);
   const { data: archiveSessions = [] } = useTripChatArchive(trip.id);
   const deleteMessage = useDeleteMessage(trip.id);
   const editMessage = useEditTripMessage(trip.id);
@@ -127,7 +143,6 @@ export function TripChat({
     }, 1500);
   };
   const [showEmoji, setShowEmoji] = useState(false);
-  const [uploading, setUploading] = useState(false);
   // Index into `galleryPhotos` of the photo open in the gallery, or null.
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
   const [showTripDocs, setShowTripDocs] = useState(false);
@@ -170,7 +185,7 @@ export function TripChat({
   // message (same batchId) become a single album item.
   const timeline: TimelineItem[] = [
     ...messages.map((m) => ({ kind: "msg" as const, data: m })),
-    ...groupAlbums(tripDocs).map((g): TimelineItem =>
+    ...groupAlbums(chatDocs).map((g): TimelineItem =>
       g.length > 1
         ? { kind: "album", data: g[0], docs: g }
         : { kind: "file", data: g[0] },
@@ -498,7 +513,11 @@ export function TripChat({
   // user is scrolled up (Viber/Telegram pattern).
   useEffect(() => {
     const el = scrollContainerRef.current;
-    if (!el || (messages.length === 0 && tripDocs.length === 0)) return;
+    if (
+      !el ||
+      (messages.length === 0 && chatDocs.length === 0)
+    )
+      return;
     if (nearBottomRef.current) {
       if (!initialScrollDone.current) {
         // First load — instant jump, no animation
@@ -511,9 +530,24 @@ export function TripChat({
       // User scrolled up — show pill, don't force-scroll
       setNewMsgCount((n) => n + 1);
     }
-  }, [messages.length, tripDocs.length]);
+    // chatDocs, not tripDocs: an upload swapping its local files for the
+    // stored ones keeps the count, so it doesn't scroll / bump the pill.
+  }, [messages.length, chatDocs.length]);
 
+  // One send at a time. An upload takes seconds and the text / files stay in
+  // the composer meanwhile, so a second click or Enter would send them again.
+  const sendingRef = useRef(false);
   async function handleSend() {
+    if (sendingRef.current) return;
+    sendingRef.current = true;
+    try {
+      await sendNow();
+    } finally {
+      sendingRef.current = false;
+    }
+  }
+
+  async function sendNow() {
     const trimmed = text.trim();
     const hasFiles = pendingFiles.length > 0;
     if (!trimmed && !hasFiles && !editing) return;
@@ -548,21 +582,9 @@ export function TripChat({
     // separate text message). Pure text or pure files keep their existing
     // single-channel paths.
     if (hasFiles) {
-      setUploading(true);
-      try {
-        await upload.mutateAsync({
-          tripId: trip.id,
-          files: pendingFiles,
-          replyToMessageId: replyMsgId,
-          replyToDocumentId: replyDocId,
-          caption: trimmed || null,
-        });
-      } catch (err) {
-        setUploading(false);
-        console.error("[trip-chat] file upload failed", err);
-        return;
-      }
-      setUploading(false);
+      // Not awaited: the composer is free at once, the upload runs behind
+      // its "sending" bubble.
+      void sendFiles(pendingFiles, trimmed || null, replyingTo);
       setPendingFiles([]);
       notifyStopTyping();
       setText("");
@@ -659,24 +681,75 @@ export function TripChat({
     if (!files.length) return;
     // Send immediately on selection — no staging / extra Send click. Any
     // active reply target still travels with the upload.
+    setReplyingTo(null);
+    await sendFiles(files, null, replyingTo);
+  }
+
+  // Telegram-style: the files show up in the chat at once and upload in the
+  // background, then turn into the stored ones in place (lib/outbox). On
+  // failure they go back into the composer queue, caption into the input, so
+  // nothing typed is lost.
+  async function sendFiles(
+    files: File[],
+    caption: string | null,
+    reply: ReplyTarget | null,
+  ) {
+    if (!user) return;
     nearBottomRef.current = true;
     setNewMsgCount(0);
-    const replyMsgId = replyingTo?.targetType === "msg" ? replyingTo.id : null;
-    const replyDocId = replyingTo?.targetType === "doc" ? replyingTo.id : null;
-    setUploading(true);
+    const quote = replyFields(reply);
+    const job = createJob<TripDocumentFull>({
+      conversation: `trip:${trip.id}`,
+      files,
+      caption,
+      meId: user.id,
+      serverDocs: tripDocs,
+      extra: {
+        tripId: trip.id,
+        fileUrl: "",
+        publicId: null,
+        uploader: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatar: user.avatar ?? null,
+          role: user.role,
+        },
+        ...quote,
+      },
+    });
+    setOutbox((prev) => [...prev, job]);
+    let shown = -1;
     try {
-      await upload.mutateAsync({
+      const real = await upload.mutateAsync({
         tripId: trip.id,
         files,
-        replyToMessageId: replyMsgId,
-        replyToDocumentId: replyDocId,
-        caption: null,
+        replyToMessageId: quote.replyToMessageId,
+        replyToDocumentId: quote.replyToDocumentId,
+        caption,
+        onProgress: (percent) => {
+          // Re-render on whole steps only — progress events come in bursts.
+          const step = Math.floor(percent / 5) * 5;
+          if (step === shown) return;
+          shown = step;
+          setOutbox((prev) =>
+            prev.map((j) => (j.id === job.id ? { ...j, progress: step } : j)),
+          );
+        },
       });
-      setReplyingTo(null);
+      // Same tick: cache gets the stored files, the job goes — one render.
+      claimJob(job, real);
+      queryClient.setQueryData<TripDocumentFull[]>(
+        ["documents-trip", trip.id],
+        (old) => addToDocList(old, real),
+      );
     } catch (err) {
       console.error("[trip-chat] file upload failed", err);
+      dropJob(job);
+      setPendingFiles((prev) => addToQueue(files, prev));
+      if (caption) setText((prev) => prev || caption);
     } finally {
-      setUploading(false);
+      setOutbox((prev) => prev.filter((j) => j.id !== job.id));
     }
   }
 
@@ -684,8 +757,20 @@ export function TripChat({
     setPendingFiles((prev) => prev.filter((_, i) => i !== idx));
   }
 
+  // Pasted / dropped files are staged (thumbnail above the input) and go out
+  // with the next Send, text becoming their caption — unlike the paperclip,
+  // which sends at once. A paste is easy to do by accident.
+  function addPendingFiles(files: File[]) {
+    setPendingFiles((prev) => addToQueue(prev, files));
+  }
+
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <FileDropZone
+      onFiles={addPendingFiles}
+      label={t("dropToAttach")}
+      disabled={!isCompanyActive || !isActiveParticipant}
+      className="flex flex-col flex-1 min-h-0"
+    >
       <div className="shrink-0">
         <TripInfoCard
           trip={trip}
@@ -819,7 +904,7 @@ export function TripChat({
                   key={
                     item.kind === "msg"
                       ? `msg-${item.data.id}`
-                      : `doc-${item.data.id}`
+                      : `doc-${stableKey(item.data.id)}`
                   }
                   item={item}
                   currentUserId={currentUserId}
@@ -902,13 +987,13 @@ export function TripChat({
         setShowEmoji={setShowEmoji}
         pendingFiles={pendingFiles}
         removePendingFile={removePendingFile}
-        uploading={uploading}
+        addPendingFiles={addPendingFiles}
         fileInputRef={fileInputRef}
         handleSend={handleSend}
         handleFileUpload={handleFileUpload}
         notifyTyping={notifyTyping}
         notifyStopTyping={notifyStopTyping}
       />
-    </div>
+    </FileDropZone>
   );
 }

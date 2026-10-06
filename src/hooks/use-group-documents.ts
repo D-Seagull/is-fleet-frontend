@@ -72,11 +72,13 @@ export function useUploadGroupDocs(groupId: string) {
       replyToMessageId,
       replyToDocumentId,
       caption,
+      onProgress,
     }: {
       files: File[];
       replyToMessageId?: string | null;
       replyToDocumentId?: string | null;
       caption?: string | null;
+      onProgress?: (percent: number) => void;
     }) => {
       const form = new FormData();
       form.append("groupId", groupId);
@@ -90,6 +92,9 @@ export function useUploadGroupDocs(groupId: string) {
         form,
         {
           headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (e) => {
+            if (e.total) onProgress?.(Math.round((e.loaded / e.total) * 100));
+          },
         },
       );
       return res.data as GroupDocumentFull[];

@@ -5,7 +5,6 @@ import {
   Pencil,
   X,
   Paperclip,
-  Loader2,
   Smile,
   Check,
   Send,
@@ -15,6 +14,8 @@ import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/chat-input";
+import { PendingFiles } from "@/components/pending-files";
+import { CHAT_FILE_ACCEPT } from "@/lib/chat-files";
 import { cn } from "@/lib/utils";
 import { useIsCompanyActive } from "@/store/auth";
 
@@ -45,7 +46,7 @@ export function ChatComposer({
   setShowEmoji,
   pendingFiles,
   removePendingFile,
-  uploading,
+  addPendingFiles,
   fileInputRef,
   handleSend,
   handleFileUpload,
@@ -63,7 +64,7 @@ export function ChatComposer({
   setShowEmoji: (updater: boolean | ((prev: boolean) => boolean)) => void;
   pendingFiles: File[];
   removePendingFile: (idx: number) => void;
-  uploading: boolean;
+  addPendingFiles: (files: File[]) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleSend: () => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -167,27 +168,12 @@ export function ChatComposer({
             </div>
           )}
 
-          {pendingFiles.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1.5">
-              {pendingFiles.map((f, i) => (
-                <div
-                  key={`${f.name}-${i}`}
-                  className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1 text-xs max-w-[200px]"
-                >
-                  <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
-                  <span className="truncate">{f.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => removePendingFile(i)}
-                    title={t("removeFile")}
-                    className="shrink-0 text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <PendingFiles
+            files={pendingFiles}
+            onRemove={removePendingFile}
+            removeLabel={t("removeFile")}
+            className="mb-2"
+          />
 
           <div className="flex items-end gap-1.5">
             <Button
@@ -195,20 +181,15 @@ export function ChatComposer({
               variant="ghost"
               className="h-9 w-9 shrink-0"
               title={t("attachFile")}
-              disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
             >
-              {uploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Paperclip className="h-4 w-4 text-muted-foreground" />
-              )}
+              <Paperclip className="h-4 w-4 text-muted-foreground" />
             </Button>
             <input
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+              accept={CHAT_FILE_ACCEPT}
               className="hidden"
               onChange={handleFileUpload}
             />
@@ -234,6 +215,7 @@ export function ChatComposer({
                 else notifyStopTyping();
               }}
               onEnter={handleSend}
+              onPasteFiles={editing ? undefined : addPendingFiles}
               onBlur={notifyStopTyping}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
