@@ -320,6 +320,7 @@
     "messageUser": "Написать {name}",
     "userFallback": "пользователь",
     "userTyping": "{name} печатает",
+    "scrollToLatest": "К последнему сообщению",
     "editedAtTitle": "Изменено в {time}",
     "editedMark": "(изм.)",
     "tripDocumentsTitle": "Документы рейса",

@@ -320,6 +320,7 @@
     "messageUser": "Rašyti {name}",
     "userFallback": "vartotojas",
     "userTyping": "{name} rašo",
+    "scrollToLatest": "Slinkti prie naujausios žinutės",
     "editedAtTitle": "Redaguota {time}",
     "editedMark": "(red.)",
     "tripDocumentsTitle": "Reiso dokumentai",

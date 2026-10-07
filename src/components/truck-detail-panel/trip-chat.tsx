@@ -154,6 +154,7 @@ export function TripChat({
   const nearBottomRef = useRef(true);
   const initialScrollDone = useRef(false);
   const [newMsgCount, setNewMsgCount] = useState(0);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadDocuments(truckId);
   // Files staged for sending — uploaded together with the text caption on
@@ -872,6 +873,7 @@ export function TripChat({
             const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
             const wasNear = nearBottomRef.current;
             nearBottomRef.current = dist < 80;
+            setShowScrollDown(dist > 240);
             if (!wasNear && nearBottomRef.current) {
               // User scrolled back to bottom — dismiss pill and mark visible msgs read
               setNewMsgCount(0);
@@ -972,6 +974,22 @@ export function TripChat({
           >
             <ChevronDown className="h-3.5 w-3.5" />
             {t("newMessages", { count: newMsgCount })}
+          </button>
+        )}
+        {showScrollDown && newMsgCount === 0 && (
+          <button
+            type="button"
+            aria-label={t("scrollToLatest")}
+            title={t("scrollToLatest")}
+            onClick={() => {
+              setShowScrollDown(false);
+              nearBottomRef.current = true;
+              const el = scrollContainerRef.current;
+              if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+            }}
+            className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border bg-background/90 text-foreground shadow-md backdrop-blur transition hover:bg-muted"
+          >
+            <ChevronDown className="h-[22px] w-[22px]" />
           </button>
         )}
       </div>

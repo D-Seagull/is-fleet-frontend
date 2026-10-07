@@ -330,6 +330,7 @@
     "newMessages": "{count} new",
     "typing": "{count, plural, one {is typing} other {are typing}}",
     "userTyping": "{name} is typing",
+    "scrollToLatest": "Scroll to latest",
     "react": "React",
     "attachments": {
       "upload": "Upload",

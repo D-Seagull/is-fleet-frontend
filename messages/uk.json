@@ -330,6 +330,7 @@
     "newMessages": "{count, plural, one {# нове} few {# нові} many {# нових} other {# нових}}",
     "typing": "{count, plural, one {набирає} other {набирають}}",
     "userTyping": "{name} друкує",
+    "scrollToLatest": "До останнього повідомлення",
     "react": "Реагувати",
     "attachments": {
       "upload": "Завантажити",

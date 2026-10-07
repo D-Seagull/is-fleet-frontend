@@ -320,6 +320,7 @@
     "messageUser": "Napisz do {name}",
     "userFallback": "użytkownik",
     "userTyping": "{name} pisze",
+    "scrollToLatest": "Przewiń do najnowszej wiadomości",
     "editedAtTitle": "Edytowano o {time}",
     "editedMark": "(edyt.)",
     "tripDocumentsTitle": "Dokumenty trasy",
