@@ -26,6 +26,7 @@ import {
   Check,
   Shield,
   X,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -262,7 +263,29 @@ function ChatPageContent() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const atBottomRef = useRef(true);
+  const prevConvoKeyRef = useRef<string | null>(null);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const composerFormRef = useRef<HTMLFormElement>(null);
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior });
+    atBottomRef.current = true;
+    setShowScrollDown(false);
+  }, []);
+
+  // Track how far from the bottom the reader is: drives both "follow new
+  // messages only when already at the bottom" and the jump-to-latest button.
+  const handleMessagesScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+    atBottomRef.current = dist < 80;
+    setShowScrollDown(dist > 240);
+  }, []);
   const selectedUserIdRef = useRef(selectedUserId);
   const selectedGroupIdRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
@@ -1064,10 +1087,41 @@ function ChatPageContent() {
   }, [selectedGroupId, user?.id, queryClient]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const convoKey = selectedGroupId
+      ? `g:${selectedGroupId}`
+      : selectedUserId
+        ? `u:${selectedUserId}`
+        : null;
+    if (prevConvoKeyRef.current !== convoKey) {
+      // Opening a conversation: jump straight to the newest message. Instant
+      // (not smooth) so rapid re-renders / late image loads can't interrupt
+      // it mid-animation — that was the "doesn't always reach the bottom" bug.
+      // A second pass next frame settles any late layout shift.
+      prevConvoKeyRef.current = convoKey;
+      atBottomRef.current = true;
+      setShowScrollDown(false);
+      requestAnimationFrame(() => {
+        el.scrollTo({ top: el.scrollHeight });
+        requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight }));
+      });
+      return;
+    }
+    // New message/doc in the open conversation: follow only if the reader is
+    // already at the bottom; otherwise leave them in place (button shows).
     // currentDocs.length: an upload swapping its local files for the stored
     // ones keeps the count, so no extra scroll then.
-  }, [messages, groupMessages, currentDocs.length]);
+    if (atBottomRef.current) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
+  }, [
+    messages,
+    groupMessages,
+    currentDocs.length,
+    selectedGroupId,
+    selectedUserId,
+  ]);
 
   const handleSelectUser = (userId: string) => {
     setSelectedUserId(userId);
@@ -1792,7 +1846,12 @@ function ChatPageContent() {
               ) : null}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 chat-bg-scroll">
+            <div className="flex-1 relative min-h-0">
+              <div
+                ref={scrollContainerRef}
+                onScroll={handleMessagesScroll}
+                className="absolute inset-0 overflow-y-auto p-4 chat-bg-scroll"
+              >
               {loadingMessages && !selectedGroupId ? (
                 <MessageListSkeleton />
               ) : (
@@ -2454,6 +2513,18 @@ function ChatPageContent() {
                   </span>
                 </div>
               )}
+              </div>
+              {showScrollDown && (
+                <button
+                  type="button"
+                  onClick={() => scrollToBottom("smooth")}
+                  aria-label={tChat("scrollToLatest")}
+                  title={tChat("scrollToLatest")}
+                  className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border bg-background/90 text-foreground shadow-md backdrop-blur transition hover:bg-muted"
+                >
+                  <ChevronDown className="h-[22px] w-[22px]" />
+                </button>
+              )}
             </div>
 
             {editing && (
@@ -2570,7 +2641,6 @@ function ChatPageContent() {
                     side="top"
                     align="start"
                     onOpenAutoFocus={(e) => e.preventDefault()}
-                    onInteractOutside={(e) => e.preventDefault()}
                   >
                     <EmojiPicker
                       onEmojiClick={handleEmojiClick}

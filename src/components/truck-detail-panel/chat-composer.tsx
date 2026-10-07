@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useEffect, useRef } from "react";
 import {
   Pencil,
   X,
@@ -81,6 +82,26 @@ export function ChatComposer({
     setShowEmoji(false);
   };
 
+  // Close the emoji picker on any pointer-down outside it (and outside the
+  // toggle button, so the button still toggles rather than double-firing).
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const emojiBtnRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!showEmoji) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (
+        pickerRef.current?.contains(target) ||
+        emojiBtnRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setShowEmoji(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [showEmoji, setShowEmoji]);
+
   return (
     <div className="shrink-0 border-t pt-3 relative">
       {!isCompanyActive ? (
@@ -95,7 +116,7 @@ export function ChatComposer({
         <>
           {/* Emoji picker — anchored near the emoji button (left cluster) */}
           {showEmoji && (
-            <div className="absolute bottom-full left-0 mb-2 z-50">
+            <div ref={pickerRef} className="absolute bottom-full left-0 mb-2 z-50">
               <EmojiPicker
                 onEmojiClick={onEmojiClick}
                 theme={pickerTheme}
@@ -195,6 +216,7 @@ export function ChatComposer({
             />
 
             <Button
+              ref={emojiBtnRef}
               size="icon"
               variant="ghost"
               className="h-9 w-9 shrink-0"
