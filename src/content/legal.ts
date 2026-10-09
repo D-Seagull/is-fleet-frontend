@@ -6,31 +6,18 @@
  * for store reviewers), and folding them into the six UI locale files would
  * bloat every one of them for no benefit.
  *
- * PLACEHOLDERS — every `[BRACKETED]` value must be replaced before submitting
- * to Google Play or the App Store. The pages render them highlighted so an
- * unfilled one cannot ship unnoticed.
+ * PLACEHOLDERS — none left (filled 2026-10-09). If one is ever added back as
+ * a `[BRACKETED]` value, the pages render it highlighted so it can't ship
+ * unnoticed.
  *
- * Written for a Polish sp. z o.o.: the controller block carries KRS and NIP
- * because Polish law requires a company to identify itself by them, and UODO
- * is named as the supervisory authority. If the entity ends up being
- * registered elsewhere, those three details are what change.
- *
- * ⚠️ UNVERIFIED ASSUMPTION — confirm before filling the placeholders in.
- * This text assumes the operator is our own company. If the business is run
- * through a Polish business incubator instead, there is no such company: the
- * incubator holds the legal personality and only issues invoices, so the data
- * controller would be the founder as a natural person, or the incubator
- * itself. That changes section 1 and the Terms outright — not just the three
- * details above.
- *
- * Two questions decide it, and both are for the incubator:
- *   1. Do they permit a store developer account under their legal entity?
- *      Apple requires whoever enrols to have authority to bind the company.
- *   2. Who do they consider the data controller for an app run by a
- *      beneficiary? Their answer usually reveals whether the model fits.
- *
- * A policy naming one entity while the store listing names another is a
- * standard review rejection, so this must be settled first.
+ * OPERATOR: a natural person, not a company and not a sole-trader business
+ * (no JDG / ФОП) — decided 2026-10-09. So there is no KRS / NIP / REGON;
+ * the controller is identified by full name + correspondence address +
+ * email (GDPR art. 13(1)(a)). The name must match the developer-account
+ * holder in Google Play and App Store exactly — a policy naming one person
+ * while the store lists another is a standard rejection. Poland is assumed
+ * as the country of residence (UODO, Polish law); if that changes, section
+ * 7 of the Privacy Policy and section 7 of the Terms change with it.
  *
  * The data inventory below is drawn from the actual code, not assumed. Notably
  * the driver app collects NO location data: there is no expo-location
@@ -54,8 +41,8 @@ export interface LegalDoc {
   sections: LegalSection[];
 }
 
-const UPDATED_UK = "Востаннє оновлено: [ДАТА]";
-const UPDATED_EN = "Last updated: [DATE]";
+const UPDATED_UK = "Востаннє оновлено: 9 жовтня 2026";
+const UPDATED_EN = "Last updated: 9 October 2026";
 
 // ─────────────────────────────────────────────────────────────── Privacy ──
 
@@ -71,9 +58,9 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
       {
         heading: "1. Хто відповідає за ваші дані",
         paragraphs: [
-          "Оператором даних є [НАЗВА КОМПАНІЇ] sp. z o.o., зареєстрована за адресою [АДРЕСА], Польща. KRS [KRS], NIP [NIP].",
-          "З будь-яких питань щодо обробки даних пишіть на [EMAIL].",
-          "Зверніть увагу: щодо робочих даних працівника (рейси, повідомлення, документи) оператором виступає транспортна компанія-роботодавець, а [НАЗВА КОМПАНІЇ] діє як постачальник послуги за її дорученням.",
+          "Оператором даних є Дмитро Чайка (Dmytro Chaika) — фізична особа, яка розробляє та підтримує IS Fleet. Адреса для кореспонденції: вул. Zawidowska 11/4, Вроцлав, Польща.",
+          "З будь-яких питань щодо обробки даних пишіть на dchaika.work@gmail.com.",
+          "Зверніть увагу: щодо робочих даних працівника (рейси, повідомлення, документи) оператором виступає транспортна компанія-роботодавець, а Дмитро Чайка діє як постачальник послуги (обробник) за її дорученням.",
         ],
       },
       {
@@ -116,7 +103,6 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
           "Twilio — надсилання SMS з одноразовим кодом входу.",
           "Resend — надсилання службових листів.",
           "Expo, Google FCM та Apple APNs — доставка push-сповіщень.",
-          "Google Cloud Translation — автоматичний переклад повідомлень у чаті між мовами співрозмовників.",
           "Sentry — технічні звіти про помилки застосунку: стектрейси та адреса запиту. Вміст повідомлень, куки й заголовки авторизації не передаються.",
         ],
       },
@@ -131,7 +117,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         heading: "7. Ваші права",
         paragraphs: [
           "Якщо до вас застосовується GDPR, ви маєте право на доступ до своїх даних, їх виправлення, видалення, обмеження чи заперечення проти обробки, а також на перенесення даних.",
-          "Щоб скористатися цими правами, напишіть на [EMAIL]. Ви також маєте право подати скаргу до наглядового органу: у Польщі це Prezes Urzędu Ochrony Danych Osobowych (UODO), вул. Stawki 2, 00-193 Варшава. Якщо ви проживаєте в іншій країні ЄС, скаргу можна подати до органу за місцем проживання.",
+          "Щоб скористатися цими правами, напишіть на dchaika.work@gmail.com. Ви також маєте право подати скаргу до наглядового органу: у Польщі це Prezes Urzędu Ochrony Danych Osobowych (UODO), вул. Stawki 2, 00-193 Варшава. Якщо ви проживаєте в іншій країні ЄС, скаргу можна подати до органу за місцем проживання.",
         ],
       },
       {
@@ -167,9 +153,9 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
       {
         heading: "1. Who is responsible for your data",
         paragraphs: [
-          "The data controller is [COMPANY NAME] sp. z o.o., registered at [ADDRESS], Poland. KRS [KRS], NIP [NIP].",
-          "For any question about how your data is handled, write to [EMAIL].",
-          "Note that for work records (trips, messages, documents) the employing transport company is the controller, and [COMPANY NAME] acts as a processor on its instructions.",
+          "The data controller is Dmytro Chaika, a private individual who develops and runs IS Fleet. Correspondence address: ul. Zawidowska 11/4, Wrocław, Poland.",
+          "For any question about how your data is handled, write to dchaika.work@gmail.com.",
+          "Note that for work records (trips, messages, documents) the employing transport company is the controller, and Dmytro Chaika acts as a processor on its instructions.",
         ],
       },
       {
@@ -212,7 +198,6 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
           "Twilio — delivery of one-time sign-in codes by SMS.",
           "Resend — delivery of service emails.",
           "Expo, Google FCM and Apple APNs — push-notification delivery.",
-          "Google Cloud Translation — automatic translation of chat messages between participants' languages.",
           "Sentry — technical error reports: stack traces and the request path. Message content, cookies and authorisation headers are not sent.",
         ],
       },
@@ -227,7 +212,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         heading: "7. Your rights",
         paragraphs: [
           "Where GDPR applies to you, you have the right to access your data, to have it corrected or erased, to restrict or object to its processing, and to data portability.",
-          "To exercise any of these, write to [EMAIL]. You also have the right to lodge a complaint with a supervisory authority: in Poland this is the President of the Personal Data Protection Office (UODO), ul. Stawki 2, 00-193 Warsaw. If you live in another EU country, you may complain to the authority where you reside.",
+          "To exercise any of these, write to dchaika.work@gmail.com. You also have the right to lodge a complaint with a supervisory authority: in Poland this is the President of the Personal Data Protection Office (UODO), ul. Stawki 2, 00-193 Warsaw. If you live in another EU country, you may complain to the authority where you reside.",
         ],
       },
       {
@@ -261,7 +246,8 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
     title: "Умови використання",
     updated: UPDATED_UK,
     intro: [
-      "Ці умови регулюють користування системою IS Fleet, яку надає [НАЗВА КОМПАНІЇ] sp. z o.o.",
+      "Ці умови регулюють користування системою IS Fleet, яку надає Дмитро Чайка (Dmytro Chaika), фізична особа (далі — «постачальник»).",
+      "Умови співпраці між постачальником і компанією-клієнтом, зокрема оплата, можуть бути визначені окремою домовленістю; ці умови стосуються користувачів застосунків.",
     ],
     sections: [
       {
@@ -295,7 +281,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
         heading: "5. Доступність і відповідальність",
         paragraphs: [
           "Сервіс надається «як є». Ми докладаємо розумних зусиль для його безперебійної роботи, але не гарантуємо відсутності перерв чи помилок.",
-          "У межах, дозволених законом, [НАЗВА КОМПАНІЇ] не відповідає за непрямі збитки, втрачену вигоду чи втрату даних.",
+          "У межах, дозволених законом, постачальник не відповідає за непрямі збитки, втрачену вигоду чи втрату даних.",
         ],
       },
       {
@@ -307,7 +293,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
       {
         heading: "7. Право, що застосовується",
         paragraphs: [
-          "До цих умов застосовується право Польщі, а спори розглядає суд за місцем реєстрації [НАЗВА КОМПАНІЇ] sp. z o.o. Це не позбавляє споживача захисту, який надають імперативні норми країни його проживання. Питання — на [EMAIL].",
+          "До цих умов застосовується право Польщі, а спори розглядає суд, компетентний за польським законодавством. Це не позбавляє споживача захисту, який надають імперативні норми країни його проживання. Питання — на dchaika.work@gmail.com.",
         ],
       },
     ],
@@ -316,7 +302,8 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
     title: "Terms of Service",
     updated: UPDATED_EN,
     intro: [
-      "These terms govern use of the IS Fleet system provided by [COMPANY NAME] sp. z o.o.",
+      "These terms govern use of the IS Fleet system provided by Dmytro Chaika, a private individual (the \"provider\").",
+      "The relationship between the provider and a client company, including any payment, may be set out in a separate agreement; these terms apply to users of the apps.",
     ],
     sections: [
       {
@@ -350,7 +337,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
         heading: "5. Availability and liability",
         paragraphs: [
           "The service is provided “as is”. We make reasonable efforts to keep it running but do not guarantee uninterrupted or error-free operation.",
-          "To the extent permitted by law, [COMPANY NAME] is not liable for indirect damages, lost profit or lost data.",
+          "To the extent permitted by law, the provider is not liable for indirect damages, lost profit or lost data.",
         ],
       },
       {
@@ -362,7 +349,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
       {
         heading: "7. Governing law",
         paragraphs: [
-          "These terms are governed by Polish law, and disputes are heard by the court for the registered seat of [COMPANY NAME] sp. z o.o. This does not deprive a consumer of the protection of mandatory rules in their country of residence. Questions: [EMAIL].",
+          "These terms are governed by Polish law, and disputes are heard by the court competent under Polish law. This does not deprive a consumer of the protection of mandatory rules in their country of residence. Questions: dchaika.work@gmail.com.",
         ],
       },
     ],
@@ -418,7 +405,7 @@ export const DELETE_ACCOUNT: Record<LegalLocale, LegalDoc> = {
       {
         heading: "Якщо не вдається увійти",
         paragraphs: [
-          "Якщо ви втратили доступ до акаунта й не можете видалити його самостійно, надішліть запит на [EMAIL] з номера телефону або email, прив'язаного до акаунта. Ми обробимо запит протягом 30 днів.",
+          "Якщо ви втратили доступ до акаунта й не можете видалити його самостійно, надішліть запит на dchaika.work@gmail.com з номера телефону або email, прив'язаного до акаунта. Ми обробимо запит протягом 30 днів.",
         ],
       },
     ],
@@ -467,7 +454,7 @@ export const DELETE_ACCOUNT: Record<LegalLocale, LegalDoc> = {
       {
         heading: "If you cannot sign in",
         paragraphs: [
-          "If you have lost access and cannot delete the account yourself, send a request to [EMAIL] from the phone number or email linked to the account. We will process it within 30 days.",
+          "If you have lost access and cannot delete the account yourself, send a request to dchaika.work@gmail.com from the phone number or email linked to the account. We will process it within 30 days.",
         ],
       },
     ],
