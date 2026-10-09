@@ -312,6 +312,7 @@
     "cancelReply": "Atšaukti atsakymą",
     "removeFile": "Pašalinti",
     "dropToAttach": "Paleiskite, kad prisegtumėte",
+    "quotedNotFound": "Žinutė nerasta — galbūt ji ištrinta",
     "attachFile": "Prisegti failą",
     "emoji": "Jaustukas",
     "messagePlaceholder": "Įveskite žinutę…",
@@ -713,6 +714,8 @@
       "description": "Kalba, kuria rodomi mygtukai, formos ir pranešimai. Netaikoma pokalbių žinučių vertimui."
     },
     "appVersion": "Programos versija v{version}",
+    "legalPrivacy": "Privatumo politika",
+    "legalTerms": "Naudojimo sąlygos",
     "danger": {
       "action": "Ištrinti paskyrą",
       "menuLabel": "Paskyros veiksmai",

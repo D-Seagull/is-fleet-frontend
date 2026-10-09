@@ -49,6 +49,8 @@ export function AlbumGrid({
       <img
         src={p.thumbUrl || p.signedUrl}
         alt={p.fileName}
+        // Only photos scrolled near get fetched, not the whole history's.
+        loading="lazy"
         onLoad={onImageLoaded}
         className="h-full w-full object-cover block"
       />

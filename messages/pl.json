@@ -312,6 +312,7 @@
     "cancelReply": "Anuluj odpowiedź",
     "removeFile": "Usuń",
     "dropToAttach": "Upuść, aby załączyć",
+    "quotedNotFound": "Nie znaleziono wiadomości — mogła zostać usunięta",
     "attachFile": "Załącz plik",
     "emoji": "Emoji",
     "messagePlaceholder": "Wpisz wiadomość…",
@@ -713,6 +714,8 @@
       "description": "Język używany do przycisków, formularzy i komunikatów aplikacji. Nie wpływa na tłumaczenie wiadomości czatu."
     },
     "appVersion": "Wersja aplikacji v{version}",
+    "legalPrivacy": "Polityka prywatności",
+    "legalTerms": "Regulamin",
     "danger": {
       "action": "Usuń konto",
       "menuLabel": "Akcje konta",

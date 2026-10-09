@@ -312,6 +312,7 @@
     "cancelReply": "Antwort abbrechen",
     "removeFile": "Entfernen",
     "dropToAttach": "Loslassen zum Anhängen",
+    "quotedNotFound": "Nachricht nicht gefunden — sie wurde evtl. gelöscht",
     "attachFile": "Datei anhängen",
     "emoji": "Emoji",
     "messagePlaceholder": "Nachricht eingeben…",
@@ -713,6 +714,8 @@
       "description": "Sprache für Schaltflächen, Formulare und Meldungen der App. Beeinflusst nicht die Übersetzung von Chat-Nachrichten."
     },
     "appVersion": "App-Version v{version}",
+    "legalPrivacy": "Datenschutz",
+    "legalTerms": "Nutzungsbedingungen",
     "danger": {
       "action": "Konto löschen",
       "menuLabel": "Kontoaktionen",
