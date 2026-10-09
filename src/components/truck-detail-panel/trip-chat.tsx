@@ -31,7 +31,13 @@ import { LoadOlderMessages } from "@/components/load-older-messages";
 import { ChatArchiveDialog } from "@/components/chat-archive-dialog";
 import { useAuthStore, useIsCompanyActive } from "@/store/auth";
 import { FileDropZone } from "@/components/file-drop-zone";
+import { toast } from "sonner";
 import { addToQueue } from "@/lib/chat-files";
+import {
+  distanceFromLatest,
+  revealInChat,
+  scrollToLatest,
+} from "@/lib/chat-scroll";
 import {
   addToDocList,
   claimJob,
@@ -124,23 +130,18 @@ export function TripChat({
     isDeleted: boolean;
   } | null>(null);
 
+  // A quoted message older than the loaded pages: load back until it's there.
+  // Files are fetched in full, so a quoted file is always rendered.
   const scrollToTripMessage = (messageId: string) => {
-    const el = document.getElementById(`trip-msg-${messageId}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("ring-2", "ring-primary", "rounded-lg");
-    setTimeout(() => {
-      el.classList.remove("ring-2", "ring-primary", "rounded-lg");
-    }, 1500);
+    void revealInChat(
+      `trip-msg-${messageId}`,
+      hasOlderTrip ? fetchOlderTrip : undefined,
+    ).then((found) => {
+      if (!found) toast.info(t("quotedNotFound"));
+    });
   };
   const scrollToTripDoc = (docId: string) => {
-    const el = document.getElementById(`trip-doc-${docId}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("ring-2", "ring-primary", "rounded-lg");
-    setTimeout(() => {
-      el.classList.remove("ring-2", "ring-primary", "rounded-lg");
-    }, 1500);
+    void revealInChat(`trip-doc-${docId}`);
   };
   const [showEmoji, setShowEmoji] = useState(false);
   // Index into `galleryPhotos` of the photo open in the gallery, or null.
@@ -152,7 +153,6 @@ export function TripChat({
   // true  → user is within ~80px of the bottom (messages are visible)
   // false → user scrolled up to read history
   const nearBottomRef = useRef(true);
-  const initialScrollDone = useRef(false);
   const [newMsgCount, setNewMsgCount] = useState(0);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -512,28 +512,25 @@ export function TripChat({
 
   // Smart scroll: jump to bottom when near bottom; show "↓ N new" pill when
   // user is scrolled up (Viber/Telegram pattern).
+  // The list is bottom-anchored (lib/chat-scroll): it opens on the newest
+  // message and, while the reader is there, stays on it as messages arrive —
+  // no scrolling needed here.
+  // Keyed on the NEWEST item, not the count: an older page loading (or an
+  // upload swapping its local files for the stored ones) isn't news.
+  const latest = timeline.at(-1);
+  const latestKey = latest
+    ? latest.kind === "msg"
+      ? `m:${latest.data.id}`
+      : `d:${stableKey(latest.data.id)}`
+    : null;
+  const seenLatest = useRef<string | null>(null);
   useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (
-      !el ||
-      (messages.length === 0 && chatDocs.length === 0)
-    )
-      return;
-    if (nearBottomRef.current) {
-      if (!initialScrollDone.current) {
-        // First load — instant jump, no animation
-        el.scrollTop = el.scrollHeight;
-        initialScrollDone.current = true;
-      } else {
-        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-      }
-    } else if (initialScrollDone.current) {
-      // User scrolled up — show pill, don't force-scroll
-      setNewMsgCount((n) => n + 1);
-    }
-    // chatDocs, not tripDocs: an upload swapping its local files for the
-    // stored ones keeps the count, so it doesn't scroll / bump the pill.
-  }, [messages.length, chatDocs.length]);
+    const prev = seenLatest.current;
+    seenLatest.current = latestKey;
+    if (prev === null || latestKey === prev) return;
+    // Reader scrolled up — show the pill, don't force-scroll.
+    if (!nearBottomRef.current) setNewMsgCount((n) => n + 1);
+  }, [latestKey]);
 
   // One send at a time. An upload takes seconds and the text / files stay in
   // the composer meanwhile, so a second click or Enter would send them again.
@@ -867,10 +864,9 @@ export function TripChat({
       >
         <div
           ref={scrollContainerRef}
-          className="absolute inset-0 z-10 overflow-y-auto flex flex-col gap-2 px-3 py-2"
+          className="absolute inset-0 z-10 overflow-y-auto flex flex-col-reverse"
           onScroll={(e) => {
-            const el = e.currentTarget;
-            const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+            const dist = distanceFromLatest(e.currentTarget);
             const wasNear = nearBottomRef.current;
             nearBottomRef.current = dist < 80;
             setShowScrollDown(dist > 240);
@@ -882,6 +878,8 @@ export function TripChat({
             }
           }}
         >
+          {/* One block: the reversed scroller only anchors to the bottom. */}
+          <div className="flex flex-col grow gap-2 px-3 py-2">
           {isLoading ? (
             <div className="flex items-center justify-center py-10">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -927,16 +925,8 @@ export function TripChat({
                     const i = galleryPhotos.findIndex((p) => p.id === id);
                     if (i >= 0) setGalleryIndex(i);
                   }}
-                  onImageLoaded={() => {
-                    if (nearBottomRef.current) {
-                      const el = scrollContainerRef.current;
-                      if (el)
-                        el.scrollTo({
-                          top: el.scrollHeight,
-                          behavior: "smooth",
-                        });
-                    }
-                  }}
+                  // Bottom-anchored list: a photo loading doesn't shift it.
+                  onImageLoaded={() => {}}
                   onOpenUser={setCardUserId}
                 />
               ))}
@@ -957,6 +947,7 @@ export function TripChat({
               </span>
             </div>
           )}
+          </div>
         </div>
         {/* "↓ N new" pill — visible when user scrolled up and new messages arrived */}
         {newMsgCount > 0 && (
@@ -966,8 +957,7 @@ export function TripChat({
               nearBottomRef.current = true;
               setNewMsgCount(0);
               const el = scrollContainerRef.current;
-              if (el)
-                el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+              if (el) scrollToLatest(el);
               if (tabVisibleRef.current)
                 getSocket().emit("markTripRead", { tripId: trip.id });
             }}
@@ -985,7 +975,7 @@ export function TripChat({
               setShowScrollDown(false);
               nearBottomRef.current = true;
               const el = scrollContainerRef.current;
-              if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+              if (el) scrollToLatest(el);
             }}
             className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border bg-background/90 text-foreground shadow-md backdrop-blur transition hover:bg-muted"
           >

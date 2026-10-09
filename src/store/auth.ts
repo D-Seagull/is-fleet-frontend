@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { api } from "@/lib/api";
+import { isSessionRejected, SessionUnreachableError } from "@/lib/session-errors";
 import { disconnectSocket, reconnectSocket } from "@/lib/socket";
 
 interface AuthUser {
@@ -28,8 +29,15 @@ interface AuthState {
   isLoading: boolean;
   login: (user: AuthUser, token: string, remember: boolean) => void;
   logout: () => void;
-  /** Silently restore the access token from the httpOnly refresh cookie. */
+  /**
+   * Silently restore the access token from the httpOnly refresh cookie.
+   * Resolves the new token, or null when the server rejected the session
+   * (it is then cleared). Throws SessionUnreachableError when the server
+   * couldn't be reached — the session is kept, try again later.
+   */
   refresh: () => Promise<string | null>;
+  /** refresh() without the de-duplication — use refresh(). */
+  refreshNow: () => Promise<string | null>;
   fetchMe: (tokenOverride?: string) => Promise<void>;
   setUser: (user: AuthUser) => void;
   setLoading: (v: boolean) => void;
@@ -71,6 +79,11 @@ function syncRoleCookie(role: string | null | undefined) {
   if (!role) return;
   setAuthedCookie(localStorage.getItem(REMEMBER_KEY) !== "0", role);
 }
+
+// One refresh at a time per tab: AuthProvider (cold start) and the api 401
+// interceptor share it. Rotation is single-use, so a second parallel call
+// would present an already-rotated cookie.
+let refreshInFlight: Promise<string | null> | null = null;
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -117,7 +130,16 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, token: null, isLoading: false });
       },
 
-      refresh: async () => {
+      refresh: () => {
+        refreshInFlight ??= get()
+          .refreshNow()
+          .finally(() => {
+            refreshInFlight = null;
+          });
+        return refreshInFlight;
+      },
+
+      refreshNow: async () => {
         // Preserve the "remember me" choice across silent refreshes so an
         // unchecked session stays session-only. Default true when unknown, to
         // avoid accidentally downgrading a remembered session.
@@ -146,7 +168,12 @@ export const useAuthStore = create<AuthState>()(
           reconnectSocket();
           void get().fetchMe(access_token);
           return access_token as string;
-        } catch {
+        } catch (err) {
+          // Offline, Render waking up, a deploy: the session is fine — keep
+          // it and let the caller retry. Only the server saying no ends it.
+          if (!isSessionRejected(err)) throw new SessionUnreachableError();
+          // No /auth/logout here: the cookie is already dead, and another tab
+          // may have just put a fresh one in the shared jar.
           clearAuthedCookie();
           set({ user: null, token: null, isLoading: false });
           return null;
@@ -167,10 +194,15 @@ export const useAuthStore = create<AuthState>()(
           });
           set({ user: res.data, token, isLoading: false });
           syncRoleCookie(res.data?.role);
-        } catch {
+        } catch (err) {
           // If the access token was expired, the api interceptor already
-          // tried to refresh + retry; landing here means the session is gone.
-          set({ user: null, token: null, isLoading: false });
+          // tried to refresh + retry; a 401 / 403 here means the session is
+          // gone. A network error or 5xx is not — keep the session.
+          if (isSessionRejected(err)) {
+            set({ user: null, token: null, isLoading: false });
+          } else {
+            set({ isLoading: false });
+          }
         }
       },
     }),

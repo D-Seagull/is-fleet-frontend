@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Camera,
   Globe,
@@ -476,7 +477,23 @@ export default function AccountSettingsPage() {
         </CardContent>
       </Card>
 
-      <DesktopVersion />
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <Link
+            href="/privacy"
+            className="hover:text-foreground hover:underline"
+          >
+            {t("legalPrivacy")}
+          </Link>
+          <Link
+            href="/terms"
+            className="hover:text-foreground hover:underline"
+          >
+            {t("legalTerms")}
+          </Link>
+        </div>
+        <DesktopVersion />
+      </div>
     </div>
   );
 }

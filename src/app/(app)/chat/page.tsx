@@ -47,6 +47,11 @@ import {
   type OutboxJob,
 } from "@/lib/outbox";
 import { addToQueue, CHAT_FILE_ACCEPT } from "@/lib/chat-files";
+import {
+  distanceFromLatest,
+  revealInChat,
+  scrollToLatest,
+} from "@/lib/chat-scroll";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GroupAvatarTrigger } from "@/components/group-avatar-trigger";
 import { GroupActionsMenu } from "@/components/group-actions-menu";
@@ -272,7 +277,7 @@ function ChatPageContent() {
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    el.scrollTo({ top: el.scrollHeight, behavior });
+    scrollToLatest(el, behavior);
     atBottomRef.current = true;
     setShowScrollDown(false);
   }, []);
@@ -282,7 +287,7 @@ function ChatPageContent() {
   const handleMessagesScroll = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const dist = distanceFromLatest(el);
     atBottomRef.current = dist < 80;
     setShowScrollDown(dist > 240);
   }, []);
@@ -1095,26 +1100,18 @@ function ChatPageContent() {
         ? `u:${selectedUserId}`
         : null;
     if (prevConvoKeyRef.current !== convoKey) {
-      // Opening a conversation: jump straight to the newest message. Instant
-      // (not smooth) so rapid re-renders / late image loads can't interrupt
-      // it mid-animation — that was the "doesn't always reach the bottom" bug.
-      // A second pass next frame settles any late layout shift.
+      // Another conversation in the same scroller: start it at its newest
+      // message. The list is bottom-anchored (lib/chat-scroll), so that is
+      // simply scrollTop 0 — no animation through the history, and late
+      // photo loads above can't push it off.
       prevConvoKeyRef.current = convoKey;
       atBottomRef.current = true;
       setShowScrollDown(false);
-      requestAnimationFrame(() => {
-        el.scrollTo({ top: el.scrollHeight });
-        requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight }));
-      });
+      scrollToLatest(el, "auto");
       return;
     }
-    // New message/doc in the open conversation: follow only if the reader is
-    // already at the bottom; otherwise leave them in place (button shows).
-    // currentDocs.length: an upload swapping its local files for the stored
-    // ones keeps the count, so no extra scroll then.
-    if (atBottomRef.current) {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-    }
+    // New message/doc: a reader at the bottom stays there by itself (the
+    // anchor); one scrolled up is left in place (the button shows).
   }, [
     messages,
     groupMessages,
@@ -1144,23 +1141,22 @@ function ChatPageContent() {
   };
 
   /** Scroll a target (message OR doc) into view and briefly highlight it. */
+  // A quoted message older than the loaded pages: load back until it's there.
+  // Files are fetched in full, so a quoted file is always rendered.
   const scrollToMessage = (messageId: string) => {
-    const el = document.getElementById(`chat-msg-${messageId}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("ring-2", "ring-primary", "rounded-lg");
-    setTimeout(() => {
-      el.classList.remove("ring-2", "ring-primary", "rounded-lg");
-    }, 1500);
+    const loadOlder = selectedGroupId
+      ? hasOlderGroup
+        ? fetchOlderGroup
+        : undefined
+      : hasOlderDm
+        ? fetchOlderDm
+        : undefined;
+    void revealInChat(`chat-msg-${messageId}`, loadOlder).then((found) => {
+      if (!found) toast.info(tChat("quotedNotFound"));
+    });
   };
   const scrollToDoc = (docId: string) => {
-    const el = document.getElementById(`chat-doc-${docId}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("ring-2", "ring-primary", "rounded-lg");
-    setTimeout(() => {
-      el.classList.remove("ring-2", "ring-primary", "rounded-lg");
-    }, 1500);
+    void revealInChat(`chat-doc-${docId}`);
   };
 
   // One send at a time. An upload takes seconds and the text / files stay in
@@ -1850,8 +1846,10 @@ function ChatPageContent() {
               <div
                 ref={scrollContainerRef}
                 onScroll={handleMessagesScroll}
-                className="absolute inset-0 overflow-y-auto p-4 chat-bg-scroll"
+                className="absolute inset-0 overflow-y-auto p-4 chat-bg-scroll flex flex-col-reverse"
               >
+              {/* One block: the reversed scroller only anchors to the bottom. */}
+              <div className="grow">
               {loadingMessages && !selectedGroupId ? (
                 <MessageListSkeleton />
               ) : (
@@ -2367,6 +2365,7 @@ function ChatPageContent() {
                                   <img
                                     src={doc.thumbUrl || doc.signedUrl}
                                     alt={doc.fileName}
+                                    loading="lazy"
                                     onClick={() => openPhoto(doc.id)}
                                     className="block max-w-[220px] max-h-[200px] w-full object-cover cursor-pointer"
                                   />
@@ -2513,6 +2512,7 @@ function ChatPageContent() {
                   </span>
                 </div>
               )}
+              </div>
               </div>
               {showScrollDown && (
                 <button

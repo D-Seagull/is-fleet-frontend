@@ -312,6 +312,7 @@
     "cancelReply": "Cancel reply",
     "removeFile": "Remove",
     "dropToAttach": "Drop to attach",
+    "quotedNotFound": "Message not found — it may have been deleted",
     "attachFile": "Attach file",
     "emoji": "Emoji",
     "messagePlaceholder": "Type a message...",
@@ -713,6 +714,8 @@
       "description": "The language used for buttons, forms and app messages. Does not affect chat-message translation."
     },
     "appVersion": "App version v{version}",
+    "legalPrivacy": "Privacy Policy",
+    "legalTerms": "Terms of Use",
     "danger": {
       "action": "Delete account",
       "menuLabel": "Account actions",

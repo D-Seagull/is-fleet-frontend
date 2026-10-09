@@ -23,8 +23,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       fetchMe(storeToken);
     } else if (!isPublic) {
       // Холодний старт / перезавантаження захищеної сторінки: access-токен у
-      // памʼяті зник — тихо відновлюємо його з httpOnly refresh-кукі.
-      void useAuthStore.getState().refresh();
+      // памʼяті зник — тихо відновлюємо його з httpOnly refresh-кукі. Сервер
+      // недоступний (офлайн, Render прокидається) — не виходимо з акаунта, а
+      // повторюємо зі зростаючою паузою (2 с → 30 с), поки крутиться спінер.
+      let cancelled = false;
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const restore = (attempt: number) => {
+        useAuthStore
+          .getState()
+          .refresh()
+          .catch(() => {
+            if (cancelled) return;
+            timer = setTimeout(
+              () => restore(attempt + 1),
+              Math.min(30_000, 2_000 * 2 ** attempt),
+            );
+          });
+      };
+      restore(0);
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
     } else {
       // Публічна сторінка без сесії — прибираємо спінер.
       setLoading(false);

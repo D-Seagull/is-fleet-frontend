@@ -395,6 +395,7 @@ function FileBubble({
                   <img
                     src={doc.thumbUrl || doc.signedUrl}
                     alt={doc.fileName}
+                    loading="lazy"
                     onLoad={onImageLoaded}
                     className="max-w-[200px] max-h-[200px] w-full object-cover block"
                   />

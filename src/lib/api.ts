@@ -57,27 +57,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// A single shared refresh so N concurrent 401s trigger ONE /auth/refresh
-// (rotation is single-use — parallel refreshes would invalidate each other).
-let refreshInFlight: Promise<string | null> | null = null;
-function refreshOnce(): Promise<string | null> {
-  if (!refreshInFlight) {
-    refreshInFlight = useAuthStore
-      .getState()
-      .refresh()
-      .finally(() => {
-        refreshInFlight = null;
-      });
-  }
-  return refreshInFlight;
-}
-
 // A 401 on these is a real failure (bad creds / dead refresh), not an expired
 // access token — don't try to refresh-and-retry them.
 const AUTH_PATHS = ["/auth/refresh", "/auth/logout", "/auth/login"];
 
-// On 401: silently refresh the access token and replay the request. Only when
-// the refresh itself fails do we log out (AuthProvider then redirects to /login).
+// On 401: silently refresh the access token and replay the request. N
+// concurrent 401s share one refresh (the store de-duplicates it). Only when
+// the server rejects the refresh is the session over — the store clears it and
+// AuthProvider redirects to /login. If the server can't be reached, just this
+// request fails; the session stays.
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -88,13 +76,17 @@ api.interceptors.response.use(
 
     if (status === 401 && original && !original._retried && !isAuthCall) {
       original._retried = true;
-      const newToken = await refreshOnce();
+      let newToken: string | null;
+      try {
+        newToken = await useAuthStore.getState().refresh();
+      } catch {
+        return Promise.reject(error);
+      }
       if (newToken) {
         original.headers = original.headers ?? {};
         original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       }
-      useAuthStore.getState().logout();
     }
     return Promise.reject(error);
   },
