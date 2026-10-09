@@ -1,5 +1,11 @@
 import Link from "next/link";
-import type { LegalDoc, LegalLocale } from "@/content/legal";
+import {
+  LEGAL_LOCALE_NAMES,
+  LEGAL_LOCALES,
+  type LegalDoc,
+  type LegalLocale,
+} from "@/content/legal";
+import { cn } from "@/lib/utils";
 
 /**
  * Splits prose on `[PLACEHOLDER]` markers and renders them highlighted, so a
@@ -31,21 +37,30 @@ export function LegalDocument({
   /** This document's own route, used to build the language links. */
   path: string;
 }) {
-  const other: LegalLocale = locale === "uk" ? "en" : "uk";
-  const otherLabel = other === "uk" ? "Українська" : "English";
-
   return (
-    <article className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-12">
-      <header className="flex flex-col gap-3 border-b pb-6">
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h1 className="text-3xl font-bold tracking-tight">{doc.title}</h1>
-          <Link
-            href={`${path}?lang=${other}`}
-            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            {otherLabel}
-          </Link>
-        </div>
+    <article lang={locale} className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-12">
+      <header className="flex flex-col gap-4 border-b pb-6">
+        {/* Every app language, each named in itself, so a reader who landed
+            on the wrong one can find theirs without reading the current one. */}
+        <nav aria-label="Language" className="flex flex-wrap gap-1.5">
+          {LEGAL_LOCALES.map((l) => (
+            <Link
+              key={l}
+              href={`${path}?lang=${l}`}
+              lang={l}
+              aria-current={l === locale ? "page" : undefined}
+              className={cn(
+                "rounded-full border px-3 py-1 text-sm transition-colors",
+                l === locale
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              {LEGAL_LOCALE_NAMES[l]}
+            </Link>
+          ))}
+        </nav>
+        <h1 className="text-3xl font-bold tracking-tight">{doc.title}</h1>
         <p className="text-sm text-muted-foreground">
           {withPlaceholders(doc.updated)}
         </p>
@@ -84,13 +99,16 @@ export function LegalDocument({
   );
 }
 
-/** Resolves the document language: explicit `?lang=` wins, else the UI locale,
- *  and anything we don't publish a translation for falls back to English —
+const isLegalLocale = (v: string | undefined): v is LegalLocale =>
+  !!v && (LEGAL_LOCALES as readonly string[]).includes(v);
+
+/** Resolves the document language: explicit `?lang=` wins (the mobile apps
+ *  pass theirs), else the UI locale, and anything else falls back to English —
  *  which is also what a store reviewer will be reading. */
 export function resolveLegalLocale(
   langParam: string | undefined,
   uiLocale: string,
 ): LegalLocale {
-  if (langParam === "uk" || langParam === "en") return langParam;
-  return uiLocale === "uk" ? "uk" : "en";
+  if (isLegalLocale(langParam)) return langParam;
+  return isLegalLocale(uiLocale) ? uiLocale : "en";
 }

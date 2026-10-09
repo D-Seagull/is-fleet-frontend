@@ -2,9 +2,10 @@
  * Legal documents, rendered by the public pages under src/app/(legal)/.
  *
  * Kept as structured data rather than in messages/*.json: these are long prose
- * documents that only ship in two languages (Ukrainian for customers, English
- * for store reviewers), and folding them into the six UI locale files would
- * bloat every one of them for no benefit.
+ * documents, and folding them into the UI locale files would bloat every one
+ * of them for no benefit. Ukrainian and English live here (the source texts);
+ * the other UI languages — pl, lt, de, ru — are translations of them in
+ * src/content/legal-i18n/. Change all six together.
  *
  * PLACEHOLDERS — none left (filled 2026-10-09). If one is ever added back as
  * a `[BRACKETED]` value, the pages render it highlighted so it can't ship
@@ -26,7 +27,24 @@
  * keep it that way unless the code changes.
  */
 
-export type LegalLocale = "uk" | "en";
+import pl from "./legal-i18n/pl";
+import lt from "./legal-i18n/lt";
+import de from "./legal-i18n/de";
+import ru from "./legal-i18n/ru";
+
+/** Every UI language of the apps has its own copy of each document. */
+export const LEGAL_LOCALES = ["uk", "en", "pl", "lt", "de", "ru"] as const;
+export type LegalLocale = (typeof LEGAL_LOCALES)[number];
+
+/** Language names for the switcher, each in its own language. */
+export const LEGAL_LOCALE_NAMES: Record<LegalLocale, string> = {
+  uk: "Українська",
+  en: "English",
+  pl: "Polski",
+  lt: "Lietuvių",
+  de: "Deutsch",
+  ru: "Русский",
+};
 
 export interface LegalSection {
   heading: string;
@@ -39,6 +57,13 @@ export interface LegalDoc {
   updated: string;
   intro: string[];
   sections: LegalSection[];
+}
+
+/** One language's copy of all three documents (legal-i18n/*). */
+export interface LegalSet {
+  privacy: LegalDoc;
+  terms: LegalDoc;
+  deleteAccount: LegalDoc;
 }
 
 const UPDATED_UK = "Востаннє оновлено: 9 жовтня 2026";
@@ -123,7 +148,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
       {
         heading: "8. Видалення акаунта",
         paragraphs: [
-          "Видалити акаунт можна самостійно: у мобільному застосунку — «Налаштування» → «Видалити акаунт», у вебверсії — «Акаунт» → «Небезпечна зона».",
+          "Видалити акаунт можна самостійно: у мобільному застосунку — «Налаштування» → «Видалити акаунт», у вебверсії — «Налаштування акаунту» → меню «⋮» → «Видалити акаунт».",
           "Після видалення ваші персональні дані (ім'я, телефон, email, фото) стираються, а вхід стає неможливим назавжди. Рейси та повідомлення залишаються в історії компанії у знеособленому вигляді — вони є робочими записами роботодавця.",
           "Докладна інструкція — на сторінці /delete-account.",
         ],
@@ -218,7 +243,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
       {
         heading: "8. Deleting your account",
         paragraphs: [
-          "You can delete your account yourself: in the mobile apps under Settings → Delete account, and on the web under Account → Danger zone.",
+          "You can delete your account yourself: in the mobile apps under Settings → Delete account, and on the web under Account Settings → the “⋮” menu → Delete account.",
           "Deletion erases your personal data (name, phone, email, photo) and makes signing in permanently impossible. Trips and messages remain in the company history in anonymised form, as they are the employer's work records.",
           "Full instructions are at /delete-account.",
         ],
@@ -237,6 +262,10 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
       },
     ],
   },
+  pl: pl.privacy,
+  lt: lt.privacy,
+  de: de.privacy,
+  ru: ru.privacy,
 };
 
 // ───────────────────────────────────────────────────────────────── Terms ──
@@ -354,6 +383,10 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
       },
     ],
   },
+  pl: pl.terms,
+  lt: lt.terms,
+  de: de.terms,
+  ru: ru.terms,
 };
 
 // ───────────────────────────────────────────────────── Account deletion ──
@@ -381,9 +414,9 @@ export const DELETE_ACCOUNT: Record<LegalLocale, LegalDoc> = {
       {
         heading: "У вебверсії",
         bullets: [
-          "Відкрийте розділ «Акаунт».",
-          "Прогорніть до блоку «Небезпечна зона».",
-          "Натисніть «Видалити акаунт» і підтвердьте.",
+          "Натисніть на своє ім'я внизу бічного меню й оберіть «Налаштування акаунту».",
+          "Відкрийте меню «⋮» у заголовку сторінки.",
+          "Оберіть «Видалити акаунт» і підтвердьте кнопкою «Видалити назавжди».",
         ],
       },
       {
@@ -430,9 +463,9 @@ export const DELETE_ACCOUNT: Record<LegalLocale, LegalDoc> = {
       {
         heading: "On the web",
         bullets: [
-          "Open the Account section.",
-          "Scroll down to the Danger zone block.",
-          "Click “Delete account” and confirm.",
+          "Click your name at the bottom of the side menu and choose Account Settings.",
+          "Open the “⋮” menu in the page header.",
+          "Choose “Delete account” and confirm with “Delete permanently”.",
         ],
       },
       {
@@ -459,4 +492,8 @@ export const DELETE_ACCOUNT: Record<LegalLocale, LegalDoc> = {
       },
     ],
   },
+  pl: pl.deleteAccount,
+  lt: lt.deleteAccount,
+  de: de.deleteAccount,
+  ru: ru.deleteAccount,
 };
