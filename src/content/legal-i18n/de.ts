@@ -15,7 +15,7 @@ const de: LegalSet = {
         heading: "1. Wer für Ihre Daten verantwortlich ist",
         paragraphs: [
           "Verantwortlicher ist Dmytro Chaika, eine natürliche Person, die IS Fleet entwickelt und betreibt. Postanschrift: ul. Zawidowska 11/4, Wrocław, Polen.",
-          "Bei Fragen zur Verarbeitung Ihrer Daten schreiben Sie an dchaika.work@gmail.com.",
+          "Bei Fragen zur Verarbeitung Ihrer Daten schreiben Sie an isfleet.eu@gmail.com.",
           "Bitte beachten Sie: Für Arbeitsdaten (Fahrten, Nachrichten, Dokumente) ist das beschäftigende Transportunternehmen der Verantwortliche; Dmytro Chaika handelt als Auftragsverarbeiter nach dessen Weisung.",
         ],
       },
@@ -73,7 +73,7 @@ const de: LegalSet = {
         heading: "7. Ihre Rechte",
         paragraphs: [
           "Soweit die DSGVO für Sie gilt, haben Sie das Recht auf Auskunft über Ihre Daten, auf Berichtigung, Löschung, Einschränkung der Verarbeitung oder Widerspruch gegen die Verarbeitung sowie auf Datenübertragbarkeit.",
-          "Um diese Rechte auszuüben, schreiben Sie an dchaika.work@gmail.com. Sie haben außerdem das Recht, sich bei einer Aufsichtsbehörde zu beschweren: In Polen ist dies der Präsident des Amtes für den Schutz personenbezogener Daten (Prezes UODO), ul. Stawki 2, 00-193 Warschau. Wenn Sie in einem anderen EU-Land wohnen, können Sie sich an die Behörde an Ihrem Wohnort wenden.",
+          "Um diese Rechte auszuüben, schreiben Sie an isfleet.eu@gmail.com. Sie haben außerdem das Recht, sich bei einer Aufsichtsbehörde zu beschweren: In Polen ist dies der Präsident des Amtes für den Schutz personenbezogener Daten (Prezes UODO), ul. Stawki 2, 00-193 Warschau. Wenn Sie in einem anderen EU-Land wohnen, können Sie sich an die Behörde an Ihrem Wohnort wenden.",
         ],
       },
       {
@@ -150,7 +150,7 @@ const de: LegalSet = {
       {
         heading: "7. Anwendbares Recht",
         paragraphs: [
-          "Für diese Bedingungen gilt polnisches Recht; für Streitigkeiten ist das nach polnischem Recht zuständige Gericht zuständig. Verbrauchern bleibt der Schutz durch zwingende Vorschriften ihres Wohnsitzlandes erhalten. Fragen: dchaika.work@gmail.com.",
+          "Für diese Bedingungen gilt polnisches Recht; für Streitigkeiten ist das nach polnischem Recht zuständige Gericht zuständig. Verbrauchern bleibt der Schutz durch zwingende Vorschriften ihres Wohnsitzlandes erhalten. Fragen: isfleet.eu@gmail.com.",
         ],
       },
     ],
@@ -200,7 +200,7 @@ const de: LegalSet = {
       {
         heading: "Wenn Sie sich nicht anmelden können",
         paragraphs: [
-          "Wenn Sie den Zugang verloren haben und das Konto nicht selbst löschen können, senden Sie eine Anfrage an dchaika.work@gmail.com — von der Telefonnummer oder E-Mail-Adresse, die mit dem Konto verknüpft ist. Wir bearbeiten sie innerhalb von 30 Tagen.",
+          "Wenn Sie den Zugang verloren haben und das Konto nicht selbst löschen können, senden Sie eine Anfrage an isfleet.eu@gmail.com — von der Telefonnummer oder E-Mail-Adresse, die mit dem Konto verknüpft ist. Wir bearbeiten sie innerhalb von 30 Tagen.",
         ],
       },
     ],

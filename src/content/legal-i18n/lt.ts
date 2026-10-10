@@ -15,7 +15,7 @@ const lt: LegalSet = {
         heading: "1. Kas atsako už jūsų duomenis",
         paragraphs: [
           "Duomenų valdytojas yra Dmytro Chaika — fizinis asmuo, kuris kuria ir prižiūri IS Fleet. Korespondencijos adresas: ul. Zawidowska 11/4, Vroclavas, Lenkija.",
-          "Visais duomenų tvarkymo klausimais rašykite adresu dchaika.work@gmail.com.",
+          "Visais duomenų tvarkymo klausimais rašykite adresu isfleet.eu@gmail.com.",
           "Atkreipkite dėmesį: darbo duomenų (reisų, žinučių, dokumentų) valdytojas yra transporto įmonė — darbdavys, o Dmytro Chaika veikia kaip duomenų tvarkytojas pagal jos nurodymus.",
         ],
       },
@@ -73,7 +73,7 @@ const lt: LegalSet = {
         heading: "7. Jūsų teisės",
         paragraphs: [
           "Jei jums taikomas BDAR, turite teisę susipažinti su savo duomenimis, juos ištaisyti, ištrinti, apriboti jų tvarkymą ar nesutikti su juo, taip pat teisę į duomenų perkeliamumą.",
-          "Norėdami pasinaudoti šiomis teisėmis, rašykite adresu dchaika.work@gmail.com. Taip pat turite teisę pateikti skundą priežiūros institucijai: Lenkijoje tai Asmens duomenų apsaugos tarnybos pirmininkas (Prezes UODO), ul. Stawki 2, 00-193 Varšuva. Jei gyvenate kitoje ES šalyje, skundą galite pateikti savo gyvenamosios vietos institucijai.",
+          "Norėdami pasinaudoti šiomis teisėmis, rašykite adresu isfleet.eu@gmail.com. Taip pat turite teisę pateikti skundą priežiūros institucijai: Lenkijoje tai Asmens duomenų apsaugos tarnybos pirmininkas (Prezes UODO), ul. Stawki 2, 00-193 Varšuva. Jei gyvenate kitoje ES šalyje, skundą galite pateikti savo gyvenamosios vietos institucijai.",
         ],
       },
       {
@@ -150,7 +150,7 @@ const lt: LegalSet = {
       {
         heading: "7. Taikytina teisė",
         paragraphs: [
-          "Šioms sąlygoms taikoma Lenkijos teisė, o ginčus nagrinėja pagal Lenkijos teisę kompetentingas teismas. Tai neatima iš vartotojo apsaugos, kurią suteikia imperatyviosios jo gyvenamosios šalies teisės normos. Klausimai: dchaika.work@gmail.com.",
+          "Šioms sąlygoms taikoma Lenkijos teisė, o ginčus nagrinėja pagal Lenkijos teisę kompetentingas teismas. Tai neatima iš vartotojo apsaugos, kurią suteikia imperatyviosios jo gyvenamosios šalies teisės normos. Klausimai: isfleet.eu@gmail.com.",
         ],
       },
     ],
@@ -200,7 +200,7 @@ const lt: LegalSet = {
       {
         heading: "Jei nepavyksta prisijungti",
         paragraphs: [
-          "Jei praradote prieigą prie paskyros ir negalite jos ištrinti patys, išsiųskite prašymą adresu dchaika.work@gmail.com iš su paskyra susieto telefono numerio arba el. pašto. Prašymą išnagrinėsime per 30 dienų.",
+          "Jei praradote prieigą prie paskyros ir negalite jos ištrinti patys, išsiųskite prašymą adresu isfleet.eu@gmail.com iš su paskyra susieto telefono numerio arba el. pašto. Prašymą išnagrinėsime per 30 dienų.",
         ],
       },
     ],
