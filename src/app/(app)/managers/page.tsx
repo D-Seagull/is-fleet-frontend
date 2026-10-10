@@ -48,6 +48,8 @@ import {
 } from "@/hooks/use-managers";
 import { useAuthStore } from "@/store/auth";
 import { BackButton } from "@/components/back-button";
+import { SortableHead } from "@/components/sortable-head";
+import { useTableSort } from "@/lib/use-table-sort";
 
 export default function ManagersPage() {
   const t = useTranslations("managers");
@@ -106,6 +108,27 @@ export default function ManagersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [managers, searchQuery],
   );
+
+  // Click-to-sort columns (lib/use-table-sort), one per tab's table.
+  const {
+    sorted: sortedTeam,
+    sort: teamSort,
+    toggle: sortTeam,
+  } = useTableSort("managers-team", teamManagers, {
+    manager: (m) => fullName(m) || m.email,
+    email: (m) => m.email,
+    trucks: (m) => m.truckCount ?? 0,
+    rating: (m) => m.managerAverageRating,
+  });
+  const {
+    sorted: sortedAll,
+    sort: allSort,
+    toggle: sortAll,
+  } = useTableSort("managers-all", allManagers, {
+    manager: (m) => fullName(m) || m.email,
+    email: (m) => m.email,
+    teamlead: (m) => fullName(m.teamlead),
+  });
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -246,19 +269,21 @@ export default function ManagersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("colManager")}</TableHead>
-                    <TableHead className="hidden sm:table-cell">
+                    <SortableHead column="manager" sort={teamSort} onSort={sortTeam}>
+                      {t("colManager")}
+                    </SortableHead>
+                    <SortableHead column="email" sort={teamSort} onSort={sortTeam} className="hidden sm:table-cell">
                       {t("colEmail")}
-                    </TableHead>
+                    </SortableHead>
                     <TableHead className="hidden sm:table-cell">
                       {t("colPhone")}
                     </TableHead>
-                    <TableHead className="hidden md:table-cell">
+                    <SortableHead column="trucks" sort={teamSort} onSort={sortTeam} className="hidden md:table-cell">
                       {t("colTrucks")}
-                    </TableHead>
-                    <TableHead className="hidden md:table-cell">
+                    </SortableHead>
+                    <SortableHead column="rating" sort={teamSort} onSort={sortTeam} className="hidden md:table-cell">
                       {t("colRating")}
-                    </TableHead>
+                    </SortableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -272,7 +297,7 @@ export default function ManagersPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    teamManagers.map((m) => (
+                    sortedTeam.map((m) => (
                       <TableRow
                         key={m.id}
                         className="cursor-pointer"
@@ -357,13 +382,15 @@ export default function ManagersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("colManager")}</TableHead>
-                    <TableHead className="hidden sm:table-cell">
+                    <SortableHead column="manager" sort={allSort} onSort={sortAll}>
+                      {t("colManager")}
+                    </SortableHead>
+                    <SortableHead column="email" sort={allSort} onSort={sortAll} className="hidden sm:table-cell">
                       {t("colEmail")}
-                    </TableHead>
-                    <TableHead className="hidden md:table-cell">
+                    </SortableHead>
+                    <SortableHead column="teamlead" sort={allSort} onSort={sortAll} className="hidden md:table-cell">
                       {t("colTeamlead")}
-                    </TableHead>
+                    </SortableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -377,7 +404,7 @@ export default function ManagersPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    allManagers.map((m) => (
+                    sortedAll.map((m) => (
                       <TableRow
                         key={m.id}
                         className="cursor-pointer"

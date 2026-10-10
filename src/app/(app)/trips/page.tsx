@@ -43,6 +43,7 @@ import {
   tripLoadingDate,
   TRIP_STATUS_COLORS,
   type Trip,
+  type TripStatus,
 } from "@/hooks/use-trips";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
 import { useDocumentsByTrip } from "@/hooks/use-documents";
@@ -50,6 +51,8 @@ import { PhotoGallery } from "@/components/photo-gallery";
 import { BackButton } from "@/components/back-button";
 import { useAuthStore } from "@/store/auth";
 import { useConfirm } from "@/components/confirm-dialog";
+import { SortableHead } from "@/components/sortable-head";
+import { useTableSort } from "@/lib/use-table-sort";
 
 function StopsCell({ stops }: { stops: Trip["stops"] }) {
   if (stops.length === 0)
@@ -149,6 +152,16 @@ function DocsDropdown({ trip }: { trip: Trip }) {
 
 const COLS = 8;
 
+// Status column sorts in the trip's lifecycle order, not alphabetically.
+const TRIP_STATUS_ORDER: TripStatus[] = [
+  "ASSIGNED",
+  "ACCEPTED",
+  "ON_WAY",
+  "ON_SITE",
+  "LOADED",
+  "DELIVERED",
+];
+
 export default function TripsPage() {
   const t = useTranslations("trips");
   const tStatus = useTranslations("common.tripStatus");
@@ -218,6 +231,22 @@ export default function TripsPage() {
     });
   }, [trips, searchQuery, locale]);
 
+  // Click-to-sort columns (lib/use-table-sort). The trip column sorts by
+  // the date it shows: loading date, else created.
+  const {
+    sorted: sortedTrips,
+    sort: tripSort,
+    toggle: sortTrips,
+  } = useTableSort("trips", filtered, {
+    order: (tr) => tr.orderNumber,
+    date: (tr) => tripLoadingDate(tr) ?? tr.createdAt.slice(0, 10),
+    status: (tr) => TRIP_STATUS_ORDER.indexOf(tr.status),
+    truck: (tr) => tr.truck.plate,
+    driver: (tr) => fullName(tr.driver),
+    manager: (tr) => fullName(tr.manager),
+    files: (tr) => tr.documents.length,
+  });
+
   function toggle(tripId: string) {
     setExpandedId((prev) => (prev === tripId ? null : tripId));
   }
@@ -243,20 +272,24 @@ export default function TripsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="hidden sm:table-cell w-[100px]">
+              <SortableHead column="order" sort={tripSort} onSort={sortTrips} className="hidden sm:table-cell w-[100px]">
                 {t("colOrder")}
-              </TableHead>
-              <TableHead className="w-[160px]">{t("colTrip")}</TableHead>
-              <TableHead className="hidden md:table-cell w-[110px]">
+              </SortableHead>
+              <SortableHead column="date" sort={tripSort} onSort={sortTrips} className="w-[160px]">
+                {t("colTrip")}
+              </SortableHead>
+              <SortableHead column="status" sort={tripSort} onSort={sortTrips} className="hidden md:table-cell w-[110px]">
                 {t("colStatus")}
-              </TableHead>
-              <TableHead className="w-[90px]">{t("colTruck")}</TableHead>
-              <TableHead className="hidden md:table-cell w-[130px]">
+              </SortableHead>
+              <SortableHead column="truck" sort={tripSort} onSort={sortTrips} className="w-[90px]">
+                {t("colTruck")}
+              </SortableHead>
+              <SortableHead column="driver" sort={tripSort} onSort={sortTrips} className="hidden md:table-cell w-[130px]">
                 {t("colDriver")}
-              </TableHead>
-              <TableHead className="hidden lg:table-cell w-[130px]">
+              </SortableHead>
+              <SortableHead column="manager" sort={tripSort} onSort={sortTrips} className="hidden lg:table-cell w-[130px]">
                 {t("colManager")}
-              </TableHead>
+              </SortableHead>
               <TableHead className="hidden lg:table-cell">
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
@@ -316,7 +349,7 @@ export default function TripsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((trip) => {
+              sortedTrips.map((trip) => {
                 const isExpanded = expandedId === trip.id;
                 const hasDocs = trip.documents.length > 0;
                 const loadDate = tripLoadingDate(trip);
