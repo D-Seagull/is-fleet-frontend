@@ -668,6 +668,9 @@
     "documents": {
       "allTrips": "All trips ({count})",
       "tripPlaceholder": "Trip…",
+      "clearTrip": "Clear trip filter",
+      "uploadTo": "Upload to trip: {trip}",
+      "uploadPickTrip": "Choose a trip to upload to",
       "deleteConfirm": "Delete this document?",
       "deleteConfirmDesc": "This removes it for everyone and can't be undone.",
       "noAttachments": "No attachments yet",

@@ -668,6 +668,9 @@
     "documents": {
       "allTrips": "Все рейсы ({count})",
       "tripPlaceholder": "Рейс…",
+      "clearTrip": "Убрать фильтр рейса",
+      "uploadTo": "Загрузить в рейс: {trip}",
+      "uploadPickTrip": "Выберите рейс для загрузки",
       "deleteConfirm": "Удалить этот документ?",
       "deleteConfirmDesc": "Он исчезнет для всех, отменить нельзя.",
       "noAttachments": "Пока нет вложений",

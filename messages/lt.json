@@ -668,6 +668,9 @@
     "documents": {
       "allTrips": "Visi reisai ({count})",
       "tripPlaceholder": "Reisas…",
+      "clearTrip": "Išvalyti reiso filtrą",
+      "uploadTo": "Įkelti į reisą: {trip}",
+      "uploadPickTrip": "Pasirinkite reisą įkėlimui",
       "deleteConfirm": "Ištrinti šį dokumentą?",
       "deleteConfirmDesc": "Jis dings visiems ir to nebus galima atšaukti.",
       "noAttachments": "Kol kas nėra priedų",

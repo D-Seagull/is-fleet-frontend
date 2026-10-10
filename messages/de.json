@@ -668,6 +668,9 @@
     "documents": {
       "allTrips": "Alle Fahrten ({count})",
       "tripPlaceholder": "Fahrt…",
+      "clearTrip": "Fahrtfilter entfernen",
+      "uploadTo": "In Fahrt hochladen: {trip}",
+      "uploadPickTrip": "Fahrt zum Hochladen wählen",
       "deleteConfirm": "Dieses Dokument löschen?",
       "deleteConfirmDesc": "Es wird für alle entfernt und kann nicht rückgängig gemacht werden.",
       "noAttachments": "Noch keine Anhänge",

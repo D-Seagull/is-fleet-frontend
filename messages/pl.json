@@ -668,6 +668,9 @@
     "documents": {
       "allTrips": "Wszystkie trasy ({count})",
       "tripPlaceholder": "Trasa…",
+      "clearTrip": "Wyczyść filtr trasy",
+      "uploadTo": "Prześlij do trasy: {trip}",
+      "uploadPickTrip": "Wybierz trasę, do której przesłać",
       "deleteConfirm": "Usunąć ten dokument?",
       "deleteConfirmDesc": "Zniknie dla wszystkich i nie można tego cofnąć.",
       "noAttachments": "Brak załączników",
