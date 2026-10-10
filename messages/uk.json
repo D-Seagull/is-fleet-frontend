@@ -603,6 +603,7 @@
       "loadingStops": "Точки завантаження",
       "unloadingStops": "Точки розвантаження",
       "orderShortPlaceholder": "#замовлення",
+      "refLabel": "Реф",
       "reassign": {
         "title": "Перепризначити вантажівку",
         "subtitle": "{trip} · зараз {plate}",
@@ -667,6 +668,8 @@
     "documents": {
       "allTrips": "Усі рейси ({count})",
       "tripPlaceholder": "Рейс…",
+      "deleteConfirm": "Видалити цей документ?",
+      "deleteConfirmDesc": "Він зникне для всіх, цю дію не можна скасувати.",
       "noAttachments": "Ще немає вкладень",
       "searchPlaceholder": "Пошук за датою або № замовлення…",
       "colFile": "Файл",

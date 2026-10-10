@@ -603,6 +603,7 @@
       "loadingStops": "Pakrovimo taškai",
       "unloadingStops": "Iškrovimo taškai",
       "orderShortPlaceholder": "#užsakymas",
+      "refLabel": "Nuor.",
       "reassign": {
         "title": "Keisti vilkiką",
         "subtitle": "{trip} · dabar {plate}",
@@ -667,6 +668,8 @@
     "documents": {
       "allTrips": "Visi reisai ({count})",
       "tripPlaceholder": "Reisas…",
+      "deleteConfirm": "Ištrinti šį dokumentą?",
+      "deleteConfirmDesc": "Jis dings visiems ir to nebus galima atšaukti.",
       "noAttachments": "Kol kas nėra priedų",
       "searchPlaceholder": "Ieškoti pagal datą ar užsakymo nr…",
       "colFile": "Failas",

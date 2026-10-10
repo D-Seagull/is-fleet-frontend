@@ -38,6 +38,7 @@ import {
 } from "@/hooks/use-documents";
 import { useTripsByTruck } from "@/hooks/use-trips";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { useConfirm } from "@/components/confirm-dialog";
 import { shortenTripTitle } from "./utils";
 
 export function DocumentsTab({ truckId }: { truckId: string }) {
@@ -56,6 +57,18 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
   const { data: docs = [], isLoading } = useDocumentsByTruck(truckId);
   const upload = useUploadDocuments(truckId);
   const deleteDoc = useDeleteDocument(truckId);
+  const confirm = useConfirm();
+
+  async function handleDeleteDoc(id: string) {
+    const ok = await confirm({
+      title: t("deleteConfirm"),
+      description: t("deleteConfirmDesc"),
+      confirmText: tActions("delete"),
+      destructive: true,
+    });
+    if (!ok) return;
+    deleteDoc.mutate(id);
+  }
 
   const q = search.trim().toLowerCase();
   const filtered = docs.filter((d) => {
@@ -263,7 +276,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                           <Download className="h-3.5 w-3.5 text-muted-foreground" />
                         </button>
                         <button
-                          onClick={() => deleteDoc.mutate(doc.id)}
+                          onClick={() => handleDeleteDoc(doc.id)}
                           title={tActions("delete")}
                           className="p-1 rounded hover:bg-muted"
                         >

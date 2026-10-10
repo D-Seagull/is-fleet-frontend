@@ -603,6 +603,7 @@
       "loadingStops": "Beladestellen",
       "unloadingStops": "Entladestellen",
       "orderShortPlaceholder": "#Bestellung",
+      "refLabel": "Ref",
       "reassign": {
         "title": "Fahrzeug wechseln",
         "subtitle": "{trip} · aktuell {plate}",
@@ -667,6 +668,8 @@
     "documents": {
       "allTrips": "Alle Fahrten ({count})",
       "tripPlaceholder": "Fahrt…",
+      "deleteConfirm": "Dieses Dokument löschen?",
+      "deleteConfirmDesc": "Es wird für alle entfernt und kann nicht rückgängig gemacht werden.",
       "noAttachments": "Noch keine Anhänge",
       "searchPlaceholder": "Nach Datum oder Bestell-Nr suchen…",
       "colFile": "Datei",

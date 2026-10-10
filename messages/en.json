@@ -603,6 +603,7 @@
       "loadingStops": "Loading stops",
       "unloadingStops": "Unloading stops",
       "orderShortPlaceholder": "#order",
+      "refLabel": "Ref",
       "reassign": {
         "title": "Reassign truck",
         "subtitle": "{trip} · currently {plate}",
@@ -667,6 +668,8 @@
     "documents": {
       "allTrips": "All trips ({count})",
       "tripPlaceholder": "Trip…",
+      "deleteConfirm": "Delete this document?",
+      "deleteConfirmDesc": "This removes it for everyone and can't be undone.",
       "noAttachments": "No attachments yet",
       "searchPlaceholder": "Search by date or order #…",
       "colFile": "File",
