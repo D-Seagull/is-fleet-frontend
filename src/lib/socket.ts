@@ -17,9 +17,13 @@ export function getSocket(): Socket {
       // WS gives near-instant delivery; polling adds ~1-2s per cycle.
       transports: ["websocket", "polling"],
       autoConnect: true,
+      // Never give up: after a backend deploy, a sleeping laptop or a dropped
+      // network, a capped retry count left the socket dead for good — live
+      // updates (trip status badges, chats) then only came back on reload.
       reconnection: true,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 2000,
+      reconnectionDelayMax: 10_000,
     });
 
     if (process.env.NODE_ENV !== "production") {
