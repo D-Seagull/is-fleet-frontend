@@ -84,7 +84,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         heading: "1. Хто відповідає за ваші дані",
         paragraphs: [
           "Оператором даних є Дмитро Чайка (Dmytro Chaika) — фізична особа, яка розробляє та підтримує IS Fleet. Адреса для кореспонденції: вул. Zawidowska 11/4, Вроцлав, Польща.",
-          "З будь-яких питань щодо обробки даних пишіть на dchaika.work@gmail.com.",
+          "З будь-яких питань щодо обробки даних пишіть на isfleet.eu@gmail.com.",
           "Зверніть увагу: щодо робочих даних працівника (рейси, повідомлення, документи) оператором виступає транспортна компанія-роботодавець, а Дмитро Чайка діє як постачальник послуги (обробник) за її дорученням.",
         ],
       },
@@ -142,7 +142,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         heading: "7. Ваші права",
         paragraphs: [
           "Якщо до вас застосовується GDPR, ви маєте право на доступ до своїх даних, їх виправлення, видалення, обмеження чи заперечення проти обробки, а також на перенесення даних.",
-          "Щоб скористатися цими правами, напишіть на dchaika.work@gmail.com. Ви також маєте право подати скаргу до наглядового органу: у Польщі це Prezes Urzędu Ochrony Danych Osobowych (UODO), вул. Stawki 2, 00-193 Варшава. Якщо ви проживаєте в іншій країні ЄС, скаргу можна подати до органу за місцем проживання.",
+          "Щоб скористатися цими правами, напишіть на isfleet.eu@gmail.com. Ви також маєте право подати скаргу до наглядового органу: у Польщі це Prezes Urzędu Ochrony Danych Osobowych (UODO), вул. Stawki 2, 00-193 Варшава. Якщо ви проживаєте в іншій країні ЄС, скаргу можна подати до органу за місцем проживання.",
         ],
       },
       {
@@ -179,7 +179,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         heading: "1. Who is responsible for your data",
         paragraphs: [
           "The data controller is Dmytro Chaika, a private individual who develops and runs IS Fleet. Correspondence address: ul. Zawidowska 11/4, Wrocław, Poland.",
-          "For any question about how your data is handled, write to dchaika.work@gmail.com.",
+          "For any question about how your data is handled, write to isfleet.eu@gmail.com.",
           "Note that for work records (trips, messages, documents) the employing transport company is the controller, and Dmytro Chaika acts as a processor on its instructions.",
         ],
       },
@@ -237,7 +237,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         heading: "7. Your rights",
         paragraphs: [
           "Where GDPR applies to you, you have the right to access your data, to have it corrected or erased, to restrict or object to its processing, and to data portability.",
-          "To exercise any of these, write to dchaika.work@gmail.com. You also have the right to lodge a complaint with a supervisory authority: in Poland this is the President of the Personal Data Protection Office (UODO), ul. Stawki 2, 00-193 Warsaw. If you live in another EU country, you may complain to the authority where you reside.",
+          "To exercise any of these, write to isfleet.eu@gmail.com. You also have the right to lodge a complaint with a supervisory authority: in Poland this is the President of the Personal Data Protection Office (UODO), ul. Stawki 2, 00-193 Warsaw. If you live in another EU country, you may complain to the authority where you reside.",
         ],
       },
       {
@@ -322,7 +322,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
       {
         heading: "7. Право, що застосовується",
         paragraphs: [
-          "До цих умов застосовується право Польщі, а спори розглядає суд, компетентний за польським законодавством. Це не позбавляє споживача захисту, який надають імперативні норми країни його проживання. Питання — на dchaika.work@gmail.com.",
+          "До цих умов застосовується право Польщі, а спори розглядає суд, компетентний за польським законодавством. Це не позбавляє споживача захисту, який надають імперативні норми країни його проживання. Питання — на isfleet.eu@gmail.com.",
         ],
       },
     ],
@@ -378,7 +378,7 @@ export const TERMS: Record<LegalLocale, LegalDoc> = {
       {
         heading: "7. Governing law",
         paragraphs: [
-          "These terms are governed by Polish law, and disputes are heard by the court competent under Polish law. This does not deprive a consumer of the protection of mandatory rules in their country of residence. Questions: dchaika.work@gmail.com.",
+          "These terms are governed by Polish law, and disputes are heard by the court competent under Polish law. This does not deprive a consumer of the protection of mandatory rules in their country of residence. Questions: isfleet.eu@gmail.com.",
         ],
       },
     ],
@@ -438,7 +438,7 @@ export const DELETE_ACCOUNT: Record<LegalLocale, LegalDoc> = {
       {
         heading: "Якщо не вдається увійти",
         paragraphs: [
-          "Якщо ви втратили доступ до акаунта й не можете видалити його самостійно, надішліть запит на dchaika.work@gmail.com з номера телефону або email, прив'язаного до акаунта. Ми обробимо запит протягом 30 днів.",
+          "Якщо ви втратили доступ до акаунта й не можете видалити його самостійно, надішліть запит на isfleet.eu@gmail.com з номера телефону або email, прив'язаного до акаунта. Ми обробимо запит протягом 30 днів.",
         ],
       },
     ],
@@ -487,7 +487,7 @@ export const DELETE_ACCOUNT: Record<LegalLocale, LegalDoc> = {
       {
         heading: "If you cannot sign in",
         paragraphs: [
-          "If you have lost access and cannot delete the account yourself, send a request to dchaika.work@gmail.com from the phone number or email linked to the account. We will process it within 30 days.",
+          "If you have lost access and cannot delete the account yourself, send a request to isfleet.eu@gmail.com from the phone number or email linked to the account. We will process it within 30 days.",
         ],
       },
     ],

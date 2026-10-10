@@ -6,7 +6,6 @@ import {
   ChevronDown,
   ChevronUp,
   FolderOpen,
-  MapPin,
   Hash,
   Clock,
   Loader2,
@@ -63,6 +62,13 @@ import {
   formatStopWindow,
   extractPostcodeCity,
 } from "./utils";
+
+/** Fill colour for the numbered timeline dot, matching stopTypeColor's hue. */
+function stopDotBg(type: StopType): string {
+  if (type === "LOADING") return "bg-emerald-600";
+  if (type === "UNLOADING") return "bg-red-500";
+  return "bg-amber-600";
+}
 
 /** Назва рейсу з адрес: перше завантаження → останнє розвантаження. */
 function deriveTripTitle(rows: StopRowData[]): string {
@@ -320,40 +326,65 @@ export function TripInfoCard({
         </div>
 
         {!collapsed && (
-          <>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-muted-foreground">
-              {stops.map((s) => (
-                <div key={s.id} className="flex flex-col gap-0.5">
-                  <span
-                    className={cn(
-                      "flex items-center gap-1 font-medium",
-                      stopTypeColor(s.type),
-                    )}
-                  >
-                    <MapPin className="h-3 w-3" />
-                    {stopLabel(s)}
-                  </span>
-                  {s.address && <span>{s.address}</span>}
-                  {s.ref && (
-                    <span className="flex items-center gap-1">
-                      <Hash className="h-3 w-3" /> {s.ref}
-                    </span>
-                  )}
-                  {s.coords && <CoordsCell coords={s.coords} />}
-                  {formatStopWindow(s) && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> {formatStopWindow(s)}
-                    </span>
-                  )}
-                </div>
-              ))}
+          <div className="flex flex-col gap-3 md:flex-row md:gap-6">
+            {/* Vertical timeline — stops in route order, newest journey reads
+                straight down. Numbered colour dots connected by a rail. */}
+            <div className="flex flex-col md:min-w-0 md:flex-1">
+              {stops.map((s, i) => {
+                const isLast = i === stops.length - 1;
+                return (
+                  <div key={s.id} className="flex gap-2.5">
+                    <div className="flex flex-col items-center">
+                      <span
+                        className={cn(
+                          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white",
+                          stopDotBg(s.type),
+                        )}
+                      >
+                        {i + 1}
+                      </span>
+                      {!isLast && (
+                        <span className="my-0.5 w-px flex-1 bg-border" />
+                      )}
+                    </div>
+                    <div
+                      className={cn(
+                        "flex min-w-0 flex-col gap-0.5 text-xs text-muted-foreground",
+                        !isLast && "pb-3",
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span
+                          className={cn("font-medium", stopTypeColor(s.type))}
+                        >
+                          {stopLabel(s)}
+                        </span>
+                        {formatStopWindow(s) && (
+                          <span className="flex shrink-0 items-center gap-1 whitespace-nowrap">
+                            <Clock className="h-3 w-3" /> {formatStopWindow(s)}
+                          </span>
+                        )}
+                      </div>
+                      {s.address && (
+                        <span className="break-words">{s.address}</span>
+                      )}
+                      {s.ref && (
+                        <span className="flex items-center gap-1">
+                          <Hash className="h-3 w-3" /> {s.ref}
+                        </span>
+                      )}
+                      {s.coords && <CoordsCell coords={s.coords} />}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             {trip.notes && (
-              <p className="text-xs text-muted-foreground border-t pt-2">
+              <p className="text-xs text-muted-foreground border-t pt-2 whitespace-pre-wrap break-words md:w-1/3 md:shrink-0 md:border-l md:border-t-0 md:pl-4 md:pt-0">
                 {trip.notes}
               </p>
             )}
-          </>
+          </div>
         )}
       </div>
 
