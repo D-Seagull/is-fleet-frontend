@@ -2,10 +2,12 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { AlertCircle, Truck, X } from "lucide-react";
 import { getSocket } from "@/lib/socket";
+import { truckHref } from "@/lib/truck-link";
 import { showMessageNotification } from "@/lib/desktop-notify";
 import { cn } from "@/lib/utils";
 import type { TripStatus } from "@/hooks/use-trips";
@@ -40,6 +42,7 @@ const BANNER_BG: Record<TripStatus, string> = {
  */
 export function TripStatusNotices() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const tStatus = useTranslations("common.tripStatus");
   const t = useTranslations("notifications");
 
@@ -51,7 +54,7 @@ export function TripStatusNotices() {
         n.kind === "NOT_DEPARTED"
           ? t("tripNotDeparted", { name: n.driverName })
           : `${n.driverName ? `${n.driverName}: ` : ""}${tStatus(n.status)}`;
-      const open = () => router.push(`/trucks/${n.truckId}`);
+      const open = () => router.push(truckHref(queryClient, n.truckId));
 
       toast.custom(
         (id) => (
@@ -99,7 +102,7 @@ export function TripStatusNotices() {
     return () => {
       socket.off("tripStatusNotice", onNotice);
     };
-  }, [router, t, tStatus]);
+  }, [router, t, tStatus, queryClient]);
 
   return null;
 }

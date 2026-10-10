@@ -2,7 +2,9 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { getSocket } from "@/lib/socket";
+import { truckHref } from "@/lib/truck-link";
 import { useAuthStore } from "@/store/auth";
 import { fullName } from "@/lib/format";
 import {
@@ -51,6 +53,7 @@ type IncomingSender = {
 export function useChatSoundSync() {
   const meId = useAuthStore((s) => s.user?.id);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!meId) return;
@@ -107,7 +110,7 @@ export function useChatSoundSync() {
         title: sig.senderName,
         body: sig.content?.trim() || "📎 Attachment",
         onClick: () => {
-          if (sig.truckId) router.push(`/trucks/${sig.truckId}?tab=chat`);
+          if (sig.truckId) router.push(truckHref(queryClient, sig.truckId));
         },
       });
     };
@@ -122,5 +125,5 @@ export function useChatSoundSync() {
       socket.off("group_added", onGroupAdded);
       socket.off("tripUnreadChanged", onTripMessage);
     };
-  }, [meId, router]);
+  }, [meId, router, queryClient]);
 }

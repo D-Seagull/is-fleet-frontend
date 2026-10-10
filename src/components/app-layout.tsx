@@ -8,6 +8,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { truckHref } from "@/lib/truck-link";
+import { useQueryClient } from "@tanstack/react-query";
 import { BrandLogo } from "@/components/brand-logo";
 import { TruckSwappedNotice } from "@/components/truck-swapped-notice";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -97,6 +99,7 @@ function TaskbarBadge({ count }: { count: number }) {
 
 function UnreadBell() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const t = useTranslations("notifications");
   const tRoles = useTranslations("common.roles");
   const dfLocale = dateFnsLocale(useLocale());
@@ -150,7 +153,7 @@ function UnreadBell() {
                   className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors"
                   onClick={() => {
                     const tab = item.activeTripUnread > 0 ? "chat" : "trips";
-                    router.push(`/trucks/${item.truckId}?tab=${tab}`);
+                    router.push(truckHref(queryClient, item.truckId, tab));
                   }}
                 >
                   <div className="flex items-center justify-between gap-2">
