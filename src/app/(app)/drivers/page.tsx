@@ -45,6 +45,8 @@ import {
 } from "@/hooks/use-drivers";
 import { useAuthStore } from "@/store/auth";
 import { BackButton } from "@/components/back-button";
+import { SortableHead } from "@/components/sortable-head";
+import { useTableSort } from "@/lib/use-table-sort";
 
 const LANGUAGE_KEYS: Language[] = [
   "UK",
@@ -95,6 +97,19 @@ export default function DriversPage() {
       (fullName(d.manager)?.toLowerCase().includes(q) ?? false) ||
       (d.currentTruck?.plate.toLowerCase().includes(q) ?? false)
     );
+  });
+
+  // Click-to-sort columns (lib/use-table-sort).
+  const {
+    sorted: sortedDrivers,
+    sort: driverSort,
+    toggle: sortDrivers,
+  } = useTableSort("drivers", filteredDrivers, {
+    driver: (d) => fullName(d),
+    language: (d) => d.language,
+    manager: (d) => fullName(d.manager),
+    truck: (d) => d.currentTruck?.plate,
+    rating: (d) => d.averageRating,
   });
 
   const cleanedPhone = normalizePhoneForCheck(phone);
@@ -319,20 +334,24 @@ export default function DriversPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("colDriver")}</TableHead>
+                  <SortableHead column="driver" sort={driverSort} onSort={sortDrivers}>
+                    {t("colDriver")}
+                  </SortableHead>
                   <TableHead className="hidden sm:table-cell">
                     {t("colPhone")}
                   </TableHead>
-                  <TableHead className="hidden md:table-cell">
+                  <SortableHead column="language" sort={driverSort} onSort={sortDrivers} className="hidden md:table-cell">
                     {t("colLanguage")}
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell">
+                  </SortableHead>
+                  <SortableHead column="manager" sort={driverSort} onSort={sortDrivers} className="hidden md:table-cell">
                     {t("colManager")}
-                  </TableHead>
-                  <TableHead>{t("colTruck")}</TableHead>
-                  <TableHead className="hidden sm:table-cell">
+                  </SortableHead>
+                  <SortableHead column="truck" sort={driverSort} onSort={sortDrivers}>
+                    {t("colTruck")}
+                  </SortableHead>
+                  <SortableHead column="rating" sort={driverSort} onSort={sortDrivers} className="hidden sm:table-cell">
                     {t("colRating")}
-                  </TableHead>
+                  </SortableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -349,7 +368,7 @@ export default function DriversPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredDrivers.map((driver) => (
+                  sortedDrivers.map((driver) => (
                     <TableRow
                       key={driver.id}
                       className="cursor-pointer"

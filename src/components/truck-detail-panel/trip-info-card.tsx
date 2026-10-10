@@ -326,7 +326,10 @@ export function TripInfoCard({
         </div>
 
         {!collapsed && (
-          <div className="flex flex-col gap-3 md:flex-row md:gap-6">
+          <div
+            className="flex cursor-auto select-text flex-col gap-3 md:flex-row md:gap-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Vertical timeline — stops in route order, newest journey reads
                 straight down. Numbered colour dots connected by a rail. */}
             <div className="flex flex-col md:min-w-0 md:flex-1">
@@ -353,9 +356,12 @@ export function TripInfoCard({
                         !isLast && "pb-3",
                       )}
                     >
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
                         <span
-                          className={cn("font-medium", stopTypeColor(s.type))}
+                          className={cn(
+                            "min-w-[7rem] shrink-0 font-medium",
+                            stopTypeColor(s.type),
+                          )}
                         >
                           {stopLabel(s)}
                         </span>
@@ -370,10 +376,14 @@ export function TripInfoCard({
                       )}
                       {s.ref && (
                         <span className="flex items-center gap-1">
-                          <Hash className="h-3 w-3" /> {s.ref}
+                          <Hash className="h-3 w-3" /> {t("refLabel")}: {s.ref}
                         </span>
                       )}
-                      {s.coords && <CoordsCell coords={s.coords} />}
+                      {s.coords && (
+                        <div className="mt-1">
+                          <CoordsCell coords={s.coords} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

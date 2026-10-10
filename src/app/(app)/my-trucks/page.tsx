@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2, Truck, ChevronRight, Megaphone, BookTemplate, Trash2, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -306,6 +306,15 @@ function BroadcastDialog() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MyTrucksPage() {
+  // useSearchParams needs a Suspense boundary in the App Router.
+  return (
+    <Suspense>
+      <MyTrucksContent />
+    </Suspense>
+  );
+}
+
+function MyTrucksContent() {
   const t = useTranslations("myTrucks");
   const router = useRouter();
   const { setOpen, isMobile } = useSidebar();
@@ -321,7 +330,14 @@ export default function MyTrucksPage() {
       ((unreadByTruck[a.id]?.totalUnread ?? 0) > 0 ? 0 : 1) -
       ((unreadByTruck[b.id]?.totalUnread ?? 0) > 0 ? 0 : 1)
   );
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // `?truck=<id>&tab=<tab>`: open with that truck selected — the way back
+  // from the full-screen truck page (opened from a notification) to this
+  // split view, still on the same truck and tab.
+  const searchParams = useSearchParams();
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    searchParams.get("truck"),
+  );
+  const initialTab = searchParams.get("tab") ?? undefined;
 
   useEffect(() => {
     if (!isMobile) {
@@ -330,9 +346,11 @@ export default function MyTrucksPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // auto-select first truck on desktop
+  // auto-select first truck on desktop — also when `?truck=` names one that
+  // isn't (or is no longer) among this manager's trucks.
   useEffect(() => {
-    if (!isMobile && trucks && trucks.length > 0 && !selectedId) {
+    if (isMobile || !trucks || trucks.length === 0) return;
+    if (!selectedId || !trucks.some((tr) => tr.id === selectedId)) {
       setSelectedId(trucks[0].id);
     }
   }, [isMobile, trucks, selectedId]);
@@ -402,7 +420,14 @@ export default function MyTrucksPage() {
 
       <div className="flex-1 min-w-0 overflow-hidden">
         {selectedId ? (
-          <TruckDetailPanel key={selectedId} truckId={selectedId} />
+          <TruckDetailPanel
+            key={selectedId}
+            truckId={selectedId}
+            // Only the truck we came back to keeps the tab it was on.
+            defaultTab={
+              selectedId === searchParams.get("truck") ? initialTab : undefined
+            }
+          />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
             {t("selectPrompt")}

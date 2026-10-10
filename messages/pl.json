@@ -603,6 +603,7 @@
       "loadingStops": "Punkty załadunku",
       "unloadingStops": "Punkty rozładunku",
       "orderShortPlaceholder": "#zamówienie",
+      "refLabel": "Ref",
       "reassign": {
         "title": "Zmień pojazd",
         "subtitle": "{trip} · obecnie {plate}",
@@ -667,6 +668,11 @@
     "documents": {
       "allTrips": "Wszystkie trasy ({count})",
       "tripPlaceholder": "Trasa…",
+      "clearTrip": "Wyczyść filtr trasy",
+      "uploadTo": "Prześlij do trasy: {trip}",
+      "uploadPickTrip": "Wybierz trasę, do której przesłać",
+      "deleteConfirm": "Usunąć ten dokument?",
+      "deleteConfirmDesc": "Zniknie dla wszystkich i nie można tego cofnąć.",
       "noAttachments": "Brak załączników",
       "searchPlaceholder": "Szukaj po dacie lub nr zamówienia…",
       "colFile": "Plik",

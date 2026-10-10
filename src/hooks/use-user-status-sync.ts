@@ -187,32 +187,36 @@ export function useUserStatusSync() {
         },
       );
 
-      // 9) Trucks list — currentDriver / manager may be this user.
-      queryClient.setQueriesData<unknown>(
-        { queryKey: ["trucks"] },
-        (data: unknown) => {
-          if (!Array.isArray(data)) return data;
-          let changed = false;
-          const next = data.map(
-            (t: {
-              currentDriver?: { id: string } | null;
-              manager?: { id: string } | null;
-            }) => {
-              let updated = t;
-              if (t.currentDriver?.id === evt.userId) {
-                updated = { ...updated, currentDriver: patchUser(t.currentDriver as never) };
-                changed = true;
-              }
-              if (t.manager?.id === evt.userId) {
-                updated = { ...updated, manager: patchUser(t.manager as never) };
-                changed = true;
-              }
-              return updated;
-            },
-          );
-          return changed ? next : data;
-        },
-      );
+      // 9) Truck lists — currentDriver / manager may be this user. All three
+      //    keys: "My Trucks" (`trucks-my`) was missing, so a driver's dot in
+      //    that column only changed on reload while the trip chat was live.
+      for (const key of [["trucks"], ["trucks-my"], ["trucks-deactivated"]]) {
+        queryClient.setQueriesData<unknown>(
+          { queryKey: key },
+          (data: unknown) => {
+            if (!Array.isArray(data)) return data;
+            let changed = false;
+            const next = data.map(
+              (t: {
+                currentDriver?: { id: string } | null;
+                manager?: { id: string } | null;
+              }) => {
+                let updated = t;
+                if (t.currentDriver?.id === evt.userId) {
+                  updated = { ...updated, currentDriver: patchUser(t.currentDriver as never) };
+                  changed = true;
+                }
+                if (t.manager?.id === evt.userId) {
+                  updated = { ...updated, manager: patchUser(t.manager as never) };
+                  changed = true;
+                }
+                return updated;
+              },
+            );
+            return changed ? next : data;
+          },
+        );
+      }
 
       // 10) Truck detail panel (`["trucks", id]`) — same shape.
       queryClient.setQueriesData<unknown>(

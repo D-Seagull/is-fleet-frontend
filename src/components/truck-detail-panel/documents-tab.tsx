@@ -10,18 +10,11 @@ import {
   Eye,
   Trash2,
   Search,
+  X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -38,6 +31,9 @@ import {
 } from "@/hooks/use-documents";
 import { useTripsByTruck } from "@/hooks/use-trips";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { useConfirm } from "@/components/confirm-dialog";
+import { cn } from "@/lib/utils";
+import { ACTIVE_STATUSES } from "./constants";
 import { shortenTripTitle } from "./utils";
 
 export function DocumentsTab({ truckId }: { truckId: string }) {
@@ -45,24 +41,40 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
   const tActions = useTranslations("common.actions");
   const locale = useLocale();
   const { data: trips = [] } = useTripsByTruck(truckId);
-  const [tripFilter, setTripFilter] = useState<string>("all");
+  // One field does both: focused while empty it lists the truck's trips —
+  // picking one filters to it (shown as a chip) — and typed text searches by
+  // date / order # / file name.
+  const [tripFilter, setTripFilter] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [uploadTripId, setUploadTripId] = useState<string>("");
+  const [tripListOpen, setTripListOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   // Index into `galleryPhotos` of the photo open in the gallery, or null.
   const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
 
   const { data: docs = [], isLoading } = useDocumentsByTruck(truckId);
   const upload = useUploadDocuments(truckId);
   const deleteDoc = useDeleteDocument(truckId);
+  const confirm = useConfirm();
+
+  async function handleDeleteDoc(id: string) {
+    const ok = await confirm({
+      title: t("deleteConfirm"),
+      description: t("deleteConfirmDesc"),
+      confirmText: tActions("delete"),
+      destructive: true,
+    });
+    if (!ok) return;
+    deleteDoc.mutate(id);
+  }
 
   const q = search.trim().toLowerCase();
   const filtered = docs.filter((d) => {
     // Deleted files (incl. ones gone from storage — the backend marks those
     // deleted and sends signedUrl "") can't be viewed or downloaded.
     if (d.deletedAt || !d.signedUrl) return false;
-    if (tripFilter !== "all" && d.tripId !== tripFilter) return false;
+    if (tripFilter && d.tripId !== tripFilter) return false;
     if (!q) return true;
     // Search by date (localized + ISO), order number and file name.
     const dateStr =
@@ -87,8 +99,37 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
     else openDoc(doc.id, doc.fileName);
   };
 
+  // Live files per trip, for the counts in the trip list.
+  const liveCount = (tripId: string) =>
+    docs.filter((d) => d.tripId === tripId && !d.deletedAt && d.signedUrl)
+      .length;
+  const selectedTrip = trips.find((tr) => tr.id === tripFilter) ?? null;
+  const tripLabel = (tr: (typeof trips)[number]) =>
+    `${shortenTripTitle(tr.title)}${tr.orderNumber ? ` · #${tr.orderNumber}` : ""}`;
+
+  // "+" uploads to the trip picked in the field; with none picked, to the
+  // truck's only active trip. Otherwise it opens the list to choose one.
+  const activeTrips = trips.filter((tr) => ACTIVE_STATUSES.includes(tr.status));
+  const uploadTrip =
+    selectedTrip ?? (activeTrips.length === 1 ? activeTrips[0] : null);
+
+  function pickTrip(id: string | null) {
+    setTripFilter(id);
+    setTripListOpen(false);
+  }
+
+  function onAddClick() {
+    if (uploadTrip) {
+      fileInputRef.current?.click();
+    } else {
+      searchRef.current?.focus();
+      setTripListOpen(true);
+    }
+  }
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
+    const uploadTripId = uploadTrip?.id;
     if (!files.length || !uploadTripId) return;
     setUploading(true);
     try {
@@ -108,58 +149,109 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
         onDownload={(photo) => downloadDoc(photo.id)}
       />
 
-      {/* Search by date / order # / file name */}
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          placeholder={t("searchPlaceholder")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-8 h-8 text-xs"
-        />
-      </div>
-
-      {/* Upload row */}
+      {/* Search + trip picker in one field, upload next to it */}
       <div className="flex items-center gap-2">
-        <Select value={tripFilter} onValueChange={setTripFilter}>
-          <SelectTrigger className="h-8 text-xs flex-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">
-              {t("allTrips", { count: docs.length })}
-            </SelectItem>
-            {trips.map((trip) => {
-              const count = docs.filter((d) => d.tripId === trip.id).length;
-              return (
-                <SelectItem key={trip.id} value={trip.id}>
-                  {shortenTripTitle(trip.title)}
-                  {trip.orderNumber && ` · #${trip.orderNumber}`}
-                  {count > 0 && ` (${count})`}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
-        <Select value={uploadTripId} onValueChange={setUploadTripId}>
-          <SelectTrigger className="h-8 text-xs w-[130px] shrink-0">
-            <SelectValue placeholder={t("tripPlaceholder")} />
-          </SelectTrigger>
-          <SelectContent>
-            {trips.map((trip) => (
-              <SelectItem key={trip.id} value={trip.id}>
-                {trip.orderNumber
-                  ? `#${trip.orderNumber}`
-                  : shortenTripTitle(trip.title)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="relative flex-1 min-w-0">
+          <div
+            className={cn(
+              "flex h-8 items-center gap-1.5 rounded-md border bg-transparent px-2.5 text-xs shadow-xs dark:bg-input/30",
+              "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
+            )}
+            onClick={() => searchRef.current?.focus()}
+          >
+            <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            {selectedTrip && (
+              <span className="flex max-w-[60%] shrink-0 items-center gap-1 rounded bg-muted px-1.5 py-0.5">
+                <span className="truncate">{tripLabel(selectedTrip)}</span>
+                <button
+                  type="button"
+                  aria-label={t("clearTrip")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    pickTrip(null);
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            <input
+              ref={searchRef}
+              value={search}
+              placeholder={selectedTrip ? "" : t("searchPlaceholder")}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setTripListOpen(e.target.value === "");
+              }}
+              onFocus={() => setTripListOpen(search === "")}
+              onBlur={() => setTripListOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setTripListOpen(false);
+                if (e.key === "Backspace" && !search && selectedTrip) {
+                  pickTrip(null);
+                }
+              }}
+              className="h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+
+          {/* Trip list: shown on focus until something is typed */}
+          {tripListOpen && trips.length > 0 && (
+            <div
+              className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+              // Keep focus in the field, so the click lands before blur.
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <button
+                type="button"
+                onClick={() => pickTrip(null)}
+                className={cn(
+                  "flex w-full items-center rounded px-2 py-1.5 text-left text-xs hover:bg-accent",
+                  !tripFilter && "font-medium",
+                )}
+              >
+                {t("allTrips", {
+                  count: docs.filter((d) => !d.deletedAt && d.signedUrl).length,
+                })}
+              </button>
+              {trips.map((tr) => (
+                <button
+                  key={tr.id}
+                  type="button"
+                  onClick={() => pickTrip(tr.id)}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-accent",
+                    tr.id === tripFilter && "bg-accent font-medium",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "h-2 w-2 shrink-0 rounded-full",
+                      ACTIVE_STATUSES.includes(tr.status)
+                        ? "bg-emerald-500"
+                        : "bg-muted-foreground/40",
+                    )}
+                  />
+                  <span className="flex-1 truncate">{tripLabel(tr)}</span>
+                  <span className="shrink-0 text-muted-foreground">
+                    {liveCount(tr.id)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <Button
           size="sm"
           className="h-8 shrink-0 px-3"
-          disabled={!uploadTripId || uploading}
-          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading || trips.length === 0}
+          title={
+            uploadTrip
+              ? t("uploadTo", { trip: tripLabel(uploadTrip) })
+              : t("uploadPickTrip")
+          }
+          onClick={onAddClick}
         >
           {uploading ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -263,7 +355,7 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
                           <Download className="h-3.5 w-3.5 text-muted-foreground" />
                         </button>
                         <button
-                          onClick={() => deleteDoc.mutate(doc.id)}
+                          onClick={() => handleDeleteDoc(doc.id)}
                           title={tActions("delete")}
                           className="p-1 rounded hover:bg-muted"
                         >

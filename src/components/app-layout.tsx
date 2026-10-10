@@ -40,6 +40,7 @@ import {
 } from "@/hooks/use-group-unread";
 import { useTruckChangedSync } from "@/hooks/use-trucks";
 import { useTripUpdatedSync } from "@/hooks/use-trips";
+import { useSocketResync } from "@/hooks/use-socket-resync";
 import { useTabVisibilityPresence } from "@/hooks/use-tab-visibility-presence";
 import { useBrowserTimezoneSync } from "@/hooks/use-timezone-sync";
 import { useUserStatusSync } from "@/hooks/use-user-status-sync";
@@ -301,6 +302,8 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   // Live trip-status sync — a trip change (status/info/driver) refreshes the
   // truck lists too, so a truck card's status badge updates without a reload.
   useTripUpdatedSync();
+  // Socket never stays dead, and refetches what it missed while it was.
+  useSocketResync();
 
   const { data: myTrucks } = useMyTrucks();
   const hasMyTrucks = (myTrucks?.length ?? 0) > 0;

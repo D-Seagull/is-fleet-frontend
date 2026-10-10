@@ -67,6 +67,8 @@ import {
 } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
 import { BackButton } from "@/components/back-button";
+import { SortableHead } from "@/components/sortable-head";
+import { useTableSort } from "@/lib/use-table-sort";
 
 const statusColors: Record<TruckStatus, string> = {
   AVAILABLE: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
@@ -74,6 +76,9 @@ const statusColors: Record<TruckStatus, string> = {
   REPAIR: "bg-red-500/10 text-red-600 border-red-500/20",
 };
 
+
+// Status column sorts in workflow order, not alphabetically.
+const TRUCK_STATUS_ORDER: TruckStatus[] = ["AVAILABLE", "ON_TRIP", "REPAIR"];
 
 export default function TrucksPage() {
   const t = useTranslations("trucks");
@@ -114,6 +119,18 @@ export default function TrucksPage() {
       (fullName(truck.currentDriver)?.toLowerCase().includes(q) ?? false) ||
       (truck.currentDriver?.phone?.includes(searchQuery) ?? false)
     );
+  });
+
+  // Click-to-sort columns (lib/use-table-sort).
+  const {
+    sorted: sortedTrucks,
+    sort: truckSort,
+    toggle: sortTrucks,
+  } = useTableSort("trucks", filteredTrucks, {
+    plate: (tr) => tr.plate,
+    status: (tr) => TRUCK_STATUS_ORDER.indexOf(tr.status),
+    driver: (tr) => fullName(tr.currentDriver),
+    manager: (tr) => fullName(tr.manager),
   });
 
   async function handleCreate() {
@@ -286,12 +303,18 @@ export default function TrucksPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[72px]">{t("colPlate")}</TableHead>
-                  <TableHead className="hidden md:table-cell w-[130px]">
+                  <SortableHead column="plate" sort={truckSort} onSort={sortTrucks} className="w-[72px]">
+                    {t("colPlate")}
+                  </SortableHead>
+                  <SortableHead column="status" sort={truckSort} onSort={sortTrucks} className="hidden md:table-cell w-[130px]">
                     {t("colStatus")}
-                  </TableHead>
-                  <TableHead>{t("colDriver")}</TableHead>
-                  <TableHead>{t("colManager")}</TableHead>
+                  </SortableHead>
+                  <SortableHead column="driver" sort={truckSort} onSort={sortTrucks}>
+                    {t("colDriver")}
+                  </SortableHead>
+                  <SortableHead column="manager" sort={truckSort} onSort={sortTrucks}>
+                    {t("colManager")}
+                  </SortableHead>
                   <TableHead className="hidden md:table-cell w-[200px]">
                     {t("colLastNote")}
                   </TableHead>
@@ -325,7 +348,7 @@ export default function TrucksPage() {
                       </TableCell>
                     </TableRow>
                   ))
-                ) : filteredTrucks.length === 0 ? (
+                ) : sortedTrucks.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={6}
@@ -335,7 +358,7 @@ export default function TrucksPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredTrucks.map((truck) => (
+                  sortedTrucks.map((truck) => (
                     <TableRow
                       key={truck.id}
                       className="cursor-pointer"

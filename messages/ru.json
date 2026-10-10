@@ -603,6 +603,7 @@
       "loadingStops": "Точки погрузки",
       "unloadingStops": "Точки разгрузки",
       "orderShortPlaceholder": "#заказ",
+      "refLabel": "Реф",
       "reassign": {
         "title": "Переназначить машину",
         "subtitle": "{trip} · сейчас {plate}",
@@ -667,6 +668,11 @@
     "documents": {
       "allTrips": "Все рейсы ({count})",
       "tripPlaceholder": "Рейс…",
+      "clearTrip": "Убрать фильтр рейса",
+      "uploadTo": "Загрузить в рейс: {trip}",
+      "uploadPickTrip": "Выберите рейс для загрузки",
+      "deleteConfirm": "Удалить этот документ?",
+      "deleteConfirmDesc": "Он исчезнет для всех, отменить нельзя.",
       "noAttachments": "Пока нет вложений",
       "searchPlaceholder": "Поиск по дате или № заказа…",
       "colFile": "Файл",
