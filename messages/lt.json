@@ -1,5 +1,6 @@
 {
   "common": {
+    "networkError": "Nėra ryšio su serveriu — bandykite dar kartą",
     "lastSeen": {
       "label": "paskutinį kartą programėlėje {when}",
       "yesterday": "vakar {time}"

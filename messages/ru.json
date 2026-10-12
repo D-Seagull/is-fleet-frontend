@@ -1,5 +1,6 @@
 {
   "common": {
+    "networkError": "Нет связи с сервером — попробуйте ещё раз",
     "lastSeen": {
       "label": "последний вход {when}",
       "yesterday": "вчера {time}"

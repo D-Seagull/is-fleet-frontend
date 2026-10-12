@@ -1,5 +1,6 @@
 {
   "common": {
+    "networkError": "Brak połączenia z serwerem — spróbuj ponownie",
     "lastSeen": {
       "label": "ostatnio w aplikacji {when}",
       "yesterday": "wczoraj {time}"

@@ -3,6 +3,7 @@
  * failed fetches, and anything thrown in an event handler.
  */
 import * as Sentry from "@sentry/nextjs";
+import { isAxiosError } from "axios";
 
 Sentry.init({
   dsn: "https://f2706c0a201e6ec444692a1f489dbd6f@o4512086189080576.ingest.de.sentry.io/4512086213328976",
@@ -37,7 +38,12 @@ Sentry.init({
     stackFrameVariables: false,
   },
 
-  beforeSend(event) {
+  beforeSend(event, hint) {
+    // A request that got no response at all (offline, laptop waking up,
+    // backend deploy) is the network, not a bug — the user already gets a
+    // "no connection" toast. Server errors (4xx / 5xx) still come through.
+    const err = hint?.originalException;
+    if (isAxiosError(err) && !err.response) return null;
     if (event.request) {
       delete event.request.cookies;
       delete event.request.data;
