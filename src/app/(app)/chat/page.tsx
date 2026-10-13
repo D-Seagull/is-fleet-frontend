@@ -11,6 +11,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fullName, initials } from "@/lib/format";
+import { systemMessageText } from "@/lib/system-message";
 import {
   Send,
   ArrowLeft,
@@ -1200,6 +1201,10 @@ function ChatPageContent() {
       return;
     }
 
+    // Jump to the newest on send so your own message is never hidden under
+    // the composer, even if you had scrolled up to read history.
+    atBottomRef.current = true;
+
     // replyTo can point at a message OR a document — pass exactly one.
     const replyMsgId =
       replyingTo?.targetType === "msg" ? replyingTo.id : null;
@@ -1883,7 +1888,7 @@ function ChatPageContent() {
                             className="flex justify-center py-1"
                           >
                             <span className="text-xs text-muted-foreground italic">
-                              {msg.content}
+                              {systemMessageText(msg.content, tChat)}
                             </span>
                           </div>
                         );

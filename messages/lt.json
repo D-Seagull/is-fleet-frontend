@@ -1,5 +1,6 @@
 {
   "common": {
+    "networkError": "Nėra ryšio su serveriu — bandykite dar kartą",
     "lastSeen": {
       "label": "paskutinį kartą programėlėje {when}",
       "yesterday": "vakar {time}"
@@ -295,6 +296,8 @@
   "chat": {
     "sys": {
       "driverAssigned": "Vairuotojas {name} priskirtas vilkikui {plate}",
+      "memberAdded": "Pridėta: {name}",
+      "memberRemoved": "Pašalinta: {name}",
       "managerAssigned": "Vadovas {name} priskirtas vilkikui {plate}",
       "truckAssigned": "Reisui priskirtas vilkikas {plate} · vairuotojas {name}"
     },

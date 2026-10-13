@@ -1,5 +1,6 @@
 {
   "common": {
+    "networkError": "Нет связи с сервером — попробуйте ещё раз",
     "lastSeen": {
       "label": "последний вход {when}",
       "yesterday": "вчера {time}"
@@ -295,6 +296,8 @@
   "chat": {
     "sys": {
       "driverAssigned": "Водитель {name} назначен на грузовик {plate}",
+      "memberAdded": "Добавлен: {name}",
+      "memberRemoved": "Удалён: {name}",
       "managerAssigned": "Менеджер {name} назначен на грузовик {plate}",
       "truckAssigned": "Рейсу назначена машина {plate} · водитель {name}"
     },

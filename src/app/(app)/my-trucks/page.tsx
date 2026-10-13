@@ -330,14 +330,35 @@ function MyTrucksContent() {
       ((unreadByTruck[a.id]?.totalUnread ?? 0) > 0 ? 0 : 1) -
       ((unreadByTruck[b.id]?.totalUnread ?? 0) > 0 ? 0 : 1)
   );
-  // `?truck=<id>&tab=<tab>`: open with that truck selected — the way back
-  // from the full-screen truck page (opened from a notification) to this
-  // split view, still on the same truck and tab.
+  // `?truck=<id>&tab=<tab>` opens that truck in the panel: what a Windows
+  // notification, the bell or a status toast links to (lib/truck-link), and
+  // the way back from the full-screen truck page. Applied whenever the URL
+  // changes — also while this page is already open — not just on load.
   const searchParams = useSearchParams();
-  const [selectedId, setSelectedId] = useState<string | null>(() =>
-    searchParams.get("truck"),
-  );
-  const initialTab = searchParams.get("tab") ?? undefined;
+  const urlTruck = searchParams.get("truck");
+  const urlTab = searchParams.get("tab") ?? undefined;
+  const urlKey = `${urlTruck ?? ""}|${urlTab ?? ""}`;
+  const [selectedId, setSelectedId] = useState<string | null>(urlTruck);
+  const [panelTab, setPanelTab] = useState<string | undefined>(urlTab);
+  // Bumped per URL-driven open: re-opens the panel on the asked tab even
+  // when that truck is already selected.
+  const [openCount, setOpenCount] = useState(0);
+  const [seenUrlKey, setSeenUrlKey] = useState(urlKey);
+  if (urlKey !== seenUrlKey) {
+    setSeenUrlKey(urlKey);
+    if (urlTruck) {
+      setSelectedId(urlTruck);
+      setPanelTab(urlTab);
+      setOpenCount((n) => n + 1);
+    }
+  }
+
+  // Phones have no split view: show that truck on its own page instead.
+  useEffect(() => {
+    if (isMobile && urlTruck) {
+      router.replace(`/trucks/${urlTruck}?tab=${urlTab ?? "chat"}`);
+    }
+  }, [isMobile, urlTruck, urlTab, router]);
 
   useEffect(() => {
     if (!isMobile) {
@@ -360,6 +381,11 @@ function MyTrucksContent() {
       router.push(`/trucks/${truck.id}`);
     } else {
       setSelectedId(truck.id);
+      setPanelTab(undefined);
+      // Keep the URL on the open truck, so the next link to another (or this)
+      // truck is a change the page reacts to.
+      setSeenUrlKey(`${truck.id}|`);
+      router.replace(`/my-trucks?truck=${truck.id}`, { scroll: false });
     }
   }
 
@@ -421,12 +447,9 @@ function MyTrucksContent() {
       <div className="flex-1 min-w-0 overflow-hidden">
         {selectedId ? (
           <TruckDetailPanel
-            key={selectedId}
+            key={`${selectedId}:${openCount}`}
             truckId={selectedId}
-            // Only the truck we came back to keeps the tab it was on.
-            defaultTab={
-              selectedId === searchParams.get("truck") ? initialTab : undefined
-            }
+            defaultTab={panelTab}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground text-sm">

@@ -1,5 +1,6 @@
 {
   "common": {
+    "networkError": "Keine Verbindung zum Server — bitte erneut versuchen",
     "lastSeen": {
       "label": "zuletzt in der App {when}",
       "yesterday": "gestern {time}"
@@ -295,6 +296,8 @@
   "chat": {
     "sys": {
       "driverAssigned": "Fahrer {name} dem Lkw {plate} zugewiesen",
+      "memberAdded": "Hinzugefügt: {name}",
+      "memberRemoved": "Entfernt: {name}",
       "managerAssigned": "Manager {name} dem Lkw {plate} zugewiesen",
       "truckAssigned": "Fahrzeug {plate} dieser Fahrt zugewiesen · Fahrer {name}"
     },
