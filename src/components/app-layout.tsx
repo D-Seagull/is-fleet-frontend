@@ -97,6 +97,17 @@ function TaskbarBadge({ count }: { count: number }) {
   return null;
 }
 
+// Each bell row says where the message is: a coloured stripe, a light tint
+// and a coloured icon — trip chat / direct / group at a glance. Same colours
+// as the driver and manager apps.
+const BELL_ROW =
+  "w-full text-left px-3 py-2.5 border-l-[3px] transition-colors";
+const BELL_KIND = {
+  trip: "border-l-blue-500 bg-blue-500/[0.06] hover:bg-blue-500/15",
+  dm: "border-l-emerald-500 bg-emerald-500/[0.06] hover:bg-emerald-500/15",
+  group: "border-l-violet-500 bg-violet-500/[0.06] hover:bg-violet-500/15",
+} as const;
+
 function UnreadBell() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -150,14 +161,17 @@ function UnreadBell() {
             {items.map((item) => (
               <li key={`trip-${item.truckId}`}>
                 <button
-                  className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors"
+                  className={cn(BELL_ROW, BELL_KIND.trip)}
                   onClick={() => {
                     const tab = item.activeTripUnread > 0 ? "chat" : "trips";
                     router.push(truckHref(queryClient, item.truckId, tab));
                   }}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-sm">{item.plate}</span>
+                    <span className="flex min-w-0 items-center gap-1.5 font-medium text-sm">
+                      <Truck className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+                      <span className="truncate">{item.plate}</span>
+                    </span>
                     <span
                       className={cn(
                         "text-xs font-bold px-1.5 py-0.5 rounded-full",
@@ -191,12 +205,15 @@ function UnreadBell() {
             {dmItems.map((conv) => (
               <li key={`dm-${conv.user.id}`}>
                 <button
-                  className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors"
+                  className={cn(BELL_ROW, BELL_KIND.dm)}
                   onClick={() => router.push(`/chat?userId=${conv.user.id}`)}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-sm truncate">
-                      {fullName(conv.user) || tRoles(conv.user.role)}
+                    <span className="flex min-w-0 items-center gap-1.5 font-medium text-sm">
+                      <MessageSquare className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                      <span className="truncate">
+                        {fullName(conv.user) || tRoles(conv.user.role)}
+                      </span>
                     </span>
                     <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">
                       {conv.unreadCount}
@@ -217,12 +234,13 @@ function UnreadBell() {
             {groupItems.map((g) => (
               <li key={`group-${g.groupId}`}>
                 <button
-                  className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors"
+                  className={cn(BELL_ROW, BELL_KIND.group)}
                   onClick={() => router.push(`/chat?groupId=${g.groupId}`)}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-sm truncate">
-                      # {g.name}
+                    <span className="flex min-w-0 items-center gap-1.5 font-medium text-sm">
+                      <Users className="h-3.5 w-3.5 shrink-0 text-violet-500" />
+                      <span className="truncate">{g.name}</span>
                     </span>
                     <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-destructive/10 text-destructive">
                       {g.unreadCount}
