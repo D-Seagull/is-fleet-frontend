@@ -536,7 +536,8 @@
       "overallTitle": "Gesamtbewertung",
       "ratingsFromDrivers": "{count} Bewertungen von Fahrern",
       "unknown": "Unbekannt",
-      "noRatings": "Noch keine Bewertungen. Fahrer bewerten ihren Manager über die mobile App."
+      "noRatings": "Noch keine Bewertungen. Fahrer bewerten ihren Manager über die mobile App.",
+      "saveError": "Änderungen konnten nicht gespeichert werden"
     }
   },
   "myTrucks": {

@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { fullName } from "@/lib/format";
 import {
   ArrowLeft,
@@ -251,8 +252,12 @@ export default function ManagerDetailPage({
                             const parts = name.trim().split(/\s+/);
                             const firstName = parts.shift() ?? "";
                             const lastName = parts.length > 0 ? parts.join(" ") : null;
-                            await update.mutateAsync({ firstName, lastName });
-                            setNameDirty(false);
+                            try {
+                              await update.mutateAsync({ firstName, lastName });
+                              setNameDirty(false);
+                            } catch (err) {
+                              toast.error(saveErrorMessage(err, t("saveError")));
+                            }
                           }}
                         >
                           {update.isPending ? (
@@ -315,8 +320,12 @@ export default function ManagerDetailPage({
                                 className="h-8 w-8 shrink-0"
                                 disabled={!phoneValid || update.isPending}
                                 onClick={async () => {
-                                  await update.mutateAsync({ phone });
-                                  setPhoneDirty(false);
+                                  try {
+                                    await update.mutateAsync({ phone });
+                                    setPhoneDirty(false);
+                                  } catch (err) {
+                                    toast.error(saveErrorMessage(err, t("saveError")));
+                                  }
                                 }}
                               >
                                 {update.isPending ? (
@@ -359,7 +368,13 @@ export default function ManagerDetailPage({
                         <Select
                           value={(manager.language as Language) ?? "EN"}
                           onValueChange={(v) =>
-                            update.mutate({ language: v as Language })
+                            update.mutate(
+                              { language: v as Language },
+                              {
+                                onError: (err) =>
+                                  toast.error(saveErrorMessage(err, t("saveError"))),
+                              },
+                            )
                           }
                           disabled={update.isPending}
                         >
@@ -390,9 +405,13 @@ export default function ManagerDetailPage({
                           <Select
                             value={manager.teamleadId ?? "none"}
                             onValueChange={(v) =>
-                              update.mutate({
-                                teamleadId: v === "none" ? null : v,
-                              })
+                              update.mutate(
+                                { teamleadId: v === "none" ? null : v },
+                                {
+                                  onError: (err) =>
+                                    toast.error(saveErrorMessage(err, t("saveError"))),
+                                },
+                              )
                             }
                             disabled={update.isPending}
                           >
@@ -531,6 +550,18 @@ export default function ManagerDetailPage({
       </Tabs>
     </div>
   );
+}
+
+// A save that reaches the server but is rejected (e.g. a phone already in
+// use) used to fail silently here — the row just snapped back with no hint,
+// which read as "edits don't save". Surface the backend's localized message,
+// falling back to a generic one.
+function saveErrorMessage(err: unknown, fallback: string): string {
+  const msg = (err as { response?: { data?: { message?: unknown } } })?.response
+    ?.data?.message;
+  if (typeof msg === "string") return msg;
+  if (Array.isArray(msg) && typeof msg[0] === "string") return msg[0];
+  return fallback;
 }
 
 function InfoField({

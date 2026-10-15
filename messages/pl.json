@@ -536,7 +536,8 @@
       "overallTitle": "Ocena ogólna",
       "ratingsFromDrivers": "Ocen od kierowców: {count}",
       "unknown": "Nieznany",
-      "noRatings": "Brak ocen. Kierowcy oceniają menedżera z aplikacji mobilnej."
+      "noRatings": "Brak ocen. Kierowcy oceniają menedżera z aplikacji mobilnej.",
+      "saveError": "Nie udało się zapisać zmian"
     }
   },
   "myTrucks": {

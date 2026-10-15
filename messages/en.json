@@ -536,7 +536,8 @@
       "overallTitle": "Overall Rating",
       "ratingsFromDrivers": "{count} ratings from drivers",
       "unknown": "Unknown",
-      "noRatings": "No ratings yet. Drivers rate their manager from the mobile app."
+      "noRatings": "No ratings yet. Drivers rate their manager from the mobile app.",
+      "saveError": "Couldn't save changes"
     }
   },
   "myTrucks": {
