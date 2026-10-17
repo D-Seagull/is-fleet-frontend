@@ -44,6 +44,7 @@ import { useTruckChangedSync } from "@/hooks/use-trucks";
 import { useTripUpdatedSync } from "@/hooks/use-trips";
 import { useSocketResync } from "@/hooks/use-socket-resync";
 import { useTabVisibilityPresence } from "@/hooks/use-tab-visibility-presence";
+import { useInAppNotices } from "@/hooks/use-in-app-notices";
 import { useBrowserTimezoneSync } from "@/hooks/use-timezone-sync";
 import { useUserStatusSync } from "@/hooks/use-user-status-sync";
 import { usePresenceSync } from "@/hooks/use-presence";
@@ -295,11 +296,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const isTeamlead = user?.role === "TEAMLEAD";
   const isManager = isManagerRole || isTeamlead || user?.role === "ADMIN";
 
-  // Foreground/background tracking — backend uses this to decide whether
-
-  // chat-message push should fall through when the user isn't actually
-  // looking at the tab.
+  // While this window is in use the backend holds the person's pushes back
+  // (their phone stays quiet) and sends the news here as in-app notices.
   useTabVisibilityPresence();
+  useInAppNotices();
   // Push the browser's IANA timezone so backend can interpret alarm
   // wall-clock times on the target user's clock.
   useBrowserTimezoneSync();

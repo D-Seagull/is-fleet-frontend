@@ -12,7 +12,15 @@ export function getSocket(): Socket {
       // handshake always carries the CURRENT in-memory access token (a silent
       // refresh may have rotated it since login). The token is no longer in
       // localStorage; the gateway reads handshake.auth.token.
-      auth: (cb) => cb({ token: useAuthStore.getState().token ?? "" }),
+      // `client: 'web'` → while this window pulses (in use) the backend holds
+      // the person's pushes back; `notices` → it shows the in-app `notice`
+      // event instead (useInAppNotices).
+      auth: (cb) =>
+        cb({
+          token: useAuthStore.getState().token ?? "",
+          client: "web",
+          notices: true,
+        }),
       // Websocket first → fallback to long-polling if WS is blocked.
       // WS gives near-instant delivery; polling adds ~1-2s per cycle.
       transports: ["websocket", "polling"],
