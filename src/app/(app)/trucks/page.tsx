@@ -68,6 +68,7 @@ import {
 import { useAuthStore } from "@/store/auth";
 import { BackButton } from "@/components/back-button";
 import { SortableHead } from "@/components/sortable-head";
+import { LicensePlate } from "@/components/license-plate";
 import { useTableSort } from "@/lib/use-table-sort";
 
 const statusColors: Record<TruckStatus, string> = {
@@ -303,7 +304,7 @@ export default function TrucksPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <SortableHead column="plate" sort={truckSort} onSort={sortTrucks} className="w-[72px]">
+                  <SortableHead column="plate" sort={truckSort} onSort={sortTrucks} className="w-[130px]">
                     {t("colPlate")}
                   </SortableHead>
                   <SortableHead column="status" sort={truckSort} onSort={sortTrucks} className="hidden md:table-cell w-[130px]">
@@ -367,9 +368,9 @@ export default function TrucksPage() {
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Link
                           href={`/trucks/${truck.id}?tab=info`}
-                          className="font-medium hover:underline"
+                          className="inline-flex rounded-[4px] hover:opacity-80"
                         >
-                          {truck.plate}
+                          <LicensePlate plate={truck.plate} />
                         </Link>
                       </TableCell>
                       <TableCell
