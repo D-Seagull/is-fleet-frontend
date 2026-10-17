@@ -35,6 +35,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { useUnreadSummary, type UnreadSummaryItem } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "@/components/status-dot";
+import { LicensePlate } from "@/components/license-plate";
 
 // ─── Driver line ──────────────────────────────────────────────────────────────
 
@@ -51,6 +52,9 @@ function DriverStatusLine({
     </span>
   );
 }
+
+const sameName = (a?: string | null, b?: string | null) =>
+  (a ?? "").trim().toLowerCase() === (b ?? "").trim().toLowerCase();
 
 // ─── Truck List Item ──────────────────────────────────────────────────────────
 
@@ -86,9 +90,8 @@ function TruckListItem({
           {hasUnread && (
             <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
           )}
-          <span className={cn("text-sm flex-1 min-w-0 truncate", hasUnread ? "font-bold" : "font-semibold")}>
-            {truck.plate}
-          </span>
+          <LicensePlate plate={truck.plate} className="min-w-0" />
+          <span className="flex-1" />
           {hasUnread && (
             <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
               {unread!.totalUnread}
@@ -107,7 +110,11 @@ function TruckListItem({
         {truck.currentDriver && <DriverStatusLine driver={truck.currentDriver} />}
         {hasUnread && unread?.latestMessage ? (
           <span className="text-[11px] text-muted-foreground truncate">
-            <span className="font-medium">{unread.latestMessage.senderName}:</span>{" "}
+            {/* The driver's name is on the line above — repeat it only when
+                someone else wrote (another manager). */}
+            {!sameName(unread.latestMessage.senderName, fullName(truck.currentDriver)) && (
+              <span className="font-medium">{unread.latestMessage.senderName}: </span>
+            )}
             {unread.latestMessage.content}
           </span>
         ) : lastNote ? (

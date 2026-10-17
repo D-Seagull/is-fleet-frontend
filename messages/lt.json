@@ -536,7 +536,8 @@
       "overallTitle": "Bendras įvertinimas",
       "ratingsFromDrivers": "Įvertinimų nuo vairuotojų: {count}",
       "unknown": "Nežinomas",
-      "noRatings": "Kol kas nėra įvertinimų. Vairuotojai vertina vadybininką iš mobiliosios programėlės."
+      "noRatings": "Kol kas nėra įvertinimų. Vairuotojai vertina vadybininką iš mobiliosios programėlės.",
+      "saveError": "Nepavyko išsaugoti pakeitimų"
     }
   },
   "myTrucks": {

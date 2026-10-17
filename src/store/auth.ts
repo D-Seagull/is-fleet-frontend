@@ -94,7 +94,12 @@ export const useAuthStore = create<AuthState>()(
 
       setLoading: (v) => set({ isLoading: v }),
 
-      setUser: (user) => set({ user }),
+      // Profile updates MERGE into the stored user, never replace it: a
+      // response that lacks a field (an older backend, a partial echo) must
+      // not wipe it — that is how the avatar vanished after token refreshes.
+      // Fields really cleared arrive as `null` and still overwrite.
+      setUser: (user) =>
+        set((s) => ({ user: s.user ? { ...s.user, ...user } : user })),
 
       login: (user, token, remember) => {
         // Drop any pre-existing socket so the next getSocket() picks up
