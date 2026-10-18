@@ -47,6 +47,13 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Server error texts follow the window's language. Without this the browser's
+  // own Accept-Language (OS/browser locale list) picked it — a Ukrainian login
+  // screen answered "Логин или пароль неверны". `<html lang>` is the locale
+  // next-intl actually rendered.
+  if (typeof document !== "undefined" && document.documentElement.lang) {
+    config.headers["Accept-Language"] = document.documentElement.lang;
+  }
   const method = (config.method ?? "get").toLowerCase();
   const isAuthPath = (config.url ?? "").includes("/auth/");
   const user = useAuthStore.getState().user;
