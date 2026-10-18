@@ -195,6 +195,17 @@ function ReportCard({
           {r.description}
         </p>
 
+        {r.logs && (
+          <details className="mb-2 rounded-md border bg-muted/40">
+            <summary className="cursor-pointer select-none px-2 py-1 text-xs text-muted-foreground">
+              {t("logs", { count: r.logs.split("\n").length })}
+            </summary>
+            <pre className="max-h-80 overflow-auto px-2 pb-2 text-[11px] leading-snug whitespace-pre-wrap break-all font-mono">
+              {r.logs}
+            </pre>
+          </details>
+        )}
+
         {r.screenshots.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {r.screenshots.map((url, i) => (
