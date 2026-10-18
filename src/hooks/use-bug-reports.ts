@@ -26,6 +26,8 @@ export interface BugReport {
   platform: string | null;
   route: string | null;
   socketState: string | null;
+  /** The client's last diagnostic log lines, if it sent any. */
+  logs?: string | null;
   status: BugStatus;
   createdAt: string;
   resolvedAt: string | null;

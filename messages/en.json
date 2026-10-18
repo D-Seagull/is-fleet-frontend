@@ -852,6 +852,7 @@
       "empty": "Nothing here yet.",
       "screenshot": "Screenshot",
       "statusResolved": "resolved",
+      "logs": "Logs ({count})",
       "filters": {
         "all": "All",
         "new": "New",

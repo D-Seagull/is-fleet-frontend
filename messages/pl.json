@@ -852,6 +852,7 @@
       "empty": "Na razie pusto.",
       "screenshot": "Zrzut ekranu",
       "statusResolved": "rozwiązane",
+      "logs": "Logi ({count})",
       "filters": {
         "all": "Wszystkie",
         "new": "Nowe",

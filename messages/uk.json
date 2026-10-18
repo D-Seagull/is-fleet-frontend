@@ -852,6 +852,7 @@
       "empty": "Тут поки порожньо.",
       "screenshot": "Скріншот",
       "statusResolved": "вирішено",
+      "logs": "Логи ({count})",
       "filters": {
         "all": "Усі",
         "new": "Нові",

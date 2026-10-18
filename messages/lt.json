@@ -852,6 +852,7 @@
       "empty": "Kol kas tuščia.",
       "screenshot": "Ekrano nuotrauka",
       "statusResolved": "išspręsta",
+      "logs": "Žurnalas ({count})",
       "filters": {
         "all": "Visi",
         "new": "Nauji",

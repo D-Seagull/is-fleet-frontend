@@ -852,6 +852,7 @@
       "empty": "Здесь пока пусто.",
       "screenshot": "Скриншот",
       "statusResolved": "решено",
+      "logs": "Логи ({count})",
       "filters": {
         "all": "Все",
         "new": "Новые",

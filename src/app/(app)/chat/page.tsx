@@ -2149,7 +2149,10 @@ function ChatPageContent() {
                       <div
                         key={`doc-${stableKey(doc.id)}`}
                         className={cn(
-                          "group flex items-center gap-2",
+                          // A photo album is a big block — give the reaction
+                          // button beside it room, so it doesn't sit on the grid.
+                          "group flex items-center",
+                          albumLive ? "gap-4" : "gap-2",
                           isOwn ? "justify-end" : "justify-start",
                           pending && "pointer-events-none",
                         )}
