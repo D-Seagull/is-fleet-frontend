@@ -499,7 +499,8 @@ function AlbumBubble({
   return (
     <div
       className={cn(
-        "group flex items-center gap-3",
+        // A photo album is a big block — room for the reaction button beside it.
+        "group flex items-center gap-4",
         isMine ? "self-end" : "self-start flex-row-reverse",
         pending && "pointer-events-none",
       )}
