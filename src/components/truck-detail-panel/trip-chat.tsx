@@ -523,14 +523,27 @@ export function TripChat({
       ? `m:${latest.data.id}`
       : `d:${stableKey(latest.data.id)}`
     : null;
+  const latestMine =
+    !!latest &&
+    (latest.kind === "msg" ? latest.data.senderId : latest.data.uploadedBy) ===
+      currentUserId;
   const seenLatest = useRef<string | null>(null);
   useEffect(() => {
     const prev = seenLatest.current;
     seenLatest.current = latestKey;
     if (prev === null || latestKey === prev) return;
-    // Reader scrolled up — show the pill, don't force-scroll.
+    // Your own message: bring the chat down to it (the bottom anchor alone
+    // kept the view only when it sat exactly at the end).
+    if (latestMine) {
+      requestAnimationFrame(() => {
+        const el = scrollContainerRef.current;
+        if (el) scrollToLatest(el, "smooth");
+      });
+      return;
+    }
+    // Someone else's while scrolled up — show the pill, don't force-scroll.
     if (!nearBottomRef.current) setNewMsgCount((n) => n + 1);
-  }, [latestKey]);
+  }, [latestKey, latestMine]);
 
   // One send at a time. An upload takes seconds and the text / files stay in
   // the composer meanwhile, so a second click or Enter would send them again.
