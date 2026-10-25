@@ -495,6 +495,41 @@ function ChatPageContent() {
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
 
+  // A new newest item: your own brings the chat down to it; someone else's
+  // only shows the jump-to-latest button when you aren't at the bottom. The
+  // browser's bottom anchor alone kept the view only when it sat exactly at
+  // the end — a few px up, your new message landed out of sight.
+  const latest = timeline.at(-1);
+  const latestKey = latest
+    ? `${latest.kind}:${stableKey(latest.data.id)}`
+    : null;
+  const latestMine =
+    !!latest &&
+    (latest.kind === "msg"
+      ? latest.data.senderId
+      : latest.data.uploadedBy) === user?.id;
+  const convoKeyNow = selectedGroupId
+    ? `g:${selectedGroupId}`
+    : selectedUserId
+      ? `u:${selectedUserId}`
+      : null;
+  const seenLatestRef = useRef<{ convo: string | null; key: string | null }>({
+    convo: null,
+    key: null,
+  });
+  useEffect(() => {
+    const prev = seenLatestRef.current;
+    seenLatestRef.current = { convo: convoKeyNow, key: latestKey };
+    // Opening a conversation is handled by the effect that starts it at its
+    // newest message; only react to a NEW item in the same one.
+    if (prev.convo !== convoKeyNow || !prev.key || prev.key === latestKey) return;
+    if (latestMine) {
+      requestAnimationFrame(() => scrollToBottom("smooth"));
+    } else if (!atBottomRef.current) {
+      setShowScrollDown(true);
+    }
+  }, [convoKeyNow, latestKey, latestMine, scrollToBottom]);
+
   // A quoted file that belongs to an album reads "Album · N files".
   const albumSize = albumSizes(currentDocs);
   const docLabel = (d: { fileName: string; batchId?: string | null }) => {
