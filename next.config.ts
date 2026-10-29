@@ -8,8 +8,27 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 // where to source its data and useTranslations/getTranslations throw.
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+// Baseline security headers on every route. No full CSP yet: the app pulls
+// from the API, Supabase Storage and the Sentry tunnel, and a wrong policy
+// silently breaks pages — `frame-ancestors` is the part that matters now
+// (no one may embed the app and trick a click through an invisible frame).
+// The desktop shell loads the app as its top-level page, so DENY is safe.
+const securityHeaders = [
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+  },
+  { key: "Strict-Transport-Security", value: "max-age=31536000" },
+];
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
 };
 
 export default withSentryConfig(withNextIntl(nextConfig), {
