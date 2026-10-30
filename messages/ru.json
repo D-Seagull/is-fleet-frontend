@@ -461,7 +461,15 @@
       "selectTruck": "Выберите грузовик",
       "noTruck": "Без грузовика",
       "ratingField": "Рейтинг",
-      "noRatingsInline": "Пока нет оценок"
+      "noRatingsInline": "Пока нет оценок",
+      "loginCode": "Код входа",
+      "loginCodeTitle": "Код входа для водителя",
+      "loginCodeDesc": "Продиктуйте код водителю по телефону — он введёт его на экране кода вместо SMS.",
+      "loginCodeExpires": "Одноразовый, действует до {time}.",
+      "loginCodeCopy": "Копировать",
+      "loginCodeCopied": "Код скопирован",
+      "loginCodeNew": "Новый код",
+      "loginCodeError": "Не удалось создать код входа"
     },
     "rating": {
       "overallTitle": "Общий рейтинг",

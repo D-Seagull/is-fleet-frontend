@@ -51,6 +51,7 @@ import {
 } from "@/hooks/use-drivers";
 import { useTrucks } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
+import { LoginCodeButton } from "./login-code-button";
 
 const PHONE_REGEX = /^\+\d{7,15}$/;
 
@@ -344,6 +345,10 @@ function DriverDetailContent({ id }: { id: string }) {
             <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
+        {/* Only the driver's own assigned manager — the backend enforces it too. */}
+        {driver.isActive && user?.id && driver.manager?.id === user.id && (
+          <LoginCodeButton driverId={driver.id} />
+        )}
         {canToggle && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

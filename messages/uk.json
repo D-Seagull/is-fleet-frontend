@@ -461,7 +461,15 @@
       "selectTruck": "Оберіть вантажівку",
       "noTruck": "Без вантажівки",
       "ratingField": "Рейтинг",
-      "noRatingsInline": "Ще немає оцінок"
+      "noRatingsInline": "Ще немає оцінок",
+      "loginCode": "Код входу",
+      "loginCodeTitle": "Код входу для водія",
+      "loginCodeDesc": "Продиктуйте код водієві телефоном — він введе його на екрані коду замість SMS.",
+      "loginCodeExpires": "Одноразовий, діє до {time}.",
+      "loginCodeCopy": "Копіювати",
+      "loginCodeCopied": "Код скопійовано",
+      "loginCodeNew": "Новий код",
+      "loginCodeError": "Не вдалося створити код входу"
     },
     "rating": {
       "overallTitle": "Загальний рейтинг",

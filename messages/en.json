@@ -461,7 +461,15 @@
       "selectTruck": "Select truck",
       "noTruck": "No truck",
       "ratingField": "Rating",
-      "noRatingsInline": "No ratings yet"
+      "noRatingsInline": "No ratings yet",
+      "loginCode": "Login code",
+      "loginCodeTitle": "Driver login code",
+      "loginCodeDesc": "Read the code out to the driver over the phone — they type it on the code screen instead of the SMS one.",
+      "loginCodeExpires": "Single-use, valid until {time}.",
+      "loginCodeCopy": "Copy",
+      "loginCodeCopied": "Code copied",
+      "loginCodeNew": "New code",
+      "loginCodeError": "Couldn't create a login code"
     },
     "rating": {
       "overallTitle": "Overall Rating",

@@ -461,7 +461,15 @@
       "selectTruck": "Pasirinkite sunkvežimį",
       "noTruck": "Be sunkvežimio",
       "ratingField": "Įvertinimas",
-      "noRatingsInline": "Kol kas nėra įvertinimų"
+      "noRatingsInline": "Kol kas nėra įvertinimų",
+      "loginCode": "Prisijungimo kodas",
+      "loginCodeTitle": "Vairuotojo prisijungimo kodas",
+      "loginCodeDesc": "Padiktuokite kodą vairuotojui telefonu — jis įves jį kodo ekrane vietoj SMS kodo.",
+      "loginCodeExpires": "Vienkartinis, galioja iki {time}.",
+      "loginCodeCopy": "Kopijuoti",
+      "loginCodeCopied": "Kodas nukopijuotas",
+      "loginCodeNew": "Naujas kodas",
+      "loginCodeError": "Nepavyko sukurti prisijungimo kodo"
     },
     "rating": {
       "overallTitle": "Bendras įvertinimas",

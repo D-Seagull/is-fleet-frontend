@@ -215,3 +215,18 @@ export function useUpsertDriverRating(driverId: string) {
     },
   });
 }
+
+/**
+ * The driver's assigned manager mints a one-time login code to dictate when
+ * the SMS doesn't reach the driver. The backend refuses anyone else.
+ */
+export function useIssueDriverLoginCode() {
+  return useMutation({
+    mutationFn: async (driverId: string) => {
+      const res = await api.post<{ code: string; expiresAt: string }>(
+        `/auth/driver/${driverId}/login-code`,
+      );
+      return res.data;
+    },
+  });
+}
