@@ -23,7 +23,15 @@ export const AUTH_ROUTES = [
  * in (and never installs the app), so these must never redirect: not to
  * /login when signed out, and not into the app when signed in.
  */
-export const OPEN_ROUTES = ["/privacy", "/terms", "/delete-account"];
+export const OPEN_ROUTES = [
+  "/privacy",
+  "/terms",
+  "/delete-account",
+  // Consent page from the driver-transfer SMS: a driver opens it on their
+  // phone, usually with no web session — and a signed-in visitor (say, a
+  // manager testing on their own phone) must not be bounced into the app.
+  "/driver-transfer",
+];
 
 /**
  * Routes that exist for machines rather than people, and must never be

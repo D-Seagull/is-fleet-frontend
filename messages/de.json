@@ -428,8 +428,8 @@
     "languageLabel": "Sprache",
     "createError": "Fahrer konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
     "existsElsewhereTitle": "Fahrer existiert bereits",
-    "existsElsewhereBody": "Der Fahrer „{name}“ ist bereits bei einem anderen Unternehmen registriert. Zu Ihrem Unternehmen verschieben?",
-    "confirmTransfer": "Ja, verschieben",
+    "existsElsewhereBody": "Fahrer „{name}“ ist bereits bei einem anderen Unternehmen registriert. Eine SMS mit der Bitte um Wechsel senden? Er kommt erst zu Ihrem Unternehmen, wenn er zustimmt.",
+    "confirmTransfer": "Anfrage senden",
     "cancelTransfer": "Abbrechen",
     "tabActive": "Aktiv",
     "tabDeactivated": "Deaktiviert",
@@ -461,7 +461,15 @@
       "selectTruck": "LKW auswählen",
       "noTruck": "Kein LKW",
       "ratingField": "Bewertung",
-      "noRatingsInline": "Noch keine Bewertungen"
+      "noRatingsInline": "Noch keine Bewertungen",
+      "loginCode": "Anmeldecode",
+      "loginCodeTitle": "Anmeldecode für Fahrer",
+      "loginCodeDesc": "Sagen Sie dem Fahrer den Code am Telefon durch — er gibt ihn statt des SMS-Codes im Code-Bildschirm ein.",
+      "loginCodeExpires": "Einmalig, gültig bis {time}.",
+      "loginCodeCopy": "Kopieren",
+      "loginCodeCopied": "Code kopiert",
+      "loginCodeNew": "Neuer Code",
+      "loginCodeError": "Anmeldecode konnte nicht erstellt werden"
     },
     "rating": {
       "overallTitle": "Gesamtbewertung",
@@ -480,7 +488,10 @@
       "submit": "Absenden"
     },
     "deactivateConfirm": "Diesen Fahrer deaktivieren?",
-    "deactivate": "Deaktivieren"
+    "deactivate": "Deaktivieren",
+    "transferPendingTitle": "Warten auf den Fahrer",
+    "transferPendingBody": "Der Fahrer hat eine SMS mit einem Bestätigungslink erhalten. Sobald er zustimmt, erscheint er in Ihrer Liste. Der Link ist 24 Stunden gültig.",
+    "transferPendingOk": "OK"
   },
   "managers": {
     "title": "Manager",
@@ -906,5 +917,20 @@
     "sent": "Danke! Ihr Bericht wurde gesendet.",
     "error": "Konnte nicht gesendet werden. Versuchen Sie es erneut.",
     "removeScreenshot": "Entfernen"
+  },
+  "driverTransfer": {
+    "loading": "Wird geladen…",
+    "title": "Wechsel zu einem neuen Unternehmen",
+    "body": "„{toCompany}“ möchte Sie als Fahrer hinzufügen.",
+    "leaveNote": "Sie verlassen „{fromCompany}“. Ihre bisherigen Fahrten und Chats bleiben dort.",
+    "accept": "Zustimmen",
+    "decline": "Ablehnen",
+    "acceptedTitle": "Fertig",
+    "acceptedBody": "Sie sind jetzt Fahrer bei „{toCompany}“. Öffnen Sie die IS Fleet App erneut, um Ihr neues Unternehmen zu sehen.",
+    "declinedTitle": "Anfrage abgelehnt",
+    "declinedBody": "Es hat sich nichts geändert. Sie können diese Seite schließen.",
+    "invalidTitle": "Link ungültig",
+    "invalidBody": "Der Link ist abgelaufen oder wurde bereits verwendet. Bitten Sie das Unternehmen um einen neuen.",
+    "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
   }
 }

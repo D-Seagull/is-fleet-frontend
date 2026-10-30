@@ -428,8 +428,8 @@
     "languageLabel": "Language",
     "createError": "Failed to add driver. Please try again.",
     "existsElsewhereTitle": "Driver already exists",
-    "existsElsewhereBody": "Driver \"{name}\" is already registered with another company. Move them to your company?",
-    "confirmTransfer": "Yes, move them",
+    "existsElsewhereBody": "Driver \"{name}\" is already registered with another company. Send them an SMS asking to move? They join your company only after they accept.",
+    "confirmTransfer": "Send request",
     "cancelTransfer": "Cancel",
     "tabActive": "Active",
     "tabDeactivated": "Deactivated",
@@ -461,7 +461,15 @@
       "selectTruck": "Select truck",
       "noTruck": "No truck",
       "ratingField": "Rating",
-      "noRatingsInline": "No ratings yet"
+      "noRatingsInline": "No ratings yet",
+      "loginCode": "Login code",
+      "loginCodeTitle": "Driver login code",
+      "loginCodeDesc": "Read the code out to the driver over the phone — they type it on the code screen instead of the SMS one.",
+      "loginCodeExpires": "Single-use, valid until {time}.",
+      "loginCodeCopy": "Copy",
+      "loginCodeCopied": "Code copied",
+      "loginCodeNew": "New code",
+      "loginCodeError": "Couldn't create a login code"
     },
     "rating": {
       "overallTitle": "Overall Rating",
@@ -480,7 +488,10 @@
       "submit": "Submit"
     },
     "deactivateConfirm": "Deactivate this driver?",
-    "deactivate": "Deactivate"
+    "deactivate": "Deactivate",
+    "transferPendingTitle": "Waiting for the driver",
+    "transferPendingBody": "The driver got an SMS with a confirmation link. They appear in your list as soon as they accept. The link is valid for 24 hours.",
+    "transferPendingOk": "OK"
   },
   "managers": {
     "title": "Managers",
@@ -906,5 +917,20 @@
     "sent": "Thanks! Your report was sent.",
     "error": "Couldn't send. Try again.",
     "removeScreenshot": "Remove"
+  },
+  "driverTransfer": {
+    "loading": "Loading…",
+    "title": "Join a new company",
+    "body": "\"{toCompany}\" wants to add you as a driver.",
+    "leaveNote": "You will leave \"{fromCompany}\". Your past trips and chats stay with them.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "acceptedTitle": "Done",
+    "acceptedBody": "You are now a driver of \"{toCompany}\". Reopen the IS Fleet app to see your new company.",
+    "declinedTitle": "Request declined",
+    "declinedBody": "Nothing has changed. You can close this page.",
+    "invalidTitle": "Link not valid",
+    "invalidBody": "This link has expired or was already used. Ask the company to send a new one.",
+    "error": "Something went wrong. Please try again."
   }
 }

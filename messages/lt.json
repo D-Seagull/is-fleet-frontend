@@ -428,8 +428,8 @@
     "languageLabel": "Kalba",
     "createError": "Nepavyko pridėti vairuotojo. Bandykite dar kartą.",
     "existsElsewhereTitle": "Vairuotojas jau egzistuoja",
-    "existsElsewhereBody": "Vairuotojas „{name}“ jau užregistruotas kitoje įmonėje. Perkelti jį į jūsų įmonę?",
-    "confirmTransfer": "Taip, perkelti",
+    "existsElsewhereBody": "Vairuotojas „{name}“ jau užregistruotas kitoje įmonėje. Išsiųsti jam SMS su prašymu pereiti? Į jūsų įmonę jis pateks tik sutikęs.",
+    "confirmTransfer": "Siųsti prašymą",
     "cancelTransfer": "Atšaukti",
     "tabActive": "Aktyvūs",
     "tabDeactivated": "Deaktyvuoti",
@@ -461,7 +461,15 @@
       "selectTruck": "Pasirinkite sunkvežimį",
       "noTruck": "Be sunkvežimio",
       "ratingField": "Įvertinimas",
-      "noRatingsInline": "Kol kas nėra įvertinimų"
+      "noRatingsInline": "Kol kas nėra įvertinimų",
+      "loginCode": "Prisijungimo kodas",
+      "loginCodeTitle": "Vairuotojo prisijungimo kodas",
+      "loginCodeDesc": "Padiktuokite kodą vairuotojui telefonu — jis įves jį kodo ekrane vietoj SMS kodo.",
+      "loginCodeExpires": "Vienkartinis, galioja iki {time}.",
+      "loginCodeCopy": "Kopijuoti",
+      "loginCodeCopied": "Kodas nukopijuotas",
+      "loginCodeNew": "Naujas kodas",
+      "loginCodeError": "Nepavyko sukurti prisijungimo kodo"
     },
     "rating": {
       "overallTitle": "Bendras įvertinimas",
@@ -480,7 +488,10 @@
       "submit": "Pateikti"
     },
     "deactivateConfirm": "Deaktyvuoti šį vairuotoją?",
-    "deactivate": "Deaktyvuoti"
+    "deactivate": "Deaktyvuoti",
+    "transferPendingTitle": "Laukiame vairuotojo patvirtinimo",
+    "transferPendingBody": "Vairuotojas gavo SMS su patvirtinimo nuoroda. Kai tik jis sutiks, atsiras jūsų sąraše. Nuoroda galioja 24 valandas.",
+    "transferPendingOk": "Gerai"
   },
   "managers": {
     "title": "Vadybininkai",
@@ -906,5 +917,20 @@
     "sent": "Ačiū! Pranešimas išsiųstas.",
     "error": "Nepavyko išsiųsti. Bandykite dar kartą.",
     "removeScreenshot": "Pašalinti"
+  },
+  "driverTransfer": {
+    "loading": "Įkeliama…",
+    "title": "Perėjimas į naują įmonę",
+    "body": "Įmonė „{toCompany}“ nori pridėti jus kaip vairuotoją.",
+    "leaveNote": "Paliksite įmonę „{fromCompany}“. Ankstesni reisai ir pokalbiai liks joje.",
+    "accept": "Sutinku",
+    "decline": "Atsisakau",
+    "acceptedTitle": "Atlikta",
+    "acceptedBody": "Dabar esate įmonės „{toCompany}“ vairuotojas. Iš naujo atidarykite IS Fleet programėlę, kad pamatytumėte naują įmonę.",
+    "declinedTitle": "Prašymas atmestas",
+    "declinedBody": "Niekas nepasikeitė. Šį puslapį galite uždaryti.",
+    "invalidTitle": "Nuoroda negalioja",
+    "invalidBody": "Nuoroda nebegalioja arba jau panaudota. Paprašykite įmonės atsiųsti naują.",
+    "error": "Nepavyko. Bandykite dar kartą."
   }
 }
