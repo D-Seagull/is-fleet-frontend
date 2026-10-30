@@ -78,6 +78,9 @@ export default function DriversPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [existsElsewhere, setExistsElsewhere] =
     useState<DriverExistsElsewhereConflict["driver"] | null>(null);
+  // A driver of another company was asked by SMS — they join only once they
+  // accept the link, so the dialog says so instead of just closing.
+  const [transferPending, setTransferPending] = useState(false);
 
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -126,6 +129,7 @@ export default function DriversPage() {
     setLanguage("EN");
     setSubmitError(null);
     setExistsElsewhere(null);
+    setTransferPending(false);
   }
 
   function handleDialogChange(open: boolean) {
@@ -137,13 +141,21 @@ export default function DriversPage() {
     if (!confirmTransfer && !canSubmit) return;
     setSubmitError(null);
     try {
-      await createDriver.mutateAsync({
+      const created = await createDriver.mutateAsync({
         firstName: firstName.trim(),
         lastName: lastName.trim() || null,
         phone: cleanedPhone,
         language,
         confirmTransfer,
       });
+      if (
+        (created as { code?: string } | undefined)?.code ===
+        "DRIVER_TRANSFER_PENDING"
+      ) {
+        setExistsElsewhere(null);
+        setTransferPending(true);
+        return;
+      }
       resetForm();
       setDialogOpen(false);
     } catch (e) {
@@ -186,10 +198,25 @@ export default function DriversPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {existsElsewhere ? t("existsElsewhereTitle") : t("addDialogTitle")}
+                {transferPending
+                  ? t("transferPendingTitle")
+                  : existsElsewhere
+                    ? t("existsElsewhereTitle")
+                    : t("addDialogTitle")}
               </DialogTitle>
             </DialogHeader>
-            {existsElsewhere ? (
+            {transferPending ? (
+              <div className="flex flex-col gap-4 py-4">
+                <p className="text-sm text-muted-foreground">
+                  {t("transferPendingBody")}
+                </p>
+                <div className="flex justify-end">
+                  <Button onClick={() => handleDialogChange(false)}>
+                    {t("transferPendingOk")}
+                  </Button>
+                </div>
+              </div>
+            ) : existsElsewhere ? (
               <div className="flex flex-col gap-4 py-4">
                 <p className="text-sm text-muted-foreground">
                   {t("existsElsewhereBody", {

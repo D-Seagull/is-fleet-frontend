@@ -428,8 +428,8 @@
     "languageLabel": "Język",
     "createError": "Nie udało się dodać kierowcy. Spróbuj ponownie.",
     "existsElsewhereTitle": "Kierowca już istnieje",
-    "existsElsewhereBody": "Kierowca „{name}” jest już zarejestrowany w innej firmie. Przenieść go do Twojej firmy?",
-    "confirmTransfer": "Tak, przenieś",
+    "existsElsewhereBody": "Kierowca „{name}” jest już zarejestrowany w innej firmie. Wysłać mu SMS z prośbą o przejście? Dołączy do Twojej firmy dopiero po akceptacji.",
+    "confirmTransfer": "Wyślij prośbę",
     "cancelTransfer": "Anuluj",
     "tabActive": "Aktywni",
     "tabDeactivated": "Dezaktywowani",
@@ -480,7 +480,10 @@
       "submit": "Wyślij"
     },
     "deactivateConfirm": "Dezaktywować tego kierowcę?",
-    "deactivate": "Dezaktywuj"
+    "deactivate": "Dezaktywuj",
+    "transferPendingTitle": "Czekamy na kierowcę",
+    "transferPendingBody": "Kierowca otrzymał SMS z linkiem potwierdzającym. Pojawi się na Twojej liście, gdy tylko zaakceptuje. Link jest ważny 24 godziny.",
+    "transferPendingOk": "OK"
   },
   "managers": {
     "title": "Menedżerowie",
@@ -906,5 +909,20 @@
     "sent": "Dziękujemy! Zgłoszenie wysłane.",
     "error": "Nie udało się wysłać. Spróbuj ponownie.",
     "removeScreenshot": "Usuń"
+  },
+  "driverTransfer": {
+    "loading": "Ładowanie…",
+    "title": "Przejście do nowej firmy",
+    "body": "Firma „{toCompany}” chce dodać Cię jako kierowcę.",
+    "leaveNote": "Opuścisz firmę „{fromCompany}”. Twoje wcześniejsze trasy i czaty zostaną w niej.",
+    "accept": "Akceptuję",
+    "decline": "Odrzucam",
+    "acceptedTitle": "Gotowe",
+    "acceptedBody": "Jesteś teraz kierowcą firmy „{toCompany}”. Otwórz ponownie aplikację IS Fleet, aby zobaczyć nową firmę.",
+    "declinedTitle": "Prośba odrzucona",
+    "declinedBody": "Nic się nie zmieniło. Możesz zamknąć tę stronę.",
+    "invalidTitle": "Link nieprawidłowy",
+    "invalidBody": "Link wygasł lub został już użyty. Poproś firmę o nowy.",
+    "error": "Coś poszło nie tak. Spróbuj ponownie."
   }
 }
