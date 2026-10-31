@@ -48,10 +48,12 @@ import {
   useDriverRatings,
   useUpsertDriverRating,
   useUpdateDriver,
+  useAuthFeatures,
 } from "@/hooks/use-drivers";
 import { useTrucks } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
 import { LoginCodeButton } from "./login-code-button";
+import { MANAGER_LOGIN_CODE_ENABLED } from "@/lib/features";
 
 const PHONE_REGEX = /^\+\d{7,15}$/;
 
@@ -268,6 +270,7 @@ function DriverDetailContent({ id }: { id: string }) {
   const updateDriver = useUpdateDriver(id);
   const { data: trucks } = useTrucks();
   const { data: ratingsData } = useDriverRatings(id);
+  const { data: features } = useAuthFeatures();
 
   const [phone, setPhone] = useState("");
   const [phoneDirty, setPhoneDirty] = useState(false);
@@ -345,8 +348,14 @@ function DriverDetailContent({ id }: { id: string }) {
             <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
-        {/* Only the driver's own assigned manager — the backend enforces it too. */}
-        {driver.isActive && user?.id && driver.manager?.id === user.id && (
+        {/* Off unless switched on both here (NEXT_PUBLIC_MANAGER_LOGIN_CODE_ENABLED)
+            and on the backend (MANAGER_LOGIN_CODE_ENABLED), and only for the
+            manager of the driver's truck — the backend enforces it too. */}
+        {MANAGER_LOGIN_CODE_ENABLED &&
+          features?.managerLoginCode &&
+          driver.isActive &&
+          user?.id &&
+          driver.currentTruck?.managerId === user.id && (
           <LoginCodeButton driverId={driver.id} />
         )}
         {canToggle && (

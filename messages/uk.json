@@ -855,6 +855,18 @@
       "reactivateSuccess": "Компанію активовано",
       "reactivateError": "Не вдалося активувати"
     },
+    "support": {
+      "title": "IS Fleet contact",
+      "subtitle": "Чати користувачів із IS Fleet contact. Відповідаєте від імені контакту.",
+      "empty": "Поки що жодних розмов.",
+      "pick": "Оберіть розмову ліворуч.",
+      "placeholder": "Відповідь від IS Fleet contact…",
+      "send": "Надіслати",
+      "sendError": "Не вдалося надіслати",
+      "you": "IS Fleet contact",
+      "deleted": "Повідомлення видалено",
+      "file": "Файл"
+    },
     "bugReports": {
       "title": "Баг-репорти",
       "subtitle": "Скарги користувачів з усіх застосунків, у реальному часі.",

@@ -855,6 +855,18 @@
       "reactivateSuccess": "Firma aktywowana",
       "reactivateError": "Nie udało się aktywować"
     },
+    "support": {
+      "title": "IS Fleet contact",
+      "subtitle": "Czaty użytkowników z IS Fleet contact. Odpowiadasz jako kontakt.",
+      "empty": "Na razie brak rozmów.",
+      "pick": "Wybierz rozmowę po lewej.",
+      "placeholder": "Odpowiedź jako IS Fleet contact…",
+      "send": "Wyślij",
+      "sendError": "Nie udało się wysłać",
+      "you": "IS Fleet contact",
+      "deleted": "Wiadomość usunięta",
+      "file": "Plik"
+    },
     "bugReports": {
       "title": "Zgłoszenia błędów",
       "subtitle": "Zgłoszenia użytkowników ze wszystkich aplikacji, na żywo.",

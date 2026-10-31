@@ -855,6 +855,18 @@
       "reactivateSuccess": "Unternehmen aktiviert",
       "reactivateError": "Aktivierung fehlgeschlagen"
     },
+    "support": {
+      "title": "IS Fleet contact",
+      "subtitle": "Chats der Nutzer mit IS Fleet contact. Sie antworten als Kontakt.",
+      "empty": "Noch keine Unterhaltungen.",
+      "pick": "Wählen Sie links eine Unterhaltung.",
+      "placeholder": "Antwort als IS Fleet contact…",
+      "send": "Senden",
+      "sendError": "Senden fehlgeschlagen",
+      "you": "IS Fleet contact",
+      "deleted": "Nachricht gelöscht",
+      "file": "Datei"
+    },
     "bugReports": {
       "title": "Fehlerberichte",
       "subtitle": "Nutzermeldungen aus allen Apps, in Echtzeit.",

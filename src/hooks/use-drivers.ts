@@ -51,7 +51,8 @@ export interface DriverDetail {
     lastName: string | null; avatar: string | null;
     status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; email: string | null } | null;
-  currentTruck: { id: string; plate: string; status: string } | null;
+  /** managerId = the driver's actual manager (the truck's). */
+  currentTruck: { id: string; plate: string; status: string; managerId: string | null } | null;
   ratingsReceived: DriverRating[];
   averageRating: number | null;
   ratingCount: number;
@@ -228,5 +229,14 @@ export function useIssueDriverLoginCode() {
       );
       return res.data;
     },
+  });
+}
+
+/** Server-side switches (e.g. manager login codes are dev-only). */
+export function useAuthFeatures() {
+  return useQuery<{ managerLoginCode: boolean }>({
+    queryKey: ["auth-features"],
+    queryFn: async () => (await api.get("/auth/features")).data,
+    staleTime: Infinity,
   });
 }

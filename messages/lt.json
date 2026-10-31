@@ -855,6 +855,18 @@
       "reactivateSuccess": "Įmonė aktyvuota",
       "reactivateError": "Nepavyko aktyvuoti"
     },
+    "support": {
+      "title": "IS Fleet contact",
+      "subtitle": "Naudotojų pokalbiai su IS Fleet contact. Atsakote kontakto vardu.",
+      "empty": "Pokalbių kol kas nėra.",
+      "pick": "Pasirinkite pokalbį kairėje.",
+      "placeholder": "Atsakymas IS Fleet contact vardu…",
+      "send": "Siųsti",
+      "sendError": "Nepavyko išsiųsti",
+      "you": "IS Fleet contact",
+      "deleted": "Žinutė ištrinta",
+      "file": "Failas"
+    },
     "bugReports": {
       "title": "Klaidų pranešimai",
       "subtitle": "Naudotojų pranešimai iš visų programų realiuoju laiku.",
