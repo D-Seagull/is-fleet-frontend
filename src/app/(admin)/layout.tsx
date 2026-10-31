@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SidebarLogoButton } from "@/components/sidebar-logo-button";
 import {
   useNewBugCount,
   useBugReportsSocketSync,
@@ -72,27 +71,22 @@ export default function AdminLayout({
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full flex-col">
-        {/* Full-width top header — the logo sits here (not in the sidebar) so
-            it never collapses with it, and `relative z-30` paints it over the
-            sidebar so the bar reads as one continuous piece. Mirrors the main
-            app layout so admin feels like the same product. */}
-        <header className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
-          <div className="flex items-center gap-2">
-            <SidebarLogoButton />
-            <SidebarTrigger />
-          </div>
+      {/* Same frame as the main app: full-height rail headed by the
+          wordmark (here it links home to the dashboard). */}
+      <AppSidebar
+        navItems={adminNavItems}
+        groupLabel={t("panelLabel")}
+        logoHref="/admin"
+      />
+      <SidebarInset className="flex h-svh flex-col min-w-0 overflow-hidden">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
+          <SidebarTrigger className="text-muted-foreground" />
           <ThemeToggle />
         </header>
-        <div className="flex flex-1 min-h-0">
-          <AppSidebar navItems={adminNavItems} groupLabel={t("panelLabel")} />
-          <SidebarInset className="flex flex-1 flex-col min-w-0 overflow-hidden">
-            <main className="flex-1 overflow-y-auto overflow-x-hidden">
-              {children}
-            </main>
-          </SidebarInset>
-        </div>
-      </div>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          {children}
+        </main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

@@ -1,8 +1,5 @@
 import { cn } from "@/lib/utils";
 
-const PLATE_FONT =
-  'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
-
 /**
  * A truck's registration drawn as an EU number plate — white with a dark rim
  * and the blue band on the left, in dark mode too (real plates don't invert),
@@ -11,24 +8,31 @@ const PLATE_FONT =
  */
 export function LicensePlate({
   plate,
+  size = "sm",
   className,
 }: {
   plate: string;
+  /** sm — lists on desktop; md — phone-sized cards. */
+  size?: "sm" | "md";
   className?: string;
 }) {
   return (
     <span
       className={cn(
-        "inline-flex max-w-full shrink-0 items-stretch overflow-hidden rounded-[4px] border-[1.5px] border-[#1B1F26] bg-white",
+        "inline-flex max-w-full shrink-0 items-stretch overflow-hidden rounded-[7px] border-[1.5px] border-plate-border bg-plate-bg",
+        size === "md" ? "h-[30px]" : "h-6",
         className,
       )}
     >
-      <span className="w-2 shrink-0 bg-[#1E4BA8]" aria-hidden="true" />
       <span
-        className="truncate px-1.5 py-px text-[13px] font-extrabold leading-snug tracking-wider text-[#1B1F26]"
-        // Not `font-mono`: that is Geist Mono with no generic fallback, and
-        // where the webfont isn't loaded the plate fell back to a serif face.
-        style={{ fontFamily: PLATE_FONT }}
+        className={cn("shrink-0 bg-plate-eu", size === "md" ? "w-[9px]" : "w-[7px]")}
+        aria-hidden="true"
+      />
+      <span
+        className={cn(
+          "flex items-center truncate font-bold tracking-[0.06em] text-plate-fg",
+          size === "md" ? "px-2 text-base" : "px-1.5 text-[13px]",
+        )}
       >
         {plate}
       </span>

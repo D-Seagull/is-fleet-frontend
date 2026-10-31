@@ -14,6 +14,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { TruckSwappedNotice } from "@/components/truck-swapped-notice";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BugReportButton } from "@/components/bug-report-button";
+import { GlobalSearch } from "@/components/global-search";
 import { fullName } from "@/lib/format";
 import {
   Truck,
@@ -136,12 +137,12 @@ function UnreadBell() {
     <Popover>
       <PopoverTrigger asChild>
         <button
-          className="relative p-1.5 rounded-md hover:bg-accent transition-colors"
+          className="relative flex h-9 w-9 items-center justify-center rounded-xl hover:bg-secondary transition-colors"
           aria-label={t("unreadMessages")}
         >
           <Bell className="h-5 w-5 text-muted-foreground" />
           {total > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-0.5 leading-none">
+            <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-0.5 leading-none">
               {total > 99 ? "99+" : total}
             </span>
           )}
@@ -284,7 +285,7 @@ function HeaderLogo() {
       aria-label="Toggle Sidebar"
       className="flex items-center rounded-md transition-opacity hover:opacity-80"
     >
-      <BrandLogo className="h-[22.5px]" />
+      <BrandLogo className="h-5" />
     </button>
   );
 }
@@ -353,17 +354,26 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full flex-col">
-        {/* Full-width top header. The logo lives here (not in the sidebar) so
-            it stays put and never collapses with the sidebar. `relative z-30`
-            makes it paint above the fixed sidebar, so it reads as one
-            continuous bar with no vertical divider. */}
-        <header className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
+      {/* The rail runs the full window height (its wordmark heads it); the
+          header spans only the content to its right. */}
+      <AppSidebar navItems={navItems} />
+      <SidebarInset className="flex h-svh flex-col min-w-0 overflow-hidden">
+        <header className="grid h-14 shrink-0 grid-cols-[1fr_auto] md:grid-cols-[1fr_minmax(0,440px)_1fr] items-center gap-4 border-b bg-background px-4">
           <div className="flex items-center gap-2">
-            <HeaderLogo />
-            <SidebarTrigger />
+            {/* Phones: the rail is a drawer, so the wordmark lives here. */}
+            <span className="md:hidden">
+              <HeaderLogo />
+            </span>
+            <SidebarTrigger className="text-muted-foreground" />
           </div>
-          <div className="flex items-center gap-2">
+          {isManager ? (
+            <div className="hidden md:flex justify-center">
+              <GlobalSearch />
+            </div>
+          ) : (
+            <div className="hidden md:block" />
+          )}
+          <div className="flex items-center justify-end gap-1">
             <BugReportButton />
             {isManager ? <UnreadBell /> : <TaskbarBadge count={chatBadge} />}
             {/* Colored trip-status banners (driver accepted / on the way …). */}
@@ -373,15 +383,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
             <ThemeToggle />
           </div>
         </header>
-        <div className="flex flex-1 min-h-0">
-          <AppSidebar navItems={navItems} />
-          <SidebarInset className="flex flex-1 flex-col min-w-0 overflow-hidden">
-            <main className="flex-1 overflow-y-auto overflow-x-hidden">
-              {children}
-            </main>
-          </SidebarInset>
-        </div>
-      </div>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          {children}
+        </main>
+      </SidebarInset>
       {/* Fires when one of the user's alarms is due (cron → socket). */}
       <AlarmNoticeOverlay />
       {/* Хтось інший перецепив рейс цього менеджера на іншу машину. */}

@@ -16,7 +16,6 @@ import { toast } from "sonner";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,7 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { StatusDot } from "@/components/status-dot";
+import { OnlineDot } from "@/components/online-dot";
 import { cn } from "@/lib/utils";
 import {
   useUpdateTripInfo,
@@ -219,12 +218,12 @@ export function TripInfoCard({
   return (
     <>
       <div
-        className="rounded-lg border bg-muted/40 px-3 py-1.5 md:px-4 md:py-3 flex flex-col gap-2 md:gap-3 cursor-pointer select-none"
+        className="rounded-[18px] border bg-card shadow-[0_1px_3px_rgba(16,24,40,0.06)] px-3 py-1.5 md:px-4 md:py-3 flex flex-col gap-2 md:gap-3 cursor-pointer select-none"
         onClick={() => setCollapsed((c) => !c)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-normal text-xs md:font-medium md:text-sm truncate">
+            <span className="font-normal text-xs md:font-semibold md:text-sm truncate">
               {shortenTripTitle(trip.title)}
               {trip.orderNumber && (
                 <span className="text-muted-foreground font-normal">
@@ -235,12 +234,12 @@ export function TripInfoCard({
             </span>
             {fullName(trip.driver) && (
               <span className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground max-[373px]:hidden">
-                <StatusDot user={trip.driver} size="xs" />
+                <OnlineDot user={trip.driver} />
                 {fullName(trip.driver)}
               </span>
             )}
             {isEdited && (
-              <span className="shrink-0 text-[10px] text-muted-foreground border rounded px-1.5 py-0.5 max-[373px]:hidden">
+              <span className="shrink-0 text-[11px] font-medium text-secondary-foreground bg-secondary rounded-full px-2 py-0.5 max-[373px]:hidden">
                 {t("edited")}
               </span>
             )}
@@ -271,14 +270,18 @@ export function TripInfoCard({
                   updateStatus.mutate({ id: trip.id, status: v as TripStatus })
                 }
               >
-                <SelectTrigger className="h-6 w-auto border-0 shadow-none px-1 focus:ring-0 text-xs gap-1">
-                  <Badge
-                    variant="outline"
-                    className={TRIP_STATUS_COLORS[trip.status]}
-                  >
+                {/* The status pill is the trigger: the select's own chevron
+                    sits inside it, in the status colour. */}
+                <span
+                  className={cn(
+                    "inline-flex rounded-full",
+                    TRIP_STATUS_COLORS[trip.status],
+                  )}
+                >
+                  <SelectTrigger className="h-6 w-auto gap-1 rounded-full border-0 bg-transparent px-2.5 py-0 text-xs font-semibold shadow-none focus:ring-0 data-[size=default]:h-6 dark:bg-transparent dark:hover:bg-transparent [&_svg]:!text-current [&_svg]:opacity-80">
                     {tStatus(trip.status)}
-                  </Badge>
-                </SelectTrigger>
+                  </SelectTrigger>
+                </span>
                 <SelectContent>
                   {TRIP_STATUS_KEYS.map((s) => (
                     <SelectItem key={s} value={s}>
@@ -303,7 +306,7 @@ export function TripInfoCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 mr-3"
+                  className="group/del h-6 w-6 mr-3 hover:bg-destructive/10"
                   title={tActions("delete")}
                   aria-label={tActions("delete")}
                   disabled={deleteTrip.isPending}
@@ -312,7 +315,7 @@ export function TripInfoCard({
                   {deleteTrip.isPending ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                   ) : (
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground group-hover/del:text-destructive" />
                   )}
                 </Button>
               )}

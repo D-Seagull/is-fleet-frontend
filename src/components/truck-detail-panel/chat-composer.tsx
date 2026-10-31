@@ -103,7 +103,7 @@ export function ChatComposer({
   }, [showEmoji, setShowEmoji]);
 
   return (
-    <div className="shrink-0 border-t pt-3 relative">
+    <div className="shrink-0 pt-3 relative">
       {!isCompanyActive ? (
         <div className="px-3 py-3 text-center text-xs text-muted-foreground">
           {t("companyDeactivatedNotice")}
@@ -200,7 +200,7 @@ export function ChatComposer({
             <Button
               size="icon"
               variant="ghost"
-              className="h-9 w-9 shrink-0"
+              className="h-11 w-11 rounded-full shrink-0"
               title={t("attachFile")}
               onClick={() => fileInputRef.current?.click()}
             >
@@ -219,7 +219,7 @@ export function ChatComposer({
               ref={emojiBtnRef}
               size="icon"
               variant="ghost"
-              className="h-9 w-9 shrink-0"
+              className="h-11 w-11 rounded-full shrink-0"
               title={t("emoji")}
               onClick={() => setShowEmoji((v) => !v)}
             >
@@ -256,7 +256,7 @@ export function ChatComposer({
               onClick={handleSend}
               disabled={!text.trim() && pendingFiles.length === 0}
               title={editing ? tActions("save") : t("send")}
-              className="h-9 w-9 shrink-0"
+              className="h-11 w-11 rounded-full shrink-0"
             >
               {editing ? (
                 <Check className="h-4 w-4" />

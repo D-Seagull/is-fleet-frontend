@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { StatusDot } from "@/components/status-dot";
+import { OnlineDot } from "@/components/online-dot";
 import { LastSeen } from "@/components/last-seen";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -279,7 +279,7 @@ export function TruckDetailPanel({
           </Button>
         )}
         <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-          <h1 className="text-base md:text-2xl font-bold shrink-0">
+          <h1 className="text-base md:text-[26px] md:leading-8 font-bold tracking-tight shrink-0">
             {truck.plate}
           </h1>
           {truck.currentDriver && (
@@ -288,13 +288,14 @@ export function TruckDetailPanel({
                 href={`/drivers/${truck.currentDriver.id}`}
                 className="truncate hover:text-foreground hover:underline transition-colors inline-flex items-center gap-1.5"
               >
-                <StatusDot user={truck.currentDriver} size="xs" />
+                <OnlineDot user={truck.currentDriver} />
                 {t("header.driverLabel", { name: fullName(truck.currentDriver) })}
               </Link>
-              {/* "- останній вхід 12:30" after 15+ min out of the app. */}
+              {/* Not in the app → "· останній вхід 12:30" instead of a dot. */}
               <LastSeen
                 user={truck.currentDriver}
-                className="shrink-0 before:content-['-'] before:mr-1.5"
+                always
+                className="shrink-0 before:content-['·'] before:mr-1.5"
               />
             </div>
           )}

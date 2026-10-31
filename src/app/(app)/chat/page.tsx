@@ -2660,6 +2660,7 @@ function ChatPageContent() {
                   type="button"
                   variant="ghost"
                   size="icon"
+                  className="h-11 w-11 rounded-full"
                   onClick={() => attachInputRef.current?.click()}
                   title={tChat("attachFile")}
                 >
@@ -2675,7 +2676,7 @@ function ChatPageContent() {
                 />
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                   <PopoverTrigger asChild>
-                    <Button type="button" variant="ghost" size="icon">
+                    <Button type="button" variant="ghost" size="icon" className="h-11 w-11 rounded-full">
                       <Smile className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
@@ -2715,6 +2716,7 @@ function ChatPageContent() {
                 <Button
                   type="submit"
                   size="icon"
+                  className="h-11 w-11 rounded-full"
                   title={editing ? tActions("save") : tChat("send")}
                   disabled={
                     editing

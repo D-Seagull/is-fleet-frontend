@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2, Truck, ChevronRight, Megaphone, BookTemplate, Trash2, ChevronDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -30,25 +29,34 @@ import {
 } from "@/components/ui/tooltip";
 import { useMyTrucks, type Truck as TruckType } from "@/hooks/use-trucks";
 import { TruckDetailPanel } from "@/components/truck-detail-panel";
-import { useBroadcastToMyTrucks, TRIP_STATUS_COLORS } from "@/hooks/use-trips";
+import { useBroadcastToMyTrucks } from "@/hooks/use-trips";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useUnreadSummary, type UnreadSummaryItem } from "@/hooks/use-unread";
 import { cn } from "@/lib/utils";
-import { StatusDot } from "@/components/status-dot";
+import { OnlineDot } from "@/components/online-dot";
+import { LastSeen } from "@/components/last-seen";
 import { LicensePlate } from "@/components/license-plate";
+import { StatusBadge } from "@/components/status-badge";
+import { IssueChip } from "@/components/issue-chip";
 
 // ─── Driver line ──────────────────────────────────────────────────────────────
 
-/** Driver name and live status dot (last login lives in the truck's chat header). */
+/**
+ * Driver name in full with their presence mark (green / sleep / vacation) and,
+ * when they're out of the app, when they were last in it — on its own line.
+ */
 function DriverStatusLine({
   driver,
 }: {
   driver: NonNullable<TruckType["currentDriver"]>;
 }) {
   return (
-    <span className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
-      <span className="truncate">{fullName(driver)}</span>
-      <StatusDot user={driver} size="xs" className="shrink-0 ring-0" />
+    <span className="flex flex-col min-w-0">
+      <span className="flex items-center gap-1.5 text-[13px] text-text-secondary">
+        <span className="break-words">{fullName(driver)}</span>
+        <OnlineDot user={driver} />
+      </span>
+      <LastSeen user={driver} always className="text-xs text-muted-foreground" />
     </span>
   );
 }
@@ -80,36 +88,28 @@ function TruckListItem({
     <button
       onClick={onClick}
       className={cn(
-        "w-full text-left px-3 py-3 border-b transition-colors hover:bg-muted/50 flex items-center gap-2",
-        isSelected && !isMobile && "bg-muted",
-        hasUnread && !isSelected && "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+        "w-full text-left px-3.5 py-3 rounded-2xl border transition-colors flex items-center gap-2",
+        isSelected && !isMobile
+          ? "bg-accent border-primary/50 shadow-sm"
+          : "bg-muted border-border hover:bg-secondary",
       )}
     >
-      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+      <div className="flex flex-col gap-1.5 flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          {hasUnread && (
-            <span className="shrink-0 w-2 h-2 rounded-full bg-blue-500" />
-          )}
           <LicensePlate plate={truck.plate} className="min-w-0" />
           <span className="flex-1" />
           {hasUnread && (
-            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 leading-none shrink-0">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold px-1.5 leading-none shrink-0">
               {unread!.totalUnread}
             </span>
           )}
-          {activeTrip ? (
-            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-5 shrink-0", TRIP_STATUS_COLORS[activeTrip.status])}>
-              {tTripStatus(activeTrip.status)}
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 shrink-0 bg-muted text-muted-foreground border-border">
-              {tTripStatus("NONE")}
-            </Badge>
-          )}
+          <StatusBadge status={activeTrip?.status ?? "NONE"}>
+            {tTripStatus(activeTrip?.status ?? "NONE")}
+          </StatusBadge>
         </div>
         {truck.currentDriver && <DriverStatusLine driver={truck.currentDriver} />}
         {hasUnread && unread?.latestMessage ? (
-          <span className="text-[11px] text-muted-foreground truncate">
+          <span className="text-xs text-foreground truncate">
             {/* The driver's name is on the line above — repeat it only when
                 someone else wrote (another manager). */}
             {!sameName(unread.latestMessage.senderName, fullName(truck.currentDriver)) && (
@@ -120,9 +120,7 @@ function TruckListItem({
         ) : lastNote ? (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-xs text-destructive truncate italic cursor-help">
-                {lastNote.content}
-              </span>
+              <IssueChip className="self-start cursor-help">{lastNote.content}</IssueChip>
             </TooltipTrigger>
             <TooltipContent
               side="bottom"
@@ -134,7 +132,7 @@ function TruckListItem({
           </Tooltip>
         ) : null}
       </div>
-      {isMobile && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+      {isMobile && <ChevronRight className="h-4 w-4 text-text-subtle shrink-0" />}
     </button>
   );
 }
@@ -397,7 +395,7 @@ function MyTrucksContent() {
   }
 
   const truckList = (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto flex flex-col gap-2 px-2 pt-2 pb-2">
       {isLoading ? (
         <div className="flex items-center justify-center py-10">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -441,7 +439,7 @@ function MyTrucksContent() {
   return (
     <div className="flex h-full">
       <div className="w-72 shrink-0 border-r flex flex-col overflow-hidden">
-        <div className="px-3 py-3 border-b shrink-0 flex items-center justify-between">
+        <div className="px-4 py-4 border-b shrink-0 flex items-center justify-between">
           <h2 className="font-semibold text-sm flex items-center gap-2">
             <Truck className="h-4 w-4" />
             {t("title")}

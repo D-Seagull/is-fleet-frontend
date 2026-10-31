@@ -944,5 +944,13 @@
     "invalidTitle": "Link ungültig",
     "invalidBody": "Der Link ist abgelaufen oder wurde bereits verwendet. Bitten Sie das Unternehmen um einen neuen.",
     "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+  },
+  "search": {
+    "placeholder": "LKW, Fahrer oder Fahrt suchen",
+    "trucks": "LKW",
+    "drivers": "Fahrer",
+    "trips": "Fahrten",
+    "nothingFound": "Nichts gefunden",
+    "loading": "Wird geladen…"
   }
 }

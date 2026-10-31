@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LucideIcon, ChevronRight, Search } from "lucide-react";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { fullName, initials } from "@/lib/format";
 import {
   Sidebar,
@@ -40,6 +40,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { StatusDot } from "@/components/status-dot";
+import { BrandLogo } from "@/components/brand-logo";
 import { useUpdateMe } from "@/hooks/use-avatar";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/store/auth";
@@ -63,6 +64,70 @@ export interface NavItem {
 interface AppSidebarProps {
   navItems: NavItem[];
   groupLabel?: string;
+  /** Logo click goes here; without it the logo folds / unfolds the sidebar. */
+  logoHref?: string;
+}
+
+// Open-sidebar width = the longest nav label plus what sits around it:
+// group padding 8 + button padding 15 + icon 18 + gap 8 on the left; room for
+// an unread counter (≈30) + 15 + 8 on the right. Never narrower than the
+// wordmark (110 + 2×16).
+const LABEL_CHROME_PX = 8 + 15 + 18 + 8 + 30 + 15 + 8;
+const MIN_SIDEBAR_PX = 142;
+
+/**
+ * Sizes the open sidebar to its longest label (in the current language), so
+ * it carries no empty space. Measured with the page font; set on the sidebar
+ * wrapper's `--sidebar-width`, which both the gap and the panel read.
+ */
+function useFitSidebarWidth(titles: string[]) {
+  const key = titles.join("|");
+  useLayoutEffect(() => {
+    const wrapper = document.querySelector<HTMLElement>(
+      '[data-slot="sidebar-wrapper"]',
+    );
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (!wrapper || !ctx) return;
+    // font-medium: the active item is the widest a label gets.
+    ctx.font = `500 14px ${getComputedStyle(document.body).fontFamily}`;
+    const longest = Math.max(
+      0,
+      ...key.split("|").map((title) => ctx.measureText(title).width),
+    );
+    const px = Math.max(MIN_SIDEBAR_PX, Math.ceil(longest + LABEL_CHROME_PX));
+    wrapper.style.setProperty("--sidebar-width", `${px}px`);
+  }, [key]);
+}
+
+/**
+ * The wordmark at the top of the rail: collapsed it shows only "IS", expanded
+ * the rest ("/ Fleet") slides out. At 18px tall "IS" is 32px and the whole
+ * lockup 111px wide (logo SVG 1994×324, "IS" ends at x=578); 16px either side
+ * centres "IS" in the 64px rail and keeps it in place while the rail opens.
+ */
+function SidebarBrand({ href }: { href?: string }) {
+  const { toggleSidebar } = useSidebar();
+  const logo = (
+    <span className="block w-[111px] overflow-hidden transition-[width] duration-200 ease-linear group-data-[collapsible=icon]:w-8">
+      <BrandLogo onDark className="h-[18px]" />
+    </span>
+  );
+  const cls =
+    "flex h-14 shrink-0 items-center px-4 transition-opacity hover:opacity-80";
+  return href ? (
+    <Link href={href} aria-label="IS Fleet" className={cls}>
+      {logo}
+    </Link>
+  ) : (
+    <button
+      type="button"
+      onClick={toggleSidebar}
+      aria-label="Toggle Sidebar"
+      className={cls}
+    >
+      {logo}
+    </button>
+  );
 }
 
 function CollapsibleNavItem({
@@ -136,6 +201,7 @@ function CollapsibleNavItem({
 export function AppSidebar({
   navItems,
   groupLabel,
+  logoHref,
 }: AppSidebarProps) {
   const t = useTranslations("sidebar");
   const tRoles = useTranslations("common.roles");
@@ -145,25 +211,26 @@ export function AppSidebar({
   const router = useRouter();
   const { setOpen, setOpenMobile, isMobile } = useSidebar();
 
+  useFitSidebarWidth(navItems.map((item) => item.title));
+
   const handleNavClick = () => {
     if (isMobile) setOpenMobile(false);
   };
 
   return (
     <Sidebar collapsible="icon">
-      {/* Empty h-14 spacer so the nav starts below the full-width app header
-          (which now carries the logo). The app header paints on top of this
-          region, so the sidebar no longer owns the logo and doesn't collapse
-          it. */}
-      <SidebarHeader className="h-14" />
+      {/* Runs to the very top of the window; the wordmark heads it. */}
+      <SidebarHeader className="p-0">
+        <SidebarBrand href={logoHref} />
+      </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            {groupLabel ?? t("navigation")}
-          </SidebarGroupLabel>
+          {/* The wordmark already says where you are — a label only where
+              the panel needs naming (admin). */}
+          {groupLabel && <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>}
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="group-data-[collapsible=icon]:items-center">
               {navItems.map((item) =>
                 item.children && item.children.length > 0 ? (
                   <CollapsibleNavItem
@@ -178,10 +245,13 @@ export function AppSidebar({
                       asChild
                       isActive={pathname.startsWith(item.href)}
                       tooltip={item.title}
+                      // Icons stay put while the rail folds: 8 + 15 = 23px
+                      // from the edge, same as centred in the 64px rail.
+                      className="h-11 px-[15px]"
                     >
                       <Link href={item.href} onClick={handleNavClick}>
                         <span className="relative">
-                          <item.icon className="h-4 w-4" />
+                          <item.icon className="h-[18px] w-[18px]" />
                           {item.badge !== undefined && item.badge > 0 && (
                             <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive ring-2 ring-sidebar" />
                           )}
@@ -203,13 +273,13 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarMenu>
+        <SidebarMenu className="group-data-[collapsible=icon]:items-center">
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:p-1.5!"
                 >
                   {/* SidebarMenuButton clips overflow, so the status dot
                       can't overhang the avatar — anchor it just inside the
@@ -223,12 +293,12 @@ export function AppSidebar({
                       user={user}
                       isOnline
                       size="xs"
-                      className="absolute bottom-0 right-0"
+                      className="absolute bottom-0 right-0 ring-sidebar"
                     />
                   </span>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-semibold">{fullName(user)}</span>
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="truncate text-xs text-sidebar-foreground/70">
                       {user?.role ? tRoles(user.role) : ""}
                     </span>
                   </div>

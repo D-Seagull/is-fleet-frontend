@@ -944,5 +944,13 @@
     "invalidTitle": "Link not valid",
     "invalidBody": "This link has expired or was already used. Ask the company to send a new one.",
     "error": "Something went wrong. Please try again."
+  },
+  "search": {
+    "placeholder": "Search trucks, drivers or trips",
+    "trucks": "Trucks",
+    "drivers": "Drivers",
+    "trips": "Trips",
+    "nothingFound": "Nothing found",
+    "loading": "Loading…"
   }
 }

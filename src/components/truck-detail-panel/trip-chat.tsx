@@ -869,7 +869,7 @@ export function TripChat({
 
       <div
         className={cn(
-          "relative flex-1 min-h-0 bg-chat-bg chat2-bg-image",
+          "relative flex-1 min-h-0 overflow-hidden rounded-xl bg-chat-bg chat2-bg-image",
           // Nothing is layered over the wallpaper yet — fade it right down so
           // the empty state reads as the subject, not as a caption on a photo.
           !isLoading && timeline.length === 0 && "chat2-bg-quiet",
@@ -990,7 +990,7 @@ export function TripChat({
               const el = scrollContainerRef.current;
               if (el) scrollToLatest(el);
             }}
-            className="absolute bottom-4 right-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border bg-background/90 text-foreground shadow-md backdrop-blur transition hover:bg-muted"
+            className="absolute bottom-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border bg-card text-foreground shadow-md transition hover:bg-muted"
           >
             <ChevronDown className="h-[22px] w-[22px]" />
           </button>
