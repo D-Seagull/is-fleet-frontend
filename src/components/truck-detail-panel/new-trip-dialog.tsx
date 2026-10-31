@@ -201,8 +201,8 @@ export function NewTripDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-2 h-4 w-4" />
+        <Button className="h-[42px] rounded-full px-5 font-semibold">
+          <Plus className="h-4 w-4" />
           {t("button")}
         </Button>
       </DialogTrigger>

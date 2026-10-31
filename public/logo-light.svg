@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1458 324" role="img" aria-labelledby="title">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1994 324" role="img" aria-labelledby="title">
   <title id="title">IS Fleet</title>
   <defs><linearGradient id="accent" x1="0" y1="0" x2="0.72" y2="1"><stop offset="0" stop-color="#08c4ea"/><stop offset="1" stop-color="#0554ed"/></linearGradient><linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E4ECF7"/></linearGradient></defs>
   <g transform="translate(-0.238846,324) scale(0.100041,-0.100964)" fill="url(#accent)">
@@ -25,13 +25,13 @@ c-69 -44 -98 -53 -122 -37 -19 12 115 82 157 82 35 -1 35 -1 -35 -45z m-157
 -85 c9 0 -9 -18 -39 -39 -30 -22 -106 -78 -170 -125 l-116 -86 -84 0 -84 0 25
 20 c24 19 226 143 340 209 40 22 63 30 84 26 16 -3 36 -5 44 -5z"/>
 </g>
-  <g transform="translate(600,293.034552) scale(0.1,-0.100178)" fill="url(#accent)">
+  <g transform="translate(604.000000,324.063832) scale(0.129603,-0.129834)" fill="url(#accent)">
 <path d="M688 2485 c-19 -10 -31 -29 -38 -58 -28 -103 -127 -461 -185 -667
 -71 -253 -164 -580 -253 -900 -121 -430 -212 -772 -212 -796 0 -59 85 -86 134
 -41 19 17 33 53 61 157 35 131 125 449 420 1490 155 545 205 729 205 754 0 25
 -43 66 -75 71 -17 3 -42 -1 -57 -10z"/>
 </g>
-  <g transform="translate(710.214007,227.916164) scale(0.096148,-0.095998)" fill="url(#navy)">
+  <g transform="translate(744.595916,323.839620) scale(0.160567,-0.160317)" fill="url(#navy)">
 <path d="M6752 1862 c-19 -86 -70 -319 -114 -517 -175 -794 -195 -907 -178
 -1019 20 -136 83 -220 204 -277 91 -42 161 -49 493 -49 l303 0 5 23 c39 160
 83 372 79 379 -3 4 -85 8 -183 8 -166 0 -181 2 -221 23 -56 29 -80 74 -80 150

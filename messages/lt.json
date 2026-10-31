@@ -944,5 +944,13 @@
     "invalidTitle": "Nuoroda negalioja",
     "invalidBody": "Nuoroda nebegalioja arba jau panaudota. Paprašykite įmonės atsiųsti naują.",
     "error": "Nepavyko. Bandykite dar kartą."
+  },
+  "search": {
+    "placeholder": "Ieškoti vilkiko, vairuotojo ar reiso",
+    "trucks": "Vilkikai",
+    "drivers": "Vairuotojai",
+    "trips": "Reisai",
+    "nothingFound": "Nieko nerasta",
+    "loading": "Įkeliama…"
   }
 }

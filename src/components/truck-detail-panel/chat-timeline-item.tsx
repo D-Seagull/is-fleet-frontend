@@ -122,7 +122,7 @@ function MessageBubble({
               src={msg.sender?.avatar ?? undefined}
               alt={fullName(msg.sender) || ""}
             />
-            <AvatarFallback className="text-xs bg-primary/10 text-primary">
+            <AvatarFallback className="text-xs font-semibold bg-secondary text-secondary-foreground">
               {senderInitials}
             </AvatarFallback>
           </Avatar>
@@ -151,14 +151,16 @@ function MessageBubble({
           <div
             id={`trip-msg-${msg.id}`}
             className={cn(
-              "rounded-2xl max-w-full transition-shadow",
+              "rounded-[20px] max-w-full transition-shadow",
+              // The corner by the sender stays sharp — the bubble "points" at them.
+              isMine ? "rounded-br-md" : "rounded-bl-md",
               isDeleted
-                ? "bg-muted/40 text-muted-foreground italic text-xs px-3 py-1 whitespace-nowrap"
+                ? "bg-secondary text-muted-foreground italic text-xs px-3 py-1 whitespace-nowrap"
                 : cn(
-                    "px-3 py-2 text-sm whitespace-pre-wrap break-words",
+                    "px-3.5 py-2 text-sm whitespace-pre-wrap break-words",
                     isMine
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted",
+                      : "bg-card text-foreground border",
                   ),
             )}
           >
@@ -374,17 +376,17 @@ function FileBubble({
               />
             )}
             {isDeletedDoc ? (
-              <div className="rounded-2xl bg-muted/40 text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
+              <div className="rounded-[20px] bg-secondary text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
                 {t("fileDeleted")}
               </div>
             ) : isPhoto ? (
               <div
                 className={cn(
-                  "rounded-2xl overflow-hidden border max-w-[200px]",
+                  "rounded-[20px] overflow-hidden border max-w-[200px]",
                   doc.caption &&
                     (isMine
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted"),
+                      : "bg-card"),
                 )}
               >
                 <div
@@ -410,10 +412,10 @@ function FileBubble({
             ) : (
               <div
                 className={cn(
-                  "rounded-2xl border overflow-hidden",
+                  "rounded-[20px] border overflow-hidden",
                   isMine
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted",
+                    : "bg-card",
                 )}
               >
                 <FileRow doc={doc} isMine={isMine} />
@@ -549,17 +551,17 @@ function AlbumBubble({
               />
             )}
             {isDeleted ? (
-              <div className="rounded-2xl bg-muted/40 text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
+              <div className="rounded-[20px] bg-secondary text-muted-foreground italic px-3 py-1 text-xs whitespace-nowrap">
                 {t("fileDeleted")}
               </div>
             ) : (
               <div
                 className={cn(
-                  "rounded-2xl overflow-hidden border w-fit max-w-[260px]",
+                  "rounded-[20px] overflow-hidden border w-fit max-w-[260px]",
                   (caption || files.length > 0) &&
                     (isMine
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted"),
+                      : "bg-card"),
                 )}
               >
                 <AlbumGrid

@@ -104,7 +104,7 @@ export function ChatInput({
       onPaste={handlePaste}
       data-slot="textarea"
       className={cn(
-        "border-input placeholder:text-muted-foreground dark:bg-input/30 min-h-9 w-full min-w-0 resize-none rounded-md border bg-transparent px-3 py-[7px] text-base leading-5 shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "border-input placeholder:text-muted-foreground min-h-11 w-full min-w-0 resize-none rounded-[22px] border bg-card px-4 py-3 text-base leading-5 shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
         className,
       )}

@@ -944,5 +944,13 @@
     "invalidTitle": "Link nieprawidłowy",
     "invalidBody": "Link wygasł lub został już użyty. Poproś firmę o nowy.",
     "error": "Coś poszło nie tak. Spróbuj ponownie."
+  },
+  "search": {
+    "placeholder": "Szukaj pojazdu, kierowcy lub kursu",
+    "trucks": "Pojazdy",
+    "drivers": "Kierowcy",
+    "trips": "Kursy",
+    "nothingFound": "Nic nie znaleziono",
+    "loading": "Ładowanie…"
   }
 }

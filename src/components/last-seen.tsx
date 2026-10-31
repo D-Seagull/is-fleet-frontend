@@ -28,21 +28,24 @@ function sameDay(a: Date, b: Date) {
 /**
  * "останній вхід 12:30" — today only the time, then "учора 12:30", older
  * "12 жовт. 12:30". Renders nothing while the person is in the app or has
- * been out of it for less than 15 min. Live: going offline is picked up from
- * presence events, so no reload is needed.
+ * been out of it for less than 15 min (`always` drops that grace period).
+ * Live: going offline is picked up from presence events, so no reload is
+ * needed.
  */
 export function LastSeen({
   user,
+  always = false,
   className,
 }: {
   user: { id?: string; lastSeenAt?: string | null } | null | undefined;
+  always?: boolean;
   className?: string;
 }) {
   const t = useTranslations("common.lastSeen");
   const locale = useLocale();
   const now = useMinuteTick();
   const at = useLastSeen(user?.id, user?.lastSeenAt);
-  if (!at || now - at.getTime() < SHOW_AFTER_MS) return null;
+  if (!at || (!always && now - at.getTime() < SHOW_AFTER_MS)) return null;
 
   const time = at.toLocaleTimeString(locale, {
     hour: "2-digit",
