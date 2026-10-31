@@ -462,14 +462,6 @@
       "noTruck": "Kein LKW",
       "ratingField": "Bewertung",
       "noRatingsInline": "Noch keine Bewertungen",
-      "emailField": "E-Mail",
-      "emailVerified": "Bestätigt",
-      "emailUnverified": "Nicht bestätigt",
-      "emailHint": "Ersatzkanal für Anmeldecodes. Der Fahrer bestätigt die Adresse über den Link in der E-Mail.",
-      "emailFormatHint": "Ungültiges E-Mail-Format",
-      "emailSent": "Bestätigungs-E-Mail an den Fahrer gesendet",
-      "emailResend": "E-Mail erneut senden",
-      "emailSaveError": "E-Mail konnte nicht gespeichert werden",
       "loginCode": "Anmeldecode",
       "loginCodeTitle": "Anmeldecode für Fahrer",
       "loginCodeDesc": "Sagen Sie dem Fahrer den Code am Telefon durch — er gibt ihn statt des SMS-Codes im Code-Bildschirm ein.",
@@ -863,6 +855,18 @@
       "reactivateSuccess": "Unternehmen aktiviert",
       "reactivateError": "Aktivierung fehlgeschlagen"
     },
+    "support": {
+      "title": "IS Fleet contact",
+      "subtitle": "Chats der Nutzer mit IS Fleet contact. Sie antworten als Kontakt.",
+      "empty": "Noch keine Unterhaltungen.",
+      "pick": "Wählen Sie links eine Unterhaltung.",
+      "placeholder": "Antwort als IS Fleet contact…",
+      "send": "Senden",
+      "sendError": "Senden fehlgeschlagen",
+      "you": "IS Fleet contact",
+      "deleted": "Nachricht gelöscht",
+      "file": "Datei"
+    },
     "bugReports": {
       "title": "Fehlerberichte",
       "subtitle": "Nutzermeldungen aus allen Apps, in Echtzeit.",
@@ -925,16 +929,6 @@
     "sent": "Danke! Ihr Bericht wurde gesendet.",
     "error": "Konnte nicht gesendet werden. Versuchen Sie es erneut.",
     "removeScreenshot": "Entfernen"
-  },
-  "verifyEmail": {
-    "title": "E-Mail bestätigen",
-    "body": "Bestätigen Sie diese Adresse, um hier IS Fleet Anmeldecodes zu erhalten, wenn die SMS nicht ankommt.",
-    "confirm": "E-Mail bestätigen",
-    "doneTitle": "E-Mail bestätigt",
-    "doneBody": "Auf dem Anmeldebildschirm können Sie jetzt „An meine E-Mail senden“ wählen. Sie können diese Seite schließen.",
-    "invalidTitle": "Link ungültig",
-    "invalidBody": "Der Link ist abgelaufen oder wurde bereits verwendet. Bitten Sie Ihren Manager, die E-Mail erneut zu senden.",
-    "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
   },
   "driverTransfer": {
     "loading": "Wird geladen…",

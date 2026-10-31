@@ -462,14 +462,6 @@
       "noTruck": "Be sunkvežimio",
       "ratingField": "Įvertinimas",
       "noRatingsInline": "Kol kas nėra įvertinimų",
-      "emailField": "El. paštas",
-      "emailVerified": "Patvirtintas",
-      "emailUnverified": "Nepatvirtintas",
-      "emailHint": "Atsarginis prisijungimo kodo kanalas. Vairuotojas patvirtina adresą nuoroda iš laiško.",
-      "emailFormatHint": "Neteisingas el. pašto formatas",
-      "emailSent": "Vairuotojui išsiųstas patvirtinimo laiškas",
-      "emailResend": "Siųsti laišką dar kartą",
-      "emailSaveError": "Nepavyko išsaugoti el. pašto",
       "loginCode": "Prisijungimo kodas",
       "loginCodeTitle": "Vairuotojo prisijungimo kodas",
       "loginCodeDesc": "Padiktuokite kodą vairuotojui telefonu — jis įves jį kodo ekrane vietoj SMS kodo.",
@@ -863,6 +855,18 @@
       "reactivateSuccess": "Įmonė aktyvuota",
       "reactivateError": "Nepavyko aktyvuoti"
     },
+    "support": {
+      "title": "IS Fleet contact",
+      "subtitle": "Naudotojų pokalbiai su IS Fleet contact. Atsakote kontakto vardu.",
+      "empty": "Pokalbių kol kas nėra.",
+      "pick": "Pasirinkite pokalbį kairėje.",
+      "placeholder": "Atsakymas IS Fleet contact vardu…",
+      "send": "Siųsti",
+      "sendError": "Nepavyko išsiųsti",
+      "you": "IS Fleet contact",
+      "deleted": "Žinutė ištrinta",
+      "file": "Failas"
+    },
     "bugReports": {
       "title": "Klaidų pranešimai",
       "subtitle": "Naudotojų pranešimai iš visų programų realiuoju laiku.",
@@ -925,16 +929,6 @@
     "sent": "Ačiū! Pranešimas išsiųstas.",
     "error": "Nepavyko išsiųsti. Bandykite dar kartą.",
     "removeScreenshot": "Pašalinti"
-  },
-  "verifyEmail": {
-    "title": "Patvirtinkite el. paštą",
-    "body": "Patvirtinkite šį adresą, kad čia gautumėte IS Fleet prisijungimo kodus, kai SMS neateina.",
-    "confirm": "Patvirtinti el. paštą",
-    "doneTitle": "El. paštas patvirtintas",
-    "doneBody": "Dabar prisijungimo ekrane galite pasirinkti „Siųsti el. paštu“. Šį puslapį galite uždaryti.",
-    "invalidTitle": "Nuoroda negalioja",
-    "invalidBody": "Nuoroda pasibaigė arba jau panaudota. Paprašykite vadybininko išsiųsti laišką dar kartą.",
-    "error": "Kažkas nepavyko. Bandykite dar kartą."
   },
   "driverTransfer": {
     "loading": "Įkeliama…",

@@ -31,8 +31,6 @@ export const OPEN_ROUTES = [
   // phone, usually with no web session — and a signed-in visitor (say, a
   // manager testing on their own phone) must not be bounced into the app.
   "/driver-transfer",
-  // Email confirmation link a driver opens from their mailbox — same deal.
-  "/verify-email",
 ];
 
 /**

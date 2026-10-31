@@ -53,7 +53,7 @@ import {
 import { useTrucks } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
 import { LoginCodeButton } from "./login-code-button";
-import { DriverEmailField } from "./driver-email-field";
+import { MANAGER_LOGIN_CODE_ENABLED } from "@/lib/features";
 
 const PHONE_REGEX = /^\+\d{7,15}$/;
 
@@ -348,9 +348,11 @@ function DriverDetailContent({ id }: { id: string }) {
             <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
-        {/* Dev-only (MANAGER_LOGIN_CODE_ENABLED), and only for the manager
-            of the driver's truck — the backend enforces both. */}
-        {features?.managerLoginCode &&
+        {/* Off unless switched on both here (NEXT_PUBLIC_MANAGER_LOGIN_CODE_ENABLED)
+            and on the backend (MANAGER_LOGIN_CODE_ENABLED), and only for the
+            manager of the driver's truck — the backend enforces it too. */}
+        {MANAGER_LOGIN_CODE_ENABLED &&
+          features?.managerLoginCode &&
           driver.isActive &&
           user?.id &&
           driver.currentTruck?.managerId === user.id && (
@@ -489,13 +491,6 @@ function DriverDetailContent({ id }: { id: string }) {
                         )}
                       </div>
                     </div>
-
-                    <DriverEmailField
-                      key={driver.email ?? ""}
-                      driverId={driver.id}
-                      email={driver.email}
-                      verifiedAt={driver.emailVerifiedAt}
-                    />
 
                     {/* Language */}
                     <div className="flex items-center gap-3">

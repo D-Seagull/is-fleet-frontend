@@ -462,14 +462,6 @@
       "noTruck": "No truck",
       "ratingField": "Rating",
       "noRatingsInline": "No ratings yet",
-      "emailField": "Email",
-      "emailVerified": "Confirmed",
-      "emailUnverified": "Not confirmed",
-      "emailHint": "Backup channel for sign-in codes. The driver confirms the address via the link in the email.",
-      "emailFormatHint": "Invalid email format",
-      "emailSent": "A confirmation email was sent to the driver",
-      "emailResend": "Send the email again",
-      "emailSaveError": "Couldn't save the email",
       "loginCode": "Login code",
       "loginCodeTitle": "Driver login code",
       "loginCodeDesc": "Read the code out to the driver over the phone — they type it on the code screen instead of the SMS one.",
@@ -863,6 +855,18 @@
       "reactivateSuccess": "Company activated",
       "reactivateError": "Failed to activate"
     },
+    "support": {
+      "title": "IS Fleet contact",
+      "subtitle": "Users' chats with IS Fleet contact. You reply as the contact.",
+      "empty": "No conversations yet.",
+      "pick": "Pick a conversation on the left.",
+      "placeholder": "Reply as IS Fleet contact…",
+      "send": "Send",
+      "sendError": "Couldn't send",
+      "you": "IS Fleet contact",
+      "deleted": "Message deleted",
+      "file": "File"
+    },
     "bugReports": {
       "title": "Bug reports",
       "subtitle": "User reports from every app, in real time.",
@@ -925,16 +929,6 @@
     "sent": "Thanks! Your report was sent.",
     "error": "Couldn't send. Try again.",
     "removeScreenshot": "Remove"
-  },
-  "verifyEmail": {
-    "title": "Confirm your email",
-    "body": "Confirm this address to receive IS Fleet sign-in codes here when the SMS doesn't arrive.",
-    "confirm": "Confirm email",
-    "doneTitle": "Email confirmed",
-    "doneBody": "You can now pick \"Send to my email\" on the sign-in screen. You can close this page.",
-    "invalidTitle": "Link not valid",
-    "invalidBody": "This link has expired or was already used. Ask your manager to send the email again.",
-    "error": "Something went wrong. Please try again."
   },
   "driverTransfer": {
     "loading": "Loading…",
