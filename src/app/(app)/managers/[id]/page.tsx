@@ -58,6 +58,7 @@ import {
   useUpdateUser,
 } from "@/hooks/use-managers";
 import { useAuthStore } from "@/store/auth";
+import { canManageUser } from "@/lib/roles";
 import { type Language } from "@/hooks/use-drivers";
 
 const LANGUAGE_KEYS: Language[] = [
@@ -120,7 +121,11 @@ export default function ManagerDetailPage({
   if (!manager) notFound();
 
   const isAdminOrTeamlead = me?.role === "ADMIN" || me?.role === "TEAMLEAD";
-  const canEditTeamlead = isAdminOrTeamlead;
+  // The server lets you edit / (de)activate only users ranked below you
+  // (lib/roles.ts) — e.g. not another team lead, not yourself. Show the
+  // fields read-only otherwise instead of failing on save.
+  const canManage = canManageUser(me, manager);
+  const canEditTeamlead = isAdminOrTeamlead && canManage;
   const phoneValid = PHONE_REGEX.test(phone);
   const avg = manager.managerAverageRating ?? null;
   const ratingCount = manager.managerRatingCount ?? 0;
@@ -163,7 +168,7 @@ export default function ManagerDetailPage({
             <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
-        {isAdminOrTeamlead && (
+        {canManage && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -240,6 +245,7 @@ export default function ManagerDetailPage({
                       }}
                       placeholder={t("namePlaceholder")}
                       className="text-xl font-semibold h-9"
+                      readOnly={!canManage}
                     />
                     {nameDirty && (
                       <>
@@ -306,6 +312,7 @@ export default function ManagerDetailPage({
                               );
                             }}
                             placeholder="+48501234567"
+                            readOnly={!canManage}
                             className={`h-8 text-sm ${
                               phoneDirty && !phoneValid
                                 ? "border-destructive focus-visible:ring-destructive"
@@ -376,7 +383,7 @@ export default function ManagerDetailPage({
                               },
                             )
                           }
-                          disabled={update.isPending}
+                          disabled={update.isPending || !canManage}
                         >
                           <SelectTrigger className="h-8 text-sm">
                             <SelectValue />
