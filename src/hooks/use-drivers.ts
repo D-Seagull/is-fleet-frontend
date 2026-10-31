@@ -51,7 +51,10 @@ export interface DriverDetail {
     lastName: string | null; avatar: string | null;
     status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null; email: string | null } | null;
-  currentTruck: { id: string; plate: string; status: string } | null;
+  /** managerId = the driver's actual manager (the truck's). */
+  currentTruck: { id: string; plate: string; status: string; managerId: string | null } | null;
+  /** Set once the driver confirmed `email` (sign-in codes can go there). */
+  emailVerifiedAt: string | null;
   ratingsReceived: DriverRating[];
   averageRating: number | null;
   ratingCount: number;
@@ -172,6 +175,8 @@ export function useUpdateDriver(id: string) {
       managerId?: string | null;
       teamleadId?: string | null;
       truckId?: string | null;
+      /** Drivers only — triggers a confirmation email. */
+      email?: string | null;
     }) => {
       const res = await api.patch(`/users/${id}`, data);
       return res.data;
@@ -228,5 +233,26 @@ export function useIssueDriverLoginCode() {
       );
       return res.data;
     },
+  });
+}
+
+/** Re-send the confirmation link for a driver's unconfirmed email. */
+export function useResendEmailVerification() {
+  return useMutation({
+    mutationFn: async (driverId: string) => {
+      const res = await api.post<{ ok: boolean; alreadyVerified: boolean }>(
+        `/users/${driverId}/email-verification`,
+      );
+      return res.data;
+    },
+  });
+}
+
+/** Server-side switches (e.g. manager login codes are dev-only). */
+export function useAuthFeatures() {
+  return useQuery<{ managerLoginCode: boolean }>({
+    queryKey: ["auth-features"],
+    queryFn: async () => (await api.get("/auth/features")).data,
+    staleTime: Infinity,
   });
 }

@@ -462,6 +462,14 @@
       "noTruck": "Bez ciężarówki",
       "ratingField": "Ocena",
       "noRatingsInline": "Brak ocen",
+      "emailField": "E-mail",
+      "emailVerified": "Potwierdzony",
+      "emailUnverified": "Niepotwierdzony",
+      "emailHint": "Zapasowy kanał kodu logowania. Kierowca potwierdza adres linkiem z wiadomości.",
+      "emailFormatHint": "Nieprawidłowy format e-maila",
+      "emailSent": "Wysłano kierowcy e-mail z potwierdzeniem",
+      "emailResend": "Wyślij e-mail ponownie",
+      "emailSaveError": "Nie udało się zapisać e-maila",
       "loginCode": "Kod logowania",
       "loginCodeTitle": "Kod logowania kierowcy",
       "loginCodeDesc": "Podyktuj kod kierowcy przez telefon — wpisze go na ekranie kodu zamiast kodu z SMS-a.",
@@ -917,6 +925,16 @@
     "sent": "Dziękujemy! Zgłoszenie wysłane.",
     "error": "Nie udało się wysłać. Spróbuj ponownie.",
     "removeScreenshot": "Usuń"
+  },
+  "verifyEmail": {
+    "title": "Potwierdź e-mail",
+    "body": "Potwierdź ten adres, aby otrzymywać tu kody logowania IS Fleet, gdy SMS nie dochodzi.",
+    "confirm": "Potwierdź e-mail",
+    "doneTitle": "E-mail potwierdzony",
+    "doneBody": "Na ekranie logowania możesz teraz wybrać „Wyślij na e-mail”. Możesz zamknąć tę stronę.",
+    "invalidTitle": "Link nieważny",
+    "invalidBody": "Link wygasł lub został już użyty. Poproś menedżera o ponowne wysłanie wiadomości.",
+    "error": "Coś poszło nie tak. Spróbuj ponownie."
   },
   "driverTransfer": {
     "loading": "Ładowanie…",

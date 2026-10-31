@@ -48,10 +48,12 @@ import {
   useDriverRatings,
   useUpsertDriverRating,
   useUpdateDriver,
+  useAuthFeatures,
 } from "@/hooks/use-drivers";
 import { useTrucks } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
 import { LoginCodeButton } from "./login-code-button";
+import { DriverEmailField } from "./driver-email-field";
 
 const PHONE_REGEX = /^\+\d{7,15}$/;
 
@@ -268,6 +270,7 @@ function DriverDetailContent({ id }: { id: string }) {
   const updateDriver = useUpdateDriver(id);
   const { data: trucks } = useTrucks();
   const { data: ratingsData } = useDriverRatings(id);
+  const { data: features } = useAuthFeatures();
 
   const [phone, setPhone] = useState("");
   const [phoneDirty, setPhoneDirty] = useState(false);
@@ -345,8 +348,12 @@ function DriverDetailContent({ id }: { id: string }) {
             <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
-        {/* Only the driver's own assigned manager — the backend enforces it too. */}
-        {driver.isActive && user?.id && driver.manager?.id === user.id && (
+        {/* Dev-only (MANAGER_LOGIN_CODE_ENABLED), and only for the manager
+            of the driver's truck — the backend enforces both. */}
+        {features?.managerLoginCode &&
+          driver.isActive &&
+          user?.id &&
+          driver.currentTruck?.managerId === user.id && (
           <LoginCodeButton driverId={driver.id} />
         )}
         {canToggle && (
@@ -482,6 +489,13 @@ function DriverDetailContent({ id }: { id: string }) {
                         )}
                       </div>
                     </div>
+
+                    <DriverEmailField
+                      key={driver.email ?? ""}
+                      driverId={driver.id}
+                      email={driver.email}
+                      verifiedAt={driver.emailVerifiedAt}
+                    />
 
                     {/* Language */}
                     <div className="flex items-center gap-3">
