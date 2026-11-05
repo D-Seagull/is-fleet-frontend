@@ -17,8 +17,9 @@ import { StatusBadge } from "@/components/status-badge";
 // Per section — enough to find the one you meant, short enough to scan.
 const MAX_PER_GROUP = 5;
 
+// "#FT26…" as copied from a trip row finds the order — the # isn't stored.
 const norm = (v: string | null | undefined) =>
-  (v ?? "").toLowerCase().replace(/\s+/g, "");
+  (v ?? "").toLowerCase().replace(/[\s#]+/g, "");
 
 /**
  * Header search over trucks (plate, driver), drivers (name, phone) and trips

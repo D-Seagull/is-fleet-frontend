@@ -63,7 +63,8 @@
       "ok": "OK",
       "openInNewTab": "Otwórz w nowej karcie",
       "close": "Zamknij",
-      "more": "Więcej"
+      "more": "Więcej",
+      "copied": "Skopiowano"
     },
     "status": {
       "ONLINE": "Online",

@@ -1,5 +1,6 @@
 "use client";
 
+import { CopyText } from "@/components/copy-text";
 import { useState, useMemo, Fragment } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -362,9 +363,10 @@ export default function TripsPage() {
                       {/* Order # — hidden on phones (secondary + searchable) */}
                       <TableCell className="hidden sm:table-cell py-2 md:py-3">
                         {trip.orderNumber ? (
-                          <span className="font-mono text-xs md:text-sm">
-                            {trip.orderNumber}
-                          </span>
+                          <CopyText
+                            value={trip.orderNumber}
+                            className="font-mono text-xs md:text-sm"
+                          />
                         ) : (
                           <span className="text-muted-foreground text-xs md:text-sm">
                             —
