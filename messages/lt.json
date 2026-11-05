@@ -85,6 +85,11 @@
       "started": "Atsisiuntimas pradėtas",
       "failed": "Nepavyko atsisiųsti failo",
       "showInFolder": "Rodyti aplanke"
+    },
+    "upload": {
+      "fileTooLarge": "Failas per didelis: iki 20 MB dokumentui, iki 10 failų vienu metu.",
+      "fileTypeNotSupported": "Šis failo tipas nepalaikomas. Leidžiama: nuotraukos, PDF, Word, Excel, TXT, CSV.",
+      "failed": "Nepavyko įkelti failo. Bandykite dar kartą."
     }
   },
   "alarm": {

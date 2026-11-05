@@ -76,6 +76,7 @@ import {
   ChatTimelineItem,
   type TimelineItem,
 } from "./chat-timeline-item";
+import { uploadErrorText } from "@/lib/upload-error";
 
 export function TripChat({
   trip,
@@ -88,6 +89,7 @@ export function TripChat({
   truckManagerId?: string | null;
 }) {
   const t = useTranslations("chat");
+  const tUpload = useTranslations("common.upload");
   const isCompanyActive = useIsCompanyActive();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -756,6 +758,7 @@ export function TripChat({
       );
     } catch (err) {
       console.error("[trip-chat] file upload failed", err);
+      toast.error(uploadErrorText(err, tUpload));
       dropJob(job);
       setPendingFiles((prev) => addToQueue(files, prev));
       if (caption) setText((prev) => prev || caption);

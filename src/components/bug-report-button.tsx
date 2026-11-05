@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { reportBug } from "@/lib/bug-report";
+import { uploadErrorText } from "@/lib/upload-error";
 
 const MAX_SCREENSHOTS = 5;
 
@@ -27,6 +28,7 @@ const MAX_SCREENSHOTS = 5;
  */
 export function BugReportButton() {
   const t = useTranslations("bugReport");
+  const tUpload = useTranslations("common.upload");
   const pathname = usePathname();
 
   const [open, setOpen] = React.useState(false);
@@ -63,8 +65,14 @@ export function BugReportButton() {
       toast.success(t("sent"));
       setOpen(false);
       reset();
-    } catch {
-      toast.error(t("error"));
+    } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response
+        ?.status;
+      toast.error(
+        status === 413 || status === 415
+          ? uploadErrorText(err, tUpload)
+          : t("error"),
+      );
       setSubmitting(false);
     }
   }

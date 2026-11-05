@@ -35,10 +35,13 @@ import { useConfirm } from "@/components/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { ACTIVE_STATUSES } from "./constants";
 import { shortenTripTitle } from "./utils";
+import { toast } from "sonner";
+import { uploadErrorText } from "@/lib/upload-error";
 
 export function DocumentsTab({ truckId }: { truckId: string }) {
   const t = useTranslations("truckPanel.documents");
   const tActions = useTranslations("common.actions");
+  const tUpload = useTranslations("common.upload");
   const locale = useLocale();
   const { data: trips = [] } = useTripsByTruck(truckId);
   // One field does both: focused while empty it lists the truck's trips —
@@ -134,6 +137,8 @@ export function DocumentsTab({ truckId }: { truckId: string }) {
     setUploading(true);
     try {
       await upload.mutateAsync({ tripId: uploadTripId, files });
+    } catch (err) {
+      toast.error(uploadErrorText(err, tUpload));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";

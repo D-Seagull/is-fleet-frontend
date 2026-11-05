@@ -183,6 +183,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { uploadErrorText } from "@/lib/upload-error";
 
 // Overlay kebab (⋯) on a conversation / group row. Hidden until row-hover
 // on desktop; always visible on touch devices where hover-intent doesn't
@@ -256,6 +257,7 @@ function ChatPageContent() {
   const tActions = useTranslations("common.actions");
   const tNav = useTranslations("nav");
   const tRoles = useTranslations("common.roles");
+  const tUpload = useTranslations("common.upload");
   const searchParams = useSearchParams();
   const userIdFromUrl = searchParams.get("userId");
   const groupIdFromUrl = searchParams.get("groupId");
@@ -1387,6 +1389,7 @@ function ChatPageContent() {
       }
     } catch (err) {
       console.error("[chat] file upload failed", err);
+      toast.error(uploadErrorText(err, tUpload));
       dropJob(job);
       if (openConversationRef.current === conversation) {
         setPendingFiles((prev) => addToQueue(files, prev));
