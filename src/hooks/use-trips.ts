@@ -8,7 +8,7 @@ import {
 import { useEffect, useMemo } from "react";
 import { api } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
-import { TONE_CLASS, TRIP_STATUS_TONE } from "@/lib/status-tone";
+import { TRIP_STATUS_CLASS } from "@/lib/status-tone";
 import {
   flattenInfinitePages,
   patchInfiniteMessage,
@@ -46,11 +46,11 @@ export const TRIP_STATUS_KEYS: TripStatus[] = [
   "DELIVERED",
 ];
 
-/** Badge colours per trip status — the tone map in lib/status-tone. */
+/** Badge colours per trip status — one colour per status, lib/status-tone. */
 export const TRIP_STATUS_COLORS = Object.fromEntries(
-  Object.entries(TRIP_STATUS_TONE).map(([status, tone]) => [
+  TRIP_STATUS_KEYS.map((status) => [
     status,
-    `${TONE_CLASS[tone]} border-transparent rounded-full font-semibold`,
+    `${TRIP_STATUS_CLASS[status]} rounded-full font-semibold`,
   ]),
 ) as Record<TripStatus, string>;
 
