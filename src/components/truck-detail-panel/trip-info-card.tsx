@@ -32,6 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { OnlineDot } from "@/components/online-dot";
+import { CopyText } from "@/components/copy-text";
 import { cn } from "@/lib/utils";
 import {
   useUpdateTripInfo,
@@ -228,7 +229,7 @@ export function TripInfoCard({
               {trip.orderNumber && (
                 <span className="text-muted-foreground font-normal">
                   {" "}
-                  · #{trip.orderNumber}
+                  · <CopyText value={trip.orderNumber}>#{trip.orderNumber}</CopyText>
                 </span>
               )}
             </span>

@@ -63,7 +63,8 @@
       "ok": "OK",
       "openInNewTab": "Open in new tab",
       "close": "Close",
-      "more": "More"
+      "more": "More",
+      "copied": "Copied"
     },
     "status": {
       "ONLINE": "Online",
