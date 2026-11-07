@@ -10,6 +10,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { enqueueMessage } from "@/lib/message-outbox";
 import { fullName } from "@/lib/format";
 import {
   appendInfiniteMessage,
@@ -610,76 +611,14 @@ export function TripChat({
     // arrives over WS. Gateway echoes `tempId` back so we can locate the
     // placeholder.
     if (trimmed) {
-      const tempId = `temp-${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 8)}`;
-      const meId = currentUserIdRef.current ?? "";
-      const optimistic: TripMessage = {
-        id: tempId,
-        tripId: trip.id,
-        senderId: meId,
-        content: trimmed,
-        translatedContent: null,
-        isRead: false,
-        isSystem: false,
-        createdAt: new Date().toISOString(),
-        deletedAt: null,
-        editedAt: null,
-        replyToId: replyMsgId,
-        replyTo:
-          replyingTo?.targetType === "msg"
-            ? {
-                id: replyingTo.id,
-                content: replyingTo.content,
-                deletedAt: replyingTo.isDeleted
-                  ? new Date().toISOString()
-                  : null,
-                sender: {
-                  id: "",
-                  firstName: replyingTo.senderName ?? "",
-                  lastName: null,
-                  avatar: null,
-                },
-              }
-            : null,
-        replyToDocumentId: replyDocId,
-        replyToDocument:
-          replyingTo?.targetType === "doc"
-            ? {
-                id: replyingTo.id,
-                fileName: replyingTo.content,
-                fileType: "DOCUMENT",
-                deletedAt: replyingTo.isDeleted
-                  ? new Date().toISOString()
-                  : null,
-                uploader: {
-                  id: "",
-                  firstName: replyingTo.senderName ?? "",
-                  lastName: null,
-                  avatar: null,
-                },
-              }
-            : null,
-        sender: {
-          id: meId,
-          firstName: user?.firstName ?? "",
-          lastName: user?.lastName ?? null,
-          avatar: user?.avatar ?? null,
-          role: user?.role ?? "MANAGER",
-        },
-        reactions: [],
-      };
-      queryClient.setQueryData<InfiniteData<TripMessage[]>>(
-        ["trip-messages", trip.id],
-        (prev) => appendInfiniteMessage(prev, optimistic),
-      );
-
-      getSocket().emit("sendMessage", {
-        tripId: trip.id,
+      // Offline outbox: shown at once as pending, delivered as soon as there
+      // is a connection (and kept across reloads).
+      enqueueMessage({
+        kind: "trip",
+        scopeId: trip.id,
         content: trimmed,
         replyToId: replyMsgId,
         replyToDocumentId: replyDocId,
-        tempId,
       });
     }
 

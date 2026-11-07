@@ -6,6 +6,8 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
+import { useMessageOutboxItems } from "@/lib/message-outbox";
+import { useAuthStore } from "@/store/auth";
 import { api } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 import { TRIP_STATUS_CLASS } from "@/lib/status-tone";
@@ -120,6 +122,9 @@ export interface TripDocReplyPreviewLite {
 }
 
 export interface TripMessage {
+  /** Still in the offline outbox / refused by the server. */
+  pending?: boolean;
+  failed?: boolean;
   id: string;
   tripId: string;
   senderId: string;
@@ -258,8 +263,38 @@ export function useTripMessages(tripId: string) {
     [query.data],
   );
 
+  // Unsent messages (offline outbox) ride along after the delivered ones.
+  const outbox = useMessageOutboxItems("trip", tripId);
+  const me = useAuthStore((s) => s.user);
+  const withPending = useMemo(() => {
+    if (outbox.length === 0 || !me) return messages;
+    const pending = outbox.map(
+      (i): TripMessage => ({
+        id: `pending:${i.clientId}`,
+        tripId,
+        translatedContent: null,
+        isRead: false,
+        content: i.content,
+        createdAt: i.createdAt,
+        replyToId: i.replyToId,
+        replyToDocumentId: i.replyToDocumentId,
+        senderId: me.id,
+        sender: {
+          id: me.id,
+          firstName: me.firstName,
+          lastName: me.lastName ?? null,
+          avatar: me.avatar ?? null,
+          role: me.role,
+        },
+        pending: i.status === "pending",
+        failed: i.status === "failed",
+      }),
+    );
+    return [...messages, ...pending];
+  }, [messages, outbox, me, tripId]);
+
   return {
-    data: messages,
+    data: withPending,
     isLoading: query.isLoading,
     error: query.error,
     fetchOlder: query.fetchNextPage,

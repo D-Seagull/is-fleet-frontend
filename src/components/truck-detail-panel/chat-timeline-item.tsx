@@ -2,6 +2,7 @@
 
 import { FileText, Download } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { PendingMark } from "@/components/pending-mark";
 import { fullName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { EDIT_WINDOW_MS } from "@/lib/constants";
@@ -67,18 +68,22 @@ function MessageBubble({
 
   const isMine = msg.senderId === currentUserId;
   const isDeleted = !!msg.deletedAt;
+  const isLocal = !!msg.pending || !!msg.failed;
   const senderInitials = (fullName(msg.sender) || "??")
     .slice(0, 2)
     .toUpperCase();
   const canEdit =
     isMine &&
     !isDeleted &&
+    !isLocal &&
     !msg.isSystem &&
     // eslint-disable-next-line react-hooks/purity -- 24-hour edit window must be evaluated against the current time on each render
     Date.now() - new Date(msg.createdAt).getTime() < EDIT_WINDOW_MS;
   const actions = {
     onCopy: () => navigator.clipboard.writeText(msg.content),
-    onReply: () =>
+    onReply: isLocal
+      ? undefined
+      : () =>
       setReplyingTo({
         id: msg.id,
         targetType: "msg",
@@ -87,7 +92,7 @@ function MessageBubble({
         isDeleted: !!msg.deletedAt,
       }),
     onEdit: canEdit ? () => onEdit(msg.id, msg.content) : undefined,
-    onDelete: isMine ? () => onDelete(msg.id) : undefined,
+    onDelete: isMine && !isLocal ? () => onDelete(msg.id) : undefined,
   };
 
   return (
@@ -207,7 +212,8 @@ function MessageBubble({
             hour: "2-digit",
             minute: "2-digit",
           })}
-          {isMine && !isDeleted && (
+          {isMine && !isDeleted && isLocal && <PendingMark msg={msg} />}
+          {isMine && !isDeleted && !isLocal && (
             <span className={cn(msg.isRead && "text-primary")}>
               {msg.isRead ? "✓✓" : "✓"}
             </span>

@@ -10,6 +10,8 @@ import {
 } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { PendingMark } from "@/components/pending-mark";
+import { enqueueMessage } from "@/lib/message-outbox";
 import { fullName, initials } from "@/lib/format";
 import { systemMessageText } from "@/lib/system-message";
 import {
@@ -1261,15 +1263,17 @@ function ChatPageContent() {
       setPendingFiles([]);
     } else if (trimmed) {
       if (selectedGroupId) {
-        getSocket().emit("send_group_message", {
-          groupId: selectedGroupId,
+        enqueueMessage({
+          kind: "group",
+          scopeId: selectedGroupId,
           content: trimmed,
           replyToId: replyMsgId,
           replyToDocumentId: replyDocId,
         });
       } else if (selectedUserId) {
-        getSocket().emit("send_direct_message", {
-          receiverId: selectedUserId,
+        enqueueMessage({
+          kind: "dm",
+          scopeId: selectedUserId,
           content: trimmed,
           replyToId: replyMsgId,
           replyToDocumentId: replyDocId,
@@ -1961,7 +1965,7 @@ function ChatPageContent() {
                           {/* Sidekick (own→LEFT). Trigger (mine / idle)
                               + other participant's reactions as plain
                               glyphs next to it. */}
-                          {isOwn && !msg.deletedAt && (
+                          {isOwn && !msg.deletedAt && !msg.pending && !msg.failed && (
                             <MessageReactionsCluster
                               messageId={msg.id}
                               type={selectedGroupId ? "GROUP" : "DM"}
@@ -2128,7 +2132,14 @@ function ChatPageContent() {
                                   locale,
                                   { hour: "2-digit", minute: "2-digit" },
                                 )}
-                                {isOwn && isRead != null && !msg.deletedAt && (
+                                {isOwn && !msg.deletedAt && (
+                                  <PendingMark msg={msg} />
+                                )}
+                                {isOwn &&
+                                  isRead != null &&
+                                  !msg.deletedAt &&
+                                  !msg.pending &&
+                                  !msg.failed && (
                                   <span
                                     className={cn(isRead && "text-primary")}
                                   >

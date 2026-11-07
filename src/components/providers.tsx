@@ -11,6 +11,7 @@ import { useState } from "react";
 import { AuthProvider } from "./auth-provider";
 import { ConfirmProvider } from "./confirm-dialog";
 import { DocViewerModal } from "./doc-viewer-modal";
+import { MessageOutboxRunner } from "./message-outbox-runner";
 import { Toaster } from "./ui/sonner";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -36,6 +37,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <ConfirmProvider>{children}</ConfirmProvider>
       </AuthProvider>
+      <MessageOutboxRunner />
       <DocViewerModal />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>

@@ -6,6 +6,8 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useMessageOutboxItems } from "@/lib/message-outbox";
+import { useAuthStore } from "@/store/auth";
 import { api } from "@/lib/api";
 import {
   flattenInfinitePages,
@@ -57,6 +59,9 @@ export interface GroupDocReplyPreviewLite {
 }
 
 export interface GroupMessage {
+  /** Still in the offline outbox / refused by the server. */
+  pending?: boolean;
+  failed?: boolean;
   id: string;
   groupId: string;
   senderId: string;
@@ -280,8 +285,36 @@ export function useGroupMessages(groupId: string) {
     [query.data],
   );
 
+  // Unsent messages (offline outbox) ride along after the delivered ones.
+  const outbox = useMessageOutboxItems("group", groupId);
+  const me = useAuthStore((s) => s.user);
+  const withPending = useMemo(() => {
+    if (outbox.length === 0 || !me) return messages;
+    const pending = outbox.map(
+      (i): GroupMessage => ({
+        id: `pending:${i.clientId}`,
+        groupId,
+        content: i.content,
+        createdAt: i.createdAt,
+        replyToId: i.replyToId,
+        replyToDocumentId: i.replyToDocumentId,
+        senderId: me.id,
+        sender: {
+          id: me.id,
+          firstName: me.firstName,
+          lastName: me.lastName ?? null,
+          avatar: me.avatar ?? null,
+          role: me.role,
+        },
+        pending: i.status === "pending",
+        failed: i.status === "failed",
+      }),
+    );
+    return [...messages, ...pending];
+  }, [messages, outbox, me, groupId]);
+
   return {
-    data: messages,
+    data: withPending,
     isLoading: query.isLoading,
     error: query.error,
     fetchOlder: query.fetchNextPage,
