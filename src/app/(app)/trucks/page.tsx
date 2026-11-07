@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -12,9 +13,12 @@ import {
   Loader2,
   UserPlus,
   UserMinus,
+  Copy,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -133,6 +137,59 @@ export default function TrucksPage() {
     driver: (tr) => fullName(tr.currentDriver),
     manager: (tr) => fullName(tr.manager),
   });
+
+  // Multi-select: copy plates + drivers, or take several trucks at once.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const visibleIds = sortedTrucks.map((tr) => tr.id);
+  const selectedTrucks = sortedTrucks.filter((tr) => selected.has(tr.id));
+  const allSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(visibleIds));
+  }
+  const truckLine = (tr: (typeof sortedTrucks)[number]) =>
+    [tr.plate, fullName(tr.currentDriver)].filter(Boolean).join(" ");
+
+  async function copyText(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    toast.success(t("copied"));
+  }
+
+  async function takeSelected() {
+    if (!user?.id) return;
+    const toTake = selectedTrucks.filter((tr) => tr.managerId !== user.id);
+    setBulkBusy(true);
+    try {
+      await Promise.all(
+        toTake.map((tr) =>
+          updateTruck.mutateAsync({ id: tr.id, data: { managerId: user.id } }),
+        ),
+      );
+      toast.success(t("takenCount", { count: toTake.length }));
+      setSelected(new Set());
+    } finally {
+      setBulkBusy(false);
+    }
+  }
 
   async function handleCreate() {
     if (!plate.trim()) return;
@@ -300,10 +357,56 @@ export default function TrucksPage() {
         </div>
 
         <TabsContent value="active" className="mt-4">
+          {canTakeTruck && selected.size > 0 && (
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
+              <span className="text-sm font-medium">
+                {t("selectedCount", { count: selected.size })}
+              </span>
+              <Button
+                size="sm"
+                onClick={takeSelected}
+                disabled={bulkBusy}
+              >
+                {bulkBusy ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <UserPlus className="mr-2 h-4 w-4" />
+                )}
+                {t("takeSelected")}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  copyText(selectedTrucks.map(truckLine).join("\n"))
+                }
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                {t("copySelected")}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setSelected(new Set())}
+              >
+                <X className="mr-2 h-4 w-4" />
+                {t("clearSelection")}
+              </Button>
+            </div>
+          )}
           <div className="rounded-lg border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
+                  {canTakeTruck && (
+                    <TableHead className="w-[36px]">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={toggleAll}
+                        aria-label={t("selectAll")}
+                      />
+                    </TableHead>
+                  )}
                   <SortableHead column="plate" sort={truckSort} onSort={sortTrucks} className="w-[130px]">
                     {t("colPlate")}
                   </SortableHead>
@@ -319,7 +422,7 @@ export default function TrucksPage() {
                   <TableHead className="hidden md:table-cell w-[200px]">
                     {t("colLastNote")}
                   </TableHead>
-                  <TableHead className="w-[44px]" />
+                  <TableHead className="w-[80px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -352,7 +455,7 @@ export default function TrucksPage() {
                 ) : sortedTrucks.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className="text-center py-10 text-muted-foreground"
                     >
                       {t("emptyActive")}
@@ -364,7 +467,16 @@ export default function TrucksPage() {
                       key={truck.id}
                       className="cursor-pointer"
                       onClick={() => router.push(`/trucks/${truck.id}`)}
+                      data-state={selected.has(truck.id) ? "selected" : undefined}
                     >
+                      {canTakeTruck && (
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selected.has(truck.id)}
+                            onCheckedChange={() => toggleOne(truck.id)}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Link
                           href={`/trucks/${truck.id}?tab=info`}
@@ -459,6 +571,15 @@ export default function TrucksPage() {
                       {/* take/release truck — teamlead / manager / admin */}
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            title={t("copyPlateDriver")}
+                            onClick={() => copyText(truckLine(truck))}
+                          >
+                            <Copy className="h-4 w-4 text-muted-foreground" />
+                          </Button>
                           {canTakeTruck && (
                             <Button
                               variant="ghost"

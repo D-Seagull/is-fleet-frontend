@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Loader2, Truck, ChevronRight, Megaphone, BookTemplate, Trash2, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
+import { Loader2, Truck, ChevronRight, Megaphone, BookTemplate, Trash2, ChevronDown, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -80,6 +81,27 @@ function TruckListItem({
   onClick: () => void;
 }) {
   const tTripStatus = useTranslations("common.tripStatus");
+  const tTrucks = useTranslations("trucks");
+  const [copied, setCopied] = useState(false);
+  async function copyLine(e: React.SyntheticEvent) {
+    e.stopPropagation();
+    const text = [truck.plate, fullName(truck.currentDriver)]
+      .filter(Boolean)
+      .join(" ");
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    setCopied(true);
+    toast.success(tTrucks("copied"));
+    setTimeout(() => setCopied(false), 1500);
+  }
   const lastNote = truck.truckNotes?.[0];
   const hasUnread = (unread?.totalUnread ?? 0) > 0;
   const activeTrip = truck.trips?.[0];
@@ -97,6 +119,22 @@ function TruckListItem({
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <LicensePlate plate={truck.plate} className="min-w-0" />
+          {/* span, not <button>: the whole row is already a button */}
+          <span
+            role="button"
+            tabIndex={0}
+            title={tTrucks("copyPlateDriver")}
+            onClick={copyLine}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                void copyLine(e);
+              }
+            }}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-background hover:text-foreground"
+          >
+            {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+          </span>
           <span className="flex-1" />
           {hasUnread && (
             <span className="inline-flex items-center justify-center min-w-[20px] h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold px-1.5 leading-none shrink-0">
