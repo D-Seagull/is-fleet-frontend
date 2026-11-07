@@ -447,7 +447,10 @@ function ChatPageContent() {
     );
   };
   const managerConvs = (conversations ?? [])
-    .filter((c) => c.user.role === "MANAGER" || c.user.role === "TEAMLEAD")
+    .filter(
+      (c) =>
+        c.user.isSystem || c.user.role === "MANAGER" || c.user.role === "TEAMLEAD",
+    )
     .sort(byUnreadThenRecency);
   const driverConvs = (conversations ?? [])
     .filter((c) => c.user.role === "DRIVER")

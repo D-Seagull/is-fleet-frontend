@@ -464,13 +464,12 @@
       "noTruck": "Be sunkvežimio",
       "ratingField": "Įvertinimas",
       "noRatingsInline": "Kol kas nėra įvertinimų",
-      "loginCode": "Prisijungimo kodas",
+      "loginCode": "Generuoti kodą",
       "loginCodeTitle": "Vairuotojo prisijungimo kodas",
       "loginCodeDesc": "Padiktuokite kodą vairuotojui telefonu — jis įves jį kodo ekrane vietoj SMS kodo.",
       "loginCodeExpires": "Vienkartinis, galioja iki {time}.",
       "loginCodeCopy": "Kopijuoti",
       "loginCodeCopied": "Kodas nukopijuotas",
-      "loginCodeNew": "Naujas kodas",
       "loginCodeError": "Nepavyko sukurti prisijungimo kodo"
     },
     "rating": {
