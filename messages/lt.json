@@ -433,10 +433,6 @@
     "phoneHelper": "Vairuotojas gaus SMS kodą šiuo numeriu, kad galėtų prisijungti prie mobiliosios programėlės.",
     "languageLabel": "Kalba",
     "createError": "Nepavyko pridėti vairuotojo. Bandykite dar kartą.",
-    "existsElsewhereTitle": "Vairuotojas jau egzistuoja",
-    "existsElsewhereBody": "Vairuotojas „{name}“ jau užregistruotas kitoje įmonėje. Išsiųsti jam SMS su prašymu pereiti? Į jūsų įmonę jis pateks tik sutikęs.",
-    "confirmTransfer": "Siųsti prašymą",
-    "cancelTransfer": "Atšaukti",
     "tabActive": "Aktyvūs",
     "tabDeactivated": "Deaktyvuoti",
     "searchPlaceholder": "Ieškoti pagal vardą, telefoną, vadybininką, numerį…",
@@ -495,9 +491,7 @@
     },
     "deactivateConfirm": "Deaktyvuoti šį vairuotoją?",
     "deactivate": "Deaktyvuoti",
-    "transferPendingTitle": "Laukiame vairuotojo patvirtinimo",
-    "transferPendingBody": "Vairuotojas gavo SMS su patvirtinimo nuoroda. Kai tik jis sutiks, atsiras jūsų sąraše. Nuoroda galioja 24 valandas.",
-    "transferPendingOk": "Gerai"
+    "phoneTransferNote": "Jei šis numeris jau užregistruotas kitoje įmonėje, vairuotojas gaus SMS su prašymu ir prisijungs prie jūsų tik sutikęs."
   },
   "managers": {
     "title": "Vadybininkai",
@@ -949,7 +943,8 @@
     "declinedBody": "Niekas nepasikeitė. Šį puslapį galite uždaryti.",
     "invalidTitle": "Nuoroda negalioja",
     "invalidBody": "Nuoroda nebegalioja arba jau panaudota. Paprašykite įmonės atsiųsti naują.",
-    "error": "Nepavyko. Bandykite dar kartą."
+    "error": "Nepavyko. Bandykite dar kartą.",
+    "warning": "Šis prašymas gautas iš kitos įmonės. Jei jos nepažįstate, atsisakykite. Prieš sutikdami pasitarkite su dabartiniu vadybininku."
   },
   "search": {
     "placeholder": "Ieškoti vilkiko, vairuotojo ar reiso",

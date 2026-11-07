@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
@@ -32,7 +32,13 @@ type Stage = "loading" | "ask" | "accepted" | "declined" | "invalid";
  */
 function DriverTransferConsent() {
   const t = useTranslations("driverTransfer");
-  const token = useSearchParams().get("token") ?? "";
+  // Read once, then removed from the address bar: it would otherwise stay in
+  // the browser history and in server access logs. The ref keeps it for the
+  // accept / decline calls after the URL has changed.
+  const urlToken = useSearchParams().get("token") ?? "";
+  const tokenRef = useRef(urlToken);
+  if (urlToken) tokenRef.current = urlToken;
+  const token = tokenRef.current;
 
   const [stage, setStage] = useState<Stage>(token ? "loading" : "invalid");
   const [info, setInfo] = useState<TransferInfo | null>(null);
@@ -41,6 +47,9 @@ function DriverTransferConsent() {
 
   useEffect(() => {
     if (!token) return;
+    if (window.location.search.includes("token=")) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
     let cancelled = false;
     api
       .post<TransferInfo>("/public/driver-transfer/lookup", { token })
@@ -133,6 +142,9 @@ function DriverTransferConsent() {
         )}
         {stage === "ask" && info && (
           <CardContent className="flex flex-col gap-4">
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 px-3 py-2 rounded-md text-center">
+              {t("warning")}
+            </p>
             {info.fromCompanyName && (
               <p className="text-sm text-muted-foreground text-center">
                 {t("leaveNote", { fromCompany: info.fromCompanyName })}

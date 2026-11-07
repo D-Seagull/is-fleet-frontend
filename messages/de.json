@@ -433,10 +433,6 @@
     "phoneHelper": "Der Fahrer erhält an diese Nummer einen SMS-Code, um sich in der mobilen App anzumelden.",
     "languageLabel": "Sprache",
     "createError": "Fahrer konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
-    "existsElsewhereTitle": "Fahrer existiert bereits",
-    "existsElsewhereBody": "Fahrer „{name}“ ist bereits bei einem anderen Unternehmen registriert. Eine SMS mit der Bitte um Wechsel senden? Er kommt erst zu Ihrem Unternehmen, wenn er zustimmt.",
-    "confirmTransfer": "Anfrage senden",
-    "cancelTransfer": "Abbrechen",
     "tabActive": "Aktiv",
     "tabDeactivated": "Deaktiviert",
     "searchPlaceholder": "Nach Name, Telefon, Manager, Kennzeichen suchen…",
@@ -495,9 +491,7 @@
     },
     "deactivateConfirm": "Diesen Fahrer deaktivieren?",
     "deactivate": "Deaktivieren",
-    "transferPendingTitle": "Warten auf den Fahrer",
-    "transferPendingBody": "Der Fahrer hat eine SMS mit einem Bestätigungslink erhalten. Sobald er zustimmt, erscheint er in Ihrer Liste. Der Link ist 24 Stunden gültig.",
-    "transferPendingOk": "OK"
+    "phoneTransferNote": "Ist diese Nummer bereits bei einem anderen Unternehmen registriert, erhält der Fahrer eine SMS mit einer Anfrage und kommt erst nach seiner Zustimmung zu Ihnen."
   },
   "managers": {
     "title": "Manager",
@@ -949,7 +943,8 @@
     "declinedBody": "Es hat sich nichts geändert. Sie können diese Seite schließen.",
     "invalidTitle": "Link ungültig",
     "invalidBody": "Der Link ist abgelaufen oder wurde bereits verwendet. Bitten Sie das Unternehmen um einen neuen.",
-    "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+    "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+    "warning": "Diese Anfrage kommt von einem anderen Unternehmen. Kennen Sie es nicht, lehnen Sie ab. Fragen Sie vor der Zustimmung Ihren aktuellen Manager."
   },
   "search": {
     "placeholder": "LKW, Fahrer oder Fahrt suchen",

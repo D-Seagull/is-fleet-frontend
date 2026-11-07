@@ -433,10 +433,6 @@
     "phoneHelper": "Driver will receive an SMS code on this number to log into the mobile app.",
     "languageLabel": "Language",
     "createError": "Failed to add driver. Please try again.",
-    "existsElsewhereTitle": "Driver already exists",
-    "existsElsewhereBody": "Driver \"{name}\" is already registered with another company. Send them an SMS asking to move? They join your company only after they accept.",
-    "confirmTransfer": "Send request",
-    "cancelTransfer": "Cancel",
     "tabActive": "Active",
     "tabDeactivated": "Deactivated",
     "searchPlaceholder": "Search by name, phone, manager, plate…",
@@ -495,9 +491,7 @@
     },
     "deactivateConfirm": "Deactivate this driver?",
     "deactivate": "Deactivate",
-    "transferPendingTitle": "Waiting for the driver",
-    "transferPendingBody": "The driver got an SMS with a confirmation link. They appear in your list as soon as they accept. The link is valid for 24 hours.",
-    "transferPendingOk": "OK"
+    "phoneTransferNote": "If this number is already registered with another company, the driver gets an SMS asking to confirm, and joins you only once they accept."
   },
   "managers": {
     "title": "Managers",
@@ -949,7 +943,8 @@
     "declinedBody": "Nothing has changed. You can close this page.",
     "invalidTitle": "Link not valid",
     "invalidBody": "This link has expired or was already used. Ask the company to send a new one.",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "warning": "This request comes from another company. If you don’t know them, decline. Check with your current manager before you agree."
   },
   "search": {
     "placeholder": "Search trucks, drivers or trips",
