@@ -20,6 +20,8 @@ import {
   useUploadDocuments,
   type TripDocumentFull,
 } from "@/hooks/use-documents";
+import { toast } from "sonner";
+import { uploadErrorText } from "@/lib/upload-error";
 
 export function TripAttachmentsContent({
   tripId,
@@ -41,6 +43,7 @@ export function TripAttachmentsContent({
 }) {
   const t = useTranslations("truckPanel.documents");
   const tActions = useTranslations("common.actions");
+  const tUpload = useTranslations("common.upload");
   const { data: docs = [], isLoading } = useDocumentsByTrip(tripId);
   const deleteDoc = useDeleteDocument(truckId);
   const upload = useUploadDocuments(truckId);
@@ -61,6 +64,8 @@ export function TripAttachmentsContent({
     setUploading(true);
     try {
       await upload.mutateAsync({ tripId, files });
+    } catch (err) {
+      toast.error(uploadErrorText(err, tUpload));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
