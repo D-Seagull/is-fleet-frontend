@@ -230,3 +230,18 @@ export function useAuthFeatures() {
     staleTime: Infinity,
   });
 }
+
+/**
+ * Is the driver asking THIS manager for a login code right now ("ask my
+ * manager" in the driver app)? The "login code" button shows only then.
+ * Polled while the card is open, so it appears as soon as the driver asks.
+ */
+export function useLoginCodeRequest(driverId: string, enabled: boolean) {
+  return useQuery<{ pending: boolean; expiresAt?: string }>({
+    queryKey: ["login-code-request", driverId],
+    queryFn: async () =>
+      (await api.get(`/auth/driver/${driverId}/login-code-request`)).data,
+    enabled: enabled && !!driverId,
+    refetchInterval: 10_000,
+  });
+}
