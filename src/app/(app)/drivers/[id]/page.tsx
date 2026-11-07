@@ -48,13 +48,10 @@ import {
   useDriverRatings,
   useUpsertDriverRating,
   useUpdateDriver,
-  useAuthFeatures,
-  useLoginCodeRequest,
 } from "@/hooks/use-drivers";
 import { useTrucks } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
 import { LoginCodeButton } from "./login-code-button";
-import { MANAGER_LOGIN_CODE_ENABLED } from "@/lib/features";
 
 const PHONE_REGEX = /^\+\d{7,15}$/;
 
@@ -271,17 +268,6 @@ function DriverDetailContent({ id }: { id: string }) {
   const updateDriver = useUpdateDriver(id);
   const { data: trucks } = useTrucks();
   const { data: ratingsData } = useDriverRatings(id);
-  const { data: features } = useAuthFeatures();
-  // The manager's "login code" button: switched on here and on the backend,
-  // only for the manager of the driver's truck, and only while the driver
-  // is asking for a code — the backend enforces all of it too.
-  const canIssueLoginCode =
-    MANAGER_LOGIN_CODE_ENABLED &&
-    !!features?.managerLoginCode &&
-    !!driver?.isActive &&
-    !!user?.id &&
-    driver?.currentTruck?.managerId === user.id;
-  const { data: loginCodeRequest } = useLoginCodeRequest(id, canIssueLoginCode);
 
   const [phone, setPhone] = useState("");
   const [phoneDirty, setPhoneDirty] = useState(false);
@@ -359,9 +345,14 @@ function DriverDetailContent({ id }: { id: string }) {
             <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
-        {canIssueLoginCode && loginCodeRequest?.pending && (
-          <LoginCodeButton driverId={driver.id} />
-        )}
+        {/* Only for the manager of the driver's truck; the button itself shows
+            only while the driver is asking for a code (one request, one code)
+            and the feature is on — the backend enforces all of it too. */}
+        {driver.isActive &&
+          user?.id &&
+          driver.currentTruck?.managerId === user.id && (
+            <LoginCodeButton key={driver.id} driverId={driver.id} />
+          )}
         {canToggle && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

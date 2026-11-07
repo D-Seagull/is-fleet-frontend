@@ -14,17 +14,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useIssueDriverLoginCode } from "@/hooks/use-drivers";
+import { useDriverLoginCodeRequest, useIssueDriverLoginCode } from "@/hooks/use-drivers";
 
 /**
- * "Login code" for the driver's assigned manager: when the SMS doesn't reach
- * the driver (UA numbers roaming in DE/AT), the manager mints a one-time
- * code here and dictates it. The driver types it on the usual code screen.
+ * "Generate code" for the manager of the driver's truck. Shows only while the
+ * driver is asking for help ("ask my manager" on the sign-in screen) — polled
+ * — and for ONE code: generating closes the request, so the button goes
+ * away. The manager dictates the code; the driver types it on the usual code
+ * screen.
  */
 export function LoginCodeButton({ driverId }: { driverId: string }) {
   const t = useTranslations("drivers.detail");
   const locale = useLocale();
   const issue = useIssueDriverLoginCode();
+  const request = useDriverLoginCodeRequest(driverId);
   const [open, setOpen] = useState(false);
 
   async function generate() {
@@ -34,6 +37,7 @@ export function LoginCodeButton({ driverId }: { driverId: string }) {
     } catch (e) {
       const msg = isAxiosError(e) ? e.response?.data?.message : undefined;
       toast.error(typeof msg === "string" ? msg : t("loginCodeError"));
+      void request.refetch();
     }
   }
 
@@ -47,20 +51,23 @@ export function LoginCodeButton({ driverId }: { driverId: string }) {
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        className="shrink-0"
-        onClick={generate}
-        disabled={issue.isPending}
-      >
-        {issue.isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
-        ) : (
-          <KeyRound className="h-4 w-4 sm:mr-2" />
-        )}
-        <span className="hidden sm:inline">{t("loginCode")}</span>
-      </Button>
+      {request.data?.pending && !open && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={generate}
+          disabled={issue.isPending}
+          aria-label={t("loginCode")}
+        >
+          {issue.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+          ) : (
+            <KeyRound className="h-4 w-4 sm:mr-2" />
+          )}
+          <span className="hidden sm:inline">{t("loginCode")}</span>
+        </Button>
+      )}
 
       <Dialog open={open && !!data} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-sm">
@@ -85,9 +92,6 @@ export function LoginCodeButton({ driverId }: { driverId: string }) {
             >
               <Copy className="mr-2 h-4 w-4" />
               {t("loginCodeCopy")}
-            </Button>
-            <Button variant="outline" onClick={generate} disabled={issue.isPending}>
-              {t("loginCodeNew")}
             </Button>
           </DialogFooter>
         </DialogContent>

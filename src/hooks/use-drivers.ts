@@ -207,11 +207,15 @@ export function useUpsertDriverRating(driverId: string) {
   });
 }
 
+const driverLoginCodeRequestKey = (driverId: string) =>
+  ["driver-login-code-request", driverId] as const;
+
 /**
  * The driver's assigned manager mints a one-time login code to dictate when
  * the SMS doesn't reach the driver. The backend refuses anyone else.
  */
 export function useIssueDriverLoginCode() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (driverId: string) => {
       const res = await api.post<{ code: string; expiresAt: string }>(
@@ -219,29 +223,19 @@ export function useIssueDriverLoginCode() {
       );
       return res.data;
     },
+    onSuccess: async (_, driverId) => {
+      const queryKey = driverLoginCodeRequestKey(driverId);
+      await queryClient.cancelQueries({ queryKey });
+      queryClient.setQueryData(queryKey, { pending: false });
+    },
   });
 }
 
-/** Server-side switches (e.g. manager login codes are dev-only). */
-export function useAuthFeatures() {
-  return useQuery<{ managerLoginCode: boolean }>({
-    queryKey: ["auth-features"],
-    queryFn: async () => (await api.get("/auth/features")).data,
-    staleTime: Infinity,
-  });
-}
-
-/**
- * Is the driver asking THIS manager for a login code right now ("ask my
- * manager" in the driver app)? The "login code" button shows only then.
- * Polled while the card is open, so it appears as soon as the driver asks.
- */
-export function useLoginCodeRequest(driverId: string, enabled: boolean) {
-  return useQuery<{ pending: boolean; expiresAt?: string }>({
-    queryKey: ["login-code-request", driverId],
+export function useDriverLoginCodeRequest(driverId: string) {
+  return useQuery({
+    queryKey: driverLoginCodeRequestKey(driverId),
     queryFn: async () =>
-      (await api.get(`/auth/driver/${driverId}/login-code-request`)).data,
-    enabled: enabled && !!driverId,
-    refetchInterval: 10_000,
+      (await api.get<{ pending: boolean }>(`/auth/driver/${driverId}/login-code-request`)).data,
+    refetchInterval: 5_000,
   });
 }

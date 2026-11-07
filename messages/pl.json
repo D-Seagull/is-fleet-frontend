@@ -464,13 +464,12 @@
       "noTruck": "Bez ciężarówki",
       "ratingField": "Ocena",
       "noRatingsInline": "Brak ocen",
-      "loginCode": "Kod logowania",
+      "loginCode": "Wygeneruj kod",
       "loginCodeTitle": "Kod logowania kierowcy",
       "loginCodeDesc": "Podyktuj kod kierowcy przez telefon — wpisze go na ekranie kodu zamiast kodu z SMS-a.",
       "loginCodeExpires": "Jednorazowy, ważny do {time}.",
       "loginCodeCopy": "Kopiuj",
       "loginCodeCopied": "Kod skopiowany",
-      "loginCodeNew": "Nowy kod",
       "loginCodeError": "Nie udało się utworzyć kodu logowania"
     },
     "rating": {

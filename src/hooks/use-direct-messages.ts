@@ -66,6 +66,7 @@ export interface Conversation {
     status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
     role: string;
+    isSystem?: boolean;
   };
   unreadCount: number;
   lastMessage: DirectMessage;
