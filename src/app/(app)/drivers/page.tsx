@@ -41,7 +41,6 @@ import {
   useCreateDriver,
   useActivateDriver,
   type Language,
-  type DriverExistsElsewhereConflict,
 } from "@/hooks/use-drivers";
 import { useAuthStore } from "@/store/auth";
 import { BackButton } from "@/components/back-button";
@@ -76,11 +75,6 @@ export default function DriversPage() {
   const [phone, setPhone] = useState("");
   const [language, setLanguage] = useState<Language>("EN");
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [existsElsewhere, setExistsElsewhere] =
-    useState<DriverExistsElsewhereConflict["driver"] | null>(null);
-  // A driver of another company was asked by SMS — they join only once they
-  // accept the link, so the dialog says so instead of just closing.
-  const [transferPending, setTransferPending] = useState(false);
 
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -128,8 +122,6 @@ export default function DriversPage() {
     setPhone("");
     setLanguage("EN");
     setSubmitError(null);
-    setExistsElsewhere(null);
-    setTransferPending(false);
   }
 
   function handleDialogChange(open: boolean) {
@@ -137,44 +129,26 @@ export default function DriversPage() {
     if (!open) resetForm();
   }
 
-  async function handleCreate(confirmTransfer = false) {
-    if (!confirmTransfer && !canSubmit) return;
+  async function handleCreate() {
+    if (!canSubmit) return;
     setSubmitError(null);
     try {
-      const created = await createDriver.mutateAsync({
+      await createDriver.mutateAsync({
         firstName: firstName.trim(),
         lastName: lastName.trim() || null,
         phone: cleanedPhone,
         language,
-        confirmTransfer,
       });
-      if (
-        (created as { code?: string } | undefined)?.code ===
-        "DRIVER_TRANSFER_PENDING"
-      ) {
-        setExistsElsewhere(null);
-        setTransferPending(true);
-        return;
-      }
       resetForm();
       setDialogOpen(false);
     } catch (e) {
       if (isAxiosError(e)) {
         const data = e.response?.data as
-          | { message?: string | string[] | DriverExistsElsewhereConflict }
+          | { message?: string | string[] }
           | undefined;
         const inner = data?.message;
-        if (
-          inner &&
-          typeof inner === "object" &&
-          !Array.isArray(inner) &&
-          inner.code === "DRIVER_EXISTS_ELSEWHERE"
-        ) {
-          setExistsElsewhere(inner.driver);
-          return;
-        }
         const msg = Array.isArray(inner) ? inner[0] : inner;
-        setSubmitError((typeof msg === "string" ? msg : null) ?? t("createError"));
+        setSubmitError(msg ?? t("createError"));
       } else {
         setSubmitError(t("createError"));
       }
@@ -197,53 +171,8 @@ export default function DriversPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
-                {transferPending
-                  ? t("transferPendingTitle")
-                  : existsElsewhere
-                    ? t("existsElsewhereTitle")
-                    : t("addDialogTitle")}
-              </DialogTitle>
+              <DialogTitle>{t("addDialogTitle")}</DialogTitle>
             </DialogHeader>
-            {transferPending ? (
-              <div className="flex flex-col gap-4 py-4">
-                <p className="text-sm text-muted-foreground">
-                  {t("transferPendingBody")}
-                </p>
-                <div className="flex justify-end">
-                  <Button onClick={() => handleDialogChange(false)}>
-                    {t("transferPendingOk")}
-                  </Button>
-                </div>
-              </div>
-            ) : existsElsewhere ? (
-              <div className="flex flex-col gap-4 py-4">
-                <p className="text-sm text-muted-foreground">
-                  {t("existsElsewhereBody", {
-                    name: fullName(existsElsewhere) ?? existsElsewhere.id,
-                  })}
-                </p>
-                {submitError && (
-                  <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {submitError}
-                  </p>
-                )}
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setExistsElsewhere(null)}>
-                    {t("cancelTransfer")}
-                  </Button>
-                  <Button
-                    onClick={() => handleCreate(true)}
-                    disabled={createDriver.isPending}
-                  >
-                    {createDriver.isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {t("confirmTransfer")}
-                  </Button>
-                </div>
-              </div>
-            ) : (
             <div className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="d-firstName">{t("firstNameLabel")}</Label>
@@ -283,7 +212,7 @@ export default function DriversPage() {
                   <p className="text-xs text-destructive">{phoneError}</p>
                 ) : (
                   <p className="text-xs text-muted-foreground">
-                    {t("phoneHelper")}
+                    {t("phoneHelper")} {t("phoneTransferNote")}
                   </p>
                 )}
               </div>
@@ -317,7 +246,6 @@ export default function DriversPage() {
                 {t("addButton")}
               </Button>
             </div>
-            )}
           </DialogContent>
         </Dialog>
       </div>

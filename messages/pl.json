@@ -433,10 +433,6 @@
     "phoneHelper": "Kierowca otrzyma kod SMS na ten numer, aby zalogować się do aplikacji mobilnej.",
     "languageLabel": "Język",
     "createError": "Nie udało się dodać kierowcy. Spróbuj ponownie.",
-    "existsElsewhereTitle": "Kierowca już istnieje",
-    "existsElsewhereBody": "Kierowca „{name}” jest już zarejestrowany w innej firmie. Wysłać mu SMS z prośbą o przejście? Dołączy do Twojej firmy dopiero po akceptacji.",
-    "confirmTransfer": "Wyślij prośbę",
-    "cancelTransfer": "Anuluj",
     "tabActive": "Aktywni",
     "tabDeactivated": "Dezaktywowani",
     "searchPlaceholder": "Szukaj po nazwisku, telefonie, menedżerze, numerze…",
@@ -495,9 +491,7 @@
     },
     "deactivateConfirm": "Dezaktywować tego kierowcę?",
     "deactivate": "Dezaktywuj",
-    "transferPendingTitle": "Czekamy na kierowcę",
-    "transferPendingBody": "Kierowca otrzymał SMS z linkiem potwierdzającym. Pojawi się na Twojej liście, gdy tylko zaakceptuje. Link jest ważny 24 godziny.",
-    "transferPendingOk": "OK"
+    "phoneTransferNote": "Jeśli ten numer jest już zarejestrowany w innej firmie, kierowca dostanie SMS z prośbą i dołączy do Ciebie dopiero po akceptacji."
   },
   "managers": {
     "title": "Menedżerowie",
@@ -949,7 +943,8 @@
     "declinedBody": "Nic się nie zmieniło. Możesz zamknąć tę stronę.",
     "invalidTitle": "Link nieprawidłowy",
     "invalidBody": "Link wygasł lub został już użyty. Poproś firmę o nowy.",
-    "error": "Coś poszło nie tak. Spróbuj ponownie."
+    "error": "Coś poszło nie tak. Spróbuj ponownie.",
+    "warning": "Ta prośba pochodzi od innej firmy. Jeśli jej nie znasz, odrzuć ją. Przed zgodą skonsultuj się ze swoim obecnym menedżerem."
   },
   "search": {
     "placeholder": "Szukaj pojazdu, kierowcy lub kursu",

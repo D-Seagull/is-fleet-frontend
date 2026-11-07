@@ -63,16 +63,6 @@ export interface CreateDriverPayload {
   lastName: string | null;
   phone: string;
   language?: Language;
-  /** Set after the user confirms the "driver already exists elsewhere" prompt. */
-  confirmTransfer?: boolean;
-}
-
-/** Shape of a 409's `response.data.message` when the backend flags a phone
- *  match against a driver in another company (see users.service.ts). */
-export interface DriverExistsElsewhereConflict {
-  code: "DRIVER_EXISTS_ELSEWHERE";
-  message: string;
-  driver: { id: string; firstName: string; lastName: string | null };
 }
 
 export function useDrivers() {
@@ -238,5 +228,20 @@ export function useAuthFeatures() {
     queryKey: ["auth-features"],
     queryFn: async () => (await api.get("/auth/features")).data,
     staleTime: Infinity,
+  });
+}
+
+/**
+ * Is the driver asking THIS manager for a login code right now ("ask my
+ * manager" in the driver app)? The "login code" button shows only then.
+ * Polled while the card is open, so it appears as soon as the driver asks.
+ */
+export function useLoginCodeRequest(driverId: string, enabled: boolean) {
+  return useQuery<{ pending: boolean; expiresAt?: string }>({
+    queryKey: ["login-code-request", driverId],
+    queryFn: async () =>
+      (await api.get(`/auth/driver/${driverId}/login-code-request`)).data,
+    enabled: enabled && !!driverId,
+    refetchInterval: 10_000,
   });
 }

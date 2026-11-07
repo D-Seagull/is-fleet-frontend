@@ -49,6 +49,7 @@ import {
   useUpsertDriverRating,
   useUpdateDriver,
   useAuthFeatures,
+  useLoginCodeRequest,
 } from "@/hooks/use-drivers";
 import { useTrucks } from "@/hooks/use-trucks";
 import { useAuthStore } from "@/store/auth";
@@ -271,6 +272,16 @@ function DriverDetailContent({ id }: { id: string }) {
   const { data: trucks } = useTrucks();
   const { data: ratingsData } = useDriverRatings(id);
   const { data: features } = useAuthFeatures();
+  // The manager's "login code" button: switched on here and on the backend,
+  // only for the manager of the driver's truck, and only while the driver
+  // is asking for a code — the backend enforces all of it too.
+  const canIssueLoginCode =
+    MANAGER_LOGIN_CODE_ENABLED &&
+    !!features?.managerLoginCode &&
+    !!driver?.isActive &&
+    !!user?.id &&
+    driver?.currentTruck?.managerId === user.id;
+  const { data: loginCodeRequest } = useLoginCodeRequest(id, canIssueLoginCode);
 
   const [phone, setPhone] = useState("");
   const [phoneDirty, setPhoneDirty] = useState(false);
@@ -348,14 +359,7 @@ function DriverDetailContent({ id }: { id: string }) {
             <span className="hidden sm:inline">{t("chat")}</span>
           </Link>
         </Button>
-        {/* Off unless switched on both here (NEXT_PUBLIC_MANAGER_LOGIN_CODE_ENABLED)
-            and on the backend (MANAGER_LOGIN_CODE_ENABLED), and only for the
-            manager of the driver's truck — the backend enforces it too. */}
-        {MANAGER_LOGIN_CODE_ENABLED &&
-          features?.managerLoginCode &&
-          driver.isActive &&
-          user?.id &&
-          driver.currentTruck?.managerId === user.id && (
+        {canIssueLoginCode && loginCodeRequest?.pending && (
           <LoginCodeButton driverId={driver.id} />
         )}
         {canToggle && (
