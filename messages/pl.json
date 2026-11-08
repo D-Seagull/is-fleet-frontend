@@ -844,6 +844,18 @@
       "neverSignedIn": "{n} kierowców nigdy się nie zalogowało",
       "neverHint": "Wdrożenie prawdopodobnie utknęło."
     },
+    "trucks": {
+      "title": "Ciężarówki",
+      "summary": "· {active} aktywnych, {inactive} nieaktywnych",
+      "empty": "Firma nie ma ciężarówek.",
+      "colPlate": "Numer",
+      "colStatus": "Status",
+      "colDriver": "Kierowca",
+      "colManager": "Menedżer",
+      "colTrips": "Kursy w okresie",
+      "active": "Aktywna",
+      "inactive": "Nieaktywna"
+    },
     "loginIssues": {
       "title": "Problemy z logowaniem",
       "subtitle": "Kierowcy, którym nie dotarł kod, i nieudane próby.",

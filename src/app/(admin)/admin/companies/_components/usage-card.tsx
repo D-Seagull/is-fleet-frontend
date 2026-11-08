@@ -111,11 +111,18 @@ export function UsageCard({ companyId }: { companyId: string }) {
                 <div className="text-xs text-muted-foreground">
                   {t("neverHint")}
                 </div>
-                <ul className="mt-2 flex flex-wrap gap-2 text-sm">
+                <ul className="mt-2 divide-y rounded-lg border text-sm">
                   {data.drivers.neverSignedIn.map((d) => (
-                    <li key={d.id} className="rounded-md border px-2 py-1">
-                      {`${d.firstName} ${d.lastName ?? ""}`.trim()}
-                      {d.phone ? ` · ${d.phone}` : ""}
+                    <li
+                      key={d.id}
+                      className="flex items-center justify-between gap-3 px-3 py-2"
+                    >
+                      <span className="font-medium">
+                        {`${d.firstName} ${d.lastName ?? ""}`.trim()}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {d.phone ?? "—"}
+                      </span>
                     </li>
                   ))}
                 </ul>

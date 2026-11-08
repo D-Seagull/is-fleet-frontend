@@ -844,6 +844,18 @@
       "neverSignedIn": "{n} drivers never signed in",
       "neverHint": "Onboarding is probably stuck for them."
     },
+    "trucks": {
+      "title": "Trucks",
+      "summary": "· {active} active, {inactive} inactive",
+      "empty": "The company has no trucks.",
+      "colPlate": "Plate",
+      "colStatus": "Status",
+      "colDriver": "Driver",
+      "colManager": "Manager",
+      "colTrips": "Trips in period",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
     "loginIssues": {
       "title": "Sign-in issues",
       "subtitle": "Drivers whose code didn't arrive and failed attempts.",

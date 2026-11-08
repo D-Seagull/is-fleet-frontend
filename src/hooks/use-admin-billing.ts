@@ -109,3 +109,41 @@ export function useUpdateBilling(companyId: string) {
     },
   });
 }
+
+export interface CompanyTrucks {
+  from: string;
+  to: string;
+  total: number;
+  active: number;
+  inactive: number;
+  trucks: {
+    id: string;
+    plate: string;
+    isActive: boolean;
+    driver: { firstName: string; lastName: string | null } | null;
+    manager: { firstName: string; lastName: string | null } | null;
+    /** Trips in the chosen period. */
+    trips: number;
+  }[];
+}
+
+/** First day of the current month and today, as YYYY-MM-DD (local). */
+export function defaultPeriod(): { from: string; to: string } {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  const ym = `${d.getFullYear()}-${p(d.getMonth() + 1)}`;
+  return { from: `${ym}-01`, to: `${ym}-${p(d.getDate())}` };
+}
+
+export function useCompanyTrucks(companyId: string, from: string, to: string) {
+  return useQuery<CompanyTrucks>({
+    queryKey: ["admin", "company-trucks", companyId, from, to],
+    queryFn: async () =>
+      (
+        await api.get(`/admin/companies/${companyId}/trucks`, {
+          params: { from, to },
+        })
+      ).data,
+    enabled: !!from && !!to && from <= to,
+  });
+}

@@ -844,6 +844,18 @@
       "neverSignedIn": "{n} vairuotojų niekada neprisijungė",
       "neverHint": "Greičiausiai diegimas užstrigo."
     },
+    "trucks": {
+      "title": "Vilkikai",
+      "summary": "· {active} aktyvūs, {inactive} neaktyvūs",
+      "empty": "Įmonė neturi vilkikų.",
+      "colPlate": "Numeris",
+      "colStatus": "Statusas",
+      "colDriver": "Vairuotojas",
+      "colManager": "Vadybininkas",
+      "colTrips": "Reisai laikotarpiu",
+      "active": "Aktyvus",
+      "inactive": "Neaktyvus"
+    },
     "loginIssues": {
       "title": "Prisijungimo problemos",
       "subtitle": "Vairuotojai, kuriems kodas neatėjo, ir nesėkmingi bandymai.",

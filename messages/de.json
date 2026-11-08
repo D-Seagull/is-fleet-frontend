@@ -844,6 +844,18 @@
       "neverSignedIn": "{n} Fahrer nie angemeldet",
       "neverHint": "Das Onboarding hängt vermutlich."
     },
+    "trucks": {
+      "title": "Lkw",
+      "summary": "· {active} aktiv, {inactive} inaktiv",
+      "empty": "Die Firma hat keine Lkw.",
+      "colPlate": "Kennzeichen",
+      "colStatus": "Status",
+      "colDriver": "Fahrer",
+      "colManager": "Disponent",
+      "colTrips": "Fahrten im Zeitraum",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
     "loginIssues": {
       "title": "Anmeldeprobleme",
       "subtitle": "Fahrer, bei denen der Code nicht ankam, und fehlgeschlagene Versuche.",

@@ -54,6 +54,7 @@ import {
 } from "@/hooks/use-admin-company";
 import { BillingCard } from "../_components/billing-card";
 import { UsageCard } from "../_components/usage-card";
+import { TrucksCard } from "../_components/trucks-card";
 import type { AdminCompanyUser } from "@/hooks/use-admin-company";
 
 export default function AdminCompanyDetailPage() {
@@ -143,6 +144,8 @@ export default function AdminCompanyDetailPage() {
       </div>
 
       {id && <UsageCard companyId={id} />}
+
+      {id && <TrucksCard companyId={id} />}
 
       {id && <BillingCard companyId={id} />}
 
