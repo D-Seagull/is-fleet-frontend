@@ -19,7 +19,33 @@ export interface MessageReactionRow {
   emoji: string;
 }
 
-export const QUICK_REACTION_EMOJIS = ["👍", "😮", "😢"] as const;
+/** Quick row of the picker. Mirrors BASE_EMOJI in the backend. */
+export const QUICK_REACTION_EMOJIS = ["👍", "😂", "😮", "😢", "😡"] as const;
+/** Behind the picker's "+". Mirrors EXTRA_EMOJI in the backend. */
+export const MORE_REACTION_EMOJIS = [
+  "❤️",
+  "🙏",
+  "🔥",
+  "🎉",
+  "👎",
+  "💩",
+  "🤔",
+  "👀",
+  "😍",
+  "🤝",
+  "😅",
+  "🫡",
+  "👏",
+  "💪",
+  "😭",
+  "🤣",
+  "😎",
+  "🥳",
+  "😴",
+  "✅",
+  "❌",
+  "🚛",
+] as const;
 export type QuickReactionEmoji = (typeof QUICK_REACTION_EMOJIS)[number];
 
 // Short tap sound on every reaction toggle (add/remove/change emoji).

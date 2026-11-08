@@ -329,6 +329,7 @@
     "send": "Siųsti",
     "messageUser": "Rašyti {name}",
     "userFallback": "vartotojas",
+    "moreReactions": "Daugiau reakcijų",
     "userTyping": "{name} rašo",
     "scrollToLatest": "Slinkti prie naujausios žinutės",
     "editedAtTitle": "Redaguota {time}",

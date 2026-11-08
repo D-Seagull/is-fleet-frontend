@@ -4,11 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
+  MORE_REACTION_EMOJIS,
   QUICK_REACTION_EMOJIS,
   useToggleReaction,
   type MessageReactionRow,
   type ReactionTargetType,
 } from "@/hooks/use-message-reactions";
+
+/** Approx. width of the picker (6 buttons / 6-column grid), px. */
+const PICKER_WIDTH = 232;
+/** Height of the quick row / the expanded "+" grid (incl. gap), px. */
+const PICKER_GRID_HEIGHT = 210;
 
 interface CommonProps {
   messageId: string;
@@ -42,15 +48,21 @@ export function MessageReactionsTrigger({
   // Mobile/tablet support — long-press opens the picker, short tap toggles.
   // NOTE: hooks must run on every render — keep them above any early return.
   const [mobileOpen, setMobileOpen] = useState(false);
+  // The "+" grid with the extra emojis (reset whenever the picker closes).
+  const [moreOpen, setMoreOpen] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressed = useRef(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [openUp, setOpenUp] = useState(true);
+  const [align, setAlign] = useState<"center" | "left" | "right">("center");
 
   // Flip the picker below the trigger when there isn't room above inside the
   // scrollable message list — otherwise the top message's picker is clipped by
   // the list's overflow. Decided on hover / just before a long-press opens.
-  const decideDirection = () => {
+  // Sized for the tall "+" grid right away: flipping the picker after the
+  // click moved it out from under the cursor, which closed it ("opens every
+  // other time").
+  const decideDirection = (needed: number = PICKER_GRID_HEIGHT) => {
     const el = wrapperRef.current;
     if (!el) return;
     let p: HTMLElement | null = el.parentElement;
@@ -59,9 +71,28 @@ export function MessageReactionsTrigger({
       if (oy === "auto" || oy === "scroll") break;
       p = p.parentElement;
     }
-    const top = el.getBoundingClientRect().top;
+    const rect = el.getBoundingClientRect();
     const boundTop = p ? p.getBoundingClientRect().top : 0;
-    setOpenUp(top - boundTop > 56);
+    const boundBottom = Math.min(
+      window.innerHeight,
+      p ? p.getBoundingClientRect().bottom : window.innerHeight,
+    );
+    const above = rect.top - boundTop;
+    const below = boundBottom - rect.bottom;
+    // Up when it fits there; otherwise wherever there is more room.
+    setOpenUp(above > needed || above >= below);
+
+    // Sideways: the picker is ~230px wide, so near an edge of the list
+    // (own messages sit at the right) centring on the trigger would stick out
+    // and add a horizontal scrollbar. Anchor to the edge that has room.
+    const bounds = p ? p.getBoundingClientRect() : null;
+    const minX = Math.max(0, bounds?.left ?? 0);
+    const maxX = Math.min(window.innerWidth, bounds?.right ?? window.innerWidth);
+    const center = rect.left + rect.width / 2;
+    const half = PICKER_WIDTH / 2;
+    if (center + half > maxX) setAlign("right");
+    else if (center - half < minX) setAlign("left");
+    else setAlign("center");
   };
 
   // Close mobile picker when tapping anywhere outside the trigger area.
@@ -73,6 +104,7 @@ export function MessageReactionsTrigger({
         !wrapperRef.current.contains(e.target as Node)
       ) {
         setMobileOpen(false);
+        setMoreOpen(false);
       }
     };
     document.addEventListener("pointerdown", onDocPointerDown);
@@ -100,7 +132,8 @@ export function MessageReactionsTrigger({
   return (
     <div
       ref={wrapperRef}
-      onMouseEnter={decideDirection}
+      onMouseEnter={() => decideDirection()}
+      onMouseLeave={() => setMoreOpen(false)}
       className="relative group/picker shrink-0 touch-manipulation"
     >
       {/* Default trigger — small + grayscale when idle. Scales up to full
@@ -145,17 +178,28 @@ export function MessageReactionsTrigger({
           mouse up doesn't lose the hover state. */}
       <div
         className={cn(
-          "absolute left-1/2 -translate-x-1/2 z-10",
+          // w-max: an absolute box otherwise shrinks to the 28px trigger
+          // when anchored with left-0 / right-0, and the grid collapses.
+          "absolute z-10 w-max",
+          align === "center" && "left-1/2 -translate-x-1/2",
+          align === "left" && "left-0",
+          align === "right" && "right-0",
           openUp ? "bottom-full pb-2" : "top-full pt-2",
           mobileOpen ? "flex" : "hidden group-hover/picker:flex",
         )}
       >
         <div
           className={cn(
-            "flex gap-1 p-1 rounded-full border bg-popover shadow-md",
+            "bg-popover shadow-md border",
+            moreOpen
+              ? "grid grid-cols-6 gap-1 p-1.5 rounded-2xl w-max"
+              : "flex gap-1 p-1 rounded-full",
           )}
         >
-        {QUICK_REACTION_EMOJIS.map((emoji) => {
+        {(moreOpen
+          ? [...QUICK_REACTION_EMOJIS, ...MORE_REACTION_EMOJIS]
+          : QUICK_REACTION_EMOJIS
+        ).map((emoji) => {
           const isMine = myEmoji === emoji;
           return (
             <button
@@ -166,6 +210,7 @@ export function MessageReactionsTrigger({
                 e.stopPropagation();
                 toggle.mutate({ messageId, emoji });
                 setMobileOpen(false);
+                setMoreOpen(false);
               }}
               className={cn(
                 "h-8 w-8 rounded-full flex items-center justify-center text-base hover:bg-muted transition-colors",
@@ -177,6 +222,20 @@ export function MessageReactionsTrigger({
             </button>
           );
         })}
+        {!moreOpen && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setMoreOpen(true);
+            }}
+            className="h-8 w-8 rounded-full flex items-center justify-center text-base text-muted-foreground hover:bg-muted transition-colors"
+            title={t("moreReactions")}
+          >
+            +
+          </button>
+        )}
         </div>
       </div>
     </div>
@@ -196,12 +255,17 @@ export function MessageReactionsCluster({
   type,
   reactions,
   currentUserId,
-}: CommonProps) {
+  hideOthers = false,
+}: CommonProps & {
+  /** Groups: others' reactions live in the Bar under the bubble instead. */
+  hideOthers?: boolean;
+}) {
   const toggle = useToggleReaction(type);
 
   // Group others' reactions (everyone except me) by emoji.
   const others = new Map<string, number>();
   for (const r of reactions) {
+    if (hideOthers) break;
     if (r.userId === currentUserId) continue;
     others.set(r.emoji, (others.get(r.emoji) ?? 0) + 1);
   }

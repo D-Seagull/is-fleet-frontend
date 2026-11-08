@@ -329,6 +329,7 @@
     "send": "Senden",
     "messageUser": "{name} schreiben",
     "userFallback": "Benutzer",
+    "moreReactions": "Weitere Reaktionen",
     "userTyping": "{name} schreibt",
     "scrollToLatest": "Zur neuesten Nachricht",
     "editedAtTitle": "Bearbeitet um {time}",

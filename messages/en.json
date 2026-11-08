@@ -329,6 +329,7 @@
     "send": "Send",
     "messageUser": "Message {name}",
     "userFallback": "user",
+    "moreReactions": "More reactions",
     "editedAtTitle": "Edited at {time}",
     "editedMark": "(edited)",
     "outboxPending": "Sending…",

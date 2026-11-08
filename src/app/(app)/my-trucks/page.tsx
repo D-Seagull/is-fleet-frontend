@@ -113,7 +113,9 @@ function TruckListItem({
         "w-full text-left px-3.5 py-3 rounded-2xl border transition-colors flex items-center gap-2",
         isSelected && !isMobile
           ? "bg-accent border-primary/50 shadow-sm"
-          : "bg-muted border-border hover:bg-secondary",
+          : hasUnread
+            ? "bg-blue-100 border-blue-500/60 border-l-4 border-l-blue-500 hover:bg-blue-200/80 dark:bg-blue-900/50 dark:hover:bg-blue-900/70"
+            : "bg-muted border-border hover:bg-secondary",
       )}
     >
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">

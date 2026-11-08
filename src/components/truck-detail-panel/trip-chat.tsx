@@ -890,7 +890,7 @@ export function TripChat({
           {/* Typing indicator — no background of its own: sticks to the bottom
               of the message list, over the chat wallpaper. */}
           {typers.size > 0 && (
-            <div className="sticky bottom-0 shrink-0 px-1 text-xs text-muted-foreground flex items-center gap-1">
+            <div className="sticky bottom-0 mt-auto shrink-0 px-1 text-xs text-muted-foreground flex items-center gap-1">
               <span>
                 {Array.from(typers.values()).join(", ")}{" "}
                 {t("typing", { count: typers.size })}

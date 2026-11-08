@@ -329,6 +329,7 @@
     "send": "Надіслати",
     "messageUser": "Написати {name}",
     "userFallback": "користувач",
+    "moreReactions": "Більше реакцій",
     "editedAtTitle": "Редаговано о {time}",
     "editedMark": "(ред.)",
     "outboxPending": "Надсилається…",

@@ -329,6 +329,7 @@
     "send": "Отправить",
     "messageUser": "Написать {name}",
     "userFallback": "пользователь",
+    "moreReactions": "Больше реакций",
     "userTyping": "{name} печатает",
     "scrollToLatest": "К последнему сообщению",
     "editedAtTitle": "Изменено в {time}",

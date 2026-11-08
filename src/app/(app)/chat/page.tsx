@@ -144,7 +144,10 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageAttachmentsSheet } from "@/components/message-attachments-sheet";
-import { MessageReactionsCluster } from "@/components/message-reactions";
+import {
+  MessageReactionsBar,
+  MessageReactionsCluster,
+} from "@/components/message-reactions";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
 import {
@@ -644,7 +647,7 @@ function ChatPageContent() {
             selectedUserId === conv.user.id && "bg-muted",
             hasUnread &&
               selectedUserId !== conv.user.id &&
-              "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+              "bg-blue-100 hover:bg-blue-200/80 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 border-l-4 border-l-blue-500 pl-3",
           )}
         >
           <span className="relative shrink-0">
@@ -677,7 +680,14 @@ function ChatPageContent() {
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground truncate">
+            <p
+              className={cn(
+                "text-sm truncate",
+                hasUnread
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground",
+              )}
+            >
               {conv.lastMessage.content}
             </p>
           </div>
@@ -707,7 +717,7 @@ function ChatPageContent() {
             selectedGroupId === group.id && "bg-muted",
             hasUnread &&
               selectedGroupId !== group.id &&
-              "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+              "bg-blue-100 hover:bg-blue-200/80 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 border-l-4 border-l-blue-500 pl-3",
           )}
         >
           <Avatar className="h-10 w-10 shrink-0">
@@ -1971,6 +1981,7 @@ function ChatPageContent() {
                               type={selectedGroupId ? "GROUP" : "DM"}
                               reactions={msg.reactions ?? []}
                               currentUserId={user?.id}
+                              hideOthers={!!selectedGroupId}
                             />
                           )}
                           {showSenderAvatar && groupSender && (
@@ -2147,9 +2158,18 @@ function ChatPageContent() {
                                   </span>
                                 )}
                               </span>
-                              {/* Bar moved to bubble's sidekick (above) so
-                                  reactions stay inline with the bubble. */}
+                              {/* DM: reactions sit in the bubble's sidekick.
+                                  Groups: the Bar below (many reactors). */}
                             </div>
+                            {selectedGroupId && !msg.deletedAt && (
+                              <MessageReactionsBar
+                                messageId={msg.id}
+                                type="GROUP"
+                                reactions={msg.reactions ?? []}
+                                currentUserId={user?.id}
+                                isOwn={isOwn}
+                              />
+                            )}
                           </div>
                           {/* Sidekick (other→RIGHT). */}
                           {!isOwn && !msg.deletedAt && (
@@ -2158,6 +2178,7 @@ function ChatPageContent() {
                               type={selectedGroupId ? "GROUP" : "DM"}
                               reactions={msg.reactions ?? []}
                               currentUserId={user?.id}
+                              hideOthers={!!selectedGroupId}
                             />
                           )}
                         </div>
@@ -2219,6 +2240,7 @@ function ChatPageContent() {
                                 .reactions ?? []
                             }
                             currentUserId={user?.id}
+                            hideOthers={!!selectedGroupId}
                           />
                         )}
                         {!isOwn &&
@@ -2521,8 +2543,20 @@ function ChatPageContent() {
                                 </span>
                               )}
                             </span>
-                            {/* Bar moved to bubble's sidekick (above). */}
+                            {/* DM: sidekick cluster. Groups: Bar below. */}
                           </div>
+                          {selectedGroupId && !isDeleted && (
+                            <MessageReactionsBar
+                              messageId={doc.id}
+                              type="GROUP_DOC"
+                              reactions={
+                                (doc as { reactions?: MessageReactionRow[] })
+                                  .reactions ?? []
+                              }
+                              currentUserId={user?.id}
+                              isOwn={isOwn}
+                            />
+                          )}
                         </div>
                         {/* Sidekick (other→RIGHT) — cluster style. */}
                         {!isOwn && !isDeleted && (
@@ -2534,6 +2568,7 @@ function ChatPageContent() {
                                 .reactions ?? []
                             }
                             currentUserId={user?.id}
+                            hideOthers={!!selectedGroupId}
                           />
                         )}
                       </div>
