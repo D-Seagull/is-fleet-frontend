@@ -14,7 +14,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { currentMonth, useBilling } from "@/hooks/use-admin-billing";
+import {
+  currentMonth,
+  SILENT_DAYS,
+  useBilling,
+} from "@/hooks/use-admin-billing";
+import { Badge } from "@/components/ui/badge";
 import { NewCompanyDialog } from "./_components/new-company-dialog";
 import { BillingStatusBadge } from "./_components/billing-status-badge";
 
@@ -123,6 +128,26 @@ export default function CompaniesPage() {
                 <TableCell className="font-medium">
                   <Link href={href(c.id)} className="block">
                     {c.name}
+                    {(() => {
+                      if (c.billingStatus === "DEACTIVATED") return null;
+                      const days = c.lastActivityAt
+                        ? Math.floor(
+                            (Date.now() - new Date(c.lastActivityAt).getTime()) /
+                              86_400_000,
+                          )
+                        : null;
+                      if (days !== null && days < SILENT_DAYS) return null;
+                      return (
+                        <Badge
+                          variant="outline"
+                          className="ml-2 border-amber-500/40 text-[10px] text-amber-600 dark:text-amber-400"
+                        >
+                          {days === null
+                            ? tB("noActivity")
+                            : tB("silent", { days })}
+                        </Badge>
+                      );
+                    })()}
                   </Link>
                 </TableCell>
                 <TableCell>

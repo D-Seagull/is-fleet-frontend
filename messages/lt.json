@@ -823,6 +823,20 @@
       "recoveryHint": "Išsaugokite saugioje vietoje. Kiekvienas veikia vieną kartą, jei prarasite telefoną. Rodoma tik dabar.",
       "saved": "Išsaugojau"
     },
+    "usage": {
+      "title": "Pilotinis naudojimas",
+      "period": "Laikotarpis",
+      "daysN": "{n} d.",
+      "driverStatus": "Reisai su vairuotojo statusais",
+      "driverStatusSub": "{a} iš {b} reisų su statuso pakeitimais",
+      "documents": "Įkelta dokumentų",
+      "tripsSub": "sukurta reisų: {n}",
+      "active7d": "Vairuotojai per 7 dienas",
+      "lastActivity": "Paskutinė veikla",
+      "silent": "Savaitė tylos",
+      "neverSignedIn": "{n} vairuotojų niekada neprisijungė",
+      "neverHint": "Greičiausiai diegimas užstrigo."
+    },
     "loginIssues": {
       "title": "Prisijungimo problemos",
       "subtitle": "Vairuotojai, kuriems kodas neatėjo, ir nesėkmingi bandymai.",
@@ -849,6 +863,8 @@
       "colPilotEnd": "Pilotas iki",
       "colNote": "Pastaba",
       "total": "Iš viso",
+      "silent": "Greičiausiai diegimas užstrigo.",
+      "noActivity": "tyla {days} d.",
       "trucksHint": "Vilkikai, turėję bent vieną reisą per mėnesį",
       "save": "Išsaugoti",
       "saved": "Išsaugota",

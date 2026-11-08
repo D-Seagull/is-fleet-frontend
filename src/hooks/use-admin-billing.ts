@@ -31,6 +31,43 @@ export interface BillingCompany {
   drivers: number;
   managers: number;
   amount: number | null;
+  /** Newest sign-in / app use / new trip; null = nothing yet. */
+  lastActivityAt: string | null;
+}
+
+export interface CompanyUsage {
+  days: number;
+  trips: number;
+  statusTrips: number;
+  driverStatusTrips: number;
+  driverStatusShare: number | null;
+  documents: number;
+  drivers: {
+    total: number;
+    activeLast7d: number;
+    neverSignedIn: {
+      id: string;
+      firstName: string;
+      lastName: string | null;
+      phone: string | null;
+    }[];
+  };
+  lastActivityAt: string | null;
+}
+
+/** A week without any activity = the customer is drifting away. */
+export const SILENT_DAYS = 7;
+
+export function useCompanyUsage(companyId: string, days = 30) {
+  return useQuery<CompanyUsage>({
+    queryKey: ["admin", "usage", companyId, days],
+    queryFn: async () =>
+      (
+        await api.get(`/admin/companies/${companyId}/usage`, {
+          params: { days },
+        })
+      ).data,
+  });
 }
 
 export interface BillingResponse {

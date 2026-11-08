@@ -823,6 +823,20 @@
       "recoveryHint": "Sicher aufbewahren. Jeder gilt einmal, falls das Handy verloren geht. Nur jetzt sichtbar.",
       "saved": "Gespeichert"
     },
+    "usage": {
+      "title": "Pilotnutzung",
+      "period": "Zeitraum",
+      "daysN": "{n} Tage",
+      "driverStatus": "Fahrten mit Status vom Fahrer",
+      "driverStatusSub": "{a} von {b} Fahrten mit Statuswechsel",
+      "documents": "Hochgeladene Dokumente",
+      "tripsSub": "{n} Fahrten angelegt",
+      "active7d": "Fahrer in 7 Tagen aktiv",
+      "lastActivity": "Letzte Aktivität",
+      "silent": "Eine Woche Stille",
+      "neverSignedIn": "{n} Fahrer nie angemeldet",
+      "neverHint": "Das Onboarding hängt vermutlich."
+    },
     "loginIssues": {
       "title": "Anmeldeprobleme",
       "subtitle": "Fahrer, bei denen der Code nicht ankam, und fehlgeschlagene Versuche.",
@@ -849,6 +863,8 @@
       "colPilotEnd": "Pilot bis",
       "colNote": "Notiz",
       "total": "Gesamt",
+      "silent": "Das Onboarding hängt vermutlich.",
+      "noActivity": "still seit {days} T.",
       "trucksHint": "Lkw mit mindestens einer Fahrt im Monat",
       "save": "Speichern",
       "saved": "Gespeichert",

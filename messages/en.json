@@ -823,6 +823,20 @@
       "recoveryHint": "Save them somewhere safe. Each works once if you lose the phone. They are shown only now.",
       "saved": "I saved them"
     },
+    "usage": {
+      "title": "Pilot usage",
+      "period": "Period",
+      "daysN": "{n} days",
+      "driverStatus": "Trips with statuses set by the driver",
+      "driverStatusSub": "{a} of {b} trips with status changes",
+      "documents": "Documents uploaded",
+      "tripsSub": "{n} trips created",
+      "active7d": "Drivers seen in 7 days",
+      "lastActivity": "Last activity",
+      "silent": "A week of silence",
+      "neverSignedIn": "{n} drivers never signed in",
+      "neverHint": "Onboarding is probably stuck for them."
+    },
     "loginIssues": {
       "title": "Sign-in issues",
       "subtitle": "Drivers whose code didn't arrive and failed attempts.",
@@ -849,6 +863,8 @@
       "colPilotEnd": "Pilot ends",
       "colNote": "Note",
       "total": "Total",
+      "silent": "Onboarding is probably stuck for them.",
+      "noActivity": "silent {days} d",
       "trucksHint": "Trucks with at least one trip in the month",
       "save": "Save",
       "saved": "Saved",
