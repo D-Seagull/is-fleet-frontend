@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-export type FileDocType = "PHOTO" | "DOCUMENT";
+export type FileDocType = "PHOTO" | "DOCUMENT" | "AUDIO";
 
 export interface TripDocReplyPreview {
   id: string;
@@ -37,6 +37,8 @@ export interface TripDocumentFull {
   isRead: boolean;
   createdAt: string;
   deletedAt?: string | null;
+  /** Voice messages (fileType AUDIO): length in ms. */
+  durationMs?: number | null;
   caption?: string | null;
   replyToMessageId?: string | null;
   replyTo?: TripDocReplyPreview | null;
@@ -99,6 +101,7 @@ export function useUploadDocuments(truckId: string) {
       replyToMessageId,
       replyToDocumentId,
       caption,
+      durationMs,
       onProgress,
     }: {
       tripId: string;
@@ -106,6 +109,7 @@ export function useUploadDocuments(truckId: string) {
       replyToMessageId?: string | null;
       replyToDocumentId?: string | null;
       caption?: string | null;
+      durationMs?: number | null;
       onProgress?: (percent: number) => void;
     }) => {
       const form = new FormData();
@@ -114,6 +118,7 @@ export function useUploadDocuments(truckId: string) {
       if (replyToDocumentId)
         form.append("replyToDocumentId", replyToDocumentId);
       if (caption) form.append("caption", caption);
+      if (durationMs) form.append("durationMs", String(durationMs));
       files.forEach((f) => form.append("files", f));
       const res = await api.post("/documents/upload-many", form, {
         headers: { "Content-Type": "multipart/form-data" },

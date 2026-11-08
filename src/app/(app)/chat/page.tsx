@@ -148,6 +148,8 @@ import {
   MessageReactionsBar,
   MessageReactionsCluster,
 } from "@/components/message-reactions";
+import { VoiceRecorder } from "@/components/voice-controls";
+import { VoiceMessagePlayer } from "@/components/voice-message-player";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
 import {
@@ -542,7 +544,12 @@ function ChatPageContent() {
 
   // A quoted file that belongs to an album reads "Album · N files".
   const albumSize = albumSizes(currentDocs);
-  const docLabel = (d: { fileName: string; batchId?: string | null }) => {
+  const docLabel = (d: {
+    fileName: string;
+    batchId?: string | null;
+    fileType?: string;
+  }) => {
+    if (d.fileType === "AUDIO") return `🎤 ${tChat("voiceMessage")}`;
     const count = d.batchId ? albumSize.get(d.batchId) : undefined;
     return count ? tChat("albumLabel", { count }) : d.fileName;
   };
@@ -1339,6 +1346,7 @@ function ChatPageContent() {
     files: File[],
     caption: string | null,
     reply: typeof replyingTo,
+    durationMs?: number | null,
   ) {
     const groupId = selectedGroupId;
     const otherUserId = selectedUserId;
@@ -1352,7 +1360,7 @@ function ChatPageContent() {
       avatar: user.avatar ?? null,
       role: user.role,
     };
-    const common = { conversation, files, caption, meId: user.id };
+    const common = { conversation, files, caption, durationMs, meId: user.id };
     const job: OutboxJob<ConversationDocumentFull | GroupDocumentFull> = groupId
       ? createJob<GroupDocumentFull>({
           ...common,
@@ -1377,6 +1385,7 @@ function ChatPageContent() {
       replyToMessageId: quote.replyToMessageId,
       replyToDocumentId: quote.replyToDocumentId,
       caption,
+      durationMs,
       onProgress: (percent: number) => {
         // Re-render on whole steps only: progress events come in bursts.
         const step = Math.floor(percent / 5) * 5;
@@ -1415,6 +1424,14 @@ function ChatPageContent() {
     } finally {
       setOutbox((prev) => prev.filter((j) => j.id !== job.id));
     }
+  }
+
+  // Voice message: recorded in the composer, sent at once as its own bubble
+  // (an active reply target travels with it).
+  function sendVoice(file: File, durationMs: number) {
+    const reply = replyingTo;
+    setReplyingTo(null);
+    void sendFiles([file], null, reply, durationMs);
   }
 
   function removePendingFile(idx: number) {
@@ -2458,6 +2475,29 @@ function ChatPageContent() {
                                     </p>
                                   )}
                                 </div>
+                              ) : doc.fileType === "AUDIO" ? (
+                                <div
+                                  className={cn(
+                                    "rounded-2xl border overflow-hidden",
+                                    isOwn
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-muted",
+                                  )}
+                                >
+                                  <VoiceMessagePlayer
+                                    src={doc.signedUrl}
+                                    durationMs={
+                                      (doc as { durationMs?: number | null })
+                                        .durationMs
+                                    }
+                                    isMine={isOwn}
+                                  />
+                                  {doc.caption && (
+                                    <p className="text-sm whitespace-pre-wrap break-words px-3 pb-2">
+                                      {doc.caption}
+                                    </p>
+                                  )}
+                                </div>
                               ) : (
                                 <div
                                   className={cn(
@@ -2708,6 +2748,9 @@ function ChatPageContent() {
                     "border-t",
                 )}
               >
+                <VoiceRecorder onSend={sendVoice} disabled={!!editing}>
+                  {(mic) => (
+                    <>
                 <Button
                   type="button"
                   variant="ghost"
@@ -2765,6 +2808,10 @@ function ChatPageContent() {
                   }
                   className="flex-1"
                 />
+                {/* Empty composer → the mic takes the Send button's place. */}
+                {mic && !editing && !newMessage.trim() && pendingFiles.length === 0 ? (
+                  mic
+                ) : (
                 <Button
                   type="submit"
                   size="icon"
@@ -2782,6 +2829,10 @@ function ChatPageContent() {
                     <Send className="h-4 w-4" />
                   )}
                 </Button>
+                )}
+                    </>
+                  )}
+                </VoiceRecorder>
               </form>
             )}
           </>

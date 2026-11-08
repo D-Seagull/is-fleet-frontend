@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { useEffect } from "react";
 import { getSocket } from "@/lib/socket";
 
-export type FileDocType = "PHOTO" | "DOCUMENT";
+export type FileDocType = "PHOTO" | "DOCUMENT" | "AUDIO";
 
 export interface GroupDocReplyPreview {
   id: string;
@@ -39,6 +39,8 @@ export interface GroupDocumentFull {
   isRead: boolean;
   createdAt: string;
   deletedAt?: string | null;
+  /** Voice messages (fileType AUDIO): length in ms. */
+  durationMs?: number | null;
   caption?: string | null;
   replyToMessageId?: string | null;
   replyTo?: GroupDocReplyPreview | null;
@@ -72,12 +74,14 @@ export function useUploadGroupDocs(groupId: string) {
       replyToMessageId,
       replyToDocumentId,
       caption,
+      durationMs,
       onProgress,
     }: {
       files: File[];
       replyToMessageId?: string | null;
       replyToDocumentId?: string | null;
       caption?: string | null;
+      durationMs?: number | null;
       onProgress?: (percent: number) => void;
     }) => {
       const form = new FormData();
@@ -86,6 +90,7 @@ export function useUploadGroupDocs(groupId: string) {
       if (replyToDocumentId)
         form.append("replyToDocumentId", replyToDocumentId);
       if (caption) form.append("caption", caption);
+      if (durationMs) form.append("durationMs", String(durationMs));
       files.forEach((f) => form.append("files", f));
       const res = await api.post(
         "/group-messages/documents/upload-many",

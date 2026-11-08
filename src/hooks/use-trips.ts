@@ -75,7 +75,7 @@ export interface TripDocument {
   tripId: string;
   fileUrl: string;
   fileName: string;
-  fileType: "PHOTO" | "DOCUMENT";
+  fileType: "PHOTO" | "DOCUMENT" | "AUDIO";
   uploadedBy: string;
   createdAt: string;
   signedUrl: string;
@@ -116,7 +116,7 @@ export interface TripMessageReplyPreview {
 export interface TripDocReplyPreviewLite {
   id: string;
   fileName: string;
-  fileType: "PHOTO" | "DOCUMENT";
+  fileType: "PHOTO" | "DOCUMENT" | "AUDIO";
   deletedAt: string | null;
   uploader: { id: string; firstName: string; lastName: string | null; avatar: string | null };
 }

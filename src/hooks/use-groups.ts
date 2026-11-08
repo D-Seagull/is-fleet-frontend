@@ -51,7 +51,7 @@ export interface GroupMessageReplyPreview {
 export interface GroupDocReplyPreviewLite {
   id: string;
   fileName: string;
-  fileType: "PHOTO" | "DOCUMENT";
+  fileType: "PHOTO" | "DOCUMENT" | "AUDIO";
   /** Shared by files sent in one message (an album). */
   batchId?: string | null;
   deletedAt: string | null;

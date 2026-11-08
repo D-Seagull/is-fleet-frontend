@@ -9,6 +9,7 @@ import { EDIT_WINDOW_MS } from "@/lib/constants";
 import { openDoc, downloadDoc } from "@/lib/doc-helpers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageReactionsCluster } from "@/components/message-reactions";
+import { VoiceMessagePlayer } from "@/components/voice-message-player";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
 import { systemMessageText } from "@/lib/system-message";
@@ -33,7 +34,11 @@ interface CommonProps {
   scrollToTripDoc: (id: string) => void;
   onOpenUser: (userId: string) => void;
   /** Label of a quoted file — "Album · N files" when it belongs to one. */
-  docLabel: (doc: { fileName: string; batchId?: string | null }) => string;
+  docLabel: (doc: {
+    fileName: string;
+    batchId?: string | null;
+    fileType?: string;
+  }) => string;
 }
 
 interface MessageBubbleProps extends CommonProps {
@@ -415,6 +420,26 @@ function FileBubble({
                   </p>
                 )}
               </div>
+            ) : doc.fileType === "AUDIO" ? (
+              <div
+                className={cn(
+                  "rounded-[20px] border overflow-hidden",
+                  isMine
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card",
+                )}
+              >
+                <VoiceMessagePlayer
+                  src={doc.signedUrl}
+                  durationMs={doc.durationMs}
+                  isMine={isMine}
+                />
+                {doc.caption && (
+                  <p className="text-sm whitespace-pre-wrap break-words px-3 pb-2">
+                    {doc.caption}
+                  </p>
+                )}
+              </div>
             ) : (
               <div
                 className={cn(
@@ -643,7 +668,11 @@ export function ChatTimelineItem({
   onImageClick: (id: string, signedUrl: string) => void;
   onImageLoaded: () => void;
   onOpenUser: (userId: string) => void;
-  docLabel: (doc: { fileName: string; batchId?: string | null }) => string;
+  docLabel: (doc: {
+    fileName: string;
+    batchId?: string | null;
+    fileType?: string;
+  }) => string;
 }) {
   if (item.kind === "album") {
     return (

@@ -13,7 +13,7 @@
  *    of the session (module-level, so it survives refetches and remounts).
  */
 
-type FileDocType = "PHOTO" | "DOCUMENT";
+type FileDocType = "PHOTO" | "DOCUMENT" | "AUDIO";
 
 /** What every chat attachment type (trip / DM / group) has in common. */
 export interface OutboxDoc {
@@ -27,6 +27,8 @@ export interface OutboxDoc {
   createdAt: string;
   deletedAt?: string | null;
   caption?: string | null;
+  /** Voice messages: length in ms. */
+  durationMs?: number | null;
   isRead: boolean;
 }
 
@@ -114,6 +116,8 @@ export function createJob<T extends OutboxDoc>(opts: {
   conversation: string;
   files: File[];
   caption: string | null;
+  /** Set for a voice message (one audio file): its length in ms. */
+  durationMs?: number | null;
   meId: string;
   serverDocs: { id: string }[];
   extra: Omit<T, keyof OutboxDoc>;
@@ -124,6 +128,7 @@ export function createJob<T extends OutboxDoc>(opts: {
   const docs = opts.files.map((file, i) => {
     const url = URL.createObjectURL(file);
     const isPhoto = file.type.startsWith("image/");
+    const isAudio = file.type.startsWith("audio/");
     return {
       ...opts.extra,
       id: `local-${jobId}-${i}`,
@@ -131,7 +136,8 @@ export function createJob<T extends OutboxDoc>(opts: {
       thumbUrl: isPhoto ? url : null,
       batchId,
       fileName: file.name,
-      fileType: isPhoto ? "PHOTO" : "DOCUMENT",
+      fileType: isPhoto ? "PHOTO" : isAudio ? "AUDIO" : "DOCUMENT",
+      durationMs: isAudio ? (opts.durationMs ?? null) : null,
       uploadedBy: opts.meId,
       // +i: albums are ordered by createdAt — keep the order they were sent.
       createdAt: new Date(now + i).toISOString(),
