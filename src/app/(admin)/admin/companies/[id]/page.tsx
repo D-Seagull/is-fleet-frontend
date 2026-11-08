@@ -52,6 +52,7 @@ import {
   useReactivateCompany,
   useResendCompanyInvite,
 } from "@/hooks/use-admin-company";
+import { BillingCard } from "../_components/billing-card";
 import type { AdminCompanyUser } from "@/hooks/use-admin-company";
 
 export default function AdminCompanyDetailPage() {
@@ -139,6 +140,8 @@ export default function AdminCompanyDetailPage() {
         <ContactsCard data={data} isLoading={isLoading} />
         <PushCoverageCard data={data} isLoading={isLoading} />
       </div>
+
+      {id && <BillingCard companyId={id} />}
 
       <UsersCard users={data?.users} isLoading={isLoading} />
     </div>

@@ -802,6 +802,32 @@
       "onlineSearchPlaceholder": "Szukaj użytkownika…",
       "onlineNoResults": "Nic nie znaleziono dla „{query}”"
     },
+    "billing": {
+      "month": "Miesiąc",
+      "colStatus": "Status",
+      "colTrucks": "Płatne ciężarówki",
+      "colDrivers": "Kierowcy",
+      "colManagers": "Menedżerowie",
+      "colPrice": "Cena za ciężarówkę",
+      "colAmount": "Kwota",
+      "colPilotEnd": "Pilot do",
+      "colNote": "Notatka",
+      "total": "Razem",
+      "trucksHint": "Ciężarówki z co najmniej jednym kursem w miesiącu",
+      "save": "Zapisz",
+      "saved": "Zapisano",
+      "saveError": "Nie udało się zapisać",
+      "cardTitle": "Rozliczenia",
+      "currency": "Waluta",
+      "notePlaceholder": "np. faktura do 10., kontakt Anna",
+      "status": {
+        "TRIAL": "Trial",
+        "PILOT": "Pilot",
+        "PAYING": "Płaci",
+        "OVERDUE": "Zaległe",
+        "DEACTIVATED": "Dezaktywowana"
+      }
+    },
     "companies": {
       "title": "Firmy",
       "loading": "Ładowanie firm…",

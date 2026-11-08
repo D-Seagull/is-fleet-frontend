@@ -802,6 +802,32 @@
       "onlineSearchPlaceholder": "Search user…",
       "onlineNoResults": "Nothing found for “{query}”"
     },
+    "billing": {
+      "month": "Month",
+      "colStatus": "Status",
+      "colTrucks": "Paid trucks",
+      "colDrivers": "Drivers",
+      "colManagers": "Managers",
+      "colPrice": "Price / truck",
+      "colAmount": "Amount",
+      "colPilotEnd": "Pilot ends",
+      "colNote": "Note",
+      "total": "Total",
+      "trucksHint": "Trucks with at least one trip in the month",
+      "save": "Save",
+      "saved": "Saved",
+      "saveError": "Couldn't save",
+      "cardTitle": "Billing",
+      "currency": "Currency",
+      "notePlaceholder": "e.g. invoice by the 10th, contact Anna",
+      "status": {
+        "TRIAL": "Trial",
+        "PILOT": "Pilot",
+        "PAYING": "Paying",
+        "OVERDUE": "Overdue",
+        "DEACTIVATED": "Deactivated"
+      }
+    },
     "companies": {
       "title": "Companies",
       "loading": "Loading companies…",

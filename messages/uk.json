@@ -802,6 +802,32 @@
       "onlineSearchPlaceholder": "Пошук користувача…",
       "onlineNoResults": "Нічого не знайдено за запитом «{query}»"
     },
+    "billing": {
+      "month": "Місяць",
+      "colStatus": "Статус",
+      "colTrucks": "Платні машини",
+      "colDrivers": "Водії",
+      "colManagers": "Менеджери",
+      "colPrice": "Ціна за машину",
+      "colAmount": "Сума",
+      "colPilotEnd": "Пілот до",
+      "colNote": "Нотатка",
+      "total": "Разом",
+      "trucksHint": "Машини, у яких був хоча б один рейс за місяць",
+      "save": "Зберегти",
+      "saved": "Збережено",
+      "saveError": "Не вдалося зберегти",
+      "cardTitle": "Рахунки",
+      "currency": "Валюта",
+      "notePlaceholder": "напр. рахунок до 10-го, контакт Ганна",
+      "status": {
+        "TRIAL": "Trial",
+        "PILOT": "Пілот",
+        "PAYING": "Платить",
+        "OVERDUE": "Прострочено",
+        "DEACTIVATED": "Деактивовано"
+      }
+    },
     "companies": {
       "title": "Компанії",
       "loading": "Завантаження компаній…",

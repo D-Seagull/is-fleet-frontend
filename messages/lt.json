@@ -802,6 +802,32 @@
       "onlineSearchPlaceholder": "Ieškoti naudotojo…",
       "onlineNoResults": "Nieko nerasta pagal „{query}“"
     },
+    "billing": {
+      "month": "Mėnuo",
+      "colStatus": "Statusas",
+      "colTrucks": "Mokami vilkikai",
+      "colDrivers": "Vairuotojai",
+      "colManagers": "Vadybininkai",
+      "colPrice": "Kaina už vilkiką",
+      "colAmount": "Suma",
+      "colPilotEnd": "Pilotas iki",
+      "colNote": "Pastaba",
+      "total": "Iš viso",
+      "trucksHint": "Vilkikai, turėję bent vieną reisą per mėnesį",
+      "save": "Išsaugoti",
+      "saved": "Išsaugota",
+      "saveError": "Nepavyko išsaugoti",
+      "cardTitle": "Sąskaitos",
+      "currency": "Valiuta",
+      "notePlaceholder": "pvz. sąskaita iki 10 d., kontaktas Hanna",
+      "status": {
+        "TRIAL": "Trial",
+        "PILOT": "Pilotas",
+        "PAYING": "Moka",
+        "OVERDUE": "Pradelsta",
+        "DEACTIVATED": "Išjungta"
+      }
+    },
     "companies": {
       "title": "Įmonės",
       "loading": "Įkeliamos įmonės…",

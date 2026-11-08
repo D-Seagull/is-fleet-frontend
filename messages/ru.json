@@ -802,6 +802,32 @@
       "onlineSearchPlaceholder": "Поиск пользователя…",
       "onlineNoResults": "Ничего не найдено по запросу «{query}»"
     },
+    "billing": {
+      "month": "Месяц",
+      "colStatus": "Статус",
+      "colTrucks": "Платные машины",
+      "colDrivers": "Водители",
+      "colManagers": "Менеджеры",
+      "colPrice": "Цена за машину",
+      "colAmount": "Сумма",
+      "colPilotEnd": "Пилот до",
+      "colNote": "Заметка",
+      "total": "Итого",
+      "trucksHint": "Машины, у которых был хотя бы один рейс за месяц",
+      "save": "Сохранить",
+      "saved": "Сохранено",
+      "saveError": "Не удалось сохранить",
+      "cardTitle": "Счета",
+      "currency": "Валюта",
+      "notePlaceholder": "напр. счёт до 10-го, контакт Анна",
+      "status": {
+        "TRIAL": "Trial",
+        "PILOT": "Пилот",
+        "PAYING": "Платит",
+        "OVERDUE": "Просрочено",
+        "DEACTIVATED": "Деактивирована"
+      }
+    },
     "companies": {
       "title": "Компании",
       "loading": "Загрузка компаний…",

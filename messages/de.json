@@ -802,6 +802,32 @@
       "onlineSearchPlaceholder": "Benutzer suchen…",
       "onlineNoResults": "Nichts gefunden für „{query}“"
     },
+    "billing": {
+      "month": "Monat",
+      "colStatus": "Status",
+      "colTrucks": "Zahlpflichtige Lkw",
+      "colDrivers": "Fahrer",
+      "colManagers": "Disponenten",
+      "colPrice": "Preis pro Lkw",
+      "colAmount": "Betrag",
+      "colPilotEnd": "Pilot bis",
+      "colNote": "Notiz",
+      "total": "Gesamt",
+      "trucksHint": "Lkw mit mindestens einer Fahrt im Monat",
+      "save": "Speichern",
+      "saved": "Gespeichert",
+      "saveError": "Speichern fehlgeschlagen",
+      "cardTitle": "Abrechnung",
+      "currency": "Währung",
+      "notePlaceholder": "z. B. Rechnung bis zum 10., Kontakt Anna",
+      "status": {
+        "TRIAL": "Trial",
+        "PILOT": "Pilot",
+        "PAYING": "Zahlend",
+        "OVERDUE": "Überfällig",
+        "DEACTIVATED": "Deaktiviert"
+      }
+    },
     "companies": {
       "title": "Unternehmen",
       "loading": "Unternehmen werden geladen…",
