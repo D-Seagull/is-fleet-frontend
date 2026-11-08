@@ -37,9 +37,11 @@ export function UsageCard({ companyId }: { companyId: string }) {
   const locale = useLocale();
   const [days, setDays] = useState(30);
   const { data, isLoading } = useCompanyUsage(companyId, days);
+  // "Now" is taken once, when the card opens (Date.now() can't run in render).
+  const [now] = useState(() => Date.now());
 
   const silentDays = data?.lastActivityAt
-    ? Math.floor((Date.now() - new Date(data.lastActivityAt).getTime()) / 86_400_000)
+    ? Math.floor((now - new Date(data.lastActivityAt).getTime()) / 86_400_000)
     : null;
   const silent = silentDays === null || silentDays >= SILENT_DAYS;
 
