@@ -103,7 +103,8 @@ function TripCard({
         "rounded-lg border bg-card flex flex-col overflow-hidden",
         variant === "active" && "border-emerald-500/40 bg-emerald-500/5",
         variant === "done" && "opacity-60",
-        unreadCount > 0 && "border-blue-500/30 bg-blue-500/5",
+        unreadCount > 0 &&
+          "border-blue-500/60 border-l-4 border-l-blue-500 bg-blue-500/15",
       )}
     >
       <div

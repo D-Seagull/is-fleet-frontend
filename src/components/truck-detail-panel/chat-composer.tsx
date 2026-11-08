@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/chat-input";
 import { PendingFiles } from "@/components/pending-files";
+import { VoiceRecorder } from "@/components/voice-controls";
 import { CHAT_FILE_ACCEPT } from "@/lib/chat-files";
 import { cn } from "@/lib/utils";
 import { useIsCompanyActive } from "@/store/auth";
@@ -51,6 +52,7 @@ export function ChatComposer({
   fileInputRef,
   handleSend,
   handleFileUpload,
+  onSendVoice,
   notifyTyping,
   notifyStopTyping,
 }: {
@@ -69,6 +71,11 @@ export function ChatComposer({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleSend: () => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSendVoice: (
+    file: File,
+    durationMs: number,
+    waveform: string | null,
+  ) => void;
   notifyTyping: () => void;
   notifyStopTyping: () => void;
 }) {
@@ -197,73 +204,84 @@ export function ChatComposer({
           />
 
           <div className="flex items-end gap-1.5">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-11 w-11 rounded-full shrink-0"
-              title={t("attachFile")}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Paperclip className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept={CHAT_FILE_ACCEPT}
-              className="hidden"
-              onChange={handleFileUpload}
-            />
+            <VoiceRecorder onSend={onSendVoice} disabled={!!editing}>
+              {(mic) => (
+                <>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-11 w-11 rounded-full shrink-0"
+                  title={t("attachFile")}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Paperclip className="h-4 w-4 text-muted-foreground" />
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept={CHAT_FILE_ACCEPT}
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
 
-            <Button
-              ref={emojiBtnRef}
-              size="icon"
-              variant="ghost"
-              className="h-11 w-11 rounded-full shrink-0"
-              title={t("emoji")}
-              onClick={() => setShowEmoji((v) => !v)}
-            >
-              <Smile className="h-4 w-4 text-muted-foreground" />
-            </Button>
+                <Button
+                  ref={emojiBtnRef}
+                  size="icon"
+                  variant="ghost"
+                  className="h-11 w-11 rounded-full shrink-0"
+                  title={t("emoji")}
+                  onClick={() => setShowEmoji((v) => !v)}
+                >
+                  <Smile className="h-4 w-4 text-muted-foreground" />
+                </Button>
 
-            <ChatInput
-              placeholder={
-                editing ? t("editPlaceholder") : t("messagePlaceholder")
-              }
-              value={text}
-              onValueChange={(v) => {
-                setText(v);
-                if (v.length > 0) notifyTyping();
-                else notifyStopTyping();
-              }}
-              onEnter={handleSend}
-              onPasteFiles={editing ? undefined : addPendingFiles}
-              onBlur={notifyStopTyping}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  setShowEmoji(false);
-                  if (editing) {
-                    setEditing(null);
-                    setText("");
+                <ChatInput
+                  placeholder={
+                    editing ? t("editPlaceholder") : t("messagePlaceholder")
                   }
-                }
-              }}
-              className="flex-1"
-            />
+                  value={text}
+                  onValueChange={(v) => {
+                    setText(v);
+                    if (v.length > 0) notifyTyping();
+                    else notifyStopTyping();
+                  }}
+                  onEnter={handleSend}
+                  onPasteFiles={editing ? undefined : addPendingFiles}
+                  onBlur={notifyStopTyping}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setShowEmoji(false);
+                      if (editing) {
+                        setEditing(null);
+                        setText("");
+                      }
+                    }
+                  }}
+                  className="flex-1"
+                />
 
-            <Button
-              size="icon"
-              onClick={handleSend}
-              disabled={!text.trim() && pendingFiles.length === 0}
-              title={editing ? tActions("save") : t("send")}
-              className="h-11 w-11 rounded-full shrink-0"
-            >
-              {editing ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                <Send className="h-4 w-4" />
+                {/* Empty composer → the mic takes the Send button's place. */}
+                {mic && !editing && !text.trim() && pendingFiles.length === 0 ? (
+                  mic
+                ) : (
+                  <Button
+                    size="icon"
+                    onClick={handleSend}
+                    disabled={!text.trim() && pendingFiles.length === 0}
+                    title={editing ? tActions("save") : t("send")}
+                    className="h-11 w-11 rounded-full shrink-0"
+                  >
+                    {editing ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+                </>
               )}
-            </Button>
+            </VoiceRecorder>
           </div>
         </>
       )}

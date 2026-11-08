@@ -52,8 +52,10 @@ import {
   useReactivateCompany,
   useResendCompanyInvite,
 } from "@/hooks/use-admin-company";
+import { BillingCard } from "../_components/billing-card";
+import { UsageCard } from "../_components/usage-card";
+import { TrucksCard } from "../_components/trucks-card";
 import type { AdminCompanyUser } from "@/hooks/use-admin-company";
-import { resolveDisplayStatus, STATUS_COLOR } from "@/lib/status";
 
 export default function AdminCompanyDetailPage() {
   const t = useTranslations("admin.detail");
@@ -140,6 +142,12 @@ export default function AdminCompanyDetailPage() {
         <ContactsCard data={data} isLoading={isLoading} />
         <PushCoverageCard data={data} isLoading={isLoading} />
       </div>
+
+      {id && <UsageCard companyId={id} />}
+
+      {id && <TrucksCard companyId={id} />}
+
+      {id && <BillingCard companyId={id} />}
 
       <UsersCard users={data?.users} isLoading={isLoading} />
     </div>
@@ -435,7 +443,6 @@ function UsersCard({
 }) {
   const t = useTranslations("admin.detail");
   const tRoles = useTranslations("common.roles");
-  const tStatus = useTranslations("common.status");
   return (
     <Card>
       <CardHeader>
@@ -461,14 +468,11 @@ function UsersCard({
               <TableRow>
                 <TableHead>{t("colUser")}</TableHead>
                 <TableHead>{t("colRole")}</TableHead>
-                <TableHead>{t("colStatus")}</TableHead>
                 <TableHead>{t("colContact")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((u) => {
-                const ds = resolveDisplayStatus(u, u.isOnline);
-                return (
+              {users.map((u) => (
                 <TableRow key={u.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -487,20 +491,11 @@ function UsersCard({
                   <TableCell>
                     <Badge variant="outline">{tRoles(u.role)}</Badge>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <span className={"h-2 w-2 rounded-full " + STATUS_COLOR[ds]} />
-                      <span className="text-sm text-muted-foreground">
-                        {tStatus(ds)}
-                      </span>
-                    </div>
-                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {u.email ?? u.phone ?? "—"}
                   </TableCell>
                 </TableRow>
-                );
-              })}
+              ))}
             </TableBody>
           </Table>
         )}

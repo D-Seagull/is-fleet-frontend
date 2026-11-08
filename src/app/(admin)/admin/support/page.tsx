@@ -2,7 +2,14 @@
 
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Headset, Loader2, Send } from "lucide-react";
+import {
+  Building2,
+  ChevronDown,
+  ChevronRight,
+  Headset,
+  Loader2,
+  Send,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +49,27 @@ export default function SupportPage() {
   };
   const peer = conversations?.find((c) => c.user.id === peerId)?.user ?? null;
 
+  // Company → employee: companies A–Z, "no company" last.
+  const groups = React.useMemo(() => {
+    const map = new Map<string, { id: string; name: string | null; items: SupportConversation[] }>();
+    for (const c of conversations ?? []) {
+      const co = c.user.company;
+      const id = co?.id ?? "none";
+      if (!map.has(id)) map.set(id, { id, name: co?.name ?? null, items: [] });
+      map.get(id)!.items.push(c);
+    }
+    return [...map.values()].sort((a, b) =>
+      a.name === null ? 1 : b.name === null ? -1 : a.name.localeCompare(b.name),
+    );
+  }, [conversations]);
+  const [closed, setClosed] = React.useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setClosed((s) => {
+      const n = new Set(s);
+      if (!n.delete(id)) n.add(id);
+      return n;
+    });
+
   const time = (iso: string) =>
     new Date(iso).toLocaleString(locale, {
       day: "2-digit",
@@ -59,7 +87,7 @@ export default function SupportPage() {
       <p className="mb-4 text-sm text-muted-foreground">{t("subtitle")}</p>
 
       <div className="grid min-h-0 flex-1 gap-4 md:grid-cols-[320px_1fr]">
-        {/* Conversations */}
+        {/* Company → employee tree */}
         <div className="min-h-0 overflow-y-auto rounded-lg border">
           {isLoading ? (
             <div className="flex justify-center p-6">
@@ -68,46 +96,80 @@ export default function SupportPage() {
           ) : !conversations?.length ? (
             <p className="p-6 text-sm text-muted-foreground">{t("empty")}</p>
           ) : (
-            conversations.map((c) => (
-              <button
-                key={c.user.id}
-                type="button"
-                onClick={() => open(c)}
-                className={`flex w-full items-center gap-3 border-b px-3 py-2.5 text-left last:border-b-0 hover:bg-muted/60 ${
-                  c.user.id === peerId ? "bg-muted" : ""
-                }`}
-              >
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={c.user.avatar ?? undefined} />
-                  <AvatarFallback>{c.user.firstName?.[0] ?? "?"}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-medium">
-                      {fullName(c.user) || "—"}
+            groups.map((g) => {
+              const isClosed = closed.has(g.id);
+              const unread = g.items.reduce((n, c) => n + c.unreadCount, 0);
+              return (
+                <div key={g.id} className="border-b last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => toggle(g.id)}
+                    className="flex w-full items-center gap-2 bg-muted/40 px-3 py-2 text-left text-sm font-semibold hover:bg-muted/70"
+                  >
+                    {isClosed ? (
+                      <ChevronRight className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 shrink-0" />
+                    )}
+                    <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0 flex-1 truncate">
+                      {g.name ?? t("noCompany")}
                     </span>
-                    <Badge
-                      variant="outline"
-                      className={`border-0 text-[10px] ${ROLE_CLASS[c.user.role] ?? ""}`}
-                    >
-                      {c.user.role}
-                    </Badge>
-                  </div>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {c.lastMessage.deletedAt
-                      ? t("deleted")
-                      : c.lastMessage.isDocument
-                        ? `${t("file")}: ${c.lastMessage.content}`
-                        : c.lastMessage.content}
-                  </p>
+                    {unread > 0 && (
+                      <span className="rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
+                        {unread}
+                      </span>
+                    )}
+                  </button>
+                  {!isClosed &&
+                    g.items.map((c) => (
+                      <button
+                        key={c.user.id}
+                        type="button"
+                        onClick={() => open(c)}
+                        className={`flex w-full items-center gap-3 border-t py-2 pl-8 pr-3 text-left hover:bg-muted/60 ${
+                          c.user.id === peerId ? "bg-muted" : ""
+                        }`}
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={c.user.avatar ?? undefined} />
+                          <AvatarFallback>
+                            {c.user.firstName?.[0] ?? "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate text-sm font-medium">
+                              {fullName(c.user) || "—"}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className={`border-0 text-[10px] ${ROLE_CLASS[c.user.role] ?? ""}`}
+                            >
+                              {c.user.role}
+                            </Badge>
+                          </div>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {c.lastMessage.senderId === c.user.id
+                              ? "← "
+                              : "→ "}
+                            {c.lastMessage.deletedAt
+                              ? t("deleted")
+                              : c.lastMessage.isDocument
+                                ? `${t("file")}: ${c.lastMessage.content}`
+                                : c.lastMessage.content}
+                          </p>
+                        </div>
+                        {c.unreadCount > 0 && (
+                          <span className="rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
+                            {c.unreadCount}
+                          </span>
+                        )}
+                      </button>
+                    ))}
                 </div>
-                {c.unreadCount > 0 && (
-                  <span className="rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
-                    {c.unreadCount}
-                  </span>
-                )}
-              </button>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -117,6 +179,7 @@ export default function SupportPage() {
             <Thread
               peerId={peer.id}
               peerName={fullName(peer) || "—"}
+              companyName={peer.company?.name ?? null}
               time={time}
             />
           ) : (
@@ -131,10 +194,12 @@ export default function SupportPage() {
 function Thread({
   peerId,
   peerName,
+  companyName,
   time,
 }: {
   peerId: string;
   peerName: string;
+  companyName: string | null;
   time: (iso: string) => string;
 }) {
   const t = useTranslations("admin.support");
@@ -160,7 +225,13 @@ function Thread({
 
   return (
     <>
-      <div className="border-b px-4 py-2.5 text-sm font-medium">{peerName}</div>
+      <div className="border-b px-4 py-2.5 text-sm font-medium">
+        IS Fleet → {peerName}
+        <span className="font-normal text-muted-foreground">
+          {" "}
+          ({companyName ?? t("noCompany")})
+        </span>
+      </div>
       <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
         {isLoading ? (
           <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
@@ -182,7 +253,8 @@ function Thread({
                       mine ? "text-primary-foreground/70" : "text-muted-foreground"
                     }`}
                   >
-                    {mine ? `${t("you")} · ` : ""}
+                    {mine ? `${t("you")} → ${peerName}` : t("incoming", { name: peerName })}
+                    {" · "}
                     {time(m.createdAt)}
                   </p>
                 </div>

@@ -38,6 +38,40 @@ const newJob = (server: Doc[], files: File[]) =>
     extra: { chatId: "c1" },
   });
 
+describe("outbox — voice messages", () => {
+  it("shows a recording at once as a pending AUDIO document with its length", () => {
+    const voice = new File(["x"], "voice-1.m4a", { type: "audio/mp4" });
+    const job = createJob<Doc & { durationMs?: number | null }>({
+      conversation: "c1",
+      files: [voice],
+      caption: null,
+      durationMs: 7421,
+      meId: ME,
+      serverDocs: [],
+      extra: { chatId: "c1" },
+    });
+    const [doc] = job.docs;
+    expect(doc.fileType).toBe("AUDIO");
+    expect(doc.durationMs).toBe(7421);
+    expect(doc.thumbUrl).toBeNull();
+    expect(doc.signedUrl).toMatch(/^blob:/);
+  });
+
+  it("ignores a length given for a non-audio file", () => {
+    const job = createJob<Doc & { durationMs?: number | null }>({
+      conversation: "c1",
+      files: [png("1.png")],
+      caption: null,
+      durationMs: 5000,
+      meId: ME,
+      serverDocs: [],
+      extra: { chatId: "c1" },
+    });
+    expect(job.docs[0].fileType).toBe("PHOTO");
+    expect(job.docs[0].durationMs).toBeNull();
+  });
+});
+
 describe("outbox", () => {
   it("shows the files as pending documents at once, as an album", () => {
     const server = [stored("a")];

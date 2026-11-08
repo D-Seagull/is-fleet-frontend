@@ -14,6 +14,7 @@ export interface SupportPeer {
   avatar: string | null;
   role: string;
   phone?: string | null;
+  company?: { id: string; name: string } | null;
 }
 
 export interface SupportConversation {

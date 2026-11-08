@@ -10,6 +10,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { enqueueMessage } from "@/lib/message-outbox";
 import { fullName } from "@/lib/format";
 import {
   appendInfiniteMessage,
@@ -179,7 +180,12 @@ export function TripChat({
 
   // A quoted file that belongs to an album is shown as "Album · N files".
   const albumSize = useMemo(() => albumSizes(tripDocs), [tripDocs]);
-  const docLabel = (d: { fileName: string; batchId?: string | null }) => {
+  const docLabel = (d: {
+    fileName: string;
+    batchId?: string | null;
+    fileType?: string;
+  }) => {
+    if (d.fileType === "AUDIO") return `🎤 ${t("voiceMessage")}`;
     const count = d.batchId ? albumSize.get(d.batchId) : undefined;
     return count ? t("albumLabel", { count }) : d.fileName;
   };
@@ -610,76 +616,14 @@ export function TripChat({
     // arrives over WS. Gateway echoes `tempId` back so we can locate the
     // placeholder.
     if (trimmed) {
-      const tempId = `temp-${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 8)}`;
-      const meId = currentUserIdRef.current ?? "";
-      const optimistic: TripMessage = {
-        id: tempId,
-        tripId: trip.id,
-        senderId: meId,
-        content: trimmed,
-        translatedContent: null,
-        isRead: false,
-        isSystem: false,
-        createdAt: new Date().toISOString(),
-        deletedAt: null,
-        editedAt: null,
-        replyToId: replyMsgId,
-        replyTo:
-          replyingTo?.targetType === "msg"
-            ? {
-                id: replyingTo.id,
-                content: replyingTo.content,
-                deletedAt: replyingTo.isDeleted
-                  ? new Date().toISOString()
-                  : null,
-                sender: {
-                  id: "",
-                  firstName: replyingTo.senderName ?? "",
-                  lastName: null,
-                  avatar: null,
-                },
-              }
-            : null,
-        replyToDocumentId: replyDocId,
-        replyToDocument:
-          replyingTo?.targetType === "doc"
-            ? {
-                id: replyingTo.id,
-                fileName: replyingTo.content,
-                fileType: "DOCUMENT",
-                deletedAt: replyingTo.isDeleted
-                  ? new Date().toISOString()
-                  : null,
-                uploader: {
-                  id: "",
-                  firstName: replyingTo.senderName ?? "",
-                  lastName: null,
-                  avatar: null,
-                },
-              }
-            : null,
-        sender: {
-          id: meId,
-          firstName: user?.firstName ?? "",
-          lastName: user?.lastName ?? null,
-          avatar: user?.avatar ?? null,
-          role: user?.role ?? "MANAGER",
-        },
-        reactions: [],
-      };
-      queryClient.setQueryData<InfiniteData<TripMessage[]>>(
-        ["trip-messages", trip.id],
-        (prev) => appendInfiniteMessage(prev, optimistic),
-      );
-
-      getSocket().emit("sendMessage", {
-        tripId: trip.id,
+      // Offline outbox: shown at once as pending, delivered as soon as there
+      // is a connection (and kept across reloads).
+      enqueueMessage({
+        kind: "trip",
+        scopeId: trip.id,
         content: trimmed,
         replyToId: replyMsgId,
         replyToDocumentId: replyDocId,
-        tempId,
       });
     }
 
@@ -706,6 +650,7 @@ export function TripChat({
     files: File[],
     caption: string | null,
     reply: ReplyTarget | null,
+    voice?: { durationMs: number; waveform: string | null },
   ) {
     if (!user) return;
     nearBottomRef.current = true;
@@ -715,6 +660,8 @@ export function TripChat({
       conversation: `trip:${trip.id}`,
       files,
       caption,
+      durationMs: voice?.durationMs,
+      waveform: voice?.waveform,
       meId: user.id,
       serverDocs: tripDocs,
       extra: {
@@ -740,6 +687,8 @@ export function TripChat({
         replyToMessageId: quote.replyToMessageId,
         replyToDocumentId: quote.replyToDocumentId,
         caption,
+        durationMs: voice?.durationMs,
+        waveform: voice?.waveform,
         onProgress: (percent) => {
           // Re-render on whole steps only — progress events come in bursts.
           const step = Math.floor(percent / 5) * 5;
@@ -765,6 +714,14 @@ export function TripChat({
     } finally {
       setOutbox((prev) => prev.filter((j) => j.id !== job.id));
     }
+  }
+
+  // Voice message: recorded in the composer, sent at once as its own bubble
+  // (an active reply target travels with it).
+  function sendVoice(file: File, durationMs: number, waveform: string | null) {
+    const reply = replyingTo;
+    setReplyingTo(null);
+    void sendFiles([file], null, reply, { durationMs, waveform });
   }
 
   function removePendingFile(idx: number) {
@@ -951,7 +908,7 @@ export function TripChat({
           {/* Typing indicator — no background of its own: sticks to the bottom
               of the message list, over the chat wallpaper. */}
           {typers.size > 0 && (
-            <div className="sticky bottom-0 shrink-0 px-1 text-xs text-muted-foreground flex items-center gap-1">
+            <div className="sticky bottom-0 mt-auto shrink-0 px-1 text-xs text-muted-foreground flex items-center gap-1">
               <span>
                 {Array.from(typers.values()).join(", ")}{" "}
                 {t("typing", { count: typers.size })}
@@ -1015,6 +972,7 @@ export function TripChat({
         fileInputRef={fileInputRef}
         handleSend={handleSend}
         handleFileUpload={handleFileUpload}
+        onSendVoice={sendVoice}
         notifyTyping={notifyTyping}
         notifyStopTyping={notifyStopTyping}
       />

@@ -10,6 +10,8 @@ import {
 } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { PendingMark } from "@/components/pending-mark";
+import { enqueueMessage } from "@/lib/message-outbox";
 import { fullName, initials } from "@/lib/format";
 import { systemMessageText } from "@/lib/system-message";
 import {
@@ -142,7 +144,12 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageAttachmentsSheet } from "@/components/message-attachments-sheet";
-import { MessageReactionsCluster } from "@/components/message-reactions";
+import {
+  MessageReactionsBar,
+  MessageReactionsCluster,
+} from "@/components/message-reactions";
+import { VoiceRecorder } from "@/components/voice-controls";
+import { VoiceMessagePlayer } from "@/components/voice-message-player";
 import { MessageActionsContext } from "@/components/message-actions-menu";
 import { MessageQuote } from "@/components/message-quote";
 import {
@@ -537,7 +544,12 @@ function ChatPageContent() {
 
   // A quoted file that belongs to an album reads "Album · N files".
   const albumSize = albumSizes(currentDocs);
-  const docLabel = (d: { fileName: string; batchId?: string | null }) => {
+  const docLabel = (d: {
+    fileName: string;
+    batchId?: string | null;
+    fileType?: string;
+  }) => {
+    if (d.fileType === "AUDIO") return `🎤 ${tChat("voiceMessage")}`;
     const count = d.batchId ? albumSize.get(d.batchId) : undefined;
     return count ? tChat("albumLabel", { count }) : d.fileName;
   };
@@ -642,7 +654,7 @@ function ChatPageContent() {
             selectedUserId === conv.user.id && "bg-muted",
             hasUnread &&
               selectedUserId !== conv.user.id &&
-              "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+              "bg-blue-100 hover:bg-blue-200/80 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 border-l-4 border-l-blue-500 pl-3",
           )}
         >
           <span className="relative shrink-0">
@@ -675,7 +687,14 @@ function ChatPageContent() {
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground truncate">
+            <p
+              className={cn(
+                "text-sm truncate",
+                hasUnread
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground",
+              )}
+            >
               {conv.lastMessage.content}
             </p>
           </div>
@@ -705,7 +724,7 @@ function ChatPageContent() {
             selectedGroupId === group.id && "bg-muted",
             hasUnread &&
               selectedGroupId !== group.id &&
-              "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60",
+              "bg-blue-100 hover:bg-blue-200/80 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 border-l-4 border-l-blue-500 pl-3",
           )}
         >
           <Avatar className="h-10 w-10 shrink-0">
@@ -1261,15 +1280,17 @@ function ChatPageContent() {
       setPendingFiles([]);
     } else if (trimmed) {
       if (selectedGroupId) {
-        getSocket().emit("send_group_message", {
-          groupId: selectedGroupId,
+        enqueueMessage({
+          kind: "group",
+          scopeId: selectedGroupId,
           content: trimmed,
           replyToId: replyMsgId,
           replyToDocumentId: replyDocId,
         });
       } else if (selectedUserId) {
-        getSocket().emit("send_direct_message", {
-          receiverId: selectedUserId,
+        enqueueMessage({
+          kind: "dm",
+          scopeId: selectedUserId,
           content: trimmed,
           replyToId: replyMsgId,
           replyToDocumentId: replyDocId,
@@ -1325,6 +1346,7 @@ function ChatPageContent() {
     files: File[],
     caption: string | null,
     reply: typeof replyingTo,
+    voice?: { durationMs: number; waveform: string | null },
   ) {
     const groupId = selectedGroupId;
     const otherUserId = selectedUserId;
@@ -1338,7 +1360,14 @@ function ChatPageContent() {
       avatar: user.avatar ?? null,
       role: user.role,
     };
-    const common = { conversation, files, caption, meId: user.id };
+    const common = {
+      conversation,
+      files,
+      caption,
+      durationMs: voice?.durationMs,
+      waveform: voice?.waveform,
+      meId: user.id,
+    };
     const job: OutboxJob<ConversationDocumentFull | GroupDocumentFull> = groupId
       ? createJob<GroupDocumentFull>({
           ...common,
@@ -1363,6 +1392,8 @@ function ChatPageContent() {
       replyToMessageId: quote.replyToMessageId,
       replyToDocumentId: quote.replyToDocumentId,
       caption,
+      durationMs: voice?.durationMs,
+      waveform: voice?.waveform,
       onProgress: (percent: number) => {
         // Re-render on whole steps only: progress events come in bursts.
         const step = Math.floor(percent / 5) * 5;
@@ -1401,6 +1432,14 @@ function ChatPageContent() {
     } finally {
       setOutbox((prev) => prev.filter((j) => j.id !== job.id));
     }
+  }
+
+  // Voice message: recorded in the composer, sent at once as its own bubble
+  // (an active reply target travels with it).
+  function sendVoice(file: File, durationMs: number, waveform: string | null) {
+    const reply = replyingTo;
+    setReplyingTo(null);
+    void sendFiles([file], null, reply, { durationMs, waveform });
   }
 
   function removePendingFile(idx: number) {
@@ -1961,12 +2000,13 @@ function ChatPageContent() {
                           {/* Sidekick (own→LEFT). Trigger (mine / idle)
                               + other participant's reactions as plain
                               glyphs next to it. */}
-                          {isOwn && !msg.deletedAt && (
+                          {isOwn && !msg.deletedAt && !msg.pending && !msg.failed && (
                             <MessageReactionsCluster
                               messageId={msg.id}
                               type={selectedGroupId ? "GROUP" : "DM"}
                               reactions={msg.reactions ?? []}
                               currentUserId={user?.id}
+                              hideOthers={!!selectedGroupId}
                             />
                           )}
                           {showSenderAvatar && groupSender && (
@@ -2128,7 +2168,14 @@ function ChatPageContent() {
                                   locale,
                                   { hour: "2-digit", minute: "2-digit" },
                                 )}
-                                {isOwn && isRead != null && !msg.deletedAt && (
+                                {isOwn && !msg.deletedAt && (
+                                  <PendingMark msg={msg} />
+                                )}
+                                {isOwn &&
+                                  isRead != null &&
+                                  !msg.deletedAt &&
+                                  !msg.pending &&
+                                  !msg.failed && (
                                   <span
                                     className={cn(isRead && "text-primary")}
                                   >
@@ -2136,9 +2183,18 @@ function ChatPageContent() {
                                   </span>
                                 )}
                               </span>
-                              {/* Bar moved to bubble's sidekick (above) so
-                                  reactions stay inline with the bubble. */}
+                              {/* DM: reactions sit in the bubble's sidekick.
+                                  Groups: the Bar below (many reactors). */}
                             </div>
+                            {selectedGroupId && !msg.deletedAt && (
+                              <MessageReactionsBar
+                                messageId={msg.id}
+                                type="GROUP"
+                                reactions={msg.reactions ?? []}
+                                currentUserId={user?.id}
+                                isOwn={isOwn}
+                              />
+                            )}
                           </div>
                           {/* Sidekick (other→RIGHT). */}
                           {!isOwn && !msg.deletedAt && (
@@ -2147,6 +2203,7 @@ function ChatPageContent() {
                               type={selectedGroupId ? "GROUP" : "DM"}
                               reactions={msg.reactions ?? []}
                               currentUserId={user?.id}
+                              hideOthers={!!selectedGroupId}
                             />
                           )}
                         </div>
@@ -2208,6 +2265,7 @@ function ChatPageContent() {
                                 .reactions ?? []
                             }
                             currentUserId={user?.id}
+                            hideOthers={!!selectedGroupId}
                           />
                         )}
                         {!isOwn &&
@@ -2425,6 +2483,33 @@ function ChatPageContent() {
                                     </p>
                                   )}
                                 </div>
+                              ) : doc.fileType === "AUDIO" ? (
+                                <div
+                                  className={cn(
+                                    "rounded-2xl border overflow-hidden",
+                                    isOwn
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-muted",
+                                  )}
+                                >
+                                  <VoiceMessagePlayer
+                                    src={doc.signedUrl}
+                                    durationMs={
+                                      (doc as { durationMs?: number | null })
+                                        .durationMs
+                                    }
+                                    waveform={
+                                      (doc as { waveform?: string | null })
+                                        .waveform
+                                    }
+                                    isMine={isOwn}
+                                  />
+                                  {doc.caption && (
+                                    <p className="text-sm whitespace-pre-wrap break-words px-3 pb-2">
+                                      {doc.caption}
+                                    </p>
+                                  )}
+                                </div>
                               ) : (
                                 <div
                                   className={cn(
@@ -2510,8 +2595,20 @@ function ChatPageContent() {
                                 </span>
                               )}
                             </span>
-                            {/* Bar moved to bubble's sidekick (above). */}
+                            {/* DM: sidekick cluster. Groups: Bar below. */}
                           </div>
+                          {selectedGroupId && !isDeleted && (
+                            <MessageReactionsBar
+                              messageId={doc.id}
+                              type="GROUP_DOC"
+                              reactions={
+                                (doc as { reactions?: MessageReactionRow[] })
+                                  .reactions ?? []
+                              }
+                              currentUserId={user?.id}
+                              isOwn={isOwn}
+                            />
+                          )}
                         </div>
                         {/* Sidekick (other→RIGHT) — cluster style. */}
                         {!isOwn && !isDeleted && (
@@ -2523,6 +2620,7 @@ function ChatPageContent() {
                                 .reactions ?? []
                             }
                             currentUserId={user?.id}
+                            hideOthers={!!selectedGroupId}
                           />
                         )}
                       </div>
@@ -2662,6 +2760,9 @@ function ChatPageContent() {
                     "border-t",
                 )}
               >
+                <VoiceRecorder onSend={sendVoice} disabled={!!editing}>
+                  {(mic) => (
+                    <>
                 <Button
                   type="button"
                   variant="ghost"
@@ -2719,6 +2820,10 @@ function ChatPageContent() {
                   }
                   className="flex-1"
                 />
+                {/* Empty composer → the mic takes the Send button's place. */}
+                {mic && !editing && !newMessage.trim() && pendingFiles.length === 0 ? (
+                  mic
+                ) : (
                 <Button
                   type="submit"
                   size="icon"
@@ -2736,6 +2841,10 @@ function ChatPageContent() {
                     <Send className="h-4 w-4" />
                   )}
                 </Button>
+                )}
+                    </>
+                  )}
+                </VoiceRecorder>
               </form>
             )}
           </>
