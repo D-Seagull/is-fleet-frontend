@@ -802,6 +802,21 @@
       "onlineSearchPlaceholder": "Ieškoti naudotojo…",
       "onlineNoResults": "Nieko nerasta pagal „{query}“"
     },
+    "loginIssues": {
+      "title": "Prisijungimo problemos",
+      "subtitle": "Vairuotojai, kuriems kodas neatėjo, ir nesėkmingi bandymai.",
+      "days": "Dienos",
+      "colWhen": "Kada",
+      "colDriver": "Vairuotojas",
+      "colCompany": "Įmonė",
+      "colChannel": "Būdas",
+      "colProblem": "Problema",
+      "empty": "Šiuo laikotarpiu problemų nėra.",
+      "CODE_FAILED": "Neteisingas kodas",
+      "CODE_LOCKED": "Per daug bandymų",
+      "DELIVERY_FAILED": "Nepavyko išsiųsti",
+      "NOT_USED": "Kodas nepanaudotas"
+    },
     "billing": {
       "month": "Mėnuo",
       "colStatus": "Statusas",

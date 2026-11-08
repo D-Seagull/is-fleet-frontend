@@ -802,6 +802,21 @@
       "onlineSearchPlaceholder": "Поиск пользователя…",
       "onlineNoResults": "Ничего не найдено по запросу «{query}»"
     },
+    "loginIssues": {
+      "title": "Проблемы со входом",
+      "subtitle": "Водители, которым не дошёл код, и неудачные попытки.",
+      "days": "Дней",
+      "colWhen": "Когда",
+      "colDriver": "Водитель",
+      "colCompany": "Компания",
+      "colChannel": "Метод",
+      "colProblem": "Проблема",
+      "empty": "За этот период проблем нет.",
+      "CODE_FAILED": "Неверный код",
+      "CODE_LOCKED": "Слишком много попыток",
+      "DELIVERY_FAILED": "Не удалось отправить",
+      "NOT_USED": "Код не использован"
+    },
     "billing": {
       "month": "Месяц",
       "colStatus": "Статус",

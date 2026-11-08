@@ -802,6 +802,21 @@
       "onlineSearchPlaceholder": "Szukaj użytkownika…",
       "onlineNoResults": "Nic nie znaleziono dla „{query}”"
     },
+    "loginIssues": {
+      "title": "Problemy z logowaniem",
+      "subtitle": "Kierowcy, którym nie dotarł kod, i nieudane próby.",
+      "days": "Dni",
+      "colWhen": "Kiedy",
+      "colDriver": "Kierowca",
+      "colCompany": "Firma",
+      "colChannel": "Metoda",
+      "colProblem": "Problem",
+      "empty": "Brak problemów w tym okresie.",
+      "CODE_FAILED": "Błędny kod",
+      "CODE_LOCKED": "Zbyt wiele prób",
+      "DELIVERY_FAILED": "Nie udało się wysłać",
+      "NOT_USED": "Kod nieużyty"
+    },
     "billing": {
       "month": "Miesiąc",
       "colStatus": "Status",

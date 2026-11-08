@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Building2, Bug, Headset, Loader2 } from "lucide-react";
+import { Building2, Bug, Headset, KeyRound, Loader2 } from "lucide-react";
 import {
   SidebarProvider,
   SidebarInset,
@@ -66,6 +66,11 @@ export default function AdminLayout({
       title: t("support.title"),
       href: "/admin/support",
       icon: Headset,
+    },
+    {
+      title: t("loginIssues.title"),
+      href: "/admin/login-issues",
+      icon: KeyRound,
     },
   ];
 

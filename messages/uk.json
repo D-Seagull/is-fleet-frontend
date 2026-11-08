@@ -802,6 +802,21 @@
       "onlineSearchPlaceholder": "Пошук користувача…",
       "onlineNoResults": "Нічого не знайдено за запитом «{query}»"
     },
+    "loginIssues": {
+      "title": "Проблеми зі входом",
+      "subtitle": "Водії, яким не дійшов код, і невдалі спроби.",
+      "days": "Днів",
+      "colWhen": "Коли",
+      "colDriver": "Водій",
+      "colCompany": "Компанія",
+      "colChannel": "Метод",
+      "colProblem": "Проблема",
+      "empty": "За цей період проблем немає.",
+      "CODE_FAILED": "Невірний код",
+      "CODE_LOCKED": "Забагато спроб",
+      "DELIVERY_FAILED": "Не вдалося надіслати",
+      "NOT_USED": "Код не використано"
+    },
     "billing": {
       "month": "Місяць",
       "colStatus": "Статус",
