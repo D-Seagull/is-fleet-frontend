@@ -18,7 +18,7 @@ export function VoiceRecorder({
   className,
   children,
 }: {
-  onSend: (file: File, durationMs: number) => void;
+  onSend: (file: File, durationMs: number, waveform: string | null) => void;
   disabled?: boolean;
   className?: string;
   /**

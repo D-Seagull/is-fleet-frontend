@@ -71,7 +71,11 @@ export function ChatComposer({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleSend: () => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSendVoice: (file: File, durationMs: number) => void;
+  onSendVoice: (
+    file: File,
+    durationMs: number,
+    waveform: string | null,
+  ) => void;
   notifyTyping: () => void;
   notifyStopTyping: () => void;
 }) {

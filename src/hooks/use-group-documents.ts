@@ -41,6 +41,8 @@ export interface GroupDocumentFull {
   deletedAt?: string | null;
   /** Voice messages (fileType AUDIO): length in ms. */
   durationMs?: number | null;
+  /** Voice messages: loudness bars ("12,40,…"), absent on older ones. */
+  waveform?: string | null;
   caption?: string | null;
   replyToMessageId?: string | null;
   replyTo?: GroupDocReplyPreview | null;
@@ -75,6 +77,7 @@ export function useUploadGroupDocs(groupId: string) {
       replyToDocumentId,
       caption,
       durationMs,
+      waveform,
       onProgress,
     }: {
       files: File[];
@@ -82,6 +85,7 @@ export function useUploadGroupDocs(groupId: string) {
       replyToDocumentId?: string | null;
       caption?: string | null;
       durationMs?: number | null;
+      waveform?: string | null;
       onProgress?: (percent: number) => void;
     }) => {
       const form = new FormData();
@@ -91,6 +95,7 @@ export function useUploadGroupDocs(groupId: string) {
         form.append("replyToDocumentId", replyToDocumentId);
       if (caption) form.append("caption", caption);
       if (durationMs) form.append("durationMs", String(durationMs));
+      if (waveform) form.append("waveform", waveform);
       files.forEach((f) => form.append("files", f));
       const res = await api.post(
         "/group-messages/documents/upload-many",

@@ -1346,7 +1346,7 @@ function ChatPageContent() {
     files: File[],
     caption: string | null,
     reply: typeof replyingTo,
-    durationMs?: number | null,
+    voice?: { durationMs: number; waveform: string | null },
   ) {
     const groupId = selectedGroupId;
     const otherUserId = selectedUserId;
@@ -1360,7 +1360,14 @@ function ChatPageContent() {
       avatar: user.avatar ?? null,
       role: user.role,
     };
-    const common = { conversation, files, caption, durationMs, meId: user.id };
+    const common = {
+      conversation,
+      files,
+      caption,
+      durationMs: voice?.durationMs,
+      waveform: voice?.waveform,
+      meId: user.id,
+    };
     const job: OutboxJob<ConversationDocumentFull | GroupDocumentFull> = groupId
       ? createJob<GroupDocumentFull>({
           ...common,
@@ -1385,7 +1392,8 @@ function ChatPageContent() {
       replyToMessageId: quote.replyToMessageId,
       replyToDocumentId: quote.replyToDocumentId,
       caption,
-      durationMs,
+      durationMs: voice?.durationMs,
+      waveform: voice?.waveform,
       onProgress: (percent: number) => {
         // Re-render on whole steps only: progress events come in bursts.
         const step = Math.floor(percent / 5) * 5;
@@ -1428,10 +1436,10 @@ function ChatPageContent() {
 
   // Voice message: recorded in the composer, sent at once as its own bubble
   // (an active reply target travels with it).
-  function sendVoice(file: File, durationMs: number) {
+  function sendVoice(file: File, durationMs: number, waveform: string | null) {
     const reply = replyingTo;
     setReplyingTo(null);
-    void sendFiles([file], null, reply, durationMs);
+    void sendFiles([file], null, reply, { durationMs, waveform });
   }
 
   function removePendingFile(idx: number) {
@@ -2489,6 +2497,10 @@ function ChatPageContent() {
                                     durationMs={
                                       (doc as { durationMs?: number | null })
                                         .durationMs
+                                    }
+                                    waveform={
+                                      (doc as { waveform?: string | null })
+                                        .waveform
                                     }
                                     isMine={isOwn}
                                   />

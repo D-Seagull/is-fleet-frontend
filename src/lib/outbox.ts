@@ -29,6 +29,8 @@ export interface OutboxDoc {
   caption?: string | null;
   /** Voice messages: length in ms. */
   durationMs?: number | null;
+  /** Voice messages: loudness bars ("12,40,…"). */
+  waveform?: string | null;
   isRead: boolean;
 }
 
@@ -118,6 +120,7 @@ export function createJob<T extends OutboxDoc>(opts: {
   caption: string | null;
   /** Set for a voice message (one audio file): its length in ms. */
   durationMs?: number | null;
+  waveform?: string | null;
   meId: string;
   serverDocs: { id: string }[];
   extra: Omit<T, keyof OutboxDoc>;
@@ -138,6 +141,7 @@ export function createJob<T extends OutboxDoc>(opts: {
       fileName: file.name,
       fileType: isPhoto ? "PHOTO" : isAudio ? "AUDIO" : "DOCUMENT",
       durationMs: isAudio ? (opts.durationMs ?? null) : null,
+      waveform: isAudio ? (opts.waveform ?? null) : null,
       uploadedBy: opts.meId,
       // +i: albums are ordered by createdAt — keep the order they were sent.
       createdAt: new Date(now + i).toISOString(),

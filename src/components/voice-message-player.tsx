@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatClock } from "@/hooks/use-voice-recorder";
+import { parseWaveform, placeholderWaveform } from "@/lib/waveform";
 import { cn } from "@/lib/utils";
 
 // One voice message at a time: starting another stops the one playing.
@@ -12,19 +13,21 @@ let playing: HTMLAudioElement | null = null;
 const SPEEDS = [1, 1.5, 2] as const;
 
 /**
- * Player inside a chat bubble: play / pause, a progress bar you can click to
- * seek, the length (counting down while playing) and a 1× / 1.5× / 2× toggle.
+ * Player inside a chat bubble: play / pause, the waveform (click to seek), the length (counting down while playing) and a 1× / 1.5× / 2× toggle.
  * `durationMs` comes from the server — a browser-recorded file often has no
  * duration of its own in its header.
  */
 export function VoiceMessagePlayer({
   src,
   durationMs,
+  waveform,
   isMine,
   className,
 }: {
   src: string;
   durationMs?: number | null;
+  /** Loudness bars from the server ("12,40,…"); older messages have none. */
+  waveform?: string | null;
   isMine: boolean;
   className?: string;
 }) {
@@ -37,6 +40,8 @@ export function VoiceMessagePlayer({
 
   const totalMs = durationMs || realMs || 0;
   const progress = totalMs ? Math.min(1, currentMs / totalMs) : 0;
+  const bars = parseWaveform(waveform) ?? placeholderWaveform();
+  const playedBars = Math.round(progress * bars.length);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -77,7 +82,7 @@ export function VoiceMessagePlayer({
   const muted = isMine ? "text-primary-foreground/70" : "text-muted-foreground";
   return (
     <div
-      className={cn("flex items-center gap-2 px-3 py-2 w-[230px]", className)}
+      className={cn("flex items-center gap-2 px-3 py-2 w-[260px]", className)}
     >
       <audio
         ref={audioRef}
@@ -121,18 +126,24 @@ export function VoiceMessagePlayer({
           aria-valuemax={Math.round(totalMs / 1000)}
           aria-valuenow={Math.round(currentMs / 1000)}
           onClick={seek}
-          className={cn(
-            "relative h-1.5 w-full cursor-pointer rounded-full",
-            isMine ? "bg-primary-foreground/25" : "bg-primary/15",
-          )}
+          className="flex h-6 w-full cursor-pointer items-center gap-[2px]"
         >
-          <div
-            className={cn(
-              "absolute inset-y-0 left-0 rounded-full",
-              isMine ? "bg-primary-foreground" : "bg-primary",
-            )}
-            style={{ width: `${progress * 100}%` }}
-          />
+          {bars.map((v, i) => (
+            <div
+              key={i}
+              className={cn(
+                "flex-1 min-w-[2px] rounded-[1px]",
+                i < playedBars
+                  ? isMine
+                    ? "bg-primary-foreground"
+                    : "bg-primary"
+                  : isMine
+                    ? "bg-primary-foreground/35"
+                    : "bg-primary/25",
+              )}
+              style={{ height: `${12 + (v / 100) * 88}%` }}
+            />
+          ))}
         </div>
         <span className={cn("text-[10px] leading-none tabular-nums", muted)}>
           {formatClock(isPlaying || currentMs > 0 ? currentMs : totalMs)}

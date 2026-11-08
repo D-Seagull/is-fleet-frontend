@@ -432,6 +432,7 @@ function FileBubble({
                 <VoiceMessagePlayer
                   src={doc.signedUrl}
                   durationMs={doc.durationMs}
+                  waveform={doc.waveform}
                   isMine={isMine}
                 />
                 {doc.caption && (
