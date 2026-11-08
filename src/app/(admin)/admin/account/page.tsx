@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { AvatarSection } from "@/components/avatar-section";
 import { UiLocalePicker } from "@/components/ui-locale-picker";
+import { SecurityCard } from "./_components/security-card";
 
 /**
  * The admin's own settings. `/account` belongs to the dispatch app and bounces
@@ -47,6 +48,8 @@ export default function AdminAccountPage() {
           <UiLocalePicker />
         </CardContent>
       </Card>
+
+      <SecurityCard />
     </div>
   );
 }

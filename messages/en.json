@@ -228,6 +228,8 @@
   },
   "auth": {
     "login": {
+      "totpLabel": "Authenticator code",
+      "totpPlaceholder": "6-digit code or recovery code",
       "title": "Welcome to IS Fleet",
       "subtitle": "Sign in to your account to continue",
       "emailLabel": "Email",
@@ -801,6 +803,25 @@
       "back": "Back",
       "onlineSearchPlaceholder": "Search user…",
       "onlineNoResults": "Nothing found for “{query}”"
+    },
+    "security": {
+      "title": "Two-factor sign-in",
+      "off": "Off. Sign-in uses the password only.",
+      "on": "On. {n} recovery codes left.",
+      "enable": "Turn on",
+      "scan": "Scan with an authenticator app (Google Authenticator, 1Password, Authy…).",
+      "manualKey": "Or enter the key:",
+      "codeLabel": "6-digit code",
+      "confirm": "Confirm and turn on",
+      "disable": "Turn off",
+      "cancel": "Cancel",
+      "password": "Password",
+      "wrongCode": "Wrong code",
+      "error": "Something went wrong",
+      "disabled": "Two-factor turned off",
+      "recoveryTitle": "Recovery codes",
+      "recoveryHint": "Save them somewhere safe. Each works once if you lose the phone. They are shown only now.",
+      "saved": "I saved them"
     },
     "loginIssues": {
       "title": "Sign-in issues",

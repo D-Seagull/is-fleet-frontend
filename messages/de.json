@@ -228,6 +228,8 @@
   },
   "auth": {
     "login": {
+      "totpLabel": "Authenticator-Code",
+      "totpPlaceholder": "6-stelliger Code oder Wiederherstellungscode",
       "title": "Willkommen bei IS Fleet",
       "subtitle": "Melden Sie sich bei Ihrem Konto an, um fortzufahren",
       "emailLabel": "E-Mail",
@@ -801,6 +803,25 @@
       "back": "Zurück",
       "onlineSearchPlaceholder": "Benutzer suchen…",
       "onlineNoResults": "Nichts gefunden für „{query}“"
+    },
+    "security": {
+      "title": "Zwei-Faktor-Anmeldung",
+      "off": "Aus. Anmeldung nur mit Passwort.",
+      "on": "An. Noch {n} Wiederherstellungscodes.",
+      "enable": "Einschalten",
+      "scan": "Mit einer Authenticator-App scannen (Google Authenticator, 1Password, Authy…).",
+      "manualKey": "Oder Schlüssel eingeben:",
+      "codeLabel": "6-stelliger Code",
+      "confirm": "Bestätigen und einschalten",
+      "disable": "Ausschalten",
+      "cancel": "Abbrechen",
+      "password": "Passwort",
+      "wrongCode": "Falscher Code",
+      "error": "Etwas ist schiefgelaufen",
+      "disabled": "Zwei-Faktor ausgeschaltet",
+      "recoveryTitle": "Wiederherstellungscodes",
+      "recoveryHint": "Sicher aufbewahren. Jeder gilt einmal, falls das Handy verloren geht. Nur jetzt sichtbar.",
+      "saved": "Gespeichert"
     },
     "loginIssues": {
       "title": "Anmeldeprobleme",

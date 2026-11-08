@@ -228,6 +228,8 @@
   },
   "auth": {
     "login": {
+      "totpLabel": "Autentifikatoriaus kodas",
+      "totpPlaceholder": "6 skaitmenų kodas arba atkūrimo kodas",
       "title": "Sveiki atvykę į IS Fleet",
       "subtitle": "Prisijunkite prie savo paskyros, kad tęstumėte",
       "emailLabel": "El. paštas",
@@ -801,6 +803,25 @@
       "back": "Atgal",
       "onlineSearchPlaceholder": "Ieškoti naudotojo…",
       "onlineNoResults": "Nieko nerasta pagal „{query}“"
+    },
+    "security": {
+      "title": "Dviejų veiksnių prisijungimas",
+      "off": "Išjungta. Prisijungiama tik slaptažodžiu.",
+      "on": "Įjungta. Liko atkūrimo kodų: {n}.",
+      "enable": "Įjungti",
+      "scan": "Nuskaitykite autentifikatoriaus programėle (Google Authenticator, 1Password, Authy…).",
+      "manualKey": "Arba įveskite raktą:",
+      "codeLabel": "6 skaitmenų kodas",
+      "confirm": "Patvirtinti ir įjungti",
+      "disable": "Išjungti",
+      "cancel": "Atšaukti",
+      "password": "Slaptažodis",
+      "wrongCode": "Neteisingas kodas",
+      "error": "Kažkas nepavyko",
+      "disabled": "Dviejų veiksnių prisijungimas išjungtas",
+      "recoveryTitle": "Atkūrimo kodai",
+      "recoveryHint": "Išsaugokite saugioje vietoje. Kiekvienas veikia vieną kartą, jei prarasite telefoną. Rodoma tik dabar.",
+      "saved": "Išsaugojau"
     },
     "loginIssues": {
       "title": "Prisijungimo problemos",

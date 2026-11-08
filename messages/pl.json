@@ -228,6 +228,8 @@
   },
   "auth": {
     "login": {
+      "totpLabel": "Kod z aplikacji uwierzytelniającej",
+      "totpPlaceholder": "6-cyfrowy kod lub kod odzyskiwania",
       "title": "Witamy w IS Fleet",
       "subtitle": "Zaloguj się do swojego konta, aby kontynuować",
       "emailLabel": "Email",
@@ -801,6 +803,25 @@
       "back": "Wstecz",
       "onlineSearchPlaceholder": "Szukaj użytkownika…",
       "onlineNoResults": "Nic nie znaleziono dla „{query}”"
+    },
+    "security": {
+      "title": "Logowanie dwuskładnikowe",
+      "off": "Wyłączone. Logowanie tylko hasłem.",
+      "on": "Włączone. Pozostało kodów odzyskiwania: {n}.",
+      "enable": "Włącz",
+      "scan": "Zeskanuj aplikacją uwierzytelniającą (Google Authenticator, 1Password, Authy…).",
+      "manualKey": "Lub wpisz klucz:",
+      "codeLabel": "6-cyfrowy kod",
+      "confirm": "Potwierdź i włącz",
+      "disable": "Wyłącz",
+      "cancel": "Anuluj",
+      "password": "Hasło",
+      "wrongCode": "Błędny kod",
+      "error": "Coś poszło nie tak",
+      "disabled": "Logowanie dwuskładnikowe wyłączone",
+      "recoveryTitle": "Kody odzyskiwania",
+      "recoveryHint": "Zapisz je w bezpiecznym miejscu. Każdy działa raz, gdy zgubisz telefon. Widoczne tylko teraz.",
+      "saved": "Zapisałem"
     },
     "loginIssues": {
       "title": "Problemy z logowaniem",
