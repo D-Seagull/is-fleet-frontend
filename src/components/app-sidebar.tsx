@@ -311,8 +311,12 @@ export function AppSidebar({
                 align="start"
                 sideOffset={4}
               >
-                <StatusSubmenu />
-                <DropdownMenuSeparator />
+                {user?.role !== "ADMIN" && (
+                  <>
+                    <StatusSubmenu />
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem
                   onClick={() => {
                     if (isMobile) {
@@ -320,7 +324,7 @@ export function AppSidebar({
                     } else {
                       setOpen(false);
                     }
-                    router.push("/account");
+                    router.push(user?.role === "ADMIN" ? "/admin/account" : "/account");
                   }}
                 >
                   <Settings className="mr-2 h-4 w-4" />

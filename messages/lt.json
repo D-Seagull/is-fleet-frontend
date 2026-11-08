@@ -876,6 +876,8 @@
       "send": "Siųsti",
       "sendError": "Nepavyko išsiųsti",
       "you": "IS Fleet contact",
+      "noCompany": "Be įmonės",
+      "incoming": "{name} → IS Fleet",
       "deleted": "Žinutė ištrinta",
       "file": "Failas"
     },

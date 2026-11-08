@@ -876,6 +876,8 @@
       "send": "Надіслати",
       "sendError": "Не вдалося надіслати",
       "you": "IS Fleet contact",
+      "noCompany": "Без компанії",
+      "incoming": "{name} → IS Fleet",
       "deleted": "Повідомлення видалено",
       "file": "Файл"
     },

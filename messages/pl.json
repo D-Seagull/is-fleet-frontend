@@ -876,6 +876,8 @@
       "send": "Wyślij",
       "sendError": "Nie udało się wysłać",
       "you": "IS Fleet contact",
+      "noCompany": "Bez firmy",
+      "incoming": "{name} → IS Fleet",
       "deleted": "Wiadomość usunięta",
       "file": "Plik"
     },
