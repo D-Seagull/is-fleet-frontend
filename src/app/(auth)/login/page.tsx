@@ -34,6 +34,9 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  // Platform admins with 2FA on: the server asks for a code after the password.
+  const [needsCode, setNeedsCode] = useState(false);
+  const [totp, setTotp] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +50,7 @@ export default function LoginPage() {
         email,
         password,
         remember: rememberMe,
+        ...(needsCode && totp.trim() ? { totp: totp.trim() } : {}),
       });
       const { access_token, user } = res.data;
 
@@ -55,6 +59,15 @@ export default function LoginPage() {
       router.push(homeRouteFor(user.role));
     } catch (err) {
       let msg: string | string[] | undefined;
+      if (
+        isAxiosError(err) &&
+        (err.response?.data as { message?: { code?: string } } | undefined)
+          ?.message?.code === "TOTP_REQUIRED"
+      ) {
+        setNeedsCode(true);
+        setIsLoading(false);
+        return;
+      }
       if (isAxiosError(err)) {
         const data = err.response?.data as
           | { message?: string | string[] | { message?: string | string[] } }
@@ -128,6 +141,20 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
+            {needsCode && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="totp">{t("totpLabel")}</Label>
+                <Input
+                  id="totp"
+                  autoFocus
+                  autoComplete="one-time-code"
+                  inputMode="text"
+                  placeholder={t("totpPlaceholder")}
+                  value={totp}
+                  onChange={(e) => setTotp(e.target.value)}
+                />
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Checkbox
