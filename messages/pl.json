@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Napisz do kierowcy",
     "sys": {
       "driverAssigned": "Kierowca {name} przydzielony do ciężarówki {plate}",
       "memberAdded": "Dodano: {name}",
@@ -332,6 +333,7 @@
     "voiceMicDenied": "Brak dostępu do mikrofonu. Zezwól na niego w ustawieniach przeglądarki.",
     "voicePlay": "Odtwórz",
     "voicePause": "Pauza",
+    "voiceStop": "Zatrzymaj nagrywanie",
     "emoji": "Emoji",
     "messagePlaceholder": "Wpisz wiadomość…",
     "editPlaceholder": "Edytuj wiadomość…",

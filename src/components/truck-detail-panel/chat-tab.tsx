@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { useTripsByTruck } from "@/hooks/use-trips";
@@ -25,6 +28,7 @@ export function ChatTab({
   navOpen?: boolean;
 }) {
   const t = useTranslations("chat");
+  const router = useRouter();
   const tTrips = useTranslations("truckPanel.trips");
   const user = useAuthStore((s) => s.user);
   const { data: trips, isLoading } = useTripsByTruck(truckId);
@@ -108,6 +112,17 @@ export function ChatTab({
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
           <p className="text-sm">{t("selectPrompt")}</p>
+          {/* No trip → the driver can still be written to directly (DM). */}
+          {defaultDriverId && (
+            <Button
+              variant="outline"
+              className="mt-4 gap-2"
+              onClick={() => router.push(`/chat?userId=${defaultDriverId}`)}
+            >
+              <MessageCircle className="h-4 w-4" />
+              {t("writeDriver")}
+            </Button>
+          )}
         </div>
       )}
     </div>

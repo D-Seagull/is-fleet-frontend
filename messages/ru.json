@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Написать водителю",
     "sys": {
       "driverAssigned": "Водитель {name} назначен на грузовик {plate}",
       "memberAdded": "Добавлен: {name}",
@@ -332,6 +333,7 @@
     "voiceMicDenied": "Нет доступа к микрофону. Разрешите его в настройках браузера.",
     "voicePlay": "Воспроизвести",
     "voicePause": "Пауза",
+    "voiceStop": "Остановить запись",
     "emoji": "Эмодзи",
     "messagePlaceholder": "Введите сообщение…",
     "editPlaceholder": "Редактируйте сообщение…",

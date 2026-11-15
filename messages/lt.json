@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Rašyti vairuotojui",
     "sys": {
       "driverAssigned": "Vairuotojas {name} priskirtas vilkikui {plate}",
       "memberAdded": "Pridėta: {name}",
@@ -332,6 +333,7 @@
     "voiceMicDenied": "Mikrofono prieiga užblokuota. Leiskite ją naršyklės nustatymuose.",
     "voicePlay": "Groti",
     "voicePause": "Pauzė",
+    "voiceStop": "Sustabdyti įrašymą",
     "emoji": "Jaustukas",
     "messagePlaceholder": "Įveskite žinutę…",
     "editPlaceholder": "Redaguokite žinutę…",

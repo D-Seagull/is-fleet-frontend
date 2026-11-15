@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Fahrer anschreiben",
     "sys": {
       "driverAssigned": "Fahrer {name} dem Lkw {plate} zugewiesen",
       "memberAdded": "Hinzugefügt: {name}",
@@ -332,6 +333,7 @@
     "voiceMicDenied": "Der Mikrofonzugriff ist blockiert. Erlaube ihn in den Browsereinstellungen.",
     "voicePlay": "Abspielen",
     "voicePause": "Pause",
+    "voiceStop": "Aufnahme beenden",
     "emoji": "Emoji",
     "messagePlaceholder": "Nachricht eingeben…",
     "editPlaceholder": "Nachricht bearbeiten…",
