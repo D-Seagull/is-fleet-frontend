@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { api } from "@/lib/api";
+import { PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
 
 function ResetPasswordForm() {
   const t = useTranslations("auth.resetPassword");
@@ -43,7 +44,7 @@ function ResetPasswordForm() {
       setError(t("errorMissingToken"));
       return;
     }
-    if (password.length < 6) {
+    if (password.length < PASSWORD_MIN_LENGTH) {
       setError(tValid("passwordShort"));
       return;
     }

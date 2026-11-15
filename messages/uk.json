@@ -13,7 +13,7 @@
       "ADMIN": "Адмін"
     },
     "validation": {
-      "passwordShort": "Пароль має бути щонайменше 6 символів.",
+      "passwordShort": "Пароль має бути щонайменше 10 символів.",
       "passwordMismatch": "Паролі не збігаються."
     },
     "languages": {
@@ -258,7 +258,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@company.com",
       "passwordLabel": "Пароль",
-      "passwordPlaceholder": "Щонайменше 6 символів",
+      "passwordPlaceholder": "Щонайменше 10 символів",
       "password2Label": "Підтвердити пароль",
       "password2Placeholder": "Повторіть пароль",
       "contactsTitle": "Контакти компанії (необов'язково)",
@@ -292,7 +292,7 @@
       "subtitleBefore": "Оберіть новий пароль для акаунту.",
       "subtitleAfter": "Перенаправлення на вхід…",
       "passwordLabel": "Новий пароль",
-      "passwordPlaceholder": "Щонайменше 6 символів",
+      "passwordPlaceholder": "Щонайменше 10 символів",
       "confirmLabel": "Підтвердити пароль",
       "confirmPlaceholder": "Повторіть новий пароль",
       "submitButton": "Оновити пароль",

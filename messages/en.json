@@ -13,7 +13,7 @@
       "ADMIN": "Admin"
     },
     "validation": {
-      "passwordShort": "Password must be at least 6 characters.",
+      "passwordShort": "Password must be at least 10 characters.",
       "passwordMismatch": "Passwords do not match."
     },
     "languages": {
@@ -258,7 +258,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@company.com",
       "passwordLabel": "Password",
-      "passwordPlaceholder": "At least 6 characters",
+      "passwordPlaceholder": "At least 10 characters",
       "password2Label": "Confirm password",
       "password2Placeholder": "Repeat the password",
       "contactsTitle": "Company contacts (optional)",
@@ -292,7 +292,7 @@
       "subtitleBefore": "Choose a new password for your account.",
       "subtitleAfter": "Redirecting to sign in…",
       "passwordLabel": "New password",
-      "passwordPlaceholder": "At least 6 characters",
+      "passwordPlaceholder": "At least 10 characters",
       "confirmLabel": "Confirm password",
       "confirmPlaceholder": "Repeat new password",
       "submitButton": "Update password",

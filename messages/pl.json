@@ -13,7 +13,7 @@
       "ADMIN": "Administrator"
     },
     "validation": {
-      "passwordShort": "Hasło musi mieć co najmniej 6 znaków.",
+      "passwordShort": "Hasło musi mieć co najmniej 10 znaków.",
       "passwordMismatch": "Hasła nie są zgodne."
     },
     "languages": {
@@ -258,7 +258,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@company.com",
       "passwordLabel": "Hasło",
-      "passwordPlaceholder": "Co najmniej 6 znaków",
+      "passwordPlaceholder": "Co najmniej 10 znaków",
       "password2Label": "Potwierdź hasło",
       "password2Placeholder": "Powtórz hasło",
       "contactsTitle": "Kontakty firmy (opcjonalnie)",
@@ -292,7 +292,7 @@
       "subtitleBefore": "Wybierz nowe hasło do konta.",
       "subtitleAfter": "Przekierowanie do logowania…",
       "passwordLabel": "Nowe hasło",
-      "passwordPlaceholder": "Co najmniej 6 znaków",
+      "passwordPlaceholder": "Co najmniej 10 znaków",
       "confirmLabel": "Potwierdź hasło",
       "confirmPlaceholder": "Powtórz nowe hasło",
       "submitButton": "Zaktualizuj hasło",

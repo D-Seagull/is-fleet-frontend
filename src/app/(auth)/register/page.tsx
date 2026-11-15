@@ -19,6 +19,7 @@ import { api } from "@/lib/api";
 import { homeRouteFor } from "@/lib/routes";
 import { useAuthStore } from "@/store/auth";
 import { syncUiLocaleFromAccount, type UiLocaleDb } from "@/lib/ui-locale";
+import { PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
 
 interface InviteInfo {
   type: "user" | "company";
@@ -88,7 +89,7 @@ function RegisterInner() {
     e.preventDefault();
     if (submitting || !token || !invite) return;
 
-    if (password.length < 6) {
+    if (password.length < PASSWORD_MIN_LENGTH) {
       setError(tValid("passwordShort"));
       return;
     }

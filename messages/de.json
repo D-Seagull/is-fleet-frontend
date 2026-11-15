@@ -13,7 +13,7 @@
       "ADMIN": "Administrator"
     },
     "validation": {
-      "passwordShort": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+      "passwordShort": "Das Passwort muss mindestens 10 Zeichen lang sein.",
       "passwordMismatch": "Passwörter stimmen nicht überein."
     },
     "languages": {
@@ -258,7 +258,7 @@
       "emailLabel": "E-Mail",
       "emailPlaceholder": "you@company.com",
       "passwordLabel": "Passwort",
-      "passwordPlaceholder": "Mindestens 6 Zeichen",
+      "passwordPlaceholder": "Mindestens 10 Zeichen",
       "password2Label": "Passwort bestätigen",
       "password2Placeholder": "Passwort wiederholen",
       "contactsTitle": "Firmenkontakte (optional)",
@@ -292,7 +292,7 @@
       "subtitleBefore": "Wählen Sie ein neues Passwort für Ihr Konto.",
       "subtitleAfter": "Weiterleitung zur Anmeldung…",
       "passwordLabel": "Neues Passwort",
-      "passwordPlaceholder": "Mindestens 6 Zeichen",
+      "passwordPlaceholder": "Mindestens 10 Zeichen",
       "confirmLabel": "Passwort bestätigen",
       "confirmPlaceholder": "Neues Passwort wiederholen",
       "submitButton": "Passwort aktualisieren",
