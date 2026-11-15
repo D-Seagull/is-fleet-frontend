@@ -13,7 +13,7 @@
       "ADMIN": "Administratorius"
     },
     "validation": {
-      "passwordShort": "Slaptažodis turi būti bent 6 simbolių.",
+      "passwordShort": "Slaptažodis turi būti bent 10 simbolių.",
       "passwordMismatch": "Slaptažodžiai nesutampa."
     },
     "languages": {
@@ -258,7 +258,7 @@
       "emailLabel": "El. paštas",
       "emailPlaceholder": "you@company.com",
       "passwordLabel": "Slaptažodis",
-      "passwordPlaceholder": "Bent 6 simboliai",
+      "passwordPlaceholder": "Bent 10 simbolių",
       "password2Label": "Patvirtinti slaptažodį",
       "password2Placeholder": "Pakartokite slaptažodį",
       "contactsTitle": "Įmonės kontaktai (neprivaloma)",
@@ -292,7 +292,7 @@
       "subtitleBefore": "Pasirinkite naują slaptažodį paskyrai.",
       "subtitleAfter": "Nukreipiama į prisijungimą…",
       "passwordLabel": "Naujas slaptažodis",
-      "passwordPlaceholder": "Bent 6 simboliai",
+      "passwordPlaceholder": "Bent 10 simbolių",
       "confirmLabel": "Patvirtinti slaptažodį",
       "confirmPlaceholder": "Pakartokite naują slaptažodį",
       "submitButton": "Atnaujinti slaptažodį",

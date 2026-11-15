@@ -13,7 +13,7 @@
       "ADMIN": "Админ"
     },
     "validation": {
-      "passwordShort": "Пароль должен содержать не менее 6 символов.",
+      "passwordShort": "Пароль должен содержать не менее 10 символов.",
       "passwordMismatch": "Пароли не совпадают."
     },
     "languages": {
@@ -258,7 +258,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@company.com",
       "passwordLabel": "Пароль",
-      "passwordPlaceholder": "Не менее 6 символов",
+      "passwordPlaceholder": "Не менее 10 символов",
       "password2Label": "Подтвердить пароль",
       "password2Placeholder": "Повторите пароль",
       "contactsTitle": "Контакты компании (необязательно)",
@@ -292,7 +292,7 @@
       "subtitleBefore": "Выберите новый пароль для аккаунта.",
       "subtitleAfter": "Перенаправление ко входу…",
       "passwordLabel": "Новый пароль",
-      "passwordPlaceholder": "Не менее 6 символов",
+      "passwordPlaceholder": "Не менее 10 символов",
       "confirmLabel": "Подтвердить пароль",
       "confirmPlaceholder": "Повторите новый пароль",
       "submitButton": "Обновить пароль",
