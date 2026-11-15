@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Написать водителю",
     "sys": {
       "driverAssigned": "Водитель {name} назначен на грузовик {plate}",
       "memberAdded": "Добавлен: {name}",

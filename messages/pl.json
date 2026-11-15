@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Napisz do kierowcy",
     "sys": {
       "driverAssigned": "Kierowca {name} przydzielony do ciężarówki {plate}",
       "memberAdded": "Dodano: {name}",

@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Fahrer anschreiben",
     "sys": {
       "driverAssigned": "Fahrer {name} dem Lkw {plate} zugewiesen",
       "memberAdded": "Hinzugefügt: {name}",

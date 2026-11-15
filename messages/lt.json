@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Rašyti vairuotojui",
     "sys": {
       "driverAssigned": "Vairuotojas {name} priskirtas vilkikui {plate}",
       "memberAdded": "Pridėta: {name}",

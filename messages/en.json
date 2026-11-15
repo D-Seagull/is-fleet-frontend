@@ -302,6 +302,7 @@
     }
   },
   "chat": {
+    "writeDriver": "Message the driver",
     "sys": {
       "driverAssigned": "Driver {name} assigned to truck {plate}",
       "memberAdded": "Added {name}",
