@@ -1,15 +1,17 @@
 "use client";
 
-import { Mic, Send, Trash2 } from "lucide-react";
+import { Mic, Send, Square, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { VoiceMessagePlayer } from "@/components/voice-message-player";
 import { formatClock, useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import { cn } from "@/lib/utils";
 
 /**
  * Voice recording for a chat composer: a mic button that turns into a
- * "recording" strip (cancel · timer · send) occupying the composer row.
+ * "recording" strip (cancel · timer · stop), then — after stop — a draft strip
+ * (trash · player · send) to listen to the take before it goes out.
  * Renders nothing in a browser that can't record.
  */
 export function VoiceRecorder({
@@ -59,8 +61,43 @@ export function VoiceRecorder({
           type="button"
           size="icon"
           className="h-11 w-11 rounded-full shrink-0"
+          title={t("voiceStop")}
+          onClick={rec.stop}
+        >
+          <Square className="h-4 w-4 fill-current" />
+        </Button>
+      </div>
+    );
+  }
+
+  if (rec.draft) {
+    return (
+      <div className={cn("flex items-center gap-2 flex-1 min-w-0", className)}>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="h-11 w-11 rounded-full shrink-0 text-muted-foreground hover:text-destructive"
+          title={t("voiceCancel")}
+          onClick={rec.discardDraft}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+        <div className="flex flex-1 items-center rounded-full border min-w-0">
+          <VoiceMessagePlayer
+            src={rec.draft.url}
+            durationMs={rec.draft.durationMs}
+            waveform={rec.draft.waveform}
+            isMine={false}
+            className="w-full"
+          />
+        </div>
+        <Button
+          type="button"
+          size="icon"
+          className="h-11 w-11 rounded-full shrink-0"
           title={t("voiceSend")}
-          onClick={rec.send}
+          onClick={rec.sendDraft}
         >
           <Send className="h-4 w-4" />
         </Button>

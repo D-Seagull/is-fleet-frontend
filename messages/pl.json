@@ -332,6 +332,7 @@
     "voiceMicDenied": "Brak dostępu do mikrofonu. Zezwól na niego w ustawieniach przeglądarki.",
     "voicePlay": "Odtwórz",
     "voicePause": "Pauza",
+    "voiceStop": "Zatrzymaj nagrywanie",
     "emoji": "Emoji",
     "messagePlaceholder": "Wpisz wiadomość…",
     "editPlaceholder": "Edytuj wiadomość…",

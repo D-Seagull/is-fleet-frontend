@@ -332,6 +332,7 @@
     "voiceMicDenied": "Microphone access is blocked. Allow it in your browser settings.",
     "voicePlay": "Play",
     "voicePause": "Pause",
+    "voiceStop": "Stop recording",
     "emoji": "Emoji",
     "messagePlaceholder": "Type a message...",
     "editPlaceholder": "Edit the message…",

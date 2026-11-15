@@ -26,10 +26,21 @@ function pickFormat() {
 
 export type VoiceRecorderState = "idle" | "starting" | "recording";
 
+/** A finished take waiting for the user to listen to it and send (or drop) it. */
+export interface VoiceDraft {
+  file: File;
+  durationMs: number;
+  /** The "12,40,…" string for the bubble, null when too short to draw. */
+  waveform: string | null;
+  /** blob: URL to play the take back before sending. */
+  url: string;
+}
+
 /**
- * Records a voice message with MediaRecorder. `onDone` gets the finished file,
+ * Records a voice message with MediaRecorder in two steps: record, then a
+ * draft you can play back, then send (or drop) it. `onDone` gets the file,
  * its length and its waveform ("12,40,…", null when too short to draw) — only
- * when sent, never for a cancelled or too-short take.
+ * for a draft that was sent.
  * `onError("denied" | "failed")` reports a refused microphone or a failure.
  */
 export function useVoiceRecorder(opts: {
@@ -38,6 +49,7 @@ export function useVoiceRecorder(opts: {
 }) {
   const [state, setState] = useState<VoiceRecorderState>("idle");
   const [elapsedMs, setElapsedMs] = useState(0);
+  const [draft, setDraft] = useState<VoiceDraft | null>(null);
   const supported =
     typeof navigator !== "undefined" &&
     !!navigator.mediaDevices?.getUserMedia &&
@@ -82,8 +94,16 @@ export function useVoiceRecorder(opts: {
     [],
   );
 
+  const dropDraft = useCallback(() => {
+    setDraft((d) => {
+      if (d) URL.revokeObjectURL(d.url);
+      return null;
+    });
+  }, []);
+
   const start = useCallback(async () => {
     if (state !== "idle") return;
+    dropDraft();
     const format = pickFormat();
     if (!format || !navigator.mediaDevices?.getUserMedia) {
       optsRef.current.onError?.("failed");
@@ -126,11 +146,12 @@ export function useVoiceRecorder(opts: {
         const file = new File(chunks, `voice-${Date.now()}.${format.ext}`, {
           type,
         });
-        optsRef.current.onDone(
+        setDraft({
           file,
-          Math.min(durationMs, VOICE_MAX_MS),
-          waveformToString(buildWaveform(levels)),
-        );
+          durationMs: Math.min(durationMs, VOICE_MAX_MS),
+          waveform: waveformToString(buildWaveform(levels)),
+          url: URL.createObjectURL(file),
+        });
       };
       rec.onerror = () => {
         discardRef.current = true;
@@ -183,7 +204,7 @@ export function useVoiceRecorder(opts: {
       setState("idle");
       optsRef.current.onError?.("failed");
     }
-  }, [state, finish, release]);
+  }, [state, finish, release, dropDraft]);
 
   // Leaving the chat mid-recording throws the take away and frees the mic.
   useEffect(
@@ -202,9 +223,21 @@ export function useVoiceRecorder(opts: {
     supported,
     state,
     elapsedMs,
+    draft,
     start,
-    send: () => finish(true),
+    /** Stops recording: the take becomes the draft. */
+    stop: () => finish(true),
+    /** Throws the running take away. */
     cancel: () => finish(false),
+    /** Sends the draft that was listened to. */
+    sendDraft: () => {
+      if (!draft) return;
+      const d = draft;
+      URL.revokeObjectURL(d.url);
+      setDraft(null);
+      optsRef.current.onDone(d.file, d.durationMs, d.waveform);
+    },
+    discardDraft: dropDraft,
   };
 }
 
