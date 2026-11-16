@@ -12,17 +12,19 @@ export default function AuthPageLayout({
   const t = useTranslations("common.legal");
 
   return (
-    <main className="flex flex-col  min-h-screen items-center justify-center">
-      <header className="flex h-14 w-full absolute top-0 left-0 shrink-0 items-center justify-between border-b bg-background px-4">
+    <main className="relative flex min-h-screen flex-col items-center pt-14">
+      <header className="absolute left-0 top-0 flex h-14 w-full shrink-0 items-center justify-between border-b bg-background px-4">
         <BrandLogo className="h-[16.2px]" />
         <ThemeToggle />
       </header>
-      <div className="w-full">{children}</div>
+      <div className="flex w-full flex-1 flex-col justify-center py-6">
+        {children}
+      </div>
 
       {/* The only place the policy is reachable by someone who has no account
           yet — a store reviewer included. Lives in the layout rather than on
           the login page so it also covers register and password reset. */}
-      <footer className="absolute bottom-0 left-0 flex w-full items-center justify-center gap-3 p-4 text-xs text-muted-foreground">
+      <footer className="flex w-full shrink-0 items-center justify-center gap-3 p-4 text-xs text-muted-foreground">
         <Link href="/privacy" className="underline-offset-4 hover:underline">
           {t("privacy")}
         </Link>
