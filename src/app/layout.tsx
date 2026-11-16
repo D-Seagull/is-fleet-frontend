@@ -11,6 +11,9 @@ const geist = Geist({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "IS Fleet",
   description: "Fleet management system",
+  // Chrome's auto-translate wraps text nodes in <font>, which breaks React's
+  // DOM reconciliation (insertBefore NotFoundError). The app has its own i18n.
+  other: { google: "notranslate" },
   // Іконки НЕ перелічуємо вручну: Next бере app/icon.png, app/apple-icon.png
   // і app/favicon.ico за файловою угодою. Явний список тут перебивав їх і
   // тримав старий фавікон навіть після заміни файлів.
@@ -34,7 +37,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} translate="no" suppressHydrationWarning>
       <body className={`${geist.className} antialiased`} suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
