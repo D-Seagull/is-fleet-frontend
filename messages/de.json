@@ -534,6 +534,7 @@
     "searchPlaceholder": "Nach Name, Telefon, E-Mail suchen…",
     "tabTeam": "Team",
     "tabAll": "Alle Manager",
+    "tabInactive": "Deaktiviert",
     "teamEmptyView": "Die Teamansicht ist nur für Manager und Teamleiter verfügbar. Wechseln Sie zu „Alle Manager“.",
     "colManager": "Manager",
     "colEmail": "E-Mail",
@@ -545,6 +546,7 @@
     "statusInactive": "Inaktiv",
     "teamEmpty": "Noch keine Teammitglieder.",
     "allEmpty": "Keine Manager gefunden.",
+    "inactiveEmpty": "Keine deaktivierten Manager.",
     "detail": {
       "statusActive": "Aktiv",
       "statusInactive": "Inaktiv",

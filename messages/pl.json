@@ -534,6 +534,7 @@
     "searchPlaceholder": "Szukaj po nazwisku, telefonie, e-mailu…",
     "tabTeam": "Zespół",
     "tabAll": "Wszyscy menedżerowie",
+    "tabInactive": "Dezaktywowani",
     "teamEmptyView": "Widok zespołu jest dostępny tylko dla menedżerów i liderów zespołów. Przejdź do „Wszyscy menedżerowie”.",
     "colManager": "Menedżer",
     "colEmail": "Email",
@@ -545,6 +546,7 @@
     "statusInactive": "Nieaktywny",
     "teamEmpty": "Brak członków zespołu.",
     "allEmpty": "Nie znaleziono menedżerów.",
+    "inactiveEmpty": "Brak dezaktywowanych menedżerów.",
     "detail": {
       "statusActive": "Aktywny",
       "statusInactive": "Nieaktywny",
