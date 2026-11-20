@@ -448,10 +448,24 @@ export default function ManagersPage() {
                           {m.email}
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <UserCircle2 className="h-3.5 w-3.5" />
-                            <span>{fullName(m.teamlead) || "—"}</span>
-                          </div>
+                          {m.teamlead && m.teamlead.id !== user?.id ? (
+                            <button
+                              type="button"
+                              className="flex items-center gap-1.5 hover:underline hover:text-foreground"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/chat?userId=${m.teamlead!.id}`);
+                              }}
+                            >
+                              <UserCircle2 className="h-3.5 w-3.5" />
+                              <span>{fullName(m.teamlead)}</span>
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <UserCircle2 className="h-3.5 w-3.5" />
+                              <span>{fullName(m.teamlead) || "—"}</span>
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
