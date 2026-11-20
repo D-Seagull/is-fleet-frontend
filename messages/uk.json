@@ -534,6 +534,7 @@
     "searchPlaceholder": "Пошук за іменем, телефоном, email…",
     "tabTeam": "Команда",
     "tabAll": "Усі менеджери",
+    "tabInactive": "Деактивовані",
     "teamEmptyView": "Командний вид доступний лише менеджерам і тімлідам. Перейдіть на «Усі менеджери».",
     "colManager": "Менеджер",
     "colEmail": "Email",
@@ -545,6 +546,7 @@
     "statusInactive": "Неактивний",
     "teamEmpty": "Ще немає учасників команди.",
     "allEmpty": "Менеджерів не знайдено.",
+    "inactiveEmpty": "Деактивованих менеджерів немає.",
     "detail": {
       "statusActive": "Активний",
       "statusInactive": "Неактивний",

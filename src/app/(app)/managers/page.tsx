@@ -55,7 +55,7 @@ export default function ManagersPage() {
   const t = useTranslations("managers");
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const [tab, setTab] = useState<"team" | "all">("team");
+  const [tab, setTab] = useState<"team" | "all" | "inactive">("team");
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
@@ -92,11 +92,13 @@ export default function ManagersPage() {
       );
     });
 
+  // Deactivated managers live in their own tab — Team and All show only
+  // active ones.
   const teamManagers = useMemo(
     () =>
       filterBySearch(
         (managers ?? []).filter(
-          (m) => myTeamleadId && m.teamleadId === myTeamleadId,
+          (m) => m.isActive && myTeamleadId && m.teamleadId === myTeamleadId,
         ),
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -104,7 +106,13 @@ export default function ManagersPage() {
   );
 
   const allManagers = useMemo(
-    () => filterBySearch(managers ?? []),
+    () => filterBySearch((managers ?? []).filter((m) => m.isActive)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [managers, searchQuery],
+  );
+
+  const inactiveManagers = useMemo(
+    () => filterBySearch((managers ?? []).filter((m) => !m.isActive)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [managers, searchQuery],
   );
@@ -125,6 +133,15 @@ export default function ManagersPage() {
     sort: allSort,
     toggle: sortAll,
   } = useTableSort("managers-all", allManagers, {
+    manager: (m) => fullName(m) || m.email,
+    email: (m) => m.email,
+    teamlead: (m) => fullName(m.teamlead),
+  });
+  const {
+    sorted: sortedInactive,
+    sort: inactiveSort,
+    toggle: sortInactive,
+  } = useTableSort("managers-inactive", inactiveManagers, {
     manager: (m) => fullName(m) || m.email,
     email: (m) => m.email,
     teamlead: (m) => fullName(m.teamlead),
@@ -252,10 +269,14 @@ export default function ManagersPage() {
         />
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as "team" | "all")}>
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setTab(v as "team" | "all" | "inactive")}
+      >
         <TabsList>
           <TabsTrigger value="team">{t("tabTeam")}</TabsTrigger>
           <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>
+          <TabsTrigger value="inactive">{t("tabInactive")}</TabsTrigger>
         </TabsList>
 
         {/* ── Team ─────────────────────────────────────────────────────────── */}
@@ -373,8 +394,26 @@ export default function ManagersPage() {
           )}
         </TabsContent>
 
-        {/* ── All managers ─────────────────────────────────────────────────── */}
-        <TabsContent value="all" className="mt-4">
+        {/* ── All (active) + Deactivated — same table layout ──────────────── */}
+        {(
+          [
+            {
+              value: "all",
+              rows: sortedAll,
+              sort: allSort,
+              onSort: sortAll,
+              empty: t("allEmpty"),
+            },
+            {
+              value: "inactive",
+              rows: sortedInactive,
+              sort: inactiveSort,
+              onSort: sortInactive,
+              empty: t("inactiveEmpty"),
+            },
+          ] as const
+        ).map(({ value, rows, sort, onSort, empty }) => (
+        <TabsContent key={value} value={value} className="mt-4">
           {isLoading ? (
             <LoadingRow />
           ) : (
@@ -382,29 +421,29 @@ export default function ManagersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHead column="manager" sort={allSort} onSort={sortAll}>
+                    <SortableHead column="manager" sort={sort} onSort={onSort}>
                       {t("colManager")}
                     </SortableHead>
-                    <SortableHead column="email" sort={allSort} onSort={sortAll} className="hidden sm:table-cell">
+                    <SortableHead column="email" sort={sort} onSort={onSort} className="hidden sm:table-cell">
                       {t("colEmail")}
                     </SortableHead>
-                    <SortableHead column="teamlead" sort={allSort} onSort={sortAll} className="hidden md:table-cell">
+                    <SortableHead column="teamlead" sort={sort} onSort={onSort} className="hidden md:table-cell">
                       {t("colTeamlead")}
                     </SortableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {allManagers.length === 0 ? (
+                  {rows.length === 0 ? (
                     <TableRow>
                       <TableCell
                         colSpan={3}
                         className="text-center py-10 text-muted-foreground"
                       >
-                        {t("allEmpty")}
+                        {empty}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    sortedAll.map((m) => (
+                    rows.map((m) => (
                       <TableRow
                         key={m.id}
                         className="cursor-pointer"
@@ -475,6 +514,7 @@ export default function ManagersPage() {
             </div>
           )}
         </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
