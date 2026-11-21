@@ -201,16 +201,20 @@ export default function TrucksPage() {
           : {}),
       });
     } catch (err) {
-      const data = (
-        err as {
-          response?: {
-            data?: {
-              code?: string;
-              truck?: { id: string; plate: string; isActive: boolean };
-            };
-          };
-        }
+      // The error filter nests the conflict body under `message`:
+      // { statusCode, message: { code, message, truck } }.
+      type Dup = {
+        code?: string;
+        truck?: { id: string; plate: string; isActive: boolean };
+      };
+      const raw = (
+        err as { response?: { data?: Dup & { message?: unknown } } }
       ).response?.data;
+      const data = (
+        raw && typeof raw.message === "object" && raw.message !== null
+          ? raw.message
+          : raw
+      ) as Dup | undefined;
       if (data?.code === "TRUCK_PLATE_EXISTS" && data.truck) {
         setDuplicate(data.truck);
         return;
@@ -247,7 +251,7 @@ export default function TrucksPage() {
                   id="plate"
                   placeholder="ABC-1234"
                   value={plate}
-                  onChange={(e) => setPlate(e.target.value)}
+                  onChange={(e) => setPlate(e.target.value.toUpperCase())}
                 />
               </div>
               <div className="flex flex-col gap-2">

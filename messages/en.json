@@ -102,7 +102,6 @@
     "notePlaceholder": "Comment",
     "noDriverAlert": "This truck has no driver right now",
     "tzWarning": "⏱ Time uses driver {name}'s timezone. “{time}” means {time} on their clock.",
-    "linkToTrip": "Link to the active trip",
     "creating": "Creating…",
     "create": "Create",
     "empty": "No alarms.",

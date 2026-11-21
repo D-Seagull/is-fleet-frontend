@@ -416,7 +416,7 @@ export function TruckDetailPanel({
           value="alarm"
           className="mt-4 flex-1 min-h-0 overflow-y-auto"
         >
-          <AlarmTab truck={truck} activeTripId={activeTrip?.id ?? null} />
+          <AlarmTab truck={truck} />
         </TabsContent>
 
         <TabsContent
