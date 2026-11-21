@@ -102,7 +102,6 @@
     "notePlaceholder": "Kommentar",
     "noDriverAlert": "Dieser LKW hat derzeit keinen Fahrer",
     "tzWarning": "⏱ Zeit in der Zeitzone von Fahrer {name}. „{time}“ bedeutet {time} auf seiner Uhr.",
-    "linkToTrip": "Mit der aktiven Fahrt verknüpfen",
     "creating": "Wird erstellt…",
     "create": "Erstellen",
     "empty": "Keine Wecker.",

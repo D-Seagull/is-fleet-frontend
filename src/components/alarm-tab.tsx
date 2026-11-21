@@ -69,13 +69,7 @@ function toLocalInputValue(d: Date) {
   )}:${pad(d.getMinutes())}`;
 }
 
-export function AlarmTab({
-  truck,
-  activeTripId,
-}: {
-  truck: Truck;
-  activeTripId?: string | null;
-}) {
+export function AlarmTab({ truck }: { truck: Truck }) {
   const t = useTranslations("alarm");
   const tActions = useTranslations("common.actions");
   const locale = useLocale();
@@ -101,7 +95,6 @@ export function AlarmTab({
   const [note, setNote] = useState("");
   const [time, setTime] = useState(defaultTime);
   const [recurrence, setRecurrence] = useState<AlarmRecurrence>("NONE");
-  const [linkToTrip, setLinkToTrip] = useState(false);
 
   function resetForm() {
     setTitle(truck.plate ?? "");
@@ -109,7 +102,6 @@ export function AlarmTab({
     setTime(defaultTime);
     setRecurrence("NONE");
     setTarget("self");
-    setLinkToTrip(false);
   }
 
   function toggleForm() {
@@ -139,7 +131,6 @@ export function AlarmTab({
       // the driver's clock", not on the manager's.
       time: `${time}:00`,
       recurrence,
-      tripId: linkToTrip && activeTripId ? activeTripId : undefined,
     });
 
     resetForm();
@@ -245,18 +236,6 @@ export function AlarmTab({
                 time: time.slice(11),
               })}
             </div>
-          )}
-
-          {activeTripId && (
-            <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer">
-              <input
-                type="checkbox"
-                checked={linkToTrip}
-                onChange={(e) => setLinkToTrip(e.target.checked)}
-                className="h-3 w-3"
-              />
-              {t("linkToTrip")}
-            </label>
           )}
 
           <Button

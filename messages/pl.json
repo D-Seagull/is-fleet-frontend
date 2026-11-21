@@ -102,7 +102,6 @@
     "notePlaceholder": "Komentarz",
     "noDriverAlert": "Ta ciężarówka nie ma teraz kierowcy",
     "tzWarning": "⏱ Czas według strefy czasowej kierowcy {name}. „{time}” oznacza {time} na jego zegarze.",
-    "linkToTrip": "Powiąż z aktywną trasą",
     "creating": "Tworzenie…",
     "create": "Utwórz",
     "empty": "Brak alarmów.",
