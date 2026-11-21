@@ -686,7 +686,29 @@
       "notesLabel": "Notizen",
       "notesPlaceholder": "Fahrtnotizen…",
       "createButton": "Fahrt erstellen",
-      "tripFallbackName": "Fahrt {date}"
+      "tripFallbackName": "Fahrt {date}",
+      "fromOrder": {
+        "title": "Aus Auftrag ausfüllen",
+        "hint": "PDF, Foto, Word, Excel oder Text aus einer E-Mail — hier ablegen möglich",
+        "chooseFile": "Datei wählen",
+        "pasteText": "Text einfügen",
+        "pastePlaceholder": "Auftragstext aus der E-Mail einfügen…",
+        "readText": "Auslesen",
+        "reading": "Auftrag wird gelesen…",
+        "readingHint": "Das dauert meist bis zu einer Minute",
+        "failed": "Der Auftrag konnte nicht gelesen werden",
+        "filledFrom": "Ausgefüllt aus „{name}“",
+        "checkBeforeCreate": "Daten vor dem Anlegen prüfen",
+        "otherOrder": "Anderer Auftrag",
+        "pastedText": "eingefügtem Text",
+        "reviewStop": "Diesen Halt prüfen",
+        "showPage": "S. {page}",
+        "dismiss": "Ausblenden",
+        "noPreview": "Keine Vorschau für diesen Dateityp",
+        "uploadFailed": "Die Fahrt wurde angelegt, die Auftragsdatei aber nicht gespeichert",
+        "orderFile": "Auftrag",
+        "pickDriverFirst": "Wählen Sie zuerst den Fahrer: Die Notizen werden in seiner Sprache verfasst"
+      }
     },
     "stop": {
       "addressPlaceholder": "Firmenname, Straße, PLZ, Stadt",
@@ -726,7 +748,23 @@
       "noPhotos": "Keine Fotos.",
       "noDocuments": "Keine Dokumente."
     },
-    "deactivate": "Deaktivieren"
+    "deactivate": "Deaktivieren",
+    "finance": {
+      "title": "Finanzen",
+      "managersOnly": "nur für Disponenten",
+      "freightRate": "Frachtrate",
+      "currency": "Währung",
+      "loadedKm": "Lastkilometer",
+      "emptyKm": "Leerkilometer",
+      "tolls": "Maut",
+      "kmLoaded": "{km} km",
+      "kmEmpty": "{km} km leer",
+      "tollsValue": "Maut {value}",
+      "none": "Keine Finanzangaben",
+      "add": "Finanzen hinzufügen",
+      "edit": "Finanzen bearbeiten",
+      "saveFailed": "Finanzen konnten nicht gespeichert werden"
+    }
   },
   "account": {
     "title": "Kontoeinstellungen",

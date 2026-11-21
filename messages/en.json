@@ -686,7 +686,29 @@
       "notesLabel": "Notes",
       "notesPlaceholder": "Trip notes...",
       "createButton": "Create Trip",
-      "tripFallbackName": "Trip {date}"
+      "tripFallbackName": "Trip {date}",
+      "fromOrder": {
+        "title": "Fill from order",
+        "hint": "PDF, photo, Word, Excel or text from an e-mail — you can drop it here",
+        "chooseFile": "Choose file",
+        "pasteText": "Paste text",
+        "pastePlaceholder": "Paste the order text from the e-mail…",
+        "readText": "Read",
+        "reading": "Reading the order…",
+        "readingHint": "This usually takes up to a minute",
+        "failed": "Could not read the order",
+        "filledFrom": "Filled from “{name}”",
+        "checkBeforeCreate": "check the details before creating",
+        "otherOrder": "Another order",
+        "pastedText": "pasted text",
+        "reviewStop": "Check this stop",
+        "showPage": "Page {page}",
+        "dismiss": "Hide",
+        "noPreview": "No preview for this file type",
+        "uploadFailed": "The trip was created, but the order file was not saved",
+        "orderFile": "Order",
+        "pickDriverFirst": "Choose the driver first: the notes will be in their language"
+      }
     },
     "stop": {
       "addressPlaceholder": "Company name, street, postcode, city",
@@ -726,7 +748,23 @@
       "noPhotos": "No photos.",
       "noDocuments": "No documents."
     },
-    "deactivate": "Deactivate"
+    "deactivate": "Deactivate",
+    "finance": {
+      "title": "Finance",
+      "managersOnly": "managers only",
+      "freightRate": "Freight rate",
+      "currency": "Currency",
+      "loadedKm": "Loaded km",
+      "emptyKm": "Empty km",
+      "tolls": "Tolls",
+      "kmLoaded": "{km} km",
+      "kmEmpty": "{km} km empty",
+      "tollsValue": "tolls {value}",
+      "none": "No finance entered",
+      "add": "Add finance",
+      "edit": "Edit finance",
+      "saveFailed": "Could not save the finance"
+    }
   },
   "account": {
     "title": "Account Settings",

@@ -57,6 +57,8 @@ import {
 import { buildStopsPayload } from "./new-trip-dialog";
 import { ReassignTruckButton } from "./reassign-truck-dialog";
 import { CoordsCell } from "./coords-cell";
+import { TripOrderButton } from "./order-import";
+import { TripFinanceSection } from "./trip-finance";
 import {
   shortenTripTitle,
   formatStopWindow,
@@ -229,7 +231,10 @@ export function TripInfoCard({
               {trip.orderNumber && (
                 <span className="text-muted-foreground font-normal">
                   {" "}
-                  · <CopyText value={trip.orderNumber}>#{trip.orderNumber}</CopyText>
+                  ·{" "}
+                  <CopyText value={trip.orderNumber}>
+                    #{trip.orderNumber}
+                  </CopyText>
                 </span>
               )}
             </span>
@@ -259,6 +264,7 @@ export function TripInfoCard({
                 )}
               </button>
             )}
+            <TripOrderButton tripId={trip.id} />
           </div>
           <div className="flex items-center gap-1">
             <div
@@ -393,11 +399,14 @@ export function TripInfoCard({
                 );
               })}
             </div>
-            {trip.notes && (
-              <p className="text-xs text-muted-foreground border-t pt-2 whitespace-pre-wrap break-words md:w-1/3 md:shrink-0 md:border-l md:border-t-0 md:pl-4 md:pt-0">
-                {trip.notes}
-              </p>
-            )}
+            <div className="flex flex-col gap-2 border-t pt-2 md:w-1/3 md:shrink-0 md:border-l md:border-t-0 md:pl-4 md:pt-0">
+              {trip.notes && (
+                <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words">
+                  {trip.notes}
+                </p>
+              )}
+              <TripFinanceSection tripId={trip.id} />
+            </div>
           </div>
         )}
       </div>

@@ -686,7 +686,29 @@
       "notesLabel": "Notatki",
       "notesPlaceholder": "Notatki do trasy…",
       "createButton": "Utwórz trasę",
-      "tripFallbackName": "Trasa {date}"
+      "tripFallbackName": "Trasa {date}",
+      "fromOrder": {
+        "title": "Wypełnij ze zlecenia",
+        "hint": "PDF, zdjęcie, Word, Excel lub tekst z maila — można przeciągnąć tutaj",
+        "chooseFile": "Wybierz plik",
+        "pasteText": "Wklej tekst",
+        "pastePlaceholder": "Wklej treść zlecenia z maila…",
+        "readText": "Odczytaj",
+        "reading": "Czytam zlecenie…",
+        "readingHint": "Zwykle trwa to do minuty",
+        "failed": "Nie udało się odczytać zlecenia",
+        "filledFrom": "Wypełniono z „{name}”",
+        "checkBeforeCreate": "sprawdź dane przed utworzeniem",
+        "otherOrder": "Inne zlecenie",
+        "pastedText": "wklejonego tekstu",
+        "reviewStop": "Sprawdź ten punkt",
+        "showPage": "Str. {page}",
+        "dismiss": "Ukryj",
+        "noPreview": "Brak podglądu dla tego typu pliku",
+        "uploadFailed": "Trasę utworzono, ale pliku zlecenia nie zapisano",
+        "orderFile": "Zlecenie",
+        "pickDriverFirst": "Najpierw wybierz kierowcę: notatki będą w jego języku"
+      }
     },
     "stop": {
       "addressPlaceholder": "Nazwa firmy, ulica, kod pocztowy, miasto",
@@ -726,7 +748,23 @@
       "noPhotos": "Brak zdjęć.",
       "noDocuments": "Brak dokumentów."
     },
-    "deactivate": "Dezaktywuj"
+    "deactivate": "Dezaktywuj",
+    "finance": {
+      "title": "Finanse",
+      "managersOnly": "widzą tylko menedżerowie",
+      "freightRate": "Stawka",
+      "currency": "Waluta",
+      "loadedKm": "Km z ładunkiem",
+      "emptyKm": "Km pustych",
+      "tolls": "Opłaty drogowe",
+      "kmLoaded": "{km} km",
+      "kmEmpty": "{km} km pustych",
+      "tollsValue": "drogi {value}",
+      "none": "Brak danych finansowych",
+      "add": "Dodaj finanse",
+      "edit": "Zmień finanse",
+      "saveFailed": "Nie udało się zapisać finansów"
+    }
   },
   "account": {
     "title": "Ustawienia konta",
