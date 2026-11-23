@@ -26,6 +26,8 @@ export interface BillingCompany {
   currency: string;
   pilotEndsAt: string | null;
   adminNote: string | null;
+  /** AI features (fill from order, …) switched on for this company. */
+  aiEnabled: boolean;
   /** Trucks with at least one trip in the month. */
   paidTrucks: number;
   drivers: number;
@@ -81,6 +83,7 @@ export interface BillingUpdate {
   currency?: string;
   pilotEndsAt?: string | null;
   adminNote?: string | null;
+  aiEnabled?: boolean;
 }
 
 /** "YYYY-MM" of today (local). */
@@ -106,6 +109,7 @@ export function useUpdateBilling(companyId: string) {
       qc.invalidateQueries({ queryKey: ["admin", "billing"] });
       qc.invalidateQueries({ queryKey: ["companies"] });
       qc.invalidateQueries({ queryKey: ["admin", "company", companyId] });
+      qc.invalidateQueries({ queryKey: ["order-import-status"] });
     },
   });
 }

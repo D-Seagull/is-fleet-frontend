@@ -1,5 +1,6 @@
 "use client";
 
+import { PageSearch } from "@/components/page-search";
 import { CopyText } from "@/components/copy-text";
 import { useState, useMemo, Fragment } from "react";
 import Link from "next/link";
@@ -7,7 +8,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fullName } from "@/lib/format";
 import {
-  Search,
   Paperclip,
   MapPin,
   FileText,
@@ -259,13 +259,11 @@ export default function TripsPage() {
         <h1 className="text-2xl font-bold">{t("title")}</h1>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder={t("searchPlaceholder")}
+      <div className="flex justify-end">
+        <PageSearch
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
+          onChange={setSearchQuery}
+          placeholder={t("searchPlaceholder")}
         />
       </div>
 

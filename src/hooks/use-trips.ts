@@ -168,6 +168,8 @@ export interface CreateTripData {
   notes?: string;
   orderNumber?: string;
   stops?: StopFormData[];
+  /** "Fill from order": same key again returns the trip already created. */
+  importKey?: string;
 }
 
 /**

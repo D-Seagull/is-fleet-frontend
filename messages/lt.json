@@ -686,7 +686,29 @@
       "notesLabel": "Pastabos",
       "notesPlaceholder": "Reiso pastabos…",
       "createButton": "Sukurti reisą",
-      "tripFallbackName": "Reisas {date}"
+      "tripFallbackName": "Reisas {date}",
+      "fromOrder": {
+        "title": "Užpildyti iš užsakymo",
+        "hint": "PDF, nuotrauka, Word, Excel arba laiško tekstas — nutempkite čia arba įklijuokite ekrano kopiją (Ctrl+V)",
+        "chooseFile": "Pasirinkti failą",
+        "pasteText": "Įklijuoti tekstą",
+        "pastePlaceholder": "Įklijuokite užsakymo tekstą iš laiško…",
+        "readText": "Nuskaityti",
+        "reading": "Skaitau užsakymą…",
+        "readingHint": "Paprastai tai užtrunka iki minutės",
+        "failed": "Nepavyko perskaityti užsakymo",
+        "filledFrom": "Užpildyta iš „{name}“",
+        "checkBeforeCreate": "patikrinkite duomenis prieš kurdami",
+        "otherOrder": "Kitas užsakymas",
+        "pastedText": "įklijuoto teksto",
+        "reviewStop": "Patikrinkite šį tašką",
+        "showPage": "Psl. {page}",
+        "dismiss": "Slėpti",
+        "noPreview": "Šio tipo failo peržiūra negalima",
+        "uploadFailed": "Reisas sukurtas, bet užsakymo failas neišsaugotas",
+        "orderFile": "Užsakymas",
+        "pickDriverFirst": "Pirmiausia pasirinkite vairuotoją: pastabos bus jo kalba"
+      }
     },
     "stop": {
       "addressPlaceholder": "Įmonės pavadinimas, gatvė, pašto kodas, miestas",
@@ -726,7 +748,23 @@
       "noPhotos": "Nuotraukų nėra.",
       "noDocuments": "Dokumentų nėra."
     },
-    "deactivate": "Deaktyvuoti"
+    "deactivate": "Deaktyvuoti",
+    "finance": {
+      "title": "Finansai",
+      "managersOnly": "mato tik vadybininkai",
+      "freightRate": "Tarifas",
+      "currency": "Valiuta",
+      "loadedKm": "Km su kroviniu",
+      "emptyKm": "Tušti km",
+      "tolls": "Kelių mokesčiai",
+      "kmLoaded": "{km} km",
+      "kmEmpty": "{km} km tuščių",
+      "tollsValue": "keliai {value}",
+      "none": "Finansai nenurodyti",
+      "add": "Pridėti finansus",
+      "edit": "Keisti finansus",
+      "saveFailed": "Nepavyko išsaugoti finansų"
+    }
   },
   "account": {
     "title": "Paskyros nustatymai",
@@ -900,7 +938,11 @@
         "PAYING": "Moka",
         "OVERDUE": "Pradelsta",
         "DEACTIVATED": "Išjungta"
-      }
+      },
+      "aiTitle": "DI funkcijos",
+      "aiHint": "Reisų pildymas iš užsakymų ir kitos DI funkcijos šiai įmonei",
+      "aiOn": "DI funkcijos įjungtos",
+      "aiOff": "DI funkcijos išjungtos"
     },
     "companies": {
       "title": "Įmonės",

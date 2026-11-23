@@ -34,6 +34,10 @@ export interface StopRowData {
   windowDate: string; // "YYYY-MM-DD"
   windowStart: string; // "HH:mm"
   windowEnd: string; // "HH:mm"
+  /** Read from a transport order and flagged for a look ("fill from order"). */
+  review?: { note: string | null; page: number | null } | null;
+  /** PDF page of the order this stop came from. */
+  page?: number | null;
 }
 
 /** Порядок типів для попапа вставки. */
