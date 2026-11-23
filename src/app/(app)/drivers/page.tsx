@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { isAxiosError } from "axios";
-import { Plus, Search, Star, Eye, Loader2, MessageSquare } from "lucide-react";
+import { Plus, Star, Eye, Loader2, MessageSquare } from "lucide-react";
+import { PageSearch } from "@/components/page-search";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -273,15 +274,11 @@ export default function DriversPage() {
             )}
           </TabsList>
 
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t("searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+          <PageSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={t("searchPlaceholder")}
+          />
         </div>
 
         <TabsContent value="active" className="mt-4">

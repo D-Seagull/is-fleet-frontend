@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { PageSearch } from "@/components/page-search";
 import { fullName } from "@/lib/format";
 import {
   Plus,
-  Search,
   Eye,
   Loader2,
   UserPlus,
@@ -349,15 +349,11 @@ export default function TrucksPage() {
             )}
           </TabsList>
 
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t("searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+          <PageSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={t("searchPlaceholder")}
+          />
         </div>
 
         <TabsContent value="active" className="mt-4">

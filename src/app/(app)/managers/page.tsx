@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { PageSearch } from "@/components/page-search";
 import { fullName, initials } from "@/lib/format";
 import {
-  Search,
   Plus,
   Loader2,
   Truck as TruckIcon,
@@ -259,25 +259,22 @@ export default function ManagersPage() {
         </Dialog>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder={t("searchPlaceholder")}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
-        />
-      </div>
-
       <Tabs
         value={tab}
         onValueChange={(v) => setTab(v as "team" | "all" | "inactive")}
       >
-        <TabsList>
-          <TabsTrigger value="team">{t("tabTeam")}</TabsTrigger>
-          <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>
-          <TabsTrigger value="inactive">{t("tabInactive")}</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between gap-4">
+          <TabsList>
+            <TabsTrigger value="team">{t("tabTeam")}</TabsTrigger>
+            <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>
+            <TabsTrigger value="inactive">{t("tabInactive")}</TabsTrigger>
+          </TabsList>
+          <PageSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={t("searchPlaceholder")}
+          />
+        </div>
 
         {/* ── Team ─────────────────────────────────────────────────────────── */}
         <TabsContent value="team" className="mt-4">

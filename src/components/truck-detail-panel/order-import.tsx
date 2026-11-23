@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   FileText,
@@ -73,6 +73,35 @@ export function OrderImportBox({
       setError(errorText(err, t("failed")));
     }
   }
+
+  // Ctrl+V with a screenshot (or a copied file) anywhere in the dialog reads
+  // it like a chosen file. Plain text pasted into a field stays a normal paste.
+  const busy = parse.isPending;
+  useEffect(() => {
+    if (!driverId || busy) return;
+    const onPaste = (e: ClipboardEvent) => {
+      const file = Array.from(e.clipboardData?.files ?? []).find(
+        (f) => f.type.startsWith("image/") || f.type === "application/pdf",
+      );
+      if (!file) return;
+      e.preventDefault();
+      // A clipboard screenshot is just "image.png": give it a readable name
+      // for the preview and the stored order file. The bytes are copied into
+      // memory first: a File that still points at the clipboard can go dead
+      // once the paste event is over, and the preview (a blob URL) then
+      // showed a broken image although the upload had worked.
+      const name =
+        file.name && file.name !== "image.png"
+          ? file.name
+          : `screenshot-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.png`;
+      const type = file.type || "image/png";
+      void file.arrayBuffer().then((bytes) => {
+        void run({ file: new File([bytes], name, { type }) });
+      });
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  });
 
   if (parse.isPending) {
     return (
@@ -266,6 +295,22 @@ export function StopReviewNote({
 
 const IMG_TYPE = /^image\/(png|jpe?g|webp|gif)$/i;
 
+/**
+ * One object URL per picked file, kept for the page's life. Revoking it in
+ * an effect cleanup broke the preview: React (dev / StrictMode) runs the
+ * cleanup right after mount, and the memoised URL stayed dead. A handful of
+ * orders per session is nothing to keep around.
+ */
+const previewUrls = new WeakMap<File, string>();
+function previewUrl(file: File): string {
+  let url = previewUrls.get(file);
+  if (!url) {
+    url = URL.createObjectURL(file);
+    previewUrls.set(file, url);
+  }
+  return url;
+}
+
 /** The order next to the form: PDF (at `page`), photo, or the pasted text. */
 export function OrderPreview({
   source,
@@ -276,13 +321,7 @@ export function OrderPreview({
 }) {
   const t = useTranslations("truckPanel.newTrip.fromOrder");
   const file = "file" in source ? source.file : null;
-  const url = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
-  useEffect(
-    () => () => {
-      if (url) URL.revokeObjectURL(url);
-    },
-    [url],
-  );
+  const url = file ? previewUrl(file) : null;
 
   const box = "h-full min-h-[60vh] w-full rounded-lg border bg-muted/30";
 
