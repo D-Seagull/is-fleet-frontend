@@ -689,7 +689,7 @@
       "tripFallbackName": "Trip {date}",
       "fromOrder": {
         "title": "Fill from order",
-        "hint": "PDF, photo, Word, Excel or text from an e-mail — you can drop it here",
+        "hint": "PDF, photo, Word, Excel or e-mail text — drop it here or paste a screenshot (Ctrl+V)",
         "chooseFile": "Choose file",
         "pasteText": "Paste text",
         "pastePlaceholder": "Paste the order text from the e-mail…",

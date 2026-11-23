@@ -689,7 +689,7 @@
       "tripFallbackName": "Рейс {date}",
       "fromOrder": {
         "title": "Заполнить из заявки",
-        "hint": "PDF, фото, Word, Excel или текст из письма — можно перетащить сюда",
+        "hint": "PDF, фото, Word, Excel или текст из письма — перетащите сюда или вставьте скрин (Ctrl+V)",
         "chooseFile": "Выбрать файл",
         "pasteText": "Вставить текст",
         "pastePlaceholder": "Вставьте текст заявки из письма…",

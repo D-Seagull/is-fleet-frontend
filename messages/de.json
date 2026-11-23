@@ -689,7 +689,7 @@
       "tripFallbackName": "Fahrt {date}",
       "fromOrder": {
         "title": "Aus Auftrag ausfüllen",
-        "hint": "PDF, Foto, Word, Excel oder Text aus einer E-Mail — hier ablegen möglich",
+        "hint": "PDF, Foto, Word, Excel oder E-Mail-Text — hier ablegen oder Screenshot einfügen (Strg+V)",
         "chooseFile": "Datei wählen",
         "pasteText": "Text einfügen",
         "pastePlaceholder": "Auftragstext aus der E-Mail einfügen…",

@@ -689,7 +689,7 @@
       "tripFallbackName": "Trasa {date}",
       "fromOrder": {
         "title": "Wypełnij ze zlecenia",
-        "hint": "PDF, zdjęcie, Word, Excel lub tekst z maila — można przeciągnąć tutaj",
+        "hint": "PDF, zdjęcie, Word, Excel lub tekst z maila — przeciągnij tutaj lub wklej zrzut ekranu (Ctrl+V)",
         "chooseFile": "Wybierz plik",
         "pasteText": "Wklej tekst",
         "pastePlaceholder": "Wklej treść zlecenia z maila…",

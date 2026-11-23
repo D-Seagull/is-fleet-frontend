@@ -689,7 +689,7 @@
       "tripFallbackName": "Reisas {date}",
       "fromOrder": {
         "title": "Užpildyti iš užsakymo",
-        "hint": "PDF, nuotrauka, Word, Excel arba laiško tekstas — galima nutempti čia",
+        "hint": "PDF, nuotrauka, Word, Excel arba laiško tekstas — nutempkite čia arba įklijuokite ekrano kopiją (Ctrl+V)",
         "chooseFile": "Pasirinkti failą",
         "pasteText": "Įklijuoti tekstą",
         "pastePlaceholder": "Įklijuokite užsakymo tekstą iš laiško…",

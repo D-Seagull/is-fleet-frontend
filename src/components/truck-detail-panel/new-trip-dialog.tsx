@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import axios from "axios";
 import { fullName } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,16 @@ import {
   hasFinance,
   type FinanceFormData,
 } from "./trip-finance";
+
+/** The server's own (translated) error text, when it sent one. */
+function serverMessage(err: unknown): string | null {
+  if (!axios.isAxiosError(err)) return null;
+  const message = (err.response?.data as { message?: unknown })?.message;
+  if (typeof message === "string") return message;
+  if (Array.isArray(message) && typeof message[0] === "string")
+    return message[0];
+  return err.message || null;
+}
 
 /** Draft stops from an order -> form rows. Missing values stay empty, never guessed. */
 function draftToStops(draft: OrderDraft): StopRowData[] {
@@ -294,8 +305,11 @@ export function NewTripDialog({
     if (hasFinance(finance)) {
       try {
         await saveTripFinance(trip.id, financePayload(finance));
-      } catch {
-        toast.error(tFinance("saveFailed"));
+      } catch (err) {
+        console.error("trip finance save failed", err);
+        toast.error(tFinance("saveFailed"), {
+          description: serverMessage(err) ?? undefined,
+        });
       }
     }
     // The order file goes with the trip (managers only). The trip already
@@ -304,8 +318,12 @@ export function NewTripDialog({
       try {
         await uploadTripOrder(trip.id, orderSource.file);
         void invalidateTripOrder(trip.id);
-      } catch {
-        toast.error(tOrder("uploadFailed"));
+      } catch (err) {
+        // Say why (too large, type refused…): "not saved" alone left us guessing.
+        console.error("order file upload failed", err);
+        toast.error(tOrder("uploadFailed"), {
+          description: serverMessage(err) ?? undefined,
+        });
       }
     }
     localStorage.removeItem(DRAFT_KEY);
