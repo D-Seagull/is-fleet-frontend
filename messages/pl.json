@@ -938,7 +938,11 @@
         "PAYING": "Płaci",
         "OVERDUE": "Zaległe",
         "DEACTIVATED": "Dezaktywowana"
-      }
+      },
+      "aiTitle": "Funkcje AI",
+      "aiHint": "Wypełnianie tras ze zleceń i inne funkcje AI dla tej firmy",
+      "aiOn": "Funkcje AI włączone",
+      "aiOff": "Funkcje AI wyłączone"
     },
     "companies": {
       "title": "Firmy",

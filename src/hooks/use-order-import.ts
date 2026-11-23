@@ -57,7 +57,8 @@ export function useOrderImportStatus() {
       const res = await api.get("/order-import/status");
       return res.data as { enabled: boolean };
     },
-    staleTime: 10 * 60_000,
+    // The company AI switch (admin panel) should bite within a minute.
+    staleTime: 60_000,
   });
 }
 

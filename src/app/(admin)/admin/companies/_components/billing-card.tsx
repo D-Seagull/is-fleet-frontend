@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2, Receipt } from "lucide-react";
+import { Loader2, Receipt, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -77,6 +78,41 @@ export function BillingCard({ companyId }: { companyId: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2">
+        {/* Saved on click, apart from the form: switching AI is one decision. */}
+        <div className="flex items-center gap-3 rounded-lg border px-3 py-2.5 sm:col-span-2">
+          <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium">{t("aiTitle")}</div>
+            <div className="text-xs text-muted-foreground">{t("aiHint")}</div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={company.aiEnabled}
+            aria-label={t("aiTitle")}
+            disabled={update.isPending}
+            onClick={async () => {
+              const next = !company.aiEnabled;
+              try {
+                await update.mutateAsync({ aiEnabled: next });
+                toast.success(next ? t("aiOn") : t("aiOff"));
+              } catch {
+                toast.error(t("saveError"));
+              }
+            }}
+            className={cn(
+              "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50",
+              company.aiEnabled ? "bg-primary" : "bg-muted-foreground/30",
+            )}
+          >
+            <span
+              className={cn(
+                "inline-block h-5 w-5 rounded-full bg-background shadow transition-transform",
+                company.aiEnabled ? "translate-x-5" : "translate-x-0.5",
+              )}
+            />
+          </button>
+        </div>
         <div className="space-y-1.5">
           <Label>{t("colStatus")}</Label>
           <Select

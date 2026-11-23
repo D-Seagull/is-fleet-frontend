@@ -938,7 +938,11 @@
         "PAYING": "Moka",
         "OVERDUE": "Pradelsta",
         "DEACTIVATED": "Išjungta"
-      }
+      },
+      "aiTitle": "DI funkcijos",
+      "aiHint": "Reisų pildymas iš užsakymų ir kitos DI funkcijos šiai įmonei",
+      "aiOn": "DI funkcijos įjungtos",
+      "aiOff": "DI funkcijos išjungtos"
     },
     "companies": {
       "title": "Įmonės",

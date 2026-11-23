@@ -938,7 +938,11 @@
         "PAYING": "Zahlend",
         "OVERDUE": "Überfällig",
         "DEACTIVATED": "Deaktiviert"
-      }
+      },
+      "aiTitle": "KI-Funktionen",
+      "aiHint": "Fahrten aus Aufträgen ausfüllen und weitere KI-Funktionen für diese Firma",
+      "aiOn": "KI-Funktionen eingeschaltet",
+      "aiOff": "KI-Funktionen ausgeschaltet"
     },
     "companies": {
       "title": "Unternehmen",

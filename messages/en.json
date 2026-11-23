@@ -938,7 +938,11 @@
         "PAYING": "Paying",
         "OVERDUE": "Overdue",
         "DEACTIVATED": "Deactivated"
-      }
+      },
+      "aiTitle": "AI features",
+      "aiHint": "Filling trips from orders and other AI features for this company",
+      "aiOn": "AI features switched on",
+      "aiOff": "AI features switched off"
     },
     "companies": {
       "title": "Companies",
