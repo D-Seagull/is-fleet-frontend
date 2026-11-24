@@ -391,6 +391,9 @@ export function TripChat({
     // current pair sees the new system message and old chat is hidden.
     const handleTripUpdated = (payload: { tripId: string }) => {
       if (payload.tripId !== trip.id) return;
+      // The live room only admits the trip's current driver / manager, so
+      // someone who just became one must join now to get messages live.
+      joinRoom();
       queryClient.invalidateQueries({ queryKey: ["trip-messages", trip.id] });
       queryClient.invalidateQueries({
         queryKey: ["trip-chat-archive", trip.id],
