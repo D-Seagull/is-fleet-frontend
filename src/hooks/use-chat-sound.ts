@@ -103,8 +103,18 @@ export function useChatSoundSync() {
       senderId?: string;
       senderName?: string;
       content?: string;
+      driverId?: string | null;
+      managerId?: string | null;
     }) => {
       if (!sig?.senderName || sig.senderId === meId) return;
+      // Only a chat I take part in may ring — never someone else's trip,
+      // even if a server ever sends the signal wider than it should.
+      if (
+        ("driverId" in sig || "managerId" in sig) &&
+        sig.driverId !== meId &&
+        sig.managerId !== meId
+      )
+        return;
       playPing();
       showMessageNotification({
         title: sig.senderName,
