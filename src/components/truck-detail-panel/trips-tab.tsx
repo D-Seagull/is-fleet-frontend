@@ -150,7 +150,7 @@ function TripCard({
           </p>
         </div>
         <div
-          className="flex items-center gap-1"
+          className="flex shrink-0 items-center gap-1.5"
           onClick={(e) => e.stopPropagation()}
         >
           <Button
@@ -187,10 +187,10 @@ function TripCard({
               updateStatus.mutate({ id: trip.id, status: v as TripStatus })
             }
           >
-            <SelectTrigger className="h-7 w-[110px] text-xs border-0 px-2 shadow-none focus:ring-0">
+            <SelectTrigger className="h-7 w-auto min-w-[110px] shrink-0 gap-1.5 text-xs border-0 px-2 shadow-none focus:ring-0">
               <Badge
                 variant="outline"
-                className={TRIP_STATUS_COLORS[trip.status]}
+                className={cn("whitespace-nowrap", TRIP_STATUS_COLORS[trip.status])}
               >
                 {tStatus(trip.status)}
               </Badge>
