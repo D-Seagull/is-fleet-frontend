@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Loader2, Building2, Search } from "lucide-react";
+import { Loader2, Building2, Search, Sparkles } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import {
   useBilling,
 } from "@/hooks/use-admin-billing";
 import { Badge } from "@/components/ui/badge";
+import { useAiUsage, usd } from "@/hooks/use-admin-ai-usage";
 import { NewCompanyDialog } from "./_components/new-company-dialog";
 import { BillingStatusBadge } from "./_components/billing-status-badge";
 
@@ -37,6 +38,8 @@ export default function CompaniesPage() {
   const locale = useLocale();
   const [month, setMonth] = useState(currentMonth());
   const { data, isLoading, isError } = useBilling(month);
+  const tAi = useTranslations("admin.ai");
+  const { data: ai } = useAiUsage(month);
   const companies = data?.companies;
   const [query, setQuery] = useState("");
 
@@ -96,6 +99,30 @@ export default function CompaniesPage() {
         </div>
       </div>
       <p className="mb-4 text-xs text-muted-foreground">{tB("trucksHint")}</p>
+
+      {ai && ai.totals.requests > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border px-4 py-2.5 text-sm">
+          <span className="flex items-center gap-1.5 font-medium">
+            <Sparkles className="h-4 w-4 text-primary" />
+            {tAi("monthTotals")}
+          </span>
+          <span>
+            {tAi("requests")}: <b>{ai.totals.requests}</b>
+          </span>
+          <span>
+            {tAi("aiTrips")}: <b>{ai.totals.aiTrips}</b>
+          </span>
+          <span>
+            {tAi("cost")}: <b>{usd(ai.totals.costUsd, locale)}</b>
+          </span>
+          <span>
+            {tAi("revenue")}: <b>{usd(ai.totals.revenueUsd, locale)}</b>
+          </span>
+          <span>
+            {tAi("margin")}: <b>{usd(ai.totals.marginUsd, locale)}</b>
+          </span>
+        </div>
+      )}
 
       {isLoading && (
         <div className="flex items-center gap-2 text-muted-foreground">

@@ -84,6 +84,8 @@ export interface BillingUpdate {
   pilotEndsAt?: string | null;
   adminNote?: string | null;
   aiEnabled?: boolean;
+  /** USD per trip created from an order with AI; null clears. */
+  aiPricePerTrip?: number | null;
 }
 
 /** "YYYY-MM" of today (local). */
@@ -110,6 +112,7 @@ export function useUpdateBilling(companyId: string) {
       qc.invalidateQueries({ queryKey: ["companies"] });
       qc.invalidateQueries({ queryKey: ["admin", "company", companyId] });
       qc.invalidateQueries({ queryKey: ["order-import-status"] });
+      qc.invalidateQueries({ queryKey: ["admin", "ai-usage"] });
     },
   });
 }
