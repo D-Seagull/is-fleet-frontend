@@ -938,11 +938,7 @@
         "PAYING": "Zahlend",
         "OVERDUE": "Überfällig",
         "DEACTIVATED": "Deaktiviert"
-      },
-      "aiTitle": "KI-Funktionen",
-      "aiHint": "Fahrten aus Aufträgen ausfüllen und weitere KI-Funktionen für diese Firma",
-      "aiOn": "KI-Funktionen eingeschaltet",
-      "aiOff": "KI-Funktionen ausgeschaltet"
+      }
     },
     "companies": {
       "title": "Unternehmen",
@@ -1050,6 +1046,29 @@
         "subtitle": "Geht als Direktnachricht an den Melder.",
         "send": "Senden"
       }
+    },
+    "ai": {
+      "cardTitle": "KI-Funktionen",
+      "month": "Monat",
+      "switchTitle": "KI für die Firma",
+      "switchHint": "Fahrten aus Aufträgen ausfüllen und weitere KI-Funktionen",
+      "on": "KI-Funktionen eingeschaltet",
+      "off": "KI-Funktionen ausgeschaltet",
+      "pricePerTrip": "Preis pro KI-Fahrt, $",
+      "save": "Speichern",
+      "priceSaved": "Preis gespeichert",
+      "saveError": "Speichern fehlgeschlagen",
+      "requests": "Gelesene Aufträge",
+      "failed": "fehlgeschlagen: {count}",
+      "aiTrips": "Fahrten mit KI",
+      "tokens": "Tokens",
+      "tokensSplit": "Eingabe {input} · Ausgabe {output}",
+      "cost": "Eigenkosten",
+      "revenue": "Kunde zahlt",
+      "noPrice": "kein Preis gesetzt",
+      "margin": "Marge",
+      "monthTotals": "KI diesen Monat",
+      "footnote": "Beträge in US-Dollar. Kosten laut Anthropic-Preisliste zum Zeitpunkt der Anfrage; Kunde zahlt = Fahrten mit KI × Preis pro KI-Fahrt."
     }
   },
   "avatarCropper": {

@@ -938,11 +938,7 @@
         "PAYING": "Płaci",
         "OVERDUE": "Zaległe",
         "DEACTIVATED": "Dezaktywowana"
-      },
-      "aiTitle": "Funkcje AI",
-      "aiHint": "Wypełnianie tras ze zleceń i inne funkcje AI dla tej firmy",
-      "aiOn": "Funkcje AI włączone",
-      "aiOff": "Funkcje AI wyłączone"
+      }
     },
     "companies": {
       "title": "Firmy",
@@ -1050,6 +1046,29 @@
         "subtitle": "Trafi do zgłaszającego jako wiadomość prywatna.",
         "send": "Wyślij"
       }
+    },
+    "ai": {
+      "cardTitle": "Funkcje AI",
+      "month": "Miesiąc",
+      "switchTitle": "AI dla firmy",
+      "switchHint": "Wypełnianie tras ze zleceń i inne funkcje AI",
+      "on": "Funkcje AI włączone",
+      "off": "Funkcje AI wyłączone",
+      "pricePerTrip": "Cena za trasę z AI, $",
+      "save": "Zapisz",
+      "priceSaved": "Cena zapisana",
+      "saveError": "Nie udało się zapisać",
+      "requests": "Odczytane zlecenia",
+      "failed": "nieudane: {count}",
+      "aiTrips": "Trasy z AI",
+      "tokens": "Tokeny",
+      "tokensSplit": "wejściowe {input} · wyjściowe {output}",
+      "cost": "Koszt własny",
+      "revenue": "Do zapłaty przez klienta",
+      "noPrice": "brak ceny",
+      "margin": "Marża",
+      "monthTotals": "AI w tym miesiącu",
+      "footnote": "Kwoty w dolarach USA. Koszt wg cennika Anthropic w chwili zapytania; do zapłaty = trasy z AI × cena za trasę z AI."
     }
   },
   "avatarCropper": {

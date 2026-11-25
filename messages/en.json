@@ -938,11 +938,7 @@
         "PAYING": "Paying",
         "OVERDUE": "Overdue",
         "DEACTIVATED": "Deactivated"
-      },
-      "aiTitle": "AI features",
-      "aiHint": "Filling trips from orders and other AI features for this company",
-      "aiOn": "AI features switched on",
-      "aiOff": "AI features switched off"
+      }
     },
     "companies": {
       "title": "Companies",
@@ -1050,6 +1046,29 @@
         "subtitle": "Goes to the reporter as a direct message.",
         "send": "Send"
       }
+    },
+    "ai": {
+      "cardTitle": "AI features",
+      "month": "Month",
+      "switchTitle": "AI for this company",
+      "switchHint": "Filling trips from orders and other AI features",
+      "on": "AI features switched on",
+      "off": "AI features switched off",
+      "pricePerTrip": "Price per AI trip, $",
+      "save": "Save",
+      "priceSaved": "Price saved",
+      "saveError": "Could not save",
+      "requests": "Orders read",
+      "failed": "failed: {count}",
+      "aiTrips": "Trips from AI",
+      "tokens": "Tokens",
+      "tokensSplit": "input {input} · output {output}",
+      "cost": "Our cost",
+      "revenue": "Client owes",
+      "noPrice": "no price set",
+      "margin": "Margin",
+      "monthTotals": "AI this month",
+      "footnote": "Amounts in US dollars. Cost is Anthropic's list price at the time of the request; client owes = trips from AI × price per AI trip."
     }
   },
   "avatarCropper": {

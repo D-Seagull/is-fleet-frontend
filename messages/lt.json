@@ -938,11 +938,7 @@
         "PAYING": "Moka",
         "OVERDUE": "Pradelsta",
         "DEACTIVATED": "Išjungta"
-      },
-      "aiTitle": "DI funkcijos",
-      "aiHint": "Reisų pildymas iš užsakymų ir kitos DI funkcijos šiai įmonei",
-      "aiOn": "DI funkcijos įjungtos",
-      "aiOff": "DI funkcijos išjungtos"
+      }
     },
     "companies": {
       "title": "Įmonės",
@@ -1050,6 +1046,29 @@
         "subtitle": "Bus išsiųsta pranešėjui kaip asmeninė žinutė.",
         "send": "Siųsti"
       }
+    },
+    "ai": {
+      "cardTitle": "DI funkcijos",
+      "month": "Mėnuo",
+      "switchTitle": "DI įmonei",
+      "switchHint": "Reisų pildymas iš užsakymų ir kitos DI funkcijos",
+      "on": "DI funkcijos įjungtos",
+      "off": "DI funkcijos išjungtos",
+      "pricePerTrip": "Kaina už DI reisą, $",
+      "save": "Išsaugoti",
+      "priceSaved": "Kaina išsaugota",
+      "saveError": "Nepavyko išsaugoti",
+      "requests": "Nuskaityti užsakymai",
+      "failed": "nepavyko: {count}",
+      "aiTrips": "Reisai su DI",
+      "tokens": "Žetonai",
+      "tokensSplit": "įvesties {input} · išvesties {output}",
+      "cost": "Savikaina",
+      "revenue": "Klientas moka",
+      "noPrice": "kaina nenustatyta",
+      "margin": "Marža",
+      "monthTotals": "DI šį mėnesį",
+      "footnote": "Sumos JAV doleriais. Savikaina pagal Anthropic kainas užklausos metu; klientas moka = reisai su DI × kaina už DI reisą."
     }
   },
   "avatarCropper": {

@@ -53,6 +53,7 @@ import {
   useResendCompanyInvite,
 } from "@/hooks/use-admin-company";
 import { BillingCard } from "../_components/billing-card";
+import { AiCard } from "../_components/ai-card";
 import { UsageCard } from "../_components/usage-card";
 import { TrucksCard } from "../_components/trucks-card";
 import type { AdminCompanyUser } from "@/hooks/use-admin-company";
@@ -148,6 +149,8 @@ export default function AdminCompanyDetailPage() {
       {id && <TrucksCard companyId={id} />}
 
       {id && <BillingCard companyId={id} />}
+
+      {id && <AiCard companyId={id} />}
 
       <UsersCard users={data?.users} isLoading={isLoading} />
     </div>
