@@ -90,6 +90,12 @@
       "fileTooLarge": "File too large: up to 20 MB per document, up to 10 files at once.",
       "fileTypeNotSupported": "This file type is not supported. Allowed: photos, PDF, Word, Excel, TXT, CSV.",
       "failed": "Couldn't upload the file. Please try again."
+    },
+    "picker": {
+      "search": "Search…",
+      "noResults": "No matches",
+      "freeDrivers": "Free drivers",
+      "driversOnTrucks": "On trucks"
     }
   },
   "alarm": {

@@ -23,19 +23,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { fullName } from "@/lib/format";
+import { PersonPicker, driverGroups } from "@/components/person-picker";
 import { cn } from "@/lib/utils";
 import { OnlineDot } from "@/components/online-dot";
 import { LastSeen } from "@/components/last-seen";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -116,6 +110,7 @@ export function TruckDetailPanel({
   const t = useTranslations("truckPanel");
   const tCancel = useTranslations("common.actions");
   const tTrucks = useTranslations("trucks");
+  const tPicker = useTranslations("common.picker");
   const locale = useLocale();
   const confirm = useConfirm();
   const router = useRouter();
@@ -431,28 +426,19 @@ export function TruckDetailPanel({
                 <span className="text-sm text-muted-foreground w-24 shrink-0">
                   {t("info.driver")}
                 </span>
-                <Select
-                  value={truck.currentDriverId ?? "none"}
-                  onValueChange={handleDriverSelect}
+                <PersonPicker
+                  groups={driverGroups(
+                    drivers ?? [],
+                    { free: tPicker("freeDrivers"), onTrucks: tPicker("driversOnTrucks") },
+                    fullName,
+                    truckId,
+                  )}
+                  value={truck.currentDriverId ?? null}
+                  onChange={(id) => handleDriverSelect(id ?? "none")}
+                  noneLabel={t("info.noDriver")}
                   disabled={updateTruck.isPending || reassignTrip.isPending}
-                >
-                  <SelectTrigger className="h-7 flex-1 min-w-[140px] text-xs">
-                    <SelectValue placeholder={t("info.noDriver")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t("info.noDriver")}</SelectItem>
-                    {(drivers ?? []).map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {fullName(d) || d.email}
-                        {d.currentTruck && d.currentTruck.id !== truckId && (
-                          <span className="ml-1.5 text-muted-foreground">
-                            · {d.currentTruck.plate}
-                          </span>
-                        )}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  className="h-7 flex-1 min-w-[140px] text-xs"
+                />
                 {truck.currentDriver?.phone && (
                   <span className="text-xs text-muted-foreground shrink-0">
                     {truck.currentDriver.phone}
@@ -506,28 +492,24 @@ export function TruckDetailPanel({
                 <span className="text-sm text-muted-foreground w-24 shrink-0">
                   {t("info.manager")}
                 </span>
-                <Select
-                  value={truck.managerId ?? "none"}
-                  onValueChange={(v) =>
-                    updateTruck.mutate({
-                      id: truckId,
-                      data: { managerId: v === "none" ? null : v },
-                    })
+                <PersonPicker
+                  groups={[
+                    {
+                      items: (assignableManagers ?? []).map((m) => ({
+                        id: m.id,
+                        label: fullName(m) || m.email,
+                        searchText: m.email,
+                      })),
+                    },
+                  ]}
+                  value={truck.managerId ?? null}
+                  onChange={(id) =>
+                    updateTruck.mutate({ id: truckId, data: { managerId: id } })
                   }
+                  noneLabel={t("info.noManager")}
                   disabled={updateTruck.isPending}
-                >
-                  <SelectTrigger className="h-7 flex-1 text-xs">
-                    <SelectValue placeholder={t("info.noManager")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t("info.noManager")}</SelectItem>
-                    {(assignableManagers ?? []).map((d) => (
-                      <SelectItem key={d.id} value={d.id}>
-                        {fullName(d) || d.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  className="h-7 flex-1 text-xs"
+                />
               </div>
             </div>
 

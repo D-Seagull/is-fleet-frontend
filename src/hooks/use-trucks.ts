@@ -57,6 +57,7 @@ export interface Driver {
     status?: "ONLINE" | "BUSY" | "AWAY" | "SLEEP" | "VACATION";
     statusUntil?: string | null;
   email: string;
+  phone?: string | null;
   role: string;
   currentTruck: { id: string; plate: string } | null;
 }
