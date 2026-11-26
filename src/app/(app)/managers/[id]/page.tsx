@@ -6,6 +6,7 @@ import { notFound, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { fullName } from "@/lib/format";
+import { PersonPicker } from "@/components/person-picker";
 import {
   ArrowLeft,
   Check,
@@ -409,33 +410,30 @@ export default function ManagerDetailPage({
                           {t("teamleadField")}
                         </p>
                         {canEditTeamlead ? (
-                          <Select
-                            value={manager.teamleadId ?? "none"}
-                            onValueChange={(v) =>
+                          <PersonPicker
+                            groups={[
+                              {
+                                items: teamleads.map((tl) => ({
+                                  id: tl.id,
+                                  label: fullName(tl) || tl.email,
+                                  searchText: `${tl.email ?? ""} ${tl.phone ?? ""}`,
+                                })),
+                              },
+                            ]}
+                            value={manager.teamleadId ?? null}
+                            onChange={(id) =>
                               update.mutate(
-                                { teamleadId: v === "none" ? null : v },
+                                { teamleadId: id },
                                 {
                                   onError: (err) =>
                                     toast.error(saveErrorMessage(err, t("saveError"))),
                                 },
                               )
                             }
+                            noneLabel={t("noTeamlead")}
                             disabled={update.isPending}
-                          >
-                            <SelectTrigger className="h-8 text-sm">
-                              <SelectValue placeholder={t("noTeamlead")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">
-                                {t("noTeamlead")}
-                              </SelectItem>
-                              {teamleads.map((tl) => (
-                                <SelectItem key={tl.id} value={tl.id}>
-                                  {fullName(tl) || tl.email}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            className="h-8 text-sm w-full"
+                          />
                         ) : (
                           <p className="font-medium">
                             {fullName(manager.teamlead) ??

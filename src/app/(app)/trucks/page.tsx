@@ -58,7 +58,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   useTrucks,
@@ -74,6 +73,7 @@ import { BackButton } from "@/components/back-button";
 import { SortableHead } from "@/components/sortable-head";
 import { LicensePlate } from "@/components/license-plate";
 import { useTableSort } from "@/lib/use-table-sort";
+import { PersonPicker, driverGroups } from "@/components/person-picker";
 
 const statusColors: Record<TruckStatus, string> = {
   AVAILABLE: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
@@ -89,6 +89,7 @@ export default function TrucksPage() {
   const t = useTranslations("trucks");
   const tStatus = useTranslations("common.truckStatus");
   const tActions = useTranslations("common.actions");
+  const tPicker = useTranslations("common.picker");
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [plate, setPlate] = useState("");
@@ -256,22 +257,24 @@ export default function TrucksPage() {
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="driver">{t("driverLabel")}</Label>
-                <Select
-                  value={selectedDriverId}
-                  onValueChange={setSelectedDriverId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("driverPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t("noDriver")}</SelectItem>
-                    {(drivers ?? []).map((driver) => (
-                      <SelectItem key={driver.id} value={driver.id}>
-                        {fullName(driver) || driver.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <PersonPicker
+                  groups={driverGroups(
+                    drivers ?? [],
+                    { free: tPicker("freeDrivers"), onTrucks: tPicker("driversOnTrucks") },
+                    fullName,
+                  )}
+                  value={
+                    selectedDriverId === ""
+                      ? undefined
+                      : selectedDriverId === "none"
+                        ? null
+                        : selectedDriverId
+                  }
+                  onChange={(id) => setSelectedDriverId(id ?? "none")}
+                  noneLabel={t("noDriver")}
+                  placeholder={t("driverPlaceholder")}
+                  className="w-full"
+                />
               </div>
               <Button
                 onClick={handleCreate}

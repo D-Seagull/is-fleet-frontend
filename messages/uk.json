@@ -90,6 +90,12 @@
       "fileTooLarge": "Файл завеликий: до 20 МБ на документ, до 10 файлів за раз.",
       "fileTypeNotSupported": "Цей тип файлу не підтримується. Можна: фото, PDF, Word, Excel, TXT, CSV.",
       "failed": "Не вдалося завантажити файл. Спробуйте ще раз."
+    },
+    "picker": {
+      "search": "Пошук…",
+      "noResults": "Нічого не знайдено",
+      "freeDrivers": "Вільні водії",
+      "driversOnTrucks": "На вантажівках"
     }
   },
   "alarm": {
