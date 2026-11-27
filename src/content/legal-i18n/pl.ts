@@ -1,6 +1,6 @@
 import type { LegalSet } from "../legal";
 
-const UPDATED = "Ostatnia aktualizacja: 9 października 2026";
+const UPDATED = "Ostatnia aktualizacja: 27 listopada 2026";
 
 const pl: LegalSet = {
   privacy: {
@@ -25,9 +25,9 @@ const pl: LegalSet = {
         bullets: [
           "Dane konta: imię i nazwisko, numer telefonu, e-mail, zdjęcie profilowe, język komunikacji i język interfejsu, strefa czasowa.",
           "Dane służbowe: trasy i ich adresy, ciężarówki, przesyłane dokumenty i zdjęcia, komentarze i oceny.",
-          "Korespondencja: wiadomości w czatach prywatnych, grupowych i czatach tras wraz z załącznikami.",
+          "Korespondencja: wiadomości w czatach prywatnych, grupowych i czatach tras wraz z załącznikami i wiadomościami głosowymi.",
           "Dane techniczne: token powiadomień push i typ urządzenia (iOS/Android), status obecności i czas ostatniej aktywności, dzienniki zapytań do serwera.",
-          "Dostęp do aparatu i galerii zdjęć jest wymagany tylko wtedy, gdy sam przesyłasz zdjęcie profilowe lub dokument, i służy wyłącznie temu celowi.",
+          "Dostęp do aparatu, galerii zdjęć i mikrofonu jest wymagany tylko wtedy, gdy sam przesyłasz zdjęcie lub dokument albo nagrywasz wiadomość głosową, i służy wyłącznie temu celowi.",
         ],
       },
       {
@@ -60,6 +60,7 @@ const pl: LegalSet = {
           "Resend — wysyłka wiadomości serwisowych e-mail.",
           "Expo, Google FCM i Apple APNs — dostarczanie powiadomień push.",
           "Sentry — techniczne raporty błędów aplikacji: ślady stosu i adres zapytania. Treść wiadomości, pliki cookie i nagłówki autoryzacji nie są przekazywane.",
+          "Anthropic (Claude, USA) — odczytywanie zleceń transportowych przez AI. Działa tylko wtedy, gdy firma włączyła tę funkcję, a menedżer sam przesyła plik lub tekst zlecenia: jego treść jest wysyłana, aby wypełnić szkic trasy, który menedżer sprawdza. Anthropic nie wykorzystuje tych danych do trenowania modeli; przekazanie poza UE odbywa się na podstawie standardowych klauzul umownych UE.",
         ],
       },
       {

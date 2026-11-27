@@ -1,6 +1,6 @@
 import type { LegalSet } from "../legal";
 
-const UPDATED = "Zuletzt aktualisiert: 9. Oktober 2026";
+const UPDATED = "Zuletzt aktualisiert: 27. November 2026";
 
 const de: LegalSet = {
   privacy: {
@@ -25,9 +25,9 @@ const de: LegalSet = {
         bullets: [
           "Kontodaten: Vor- und Nachname, Telefonnummer, E-Mail, Profilfoto, Kommunikations- und Oberflächensprache, Zeitzone.",
           "Arbeitsdaten: Fahrten und ihre Adressen, Lkw, von Ihnen hochgeladene Dokumente und Fotos, Kommentare und Bewertungen.",
-          "Nachrichten: Nachrichten in Einzel-, Gruppen- und Fahrt-Chats samt Anhängen.",
+          "Nachrichten: Nachrichten in Einzel-, Gruppen- und Fahrt-Chats samt Anhängen und Sprachnachrichten.",
           "Technische Daten: Push-Benachrichtigungs-Token und Gerätetyp (iOS/Android), Anwesenheitsstatus und Zeitpunkt der letzten Aktivität, Protokolle der Serveranfragen.",
-          "Zugriff auf Kamera und Fotomediathek wird nur angefordert, wenn Sie selbst ein Profilfoto oder ein Dokument hochladen, und ausschließlich dafür verwendet.",
+          "Zugriff auf Kamera, Fotomediathek und Mikrofon wird nur angefordert, wenn Sie selbst ein Foto oder Dokument hochladen oder eine Sprachnachricht aufnehmen, und ausschließlich dafür verwendet.",
         ],
       },
       {
@@ -60,6 +60,7 @@ const de: LegalSet = {
           "Resend — Versand von Service-E-Mails.",
           "Expo, Google FCM und Apple APNs — Zustellung von Push-Benachrichtigungen.",
           "Sentry — technische Fehlerberichte der App: Stacktraces und Anfragepfad. Nachrichteninhalte, Cookies und Autorisierungs-Header werden nicht übermittelt.",
+          "Anthropic (Claude, USA) — KI-gestütztes Auslesen von Transportaufträgen. Nur aktiv, wenn das Unternehmen die Funktion eingeschaltet hat und ein Manager selbst eine Auftragsdatei oder einen Auftragstext hochlädt: Der Inhalt wird gesendet, um einen Fahrtentwurf auszufüllen, den der Manager prüft. Anthropic verwendet diese Daten nicht zum Training seiner Modelle; die Übermittlung außerhalb der EU erfolgt auf Grundlage der EU-Standardvertragsklauseln.",
         ],
       },
       {
