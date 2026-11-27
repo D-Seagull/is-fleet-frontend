@@ -1,6 +1,6 @@
 import type { LegalSet } from "../legal";
 
-const UPDATED = "Paskutinį kartą atnaujinta: 2026 m. spalio 9 d.";
+const UPDATED = "Paskutinį kartą atnaujinta: 2026 m. lapkričio 27 d.";
 
 const lt: LegalSet = {
   privacy: {
@@ -25,9 +25,9 @@ const lt: LegalSet = {
         bullets: [
           "Paskyros duomenys: vardas ir pavardė, telefono numeris, el. paštas, profilio nuotrauka, bendravimo ir sąsajos kalba, laiko juosta.",
           "Darbo duomenys: reisai ir jų adresai, sunkvežimiai, jūsų įkeliami dokumentai ir nuotraukos, komentarai ir įvertinimai.",
-          "Susirašinėjimas: asmeninių, grupinių ir reisų pokalbių žinutės kartu su priedais.",
+          "Susirašinėjimas: asmeninių, grupinių ir reisų pokalbių žinutės kartu su priedais ir balso žinutėmis.",
           "Techniniai duomenys: tiesioginių (push) pranešimų žetonas ir įrenginio tipas (iOS/Android), buvimo būsena ir paskutinio aktyvumo laikas, serverio užklausų žurnalai.",
-          "Prieiga prie kameros ir nuotraukų galerijos prašoma tik tada, kai patys įkeliate profilio nuotrauką ar dokumentą, ir naudojama tik tam.",
+          "Prieiga prie kameros, nuotraukų galerijos ir mikrofono prašoma tik tada, kai patys įkeliate nuotrauką ar dokumentą arba įrašote balso žinutę, ir naudojama tik tam.",
         ],
       },
       {
@@ -60,6 +60,7 @@ const lt: LegalSet = {
           "Resend — tarnybinių el. laiškų siuntimas.",
           "Expo, Google FCM ir Apple APNs — tiesioginių (push) pranešimų pristatymas.",
           "Sentry — techninės programos klaidų ataskaitos: dėklo pėdsakai ir užklausos adresas. Žinučių turinys, slapukai ir autorizacijos antraštės neperduodami.",
+          "Anthropic (Claude, JAV) — vežimo užsakymų atpažinimas dirbtiniu intelektu. Veikia tik tada, kai įmonė įjungė šią funkciją, o vadybininkas pats įkelia užsakymo failą ar tekstą: jo turinys siunčiamas, kad būtų užpildytas reiso juodraštis, kurį vadybininkas patikrina. Anthropic nenaudoja šių duomenų modeliams mokyti; perdavimas už ES ribų grindžiamas ES standartinėmis sutarčių sąlygomis.",
         ],
       },
       {

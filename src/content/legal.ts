@@ -66,8 +66,8 @@ export interface LegalSet {
   deleteAccount: LegalDoc;
 }
 
-const UPDATED_UK = "Востаннє оновлено: 9 жовтня 2026";
-const UPDATED_EN = "Last updated: 9 October 2026";
+const UPDATED_UK = "Востаннє оновлено: 27 листопада 2026";
+const UPDATED_EN = "Last updated: 27 November 2026";
 
 // ─────────────────────────────────────────────────────────────── Privacy ──
 
@@ -94,9 +94,9 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         bullets: [
           "Дані акаунта: ім'я та прізвище, номер телефону, email, фото профілю, мова спілкування та мова інтерфейсу, часовий пояс.",
           "Робочі дані: рейси та їхні адреси, вантажівки, документи й фотографії, які ви завантажуєте, коментарі та оцінки.",
-          "Листування: повідомлення в особистих, групових і рейсових чатах разом із вкладеннями.",
+          "Листування: повідомлення в особистих, групових і рейсових чатах разом із вкладеннями та голосовими повідомленнями.",
           "Технічні дані: токен push-сповіщень і тип пристрою (iOS/Android), статус присутності та час останньої активності, службові журнали запитів до сервера.",
-          "Доступ до камери та фотогалереї запитується лише тоді, коли ви самі завантажуєте фото профілю або документ, і використовується виключно для цього.",
+          "Доступ до камери, фотогалереї та мікрофона запитується лише тоді, коли ви самі завантажуєте фото чи документ або записуєте голосове повідомлення, і використовується виключно для цього.",
         ],
       },
       {
@@ -129,6 +129,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
           "Resend — надсилання службових листів.",
           "Expo, Google FCM та Apple APNs — доставка push-сповіщень.",
           "Sentry — технічні звіти про помилки застосунку: стектрейси та адреса запиту. Вміст повідомлень, куки й заголовки авторизації не передаються.",
+          "Anthropic (Claude, США) — розпізнавання замовлень на перевезення за допомогою ШІ. Працює лише тоді, коли компанія ввімкнула цю функцію, а менеджер сам завантажив файл чи текст замовлення: його вміст надсилається, щоб заповнити чернетку рейсу, яку менеджер перевіряє. Anthropic не використовує ці дані для навчання моделей; передача за межі ЄС — на підставі стандартних договірних положень ЄС.",
         ],
       },
       {
@@ -189,9 +190,9 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
         bullets: [
           "Account data: first and last name, phone number, email, profile photo, chat language and interface language, time zone.",
           "Work data: trips and their addresses, trucks, documents and photos you upload, comments and ratings.",
-          "Messages: direct, group and trip-chat messages together with their attachments.",
+          "Messages: direct, group and trip-chat messages together with their attachments and voice messages.",
           "Technical data: push-notification token and device type (iOS/Android), presence status and last-seen time, server request logs.",
-          "Camera and photo-library access is requested only when you upload a profile picture or a document, and is used for nothing else.",
+          "Camera, photo-library and microphone access is requested only when you upload a photo or a document or record a voice message, and is used for nothing else.",
         ],
       },
       {
@@ -224,6 +225,7 @@ export const PRIVACY: Record<LegalLocale, LegalDoc> = {
           "Resend — delivery of service emails.",
           "Expo, Google FCM and Apple APNs — push-notification delivery.",
           "Sentry — technical error reports: stack traces and the request path. Message content, cookies and authorisation headers are not sent.",
+          "Anthropic (Claude, USA) — AI reading of transport orders. It runs only when the company has switched this feature on and a manager uploads an order file or text: its content is sent to fill in a draft trip, which the manager checks. Anthropic does not use this data to train its models; the transfer outside the EU relies on the EU Standard Contractual Clauses.",
         ],
       },
       {
