@@ -1,3 +1,5 @@
+import { openExternal } from "@/lib/open-external";
+
 /**
  * Signed URL for a file. Goes through the shared axios client (not a raw
  * `fetch`) so an expired access token is refreshed and the request replayed:
@@ -24,7 +26,7 @@ const PREVIEWABLE_RE = /\.(pdf|png|jpe?g|gif|webp|bmp|svg|avif)(\?|$)/i;
 // the file "only downloads". An embedded <iframe>/<img> previews it reliably.
 export async function openUrlInViewer(url: string, fileName?: string | null) {
   if (!PREVIEWABLE_RE.test(url.split("?")[0])) {
-    window.open(url, "_blank");
+    openExternal(url);
     return;
   }
   const { useDocViewer } = await import("@/store/doc-viewer");
