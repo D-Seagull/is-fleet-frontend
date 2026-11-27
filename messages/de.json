@@ -695,6 +695,9 @@
       "notesLabel": "Notizen",
       "notesPlaceholder": "Fahrtnotizen…",
       "createButton": "Fahrt erstellen",
+      "resetButton": "Zurücksetzen",
+      "resetConfirm": "Formular zurücksetzen?",
+      "resetConfirmDesc": "Alle eingegebenen Stopps, Adressen, Daten, Notizen und Auftragsdaten werden gelöscht. Dies kann nicht rückgängig gemacht werden.",
       "tripFallbackName": "Fahrt {date}",
       "fromOrder": {
         "title": "Aus Auftrag ausfüllen",

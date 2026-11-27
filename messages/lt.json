@@ -695,6 +695,9 @@
       "notesLabel": "Pastabos",
       "notesPlaceholder": "Reiso pastabos…",
       "createButton": "Sukurti reisą",
+      "resetButton": "Išvalyti",
+      "resetConfirm": "Išvalyti formą?",
+      "resetConfirmDesc": "Visi įvesti sustojimai, adresai, datos, pastabos ir užsakymo duomenys bus ištrinti. To negalima atšaukti.",
       "tripFallbackName": "Reisas {date}",
       "fromOrder": {
         "title": "Užpildyti iš užsakymo",

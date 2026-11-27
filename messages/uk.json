@@ -695,6 +695,9 @@
       "notesLabel": "Нотатки",
       "notesPlaceholder": "Нотатки до рейсу…",
       "createButton": "Створити рейс",
+      "resetButton": "Скинути",
+      "resetConfirm": "Скинути форму?",
+      "resetConfirmDesc": "Усі введені зупинки, адреси, дати, нотатки й дані замовлення буде очищено. Це не можна скасувати.",
       "tripFallbackName": "Рейс {date}",
       "fromOrder": {
         "title": "Заповнити з заявки",

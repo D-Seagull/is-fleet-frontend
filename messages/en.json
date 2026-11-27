@@ -695,6 +695,9 @@
       "notesLabel": "Notes",
       "notesPlaceholder": "Trip notes...",
       "createButton": "Create Trip",
+      "resetButton": "Reset",
+      "resetConfirm": "Reset the form?",
+      "resetConfirmDesc": "All entered stops, addresses, dates, notes and order data will be cleared. This can't be undone.",
       "tripFallbackName": "Trip {date}",
       "fromOrder": {
         "title": "Fill from order",
