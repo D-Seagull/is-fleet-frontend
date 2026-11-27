@@ -219,6 +219,9 @@
     "statusDuration": "На скільки?",
     "durationUnlimited": "Без обмеження",
     "sleepPresets": {
+      "until6": "До 6:00",
+      "until7": "До 7:00",
+      "until8": "До 8:00",
       "sleep1h": "1 година",
       "sleep4h": "4 години",
       "sleep8h": "8 годин",

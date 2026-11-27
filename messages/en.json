@@ -219,6 +219,9 @@
     "statusDuration": "For how long?",
     "durationUnlimited": "No limit",
     "sleepPresets": {
+      "until6": "Until 6:00",
+      "until7": "Until 7:00",
+      "until8": "Until 8:00",
       "sleep1h": "1 hour",
       "sleep4h": "4 hours",
       "sleep8h": "8 hours",

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LucideIcon, ChevronRight, Search } from "lucide-react";
 import { useLayoutEffect, useState } from "react";
+import { hoursUntilNextHour } from "@/lib/status";
 import { fullName, initials } from "@/lib/format";
 import {
   Sidebar,
@@ -359,11 +360,11 @@ export function AppSidebar({
 // Duration presets per status. Sleep is hour-based (typical EU
 // rest-break convention); vacation is day-based since people usually
 // take more than one day off.
-const SLEEP_PRESETS: { key: string; hours: number }[] = [
-  { key: "sleep1h", hours: 1 },
-  { key: "sleep4h", hours: 4 },
-  { key: "sleep8h", hours: 8 },
-  { key: "sleep12h", hours: 12 },
+// Sleep runs until the next 6:00 / 7:00 / 8:00 (the morning the manager is back).
+const SLEEP_PRESETS: { key: string; untilHour: number }[] = [
+  { key: "until6", untilHour: 6 },
+  { key: "until7", untilHour: 7 },
+  { key: "until8", untilHour: 8 },
 ];
 
 const VACATION_PRESETS: { key: string; hours: number }[] = [
@@ -437,7 +438,9 @@ function StatusSubmenu() {
             {SLEEP_PRESETS.map((p) => (
               <DropdownMenuItem
                 key={p.key}
-                onClick={() => setStatus("SLEEP", p.hours)}
+                onClick={() =>
+                  setStatus("SLEEP", hoursUntilNextHour(p.untilHour))
+                }
               >
                 {t(`sleepPresets.${p.key}`)}
               </DropdownMenuItem>

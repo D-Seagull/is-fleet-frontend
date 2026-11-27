@@ -219,6 +219,9 @@
     "statusDuration": "На сколько?",
     "durationUnlimited": "Без ограничения",
     "sleepPresets": {
+      "until6": "До 6:00",
+      "until7": "До 7:00",
+      "until8": "До 8:00",
       "sleep1h": "1 час",
       "sleep4h": "4 часа",
       "sleep8h": "8 часов",
