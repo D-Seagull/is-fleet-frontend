@@ -1,13 +1,19 @@
+import { openExternal } from "@/lib/open-external";
+
+/**
+ * Signed URL for a file. Goes through the shared axios client (not a raw
+ * `fetch`) so an expired access token is refreshed and the request replayed:
+ * with a plain fetch a 401 came back as "failed to download" and only a page
+ * reload (which refreshes the token) cured it.
+ */
 export async function fetchSignedUrl(endpoint: string): Promise<string | null> {
-  const { useAuthStore } = await import("@/store/auth");
-  const token = useAuthStore.getState().token;
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-  const res = await fetch(`${base}${endpoint}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) return null;
-  const data = (await res.json()) as { url: string };
-  return data.url;
+  const { api } = await import("@/lib/api");
+  try {
+    const res = await api.get<{ url?: string }>(endpoint);
+    return res.data?.url ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // Extensions the in-app viewer can render inline (<img> or <iframe>). Anything
@@ -20,7 +26,7 @@ const PREVIEWABLE_RE = /\.(pdf|png|jpe?g|gif|webp|bmp|svg|avif)(\?|$)/i;
 // the file "only downloads". An embedded <iframe>/<img> previews it reliably.
 export async function openUrlInViewer(url: string, fileName?: string | null) {
   if (!PREVIEWABLE_RE.test(url.split("?")[0])) {
-    window.open(url, "_blank");
+    openExternal(url);
     return;
   }
   const { useDocViewer } = await import("@/store/doc-viewer");

@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { StopType } from "@/hooks/use-trips";
 import { HourScale, TimeInput24 } from "./time-window";
+import { openExternal } from "@/lib/open-external";
 
 export interface StopRowData {
   type: StopType;
@@ -301,10 +302,7 @@ export function StopRow({
           className="h-9 w-9 shrink-0"
           disabled={!value.coords}
           onClick={() =>
-            window.open(
-              `https://www.google.com/maps?q=${value.coords}`,
-              "_blank",
-            )
+            openExternal(`https://www.google.com/maps?q=${value.coords}`)
           }
           title={t("openInMaps")}
         >

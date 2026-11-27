@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, RotateCcw } from "lucide-react";
+import { useConfirm } from "@/components/confirm-dialog";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import axios from "axios";
@@ -119,6 +120,7 @@ export function NewTripDialog({
   const invalidateTripOrder = useInvalidateTripOrder();
   const tOrder = useTranslations("truckPanel.newTrip.fromOrder");
   const tFinance = useTranslations("truckPanel.finance");
+  const confirm = useConfirm();
 
   const DRAFT_KEY = `trip-draft-${truckId}`;
 
@@ -139,6 +141,9 @@ export function NewTripDialog({
   const [orderWarnings, setOrderWarnings] = useState<string[]>([]);
   const [previewPage, setPreviewPage] = useState<number | null>(null);
   const [importKey, setImportKey] = useState<string | null>(null);
+  // Bumped by "Reset" to remount the form, so inputs that keep their own
+  // state (the order import box, address search) start empty too.
+  const [formKey, setFormKey] = useState(0);
 
   // відновлення чернетки з localStorage при відкритті
   useEffect(() => {
@@ -240,6 +245,27 @@ export function NewTripDialog({
     setOrderWarnings([]);
     setPreviewPage(null);
     setImportKey(null);
+  }
+
+  /** "Reset": empty form + forget the saved draft, after a confirm. */
+  async function handleResetForm() {
+    const ok = await confirm({
+      title: t("resetConfirm"),
+      description: t("resetConfirmDesc"),
+      confirmText: t("resetButton"),
+      destructive: true,
+    });
+    if (!ok) return;
+    localStorage.removeItem(DRAFT_KEY);
+    setDriverId(defaultDriverId ?? "");
+    setTripName("");
+    setOrderNumber("");
+    setNotes("");
+    setFinance(emptyFinance());
+    setStops([emptyStop("LOADING"), emptyStop("UNLOADING")]);
+    isNameEdited.current = false;
+    resetOrder();
+    setFormKey((k) => k + 1);
   }
 
   // авто-заповнення Trip name з адрес (якщо користувач не редагував вручну):
@@ -350,6 +376,7 @@ export function NewTripDialog({
           <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
         <div
+          key={formKey}
           className={
             orderSource
               ? "grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
@@ -467,15 +494,27 @@ export function NewTripDialog({
 
             <FinanceFields value={finance} onChange={setFinance} />
 
-            <Button
-              onClick={handleCreate}
-              disabled={!driverId || createTrip.isPending}
-            >
-              {createTrip.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {t("createButton")}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleResetForm}
+                disabled={createTrip.isPending}
+              >
+                <RotateCcw className="h-4 w-4" />
+                {t("resetButton")}
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleCreate}
+                disabled={!driverId || createTrip.isPending}
+              >
+                {createTrip.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {t("createButton")}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

@@ -2,6 +2,7 @@
 
 import { Navigation, Copy, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { externalLinkClick } from "@/lib/open-external";
 
 export function CoordsCell({ coords }: { coords: string }) {
   const tActions = useTranslations("common.actions");
@@ -27,7 +28,10 @@ export function CoordsCell({ coords }: { coords: string }) {
         rel="noreferrer"
         className="hover:text-foreground transition-colors"
         title={tStop("openInMaps")}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          externalLinkClick(e, `https://www.google.com/maps?q=${coords}`);
+        }}
       >
         <ExternalLink className="h-3 w-3" />
       </a>

@@ -219,6 +219,9 @@
     "statusDuration": "For how long?",
     "durationUnlimited": "No limit",
     "sleepPresets": {
+      "until6": "Until 6:00",
+      "until7": "Until 7:00",
+      "until8": "Until 8:00",
       "sleep1h": "1 hour",
       "sleep4h": "4 hours",
       "sleep8h": "8 hours",
@@ -692,6 +695,9 @@
       "notesLabel": "Notes",
       "notesPlaceholder": "Trip notes...",
       "createButton": "Create Trip",
+      "resetButton": "Reset",
+      "resetConfirm": "Reset the form?",
+      "resetConfirmDesc": "All entered stops, addresses, dates, notes and order data will be cleared. This can't be undone.",
       "tripFallbackName": "Trip {date}",
       "fromOrder": {
         "title": "Fill from order",

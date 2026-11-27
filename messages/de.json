@@ -219,6 +219,9 @@
     "statusDuration": "Für wie lange?",
     "durationUnlimited": "Unbegrenzt",
     "sleepPresets": {
+      "until6": "Bis 6:00",
+      "until7": "Bis 7:00",
+      "until8": "Bis 8:00",
       "sleep1h": "1 Stunde",
       "sleep4h": "4 Stunden",
       "sleep8h": "8 Stunden",
@@ -692,6 +695,9 @@
       "notesLabel": "Notizen",
       "notesPlaceholder": "Fahrtnotizen…",
       "createButton": "Fahrt erstellen",
+      "resetButton": "Zurücksetzen",
+      "resetConfirm": "Formular zurücksetzen?",
+      "resetConfirmDesc": "Alle eingegebenen Stopps, Adressen, Daten, Notizen und Auftragsdaten werden gelöscht. Dies kann nicht rückgängig gemacht werden.",
       "tripFallbackName": "Fahrt {date}",
       "fromOrder": {
         "title": "Aus Auftrag ausfüllen",

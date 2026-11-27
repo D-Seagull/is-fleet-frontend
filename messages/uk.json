@@ -219,6 +219,9 @@
     "statusDuration": "На скільки?",
     "durationUnlimited": "Без обмеження",
     "sleepPresets": {
+      "until6": "До 6:00",
+      "until7": "До 7:00",
+      "until8": "До 8:00",
       "sleep1h": "1 година",
       "sleep4h": "4 години",
       "sleep8h": "8 годин",
@@ -692,6 +695,9 @@
       "notesLabel": "Нотатки",
       "notesPlaceholder": "Нотатки до рейсу…",
       "createButton": "Створити рейс",
+      "resetButton": "Скинути",
+      "resetConfirm": "Скинути форму?",
+      "resetConfirmDesc": "Усі введені зупинки, адреси, дати, нотатки й дані замовлення буде очищено. Це не можна скасувати.",
       "tripFallbackName": "Рейс {date}",
       "fromOrder": {
         "title": "Заповнити з заявки",

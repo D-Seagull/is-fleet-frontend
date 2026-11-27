@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { X, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDocViewer } from "@/store/doc-viewer";
+import { externalLinkClick } from "@/lib/open-external";
 
 const IMG_RE = /\.(png|jpe?g|gif|webp|bmp|svg|avif)(\?|$)/i;
 
@@ -45,6 +46,7 @@ export function DocViewerModal() {
             href={url}
             target="_blank"
             rel="noreferrer"
+            onClick={(e) => externalLinkClick(e, url)}
             className="flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm text-white transition-colors hover:bg-white/25"
           >
             <ExternalLink className="h-4 w-4" /> {t("openInNewTab")}
