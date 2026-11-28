@@ -15,7 +15,7 @@ const pl: LegalSet = {
         heading: "1. Kto odpowiada za Twoje dane",
         paragraphs: [
           "Administratorem danych jest Dmytro Chaika — osoba fizyczna, która rozwija i utrzymuje IS Fleet. Adres do korespondencji: ul. Zawidowska 11/4, Wrocław, Polska.",
-          "W sprawach dotyczących przetwarzania danych pisz na isfleet.eu@gmail.com.",
+          "W sprawach dotyczących przetwarzania danych pisz na info@isfleet.eu.",
           "W odniesieniu do danych służbowych (trasy, wiadomości, dokumenty) administratorem jest firma transportowa — pracodawca, a Dmytro Chaika działa jako podmiot przetwarzający na jej polecenie.",
         ],
       },
@@ -74,7 +74,7 @@ const pl: LegalSet = {
         heading: "7. Twoje prawa",
         paragraphs: [
           "Jeśli ma do Ciebie zastosowanie RODO, przysługuje Ci prawo dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania lub sprzeciwu wobec przetwarzania, a także prawo do przenoszenia danych.",
-          "Aby skorzystać z tych praw, napisz na isfleet.eu@gmail.com. Masz też prawo wnieść skargę do organu nadzorczego: w Polsce jest to Prezes Urzędu Ochrony Danych Osobowych (UODO), ul. Stawki 2, 00-193 Warszawa. Jeśli mieszkasz w innym kraju UE, możesz złożyć skargę do organu w miejscu zamieszkania.",
+          "Aby skorzystać z tych praw, napisz na info@isfleet.eu. Masz też prawo wnieść skargę do organu nadzorczego: w Polsce jest to Prezes Urzędu Ochrony Danych Osobowych (UODO), ul. Stawki 2, 00-193 Warszawa. Jeśli mieszkasz w innym kraju UE, możesz złożyć skargę do organu w miejscu zamieszkania.",
         ],
       },
       {
@@ -151,7 +151,7 @@ const pl: LegalSet = {
       {
         heading: "7. Prawo właściwe",
         paragraphs: [
-          "Regulamin podlega prawu polskiemu, a spory rozstrzyga sąd właściwy według prawa polskiego. Nie pozbawia to konsumenta ochrony przyznanej mu przez bezwzględnie obowiązujące przepisy kraju jego zamieszkania. Pytania: isfleet.eu@gmail.com.",
+          "Regulamin podlega prawu polskiemu, a spory rozstrzyga sąd właściwy według prawa polskiego. Nie pozbawia to konsumenta ochrony przyznanej mu przez bezwzględnie obowiązujące przepisy kraju jego zamieszkania. Pytania: info@isfleet.eu.",
         ],
       },
     ],
@@ -201,7 +201,7 @@ const pl: LegalSet = {
       {
         heading: "Jeśli nie możesz się zalogować",
         paragraphs: [
-          "Jeśli utraciłeś dostęp do konta i nie możesz usunąć go samodzielnie, wyślij prośbę na isfleet.eu@gmail.com z numeru telefonu lub adresu e-mail powiązanego z kontem. Rozpatrzymy ją w ciągu 30 dni.",
+          "Jeśli utraciłeś dostęp do konta i nie możesz usunąć go samodzielnie, wyślij prośbę na info@isfleet.eu z numeru telefonu lub adresu e-mail powiązanego z kontem. Rozpatrzymy ją w ciągu 30 dni.",
         ],
       },
     ],
